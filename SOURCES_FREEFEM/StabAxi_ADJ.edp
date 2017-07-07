@@ -1,0 +1,367 @@
+// Generic solver for the stability of an axisymmetric base flow SHIFT INVERT DIRECT
+// 30 mai 2017
+// History : recupere du cas jet sifflant
+
+
+// USAGE : 
+// Input arguments (from keyboad or pipe) : Re ; m ; shift ; nev
+//
+
+// INPUT FILES : 
+//		mesh.msh mesh file
+// 		chbase.txt base flow file (last line is Reynolds)
+
+
+// OUTPUT FILES
+//		EigenvaluesA.txt 	-> Re(lambda) ; Im(lambda) ; Re ; m ; Re(shift) ; Im(shift)
+//		Eigenmode(#i).ff2m 	-> Eigenmodes in ff2m format (for matlab)
+//		OTHER FORMATS still present for backward compatibility 
+//		(if needed on can add the tecplot and paraview format)			
+
+
+	real Remin,Remax,Re,Re2,Rechbase,dRe,shiftr,shifti,si, lecture;
+	complex shift;
+	string nomfile;
+	int m;
+
+	
+		cout << " Entrez Re :   " << endl; 
+	cin  >> Re;
+	//cout << " ---> Re = " << Re << endl;
+	
+	
+	cout << " Entrez m :   " << endl; 
+	cin  >> m ;
+
+	
+	cout << " Entrez SHIFT (re,im) :   " << endl; 
+	cin  >> shiftr >> shifti;
+	shift = 1i*shifti+shiftr;
+	
+	int nev;
+	int iadjoint=1;
+    cout << " Entrez nev :" << endl;
+    cin >> nev ;
+//    if(nev<0)
+//    {iadjoint = 1; nev = -nev; };
+
+    
+	
+	
+	cout << " Calcul de VP        ; Re    = " << Re << endl; 
+	cout << "                       m     = " << m << endl;
+	cout << "                       shift = " << shiftr << " +i " << shifti << endl;
+	if (iadjoint==0) {cout << " nev = " << nev << " : probleme DIRECT" << endl;};
+	if (iadjoint==1) {cout << " nev = " << nev << " : probleme ADJOINT" << endl;
+						shift=conj(shift);
+						cout << " warning : for adjoint, eigenvalues (and shift) are redefined as complex conjugates (TO CHECK)" << endl;
+						};
+	
+	
+	
+
+	shift=shiftr + 1i * shifti;
+	
+	mesh th=readmesh("mesh.msh");
+	
+	fespace p2(th,P2);
+	fespace p1(th,P1);
+	fespace p0(th,P0);
+	fespace p2xp2xp1(th,[P2,P2,P1]);	
+	fespace p2xp2xp2xp1(th,[P2,P2,P2,P1]);
+
+	p2xp2xp1 [urp,uzp,pp];
+    p2xp2xp2xp1 [ur,ut,uz,p],[vr,vt,vz,q];
+
+	{
+		ifstream cbin("chbase.txt");
+		cbin >> urp[];
+		cbin >> Rechbase;
+	};
+    if (Rechbase!=Re) {cout << " WARNING : Re(base flow) differs from Re" << endl;} ; 
+
+	cout << endl << " ### EIGENVALUE COMPUTATION ### " << endl ;
+
+	cout << "Re = " << Re << endl;
+	cout << "m = " << m << endl;
+	cout << "shift = " << shift << endl;
+	cout << endl;
+
+	
+	real nu=1./Re;
+ 
+    
+	varf AMSBDm0([ur,ut,uz,p],[vr,vt,vz,q]) = // for the direct computation
+	int2d(th)(
+	- y*vz*(uzp*dx(uz)+uz*dx(uzp)+urp*dy(uz)+ur*dy(uzp) )
+	- y*vr*(uzp*dx(ur)+uz*dx(urp)+urp*dy(ur)+ur*dy(urp) )
+	- y*vt*(uzp*dx(ut)+urp*dy(ut) )-urp*ut*vt
+	- nu*(y*dx(uz)*dx(vz)+y*dy(uz)*dy(vz)+m^2/y*uz*vz  
+	+ y*dx(ut)*dx(vt)+y*dy(ut)*dy(vt)+(m^2+1)/y*ut*vt 
+	+ y*dx(ur)*dx(vr)+y*dy(ur)*dy(vr)+(m^2+1)/y*ur*vr 
+	+ 2i*m*vr*ut/y-2i*m*vt*ur/y)  
+	+ p*(y*dx(vz)+vr+y*dy(vr)-1i*m*vt)
+	- q*(y*dx(uz)+ur+y*dy(ur)+1i*m*ut)
+	- y*shift*(ur*vr+ut*vt+uz*vz)
+	)
+  	+ on(1,uz=0.,ur=0.,ut=0.)
+  	+ on(21,22,23,uz=0.,ur=0.,ut=0.)	
+	+ on(7,ur=0.)
+	+ on(6,ur=0.,ut=0); //for m=0	
+    
+	varf AMSBDm1([ur,ut,uz,p],[vr,vt,vz,q]) = // for the direct computation
+	int2d(th)(
+	- y*vz*(uzp*dx(uz)+uz*dx(uzp)+urp*dy(uz)+ur*dy(uzp) )
+	- y*vr*(uzp*dx(ur)+uz*dx(urp)+urp*dy(ur)+ur*dy(urp) )
+	- y*vt*(uzp*dx(ut)+urp*dy(ut) )-urp*ut*vt
+	- nu*(y*dx(uz)*dx(vz)+y*dy(uz)*dy(vz)+m^2/y*uz*vz  
+	+ y*dx(ut)*dx(vt)+y*dy(ut)*dy(vt)+(m^2+1)/y*ut*vt 
+	+ y*dx(ur)*dx(vr)+y*dy(ur)*dy(vr)+(m^2+1)/y*ur*vr 
+	+ 2i*m*vr*ut/y-2i*m*vt*ur/y)  
+	+ p*(y*dx(vz)+vr+y*dy(vr)-1i*m*vt)
+	- q*(y*dx(uz)+ur+y*dy(ur)+1i*m*ut)
+	- y*shift*(ur*vr+ut*vt+uz*vz)
+	)
+  	+ on(1,uz=0.,ur=0.,ut=0.)
+  	+ on(2,21,22,23,uz=0.,ur=0.,ut=0.)	
+	+ on(7,ur=0.)
+	+ on(6,uz=0.); //for m=1
+
+	varf AMSBDm2([ur,ut,uz,p],[vr,vt,vz,q]) = // for the direct computation
+	int2d(th)(
+	- y*vz*(uzp*dx(uz)+uz*dx(uzp)+urp*dy(uz)+ur*dy(uzp) )
+	- y*vr*(uzp*dx(ur)+uz*dx(urp)+urp*dy(ur)+ur*dy(urp) )
+	- y*vt*(uzp*dx(ut)+urp*dy(ut) )-urp*ut*vt
+	- nu*(y*dx(uz)*dx(vz)+y*dy(uz)*dy(vz)+m^2/y*uz*vz  
+	+ y*dx(ut)*dx(vt)+y*dy(ut)*dy(vt)+(m^2+1)/y*ut*vt 
+	+ y*dx(ur)*dx(vr)+y*dy(ur)*dy(vr)+(m^2+1)/y*ur*vr 
+	+ 2i*m*vr*ut/y-2i*m*vt*ur/y)  
+	+ p*(y*dx(vz)+vr+y*dy(vr)-1i*m*vt)
+	- q*(y*dx(uz)+ur+y*dy(ur)+1i*m*ut)
+	- y*shift*(ur*vr+ut*vt+uz*vz)
+	)
+  	+ on(1,uz=0.,ur=0.,ut=0.)
+  	+ on(2,21,22,23,uz=0.,ur=0.,ut=0.)	
+	+ on(7,ur=0.)
+	+ on(6,ur=0.,ut=0,uz=0.); //for m=2 and more
+	
+	
+	// problemes adjoints
+		
+	varf AMSBAm0([uar,uat,uaz,pa],[vr,vt,vz,q]) = //for the adjoint computation (continuous adjoint)
+	int2d(th)(
+	- y*vr*(-uzp*dx(uar)-urp*dy(uar)+uaz*dy(uzp)+uar*dy(urp) )
+	- y*vz*(-uzp*dx(uaz)-urp*dy(uaz)+uaz*dx(uzp)+uar*dx(urp) )
+	- y*vt*(-uzp*dx(uat)-urp*dy(uat) )-urp*uat*vt
+	- nu*(y*dx(uaz)*dx(vz)+y*dy(uaz)*dy(vz)+m^2/y*uaz*vz  
+		+ y*dx(uat)*dx(vt)+y*dy(uat)*dy(vt)+(m^2+1)/y*uat*vt  
+	+ y*dx(uar)*dx(vr)+y*dy(uar)*dy(vr)+(m^2+1)/y*uar*vr 
+	+ 2i*m*vr*uat/y-2i*m*vt*uar/y)  
+	- pa*(y*dx(vz)+vr+y*dy(vr)-1i*m*vt)
+	+ q*(y*dx(uaz)+uar+y*dy(uar)+1i*m*uat)
+	-y*shift*(uar*vr+uat*vt+uaz*vz)
+	)
+	-int1d(th,3)(              // les functions tests vr,vt,vz s'annulent sur toutes les autres limites du domaine
+		y*(urp*N.y+uzp*N.x)*(uar*vr+uat*vt+uaz*vz)
+		)
+  	+ on(1,uar=0.,uat=0.,uaz=0.)
+  	+ on(2,21,22,23,uar=0.,uat=0.,uaz=0.)	
+	+ on(7,uar=0.)
+	+ on(6,uar=0,uat=0); // for m=0
+	
+		varf AMSBAm1([uar,uat,uaz,pa],[vr,vt,vz,q]) = //for the adjoint computation (continuous adjoint)
+	int2d(th)(
+	- y*vr*(-uzp*dx(uar)-urp*dy(uar)+uaz*dy(uzp)+uar*dy(urp) )
+	- y*vz*(-uzp*dx(uaz)-urp*dy(uaz)+uaz*dx(uzp)+uar*dx(urp) )
+	- y*vt*(-uzp*dx(uat)-urp*dy(uat) )-urp*uat*vt
+	- nu*(y*dx(uaz)*dx(vz)+y*dy(uaz)*dy(vz)+m^2/y*uaz*vz  
+		+ y*dx(uat)*dx(vt)+y*dy(uat)*dy(vt)+(m^2+1)/y*uat*vt  
+	+ y*dx(uar)*dx(vr)+y*dy(uar)*dy(vr)+(m^2+1)/y*uar*vr 
+	+ 2i*m*vr*uat/y-2i*m*vt*uar/y)  
+	- pa*(y*dx(vz)+vr+y*dy(vr)-1i*m*vt)
+	+ q*(y*dx(uaz)+uar+y*dy(uar)+1i*m*uat)
+	- y*shift*(uar*vr+uat*vt+uaz*vz)
+	)
+	-int1d(th,3)(              // les functions tests vr,vt,vz s'annulent sur toutes les autres limites du domaine
+		y*(urp*N.y+uzp*N.x)*(uar*vr+uat*vt+uaz*vz)
+		)
+  	+ on(1,uar=0.,uat=0.,uaz=0.)
+  	+ on(2,21,22,23,uar=0.,uat=0.,uaz=0.)	
+	+ on(7,uar=0.)
+	+ on(6,uaz=0.); // for m=1
+
+		varf AMSBAm2([uar,uat,uaz,pa],[vr,vt,vz,q]) = //for the adjoint computation (continuous adjoint)
+	int2d(th)(
+	- y*vr*(-uzp*dx(uar)-urp*dy(uar)+uaz*dy(uzp)+uar*dy(urp) )
+	- y*vz*(-uzp*dx(uaz)-urp*dy(uaz)+uaz*dx(uzp)+uar*dx(urp) )
+	- y*vt*(-uzp*dx(uat)-urp*dy(uat) )-urp*uat*vt
+	- nu*(y*dx(uaz)*dx(vz)+y*dy(uaz)*dy(vz)+m^2/y*uaz*vz  
+		+ y*dx(uat)*dx(vt)+y*dy(uat)*dy(vt)+(m^2+1)/y*uat*vt  
+	+ y*dx(uar)*dx(vr)+y*dy(uar)*dy(vr)+(m^2+1)/y*uar*vr 
+	+ 2i*m*vr*uat/y-2i*m*vt*uar/y)  
+	- pa*(y*dx(vz)+vr+y*dy(vr)-1i*m*vt)
+	+ q*(y*dx(uaz)+uar+y*dy(uar)+1i*m*uat)
+	- y*shift*(uar*vr+uat*vt+uaz*vz)
+	)
+	-int1d(th,3)(              // les functions tests vr,vt,vz s'annulent sur toutes les autres limites du domaine
+		y*(urp*N.y+uzp*N.x)*(uar*vr+uat*vt+uaz*vz)
+		)
+  	+ on(1,uar=0.,uat=0.,uaz=0.)
+  	+ on(2,21,22,23,uar=0.,uat=0.,uaz=0.)	
+	+ on(7,uar=0.)
+	+ on(6,uaz=0.,uar=0,uat=0); // for m=2
+	
+	
+	
+	matrix<complex> A;
+	
+	
+	if(iadjoint==0) // direct eigenmode problem
+	{
+	if(m==0)
+		{A =AMSBDm0(p2xp2xp2xp1,p2xp2xp2xp1,solver=UMFPACK);}; 
+	if(abs(m)==1)
+		{A =AMSBDm1(p2xp2xp2xp1,p2xp2xp2xp1,solver=UMFPACK);}; 
+	if(abs(m)>1)
+		{A =AMSBDm2(p2xp2xp2xp1,p2xp2xp2xp1,solver=UMFPACK);}; 
+	}
+	else // adjoint eigenmode problem
+ 
+	{
+	if(m==0)
+		{A =AMSBAm0(p2xp2xp2xp1,p2xp2xp2xp1,solver=UMFPACK);}; 
+	if(abs(m)==1)
+		{A =AMSBAm1(p2xp2xp2xp1,p2xp2xp2xp1,solver=UMFPACK);}; 
+	if(abs(m)>1)
+		{A =AMSBAm2(p2xp2xp2xp1,p2xp2xp2xp1,solver=UMFPACK);}; 
+	}
+	
+	varf FBD([ur,ut,uz,p],[vr,vt,vz,q]) =
+        int2d(th)(y*(ur*vr+ut*vt+uz*vz));	
+	
+	matrix<complex> B= FBD(p2xp2xp2xp1,p2xp2xp2xp1,solver=CG);
+
+
+	
+
+	
+// calcul des valeurs propres
+	p2xp2xp2xp1 [urpr,utpr,uzpr,ppr];
+	p2xp2xp2xp1 [urpi,utpi,uzpi,ppi];
+	p2xp2xp2xp1<complex> [st1,st2,st3,stp], [urpr1,utpr1,uzpr1,ppr1];;
+	p2xp2xp2xp1<complex> [sta1,sta2,sta3,stap];
+	p2xp2xp2xp1<complex> [u1c,u2c,u3c,pc]; 
+	// extraction des VP
+	complex[int] ev(nev); // to store nev eigein value
+	p2xp2xp2xp1<complex>[int] [eur,eut,euz,ep](nev);   // to store nev eigen vector
+	int k=EigenValue(A,B,sigma=shift,value=ev,vector=eur,tol=1e-10,maxit=0,ncv=0);
+
+
+
+
+// sortie des résultats : format MATLAB (for visualisation only)
+	
+	
+
+
+
+	p1 xx,yy;
+	xx=x;
+	yy=y;
+    p1<complex> ux1,ur1,ut1,pp1,vort1;
+	
+    string namefile;
+    if(iadjoint==0){namefile="Eigenvalues.txt";}
+    else {namefile="EigenvaluesA.txt";};
+    
+    
+    ofstream fileVP1(namefile); 
+	for (int i=0;i<nev;i++)
+	{
+       fileVP1 << real(ev[i]) << " " << imag(ev[i]) << " " << Re << " " << m << " " << real(shift) << " " << imag(shift) << endl;
+       	cout << " valeur propre : " << i+1 << "  : " << ev[i] << endl;
+		{
+ 		 if(iadjoint==0){namefile="Eigenmode"+(i+1)+".ff2m";}
+ 		 else{namefile="EigenmodeA"+(i+1)+".ff2m";};
+ 		 
+ 		 ofstream file("eigenmode"+(i+1)+".ff2m");
+ 		 file << "### Data generated by Freefem++ ; " << endl;
+    	 file << "EIGENMODE for a disk in a pipe" << endl;
+    	 file << "Format :" << endl;
+	     file << "real Re real m complex shift complex shift P1c ux1 P1c ur1 P1c ut1 P1c p1 P1c vort1" << endl << endl ; 
+		  file << Re << endl << m << endl << real(ev[i]) << " " << imag(ev[i]) << " " << shiftr << " " << shifti << endl << endl;
+		ux1=euz[i];
+		ur1=eur[i];
+		ut1=eut[i];
+		pp1=eur[i];
+		vort1=dy(euz[i])-dx(eur[i]);
+		for (int j=0;j<ux1[].n ; j++) file << real(ux1[][j]) << " " << imag(ux1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(ur1[][j]) << " " << imag(ur1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(ut1[][j]) << " " << imag(ut1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(pp1[][j]) << " " << imag(pp1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(vort1[][j]) << " " << imag(vort1[][j]) << endl;
+		};
+	};
+	cout << "it's done" << endl;
+	
+	
+	
+// sortie des résultats : format Joel 
+
+
+if(1==0)
+{
+ if(iadjoint==0)
+	{
+	ofstream vecteurmax("WORK/Eigenmode.txt"); 
+	
+	
+	ofstream fileVP("WORK/V+m+"P"+Re+"d"+shifti+".txt");
+	
+	for (int i=0;i<nev;i++)
+	{
+              fileVP << Re << " " << real(ev[i]) << " " << imag(ev[i]) << endl;
+	
+  
+
+	if(i==0){[st1,st2,st3,stp]=[eur[i],eut[i],euz[i],ep[i]];
+	   vecteurmax << st1[];}	
+	{
+ 	ofstream file("WORK/D"+m+"ir"+Re+"Eigen"+shifti+"vect_"+i+".txt");
+ 	[urpr,utpr,uzpr,ppr] = [real(eur[i]),real(eut[i]),real(euz[i]),real(ep[i])];
+ 	file << urpr[];
+	[urpi,utpi,uzpi,ppi] = [imag(eur[i]),imag(eut[i]),imag(euz[i]),imag(ep[i])];
+	file << urpi[];
+	
+	};
+	}; // end of for i++	
+
+	}
+	else
+		{
+	ofstream vecteurmax("WORK/EigenmodeA.txt"); 
+	
+	
+	ofstream fileVP("WORK/V"+m+"P"+Re+"a"+shifti+".txt");
+	
+	for (int i=0;i<nev;i++)
+	{
+              fileVP << Re << " " << real(ev[i]) << " " << imag(ev[i]) << endl;
+	
+  
+
+	if(i==0){[st1,st2,st3,stp]=[eur[i],eut[i],euz[i],ep[i]];
+	   vecteurmax << st1[];}	
+	{
+ 	ofstream file("WORK/A"+m+"dj"+Re+"Eigen"+shifti+"vect_"+i+".txt");
+ 	[urpr,utpr,uzpr,ppr] = [real(eur[i]),real(eut[i]),real(euz[i]),real(ep[i])];
+ 	file << urpr[];
+	[urpi,utpi,uzpi,ppi] = [imag(eur[i]),imag(eut[i]),imag(euz[i]),imag(ep[i])];
+	file << urpi[];
+	
+	};
+	}; // end of for i++	
+
+	}
+};
+	

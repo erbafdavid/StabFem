@@ -1,0 +1,10 @@
+Mesh for a thick disk in a tube
+PROBLEM TYPE :
+AxiXR
+PARAMETERS : 
+Rdisk  Hdisk  Rpipe  Xmin  Xmax
+0.5
+0.333333
+0.750751
+-4.73719
+8.73719
