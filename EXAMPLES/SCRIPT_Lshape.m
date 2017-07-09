@@ -1,7 +1,7 @@
 clear;
 close all;
 system('rm Gilgamesh.msh Heat_steady.ff2m Heat_unsteady.ff2m');  
-ff = '/usr/local/bin/FreeFem++-nw -v 0'; %% Freefem command with full path
+ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path
 sfdir = '../SOURCES_MATLAB';
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
 

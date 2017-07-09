@@ -65,10 +65,12 @@ macro FluxHole1(ur,ut,uz,p)
 	2*pi*int1d(th,91)(uz*y)
 	)
 //
+
 macro UMeanHole1(ur,ut,uz,p)
 	( 
 	int1d(th,91)(uz*y)/(int1d(th,91)(y)+1e-30)
 	)
+//
 
 macro DeltaP(ur,ut,uz,p)
 	( 
@@ -165,34 +167,33 @@ y*(uz2*dx(uz1)+uz1*dx(uz2)+ur1*dy(uz2)+ur2*dy(uz1) )
  file0 >> Rec;
 };
 nu=1./Rec;
-
+real Trainee0;
 
 cout << endl << "### CHAMP DE BASE POUR RE = " << Rec << endl;
 
 string typegeom, typemode;
-if (int1d(th,1)(1)>0) 
+if (int1d(th,1)(abs(y)+abs(x))>0) 
 	{
 		cout << " Champ de base de type BLUFF BODY AXI"<< endl;
 		typegeom="BLUFFBODYAXI"; 
-		real Trainee0 =  Trainee(urp,uzp,pp);
+		Trainee0 =  Trainee(urp,uzp,pp);
 		cout << "Trainee due au champ de base : " << Trainee0 << endl;
+
 	}
 	
-else if (int1d(th,11)(1)>0)
+else if (int1d(th,11)(abs(y)+abs(x))>0)
 	{	cout << " Champ de base de type JET AXI"<< endl;
 		typegeom="JETAXI"; 	
-		real  UM0 =  UMeanHole1(urp,uzp,pp);
-		real DP0 = DeltaP(urp,uzp,pp);
+		real  UM0 =  UMeanHole1(urp,utp,uzp,pp);
+		real DP0 = DeltaP(urp,utp,uzp,pp);
 		cout << "UM0 =  " << UM0 << " ; DP0 = " << DP0 << endl;
-
+	}
 else
 	{
 		cout << " ERREUR"<< endl;
-		real x=0;
-		cout << 1/x << endl;
-	}
-end;
-
+		real xx=0;
+		cout << 1/xx << endl;
+	};
 
 
 	
@@ -209,7 +210,6 @@ p2xp2xp2xp1<complex> [urAAdj,utAAdj,uzAAdj,pAAdj]; //ua adjoint
 
 /// LECTURE DANS DES FICHIERS
 
-{
  
 
 // ifstream file1("ModeADir.txt");
@@ -223,11 +223,10 @@ p2xp2xp2xp1<complex> [urAAdj,utAAdj,uzAAdj,pAAdj]; //ua adjoint
 real ReM, lambdaMR, lambdaMI; complex lambdaM; int mM;
  ifstream file1("Eigenmode.txt");
  file1 >> urA[];
- file1 >> ReM >> lambdaMR >> lambdaMI >> Re ;
+ file1 >> ReM >> lambdaMR >> lambdaMI >> mM ;
  lambdaM = lambdaMR+1i*lambdaMI;
  cout << "Lecture Mode Direct : Re = " << ReM << " ; lambda = " << lambdaM << " ; m = " << mM <<  endl;
 
-};
 
 {
 // p2xp2xp2xp1 [urR,utR,uzR,pR],[urI,utI,uzI,pI]; 
@@ -251,8 +250,8 @@ real ReMA, lambdaMAR, lambdaMAI; complex lambdaMA; int mMA;
 
 /// NORMALISATION ET STATISTIQUES SUR LES MODES PROPRES
 
-
-if(typegeom="BLUFFBODYAXI")
+complex COUPLEA;
+if(typegeom=="BLUFFBODYAXI")
 	{
 //Normalization : LATERAL FORCE = 1
 	complex FyAT = Portance(urA,utA,uzA,pA);
@@ -273,12 +272,12 @@ if(typegeom="BLUFFBODYAXI")
 	cout << "Adjoint :" << endl;
 	cout << "ur = " << urAAdj(1.2,.2) << " ; ut = " << utAAdj(1.2,.2) << " ; uz = " << uzAAdj(1.2,.2)  
 		 << " ; p = " << pAAdj(1.2,.2) << endl;    
-	complex COUPLEA = 2*Couple(urA,utA,uzA,pA); 	    
+	COUPLEA = 2*Couple(urA,utA,uzA,pA); 	    
 	cout << "COUPLE COMPLEXE = " << COUPLEA << endl;	   
 	
 	};
 	
-	if(typegeom="JETAXI")
+	if(typegeom=="JETAXI")
 	{
 //Normalization : mean velocity = 1
 
@@ -367,6 +366,7 @@ problem PBUdelta([urD,utD,uzD,pD],[vr,vt,vz,q]) = // for the direct computation 
         cout << "TERME U delta : valeurs en (.2,.2) : " < endl << urD(.2,.2) << " ; " << utD(.2,.2) << " ; "
 		     << uzD(.2,.2) << " ; " << pD(.2,.2) << endl;
 
+real TraineeEpsilon;
 
 if(typegeom=="BLUFFBODYAXI")
 {
@@ -376,7 +376,7 @@ if(typegeom=="BLUFFBODYAXI")
 	real TraineeDV2    =      int1d(th,2,21,22,23)( (2*dx(uzp)*N.x+(dx(urp)+dy(uzp))*N.y)*2*pi*y);
         cout << "Trainee due a la correction en viscosite : " 
 	     << TraineeDP << " + " << TraineeDV1 << " + " << TraineeDV2 << endl;
-	real TraineeEpsilon = TraineeDP+TraineeDV1+TraineeDV2;
+	TraineeEpsilon = TraineeDP+TraineeDV1+TraineeDV2;
         cout << "Total : " << TraineeEpsilon << endl;
 	cout << " /Re^2 =  " << (TraineeDP+TraineeDV1+TraineeDV2)/Rec^2 << endl;
 
@@ -503,9 +503,9 @@ cout << endl << "####" << endl << "#### BILAN SUR LES FORCES :"<< endl << "#####
 cout << "Portance = |A| = sqrt(lambdaA/muA)*sqrt(epsilon)" << endl;
 cout << "                 = " << sqrt(abs(lambdaA/muA)) << " *sqrt(epsilon) " << endl;
 cout << "                 = " << sqrt(abs(lambdaA/muA))/Rec << " *sqrt(Re-Rec) " << endl;
-cout << "COUPLE : " << endl;
-cout << "                 = " << sqrt(abs(lambdaA/muA))*real(COUPLEA) << " *sqrt(epsilon) " << endl;
-cout << "                 = " << sqrt(abs(lambdaA/muA))/Rec*real(COUPLEA) << " *sqrt(Re-Rec) " << endl;
+//cout << "COUPLE : " << endl;
+//cout << "                 = " << sqrt(abs(lambdaA/muA))*real(COUPLEA) << " *sqrt(epsilon) " << endl;
+//cout << "                 = " << sqrt(abs(lambdaA/muA))/Rec*real(COUPLEA) << " *sqrt(Re-Rec) " << endl;
 
 		
 cout << "Trainee (avant seuil) = " << Trainee0 << " + " << TraineeEpsilon << " * epsilon" << endl;
@@ -548,8 +548,8 @@ avL = -nu*int1d(th,2,21,22,23)(y/2*
         cout << "APPLICATION SPHERE TOURNANTE (solution lineaire :)" << endl
              << " A = omega/epsilon * " << -(apL+avL)/lambdaA << endl
              << "          = omega/(d Re ) * " << -(apL+avL)/lambdaA*Rec^2 << endl
-//	     << " Couple   = alpha/epsilon * " << -(apC+avC)/lambdaA << endl
-//             << "          = alpha/(d Re ) * " << -(apC+avC)/lambdaA*Rec^2 << endl
+	     << " Couple   = alpha/epsilon * " << -(apC+avC)/lambdaA << endl
+             << "          = alpha/(d Re ) * " << -(apC+avC)/lambdaA*Rec^2 << endl
              << " Couple  = omega/epsilon * " << -(apL+avL)/lambdaA*COUPLEA << endl
              << "          = omega/(d Re ) * " << -(apL+avL)/lambdaA*Rec^2*COUPLEA << endl;  
 
@@ -559,8 +559,13 @@ avL = -nu*int1d(th,2,21,22,23)(y/2*
  		 file << "### Data generated by Freefem++ ; " << endl;
     	 file << "Coefficients of the Amplitude Equation obtained by Weakly Non Linear analysis" << endl;
     	 file << "Format :" << endl;
-	     file << "real Rec complex lambdaA complex muA complex a0" << endl << endl ; 
-			file << Rec << endl << real(lambdaA) << " " << imag(lambdaA) << endl 
-			     << real(muA) << " " << imag(muA) <<  endl << real(apL+avL) << " " << imag(apL+avL) << endl << endl;
+	     file << "real Rec complex eigenvalue complex lambdaA complex muA complex a0 " 
+	          << " real Drag0 real Drageps real DragAAs" << endl << endl ; 
+			file << Rec << endl 
+				<< lambdaMR << " " << lambdaMI  << endl 
+				<< real(lambdaA) << " " << imag(lambdaA) << endl 
+			     << real(muA) << " " << imag(muA) <<  endl 
+			     << real(apL+avL) << " " << imag(apL+avL) << endl 
+			     << Trainee0 << " " << TraineeEpsilon << " " << real(TraineeAAs) << endl;
 };
 

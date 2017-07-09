@@ -23,7 +23,7 @@ system(['rm ' ffdatadir '/CHBASE/*']);
 [status,result]= system([ff,' ',meshfile]);
     if(status~=0) 
         result
-        error('ERROR : Freefem not working (path may be wrong, change line 3 of this script)');
+        error('ERROR : Freefem not working (path may be wrong, change variable ff in script)');
         
     else
         disp('FreeFem : initial mesh successfully created');

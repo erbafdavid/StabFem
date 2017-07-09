@@ -1,13 +1,15 @@
-function sigma_branch=FreeFem_Stability_LoopRe(baseflow,Re_Range,m,shift,nev)
+function sigma_branch=FreeFem_Stability_LoopRe(baseflow,Re_Range,m,shift,nev,filename)
 
 % Matlab driver to compute stability curve : sigma as function of Re in a
 % given range.
 %
-% usage : sigma_branch = FreeFem_Stability_LoopRe(baseflow,Re_range,m,shift,nev)
-% Parameters : Reynolds, wavenumber m, shift (complex), nev number of
-% eigenvalues
-% type is 'D' for direct problem ; 'A' for ajoint problem ; 'DA' for discrete adjoint 
-%   (optional parameter ; set to 'D' if not specified)
+% usage : sigma_branch = FreeFem_Stability_LoopRe(baseflow,Re_range,m,shift,nev,namefile)
+% Parameters : 
+% Reynolds (range under the form of a vector), 
+% wavenumber m, 
+% shift (complex), for initial point 
+% nev number of eigenvalues
+% namefile (optional) name of the file where the results are written
 %
 %  If nev > 1 the loop will use Arnoldi iteration with fixed shift 
 %  If nev = 1 the loop will use shift-invert iteration with continuation for shift and eigenmode structure
@@ -42,4 +44,8 @@ for Re = Re_Range
         end
         system('cp Eigenmode.txt Eigenmode_guess.txt'); % provides a guess for next iteration
     end
+end
+
+if(nargin==6)
+    system(['cp Branches.txt ', filename]);
 end
