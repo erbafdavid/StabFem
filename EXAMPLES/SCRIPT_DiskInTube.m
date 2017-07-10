@@ -1,7 +1,7 @@
 % Matlab interface for GlobalFem
 %
 %   (set of programs in Freefem to perform global stability calculations in hydrodynamic stability)
-%  
+% 
 %  Demonstration script for the test-case of a cylindrical object in a tube
 %
 % Version 2.0 by D. Fabre , june 2017
@@ -9,8 +9,8 @@
 
 %close all;
 global ff ffdir ffdatadir sfdir 
-ff = '/usr/local/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
-ffdatadir = './DATA_FREEFEM_DISKINTUBE';
+ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
+ffdatadir = './DATA_FREEFEM_DISKINTUBE'; % where to put the results
 sfdir = '../SOURCES_MATLAB'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
 
@@ -20,6 +20,11 @@ addpath(sfdir);
 Re = 200;
 if(exist([ ffdatadir '/CHBASE/chbase_Re' num2str(Re) '.txt'])==2)
     disp(['base flow and adapted mesh for Re = ' num2str(Re) ' already computed']);
+    if(exist('baseflow')==0) % may happen for instance after clear all or restart
+        baseflow.mesh = importFFmesh('mesh.msh');
+    	baseflow = FreeFem_BaseFlow(baseflow,200); 
+    end
+    
 else
     disp('computing base flow and adapting mesh')
    
@@ -34,11 +39,13 @@ else
  [ev,eigenmode] = FreeFem_Stability(baseflow,200,1,0.021+1.771i,1)
  [baseflow,eigenmode]=FreeFem_Adapt(baseflow,eigenmode);  
  
+
+end
+
 baseflow.mesh.xlim=[-1,3]; %x-range for plots
 plotFF(baseflow,'mesh');
 plotFF(baseflow,'u0');  
 
-end
 
 tit = 1;
 
