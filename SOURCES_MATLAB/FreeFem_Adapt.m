@@ -58,7 +58,8 @@ end
     	system(['cp mesh.msh ' ffdatadir '/CHBASE/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
     	 % clean 'CHBASE' directory to avoid mesh/baseflow incompatibilities
     	 system(['rm ' ffdatadir '/CHBASE/chbase_Re*']); 
-         system(['cp chbase.txt ' ffdatadir '/CHBASE/chbase_Re' num2str(baseflow.Re) '.txt']);%except last one...
+         system(['cp chbase.txt ' ffdatadir '/CHBASE/chbase_Re' num2str(baseflow.Re) '.txt']);%except last one...`
+         system(['cp chbase.ff2m ' ffdatadir '/CHBASE/chbase_Re' num2str(baseflow.Re) '.ff2m']);%except last one...
     	 if(nargout==2&&nargin==2)
         	[ev,eigenmode]=FreeFem_Stability(baseflow,baseflow.Re,eigenmode.m,eigenmode.sigma,1);
          end
