@@ -40,6 +40,7 @@ elseif ((type=='A')&&(nev==1))
     disp('FreeFem_Stability : computation of 1 eigenvalue/mode (ADJOINT) with shift/invert method');
     [status]=system(['echo ' num2str(Re) ' ' num2str(m) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ... 
        '  | ' ff ' ' ffdir 'StabAxi_ShiftInvert_ADJ.edp']);
+     system('cp Eigenmode.txt Eigenmode_guess.txt');
 elseif((type=='A')&&(nev>1))
     disp(['FreeFem_Stability : computation of ' num2str(nev) ' eigenvalues/modes (ADJOINT) with FF solver']);
     [status]=system(['echo ' num2str(Re) ' ' num2str(m) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ' ' num2str(nev)... 
