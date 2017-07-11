@@ -198,8 +198,10 @@ if(int1d(th,91)(abs(x)+abs(y))>0)
 	real Umean2 =int1d(th,92)(uzp*y)/(int1d(th,92)(y)+1e-20);
 	real deltaP0 = pp(-5,5)-pp(15,5);
 	real Q0 = int1d(th,11)(uzp*y)*2*pi;
-		cout << "#### JET ACROSS ONE OR TWO HOLES : " << endl; 
-	cout << "# Flow rate : " << Q0 << endl;
+    cout << "#### JET ACROSS ONE OR TWO HOLES : " << endl; 
+	cout << "# Flow rate across inlet : " << Q0 << endl;
+	cout << "# Flow rate across hole 1 : " << int1d(th,91)(uzp*y)*2*pi << endl;
+	cout << "# Flow rate across hole 1 : " << int1d(th,92)(uzp*y)*2*pi << endl << endl;
 	cout << "# Mean velocity across inlet  : " << Umeaninlet << endl;
 	cout << "# Mean velocity across hole 1 : " << Umean1 << endl;
 	cout << "# Mean velocity across hole 2 : " << Umean2 << endl;
