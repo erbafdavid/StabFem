@@ -15,7 +15,7 @@ and solve the various linear problems involved in the computation.
 
 ## Example
 
-
+```
 bf = FreeFem_Init('Mesh.edp'); % initialize a mesh/baseflow
 Re = 100;
 bf = FreeFem_BaseFlow(bf,Re) % compute baseflow with Newton iteration
@@ -23,14 +23,15 @@ bf = FreeFem_Adapt(bf);      % adapts the mesh
 m=1;shift=-0.1549 + 5.343i;
 [ev,em] = FreeFem_Stability(bf,Re,m,shift,1) % computes one eigenmode
 plotFF(em,’ux1’,1) % plots the real part of the axial velocity component of the eigenmode
-
+```
 
 ## How to install and use this software ?
 
 - If you just want to install the current stable version, simply type the following command in terminal 
 (after making sure the git command is available on your system)
-
+```
 git clone https://github.com/erbafdavid/StabFem
+```
 
 - If you want to participare to the project you should create a git account (...)
 
