@@ -3,7 +3,7 @@
 ## General description of the project
 
 StabFem is a set of programs to perform Global Stability calculations in Fluid Mechanics, which is developed 
-for both research and education purpose.
+for both research and education purposes.
 
 The project is based on two softwares :
 
@@ -12,6 +12,17 @@ and solve the various linear problems involved in the computation.
 
 - Matlab is used as a driver to monitor the computations in terminal or script mode and as a graphical interface to plot the results.
 
+The kind of computation currently implemented comprises :
+- Computation of a base flow (steady solution of Navier-Stokes equations) in a given geometry.
+- Simple computation of eigenvalue/eigenmodes
+- Interactive exploration of the spectrum
+- Adjoint eigenmodes and structural sensitivity
+- Computation of amplitude equations through weakly nonlinear development 
+- (...)
+
+The kind of geometry handled comprises :
+- axisymmetric geometries
+- 2D geometries.
 
 ## Example
 
