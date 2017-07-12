@@ -26,6 +26,9 @@ The kind of geometry handled comprises :
 
 ## Example
 
+Here is an example of the sequence of commands you should type in a Matlab terminal (or in a Matlab script)
+to compute the leading eigenmode for Re=100.
+
 ```
 bf = FreeFem_Init('Mesh.edp'); % initialize a mesh/baseflow
 Re = 100;
