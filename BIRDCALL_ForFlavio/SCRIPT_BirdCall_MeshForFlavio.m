@@ -7,7 +7,7 @@ addpath(sfdir);
 
 %%% ON CONSTRUIT UN MESH CORRECT POUR Re=400
 
-system('cp Params_BirdCall_ForFlavio.edp Params_BirdCall.edp');
+%system('cp Params_BirdCall_ForFlavio.edp Params_BirdCall.edp');
 
 Re = 400; % Reference value for the robust mesh generation
 
@@ -24,7 +24,8 @@ else
 
 disp('generating base flow and mesh')
 bf = FreeFem_Init('Mesh_BirdCall.edp'); %% this is the mesh from Benjamin/Raffaele
-ReTab = [10, 100, 200, 300, 400]% 600]%, 750, 1000]%, 1250, 1500];
+plotFF(bf,'u0');
+ReTab = [10, 30, 100, 200, 300, 400]% 600]%, 750, 1000]%, 1250, 1500];
 %ReTab = [ 400 550 750 1000];
 for Re = ReTab
     bf = FreeFem_BaseFlow(bf,Re);

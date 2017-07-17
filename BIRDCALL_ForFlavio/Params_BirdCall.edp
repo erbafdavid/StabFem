@@ -10,8 +10,8 @@
 
 		real Rcav	= 9.0/3.0;   		// radius of the cavity
 		real Ldown	= 100;    		// lengh of the mesh downstream
-		real Lup	= 50;    		// lengh of the mesh upstream
-		real Rout	= 2.5*Rcav;		// radius of the mesh downstream
+		real Lup	= 5;    		// lengh of the mesh upstream
+		real Rout	= 100;		// radius of the mesh downstream
 		real Rin	= 1.5*Rcav;		// radius of the mesh upstream
 
 //	parametres pour une géométrie elliptique des bords de la cavité
@@ -40,7 +40,7 @@
 				// if Rup=Rdown then Vcav=pi*Rcav^2*Hcav
 
 //Maillage
-		real Ninit	= 5;			// density of vertices for the initial mesh
+		real Ninit	= 3;			// density of vertices for the initial mesh
 		real Nmax	= 100000.;		// number MAX of vertices in the adapted meshes
 		real errorbase	= 1e-2;			// error for compute the mesh adaptation on the base field
 		real errorEM	= 1e-2;			// error for compute the mesh adaptation on the eigen mode
