@@ -12,6 +12,7 @@ and solve the various linear problems involved in the computation.
 
 - Matlab is used as a driver to monitor the computations in terminal or script mode and as a graphical interface to plot the results.
 
+
 The kind of computation currently implemented comprises :
 - Computation of a base flow (steady solution of Navier-Stokes equations) in a given geometry.
 - Simple computation of eigenvalue/eigenmodes
@@ -21,8 +22,9 @@ The kind of computation currently implemented comprises :
 - (...)
 
 The kind of geometry handled comprises :
-- axisymmetric geometries
-- 2D geometries.
+- axisymmetric geometry (bluff body, jet through a hole, etc..)
+- 2D geometry (flow around a cylinder, etc...)
+
 
 ## Example
 
@@ -43,9 +45,11 @@ plotFF(em,’ux1’,1) % plots the real part of the axial velocity component of 
 
 - If you just want to install the current stable version, simply type the following command in terminal 
 (after making sure the git command is available on your system)
+
 ```
 git clone https://github.com/erbafdavid/StabFem
 ```
+
 
 - If you want to participare to the project you should create a git account (...)
 
@@ -79,7 +83,9 @@ command from pdetools library, and I don’t know an alternative with octave/sci
 
 
 ## History :
-Developped by D. Fabre in june 2017, incorporating a number of FreeFem sources from J. Tchoufag, J. Mougel, V. Citro and many other students and collegues.
+Developped by D. Fabre in june 2017, incorporating a number of FreeFem sources from 
+J. Tchoufag, P. Bonnefis, J. Mougel, V. Citro and many other students and collegues.
 
 Initially uploaded on GitHub with help of Alexei Stukov on july 7, 2017. 
+
 
