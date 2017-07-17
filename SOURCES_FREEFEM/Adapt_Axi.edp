@@ -66,16 +66,19 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	//  Parameters for the adaptMesh  //
 	////////////////////////////////////
 
+// NB in this development version Hmax is read in a Param file written by the driver !
 
 	real Nbvx	= 50000.;		//maximun number of vertices
 	real Hmin	= .5e-4;           	//minimun edge size 
-	real Hmax	= .5;			//maximun edge size  	
+//	real Hmax	= 5;			//maximun edge size  	
 	real Ratio	= 10.;               	//ratio for the smoothing of the mesh
 	real Thetamax	= 1e-3;			//minimum corner angle in degree
 	real Verbosity	= 1; // warning : must be integer !
 	bool Splitpbedge= false;
 	real error	= 1e-2;			//interpolation error level, it decreases on each iteration
 	real rr         = 0.95;              	//ratio of the geometric sequence of the error
+
+include "Param_Adaptmesh.edp";
 
 /*
 	string date;
