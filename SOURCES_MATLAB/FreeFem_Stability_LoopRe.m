@@ -21,6 +21,7 @@ global ff ffdir ffdatadir
 
 sigma_branch = [];
 system('rm Eigenmode_guess.txt');
+system('rm Branches.txt');
 
 for Re = Re_Range
    
@@ -32,10 +33,10 @@ for Re = Re_Range
         baseflow=FreeFem_BaseFlow(baseflow,Re)
    % end
     
-    EV = FreeFem_Stability(baseflow,Re,m,shift,nev);
+    EV = FreeFem_Stability(baseflow,'m',m,'shift',shift,'nev',nev);
     sigma_branch = [sigma_branch,EV];
     
-    system('cat ./Eigenvalues.txt >> Branches.txt'); %% file to put everything in case of crashpor
+    system('cat ./Eigenvalues.txt >> Branches.txt'); %% file to put everything in case of crash
     if (nev==1)
         if(length(sigma_branch)>1) 
             shift = 2*sigma_branch(end)-sigma_branch(end-1); % guess is interpolated using two previous values  

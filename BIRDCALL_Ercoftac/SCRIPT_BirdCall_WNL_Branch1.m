@@ -1,8 +1,6 @@
 
 
-% guess found for Re=400
-% first one  
-%guess1 = -0.0741+2.476i;
+
 guess1 = 0.02352+3.2924i; % for 1st hole normalisation
 %second one : 
 %guess2 =  -0.289+4.039i; % for 2nd hole normalisation
@@ -28,17 +26,11 @@ Re_Range1 = [400 390 380 374 373 370 368 ];
  figure(3);hold on;
     plot(Re_Range1,DP0_Branch1);
     title('Pressure drop across the whistle as function of Re');
-    
+ pause(0.1);   
 
     if(exist('EV1')==0)
         EV1 = FreeFem_Stability_LoopRe(bf,Re_Range1,0,guess1,1,'Branch1.dat');
     end
- %   if(exist('EV2')==0)
- %       EV2 = FreeFem_Stability_LoopRe(bf,Re_Range,0,guess2,1,'Branch2.dat');
- %   end
-%    if(exist('EV3')==0)
-%        EV3 = FreeFem_Stability_LoopRe(bf,Re_Range,0,guess3,1);
-%    end
     
     figure(4);
     subplot(2,1,1);hold on;
@@ -61,8 +53,8 @@ bf = FreeFem_BaseFlow(bf,Rec)
 
 %if(exist('emA')==0)
     bf = FreeFem_BaseFlow(bf,Rec)
-    [ev,em] = FreeFem_Stability(bf,Rec,0,3.30424i,1)
-    [evA,emA] = FreeFem_Stability(bf,Rec,0,3.30424i,1,'A')
+    [ev,em] = FreeFem_Stability(bf,'m',0,'shift',3.30424i,'nev',1)
+    [evA,emA] = FreeFem_Stability(bf,'m',0,'shift',3.30424i,'nev',1,'type','A')
     bf.sensitivity = abs(em.ux1).*abs(emA.ux1)+abs(em.ur1).*abs(emA.ur1);
     plotFF(bf,'sensitivity');
 %end

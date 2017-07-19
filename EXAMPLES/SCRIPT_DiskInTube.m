@@ -8,18 +8,19 @@
 
 
 %close all;
-global ff ffdir ffdatadir sfdir 
+global ff ffdir ffdatadir sfdir verbosity
 ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
 ffdatadir = './DATA_FREEFEM_DISKINTUBE';
 sfdir = '../SOURCES_MATLAB'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
+verbosity=1; % use 1 to display FreeFem outputs, 0 to hide them (use 0 for demo mode, otherwise 1 is recommended)
 
 addpath(sfdir);
 
 % 
 Re = 200;
 if(exist([ ffdatadir '/CHBASE/chbase_Re' num2str(Re) '.txt'])==2)
-    disp(['base flow and adapted mesh for Re = ' num2str(Re) ' already computed']);
+     disp(['base flow and adapted mesh for Re = ' num2str(Re) ' already computed']);
     if (exist('baseflow')==0); % if the data are present but the variables were cleared
     mesh=importFFmesh('mesh.msh');
     baseflow =importFFdata(mesh,[ ffdatadir '/CHBASE/chbase_Re' num2str(Re) '.ff2m']);
@@ -27,21 +28,25 @@ if(exist([ ffdatadir '/CHBASE/chbase_Re' num2str(Re) '.txt'])==2)
 else
     disp('computing base flow and adapting mesh')
    
-    baseflow = FreeFem_Init('meshInit_DiskInTube.edp') 
+    baseflow = FreeFem_Init('meshInit_DiskInTube.edp'); 
     Re_start = [10 , 100 , 200]; % values of Re for progressive increasing up to end
     for Rei = Re_start
-        baseflow=FreeFem_BaseFlow(baseflow,Rei) 
-        baseflow=FreeFem_Adapt(baseflow)
+        baseflow=FreeFem_BaseFlow(baseflow,Rei); 
+        baseflow=FreeFem_Adapt(baseflow);
     end
     
  % optional : adapting mesh on eigenmode structure as well      
- [ev,eigenmode] = FreeFem_Stability(baseflow,200,1,0.021+1.771i,1)
+ [ev,eigenmode] = FreeFem_Stability(baseflow,'m',1,'shift',0.021+1.771i,'nev',1);
  [baseflow,eigenmode]=FreeFem_Adapt(baseflow,eigenmode);  
+ [baseflow,eigenmode]=FreeFem_Adapt(baseflow,eigenmode); 
+ [baseflow,eigenmode]=FreeFem_Adapt(baseflow,eigenmode); 
 
+
+mesh = importFFmesh('mesh.msh','seg'); plotFF(mesh); % to plot the mesh
 
 baseflow.mesh.xlim=[-1,3]; %x-range for plots
-plotFF(baseflow,'mesh');
-plotFF(baseflow,'u0');  
+baseflow.mesh.ylim=[0,1];
+plotFF(baseflow,'u0');  % to plot the baseflow
 
 end
 
@@ -98,13 +103,13 @@ switch tit
     baseflow.mesh.xlim=[-1 3]; % xrange fixed in baseflow.mesh ; inherited by modes
     
     if(exist('eigenmode')==0)
-        [ev,eigenmode]=FreeFem_Stability(baseflow,Re,m,shift,1);
+        [ev,eigenmode]=FreeFem_Stability(baseflow,'m',m,'shift',shift,'nev',1);
     end
     eigenmode.plottitle=['Direct eigenmode with sigma = ',num2str(eigenmode.sigma)]; 
     plotFF(eigenmode,'ux1',1);
     
     if(exist('eigenmodeA')==0)
-        [evA,eigenmodeA]=FreeFem_Stability(baseflow,Re,m,shift,1,'A');
+        [evA,eigenmodeA]=FreeFem_Stability(baseflow,'m',m,'shift',shift,'nev',1,'type','A');
     end
     eigenmodeA.plottitle=['Adjoint eigenmode with sigma = ',num2str(eigenmodeA.sigma)]; 
     plotFF(eigenmodeA,'ux1',1);
@@ -145,9 +150,9 @@ switch tit
         disp('NB : at the moment this will work only for steady, m=1 bifurcation');
         disp(['Rec = ', num2str(Rec)]);
         baseflow=FreeFem_BaseFlow(baseflow,Rec);
-        [evD,eigenmodeD]=FreeFem_Stability(baseflow,Rec,m,0,1);
+        [evD,eigenmodeD]=FreeFem_Stability(baseflow,'m',m,'shift',0,'nev',1);
         eigenmodeD
-        [evA,eigenmodeA]=FreeFem_Stability(baseflow,Rec,m,0,1,'A');
+        [evA,eigenmodeA]=FreeFem_Stability(baseflow,'m',m,'shift',0,'type','A','nev',1);
         eigenmodeA
         wnl = FreeFem_WNL(baseflow)
         

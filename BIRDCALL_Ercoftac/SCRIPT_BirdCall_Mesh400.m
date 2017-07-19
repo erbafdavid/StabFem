@@ -1,9 +1,11 @@
-global ff ffdir ffdatadir sfdir 
+global ff ffdir ffdatadir sfdir verbosity
 ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
 sfdir = '../SOURCES_MATLAB'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
 ffdatadir = './DATA_FREEFEM_BIRDCALL_ERCOFTAC';
+verbosity=0;
 addpath(sfdir);
+
 
 %%% ON CONSTRUIT UN MESH CORRECT POUR Re=400
 
@@ -14,7 +16,7 @@ if(exist([ ffdatadir '/CHBASE/chbase_Re' num2str(Re) '.txt'])==2)
     if(exist('bf')==0) % may happen for instance after clear all or restart
         bf.mesh = importFFmesh('mesh.msh');
     	bf = FreeFem_BaseFlow(bf,Re);
-    load('baseflow.mat');
+  %  load('baseflow.mat');
     end
     
 else
@@ -32,8 +34,9 @@ for Re = ReTab
 end
 
  
-[ev,em] = FreeFem_Stability(bf,400,0,-0.1549 + 5.343i,1)
-[bf]=FreeFem_Adapt(bf,em); 
+[ev,em] = FreeFem_Stability(bf,'m',0,'shift',-0.1549 + 5.343i,'nev',1);
+[bf,em]=FreeFem_Adapt(bf,em); 
+[bf,em]=FreeFem_Adapt(bf,em); 
 
 end
 
@@ -42,9 +45,10 @@ bf.mesh.ylim=[0 4];
 
 bf.mesh.xlim=[-2,5];
 bf.mesh.ylim=[0 4];
-plotFF(bf,'mesh');
+
 plotFF(bf,'u0'); 
 
 pause(0.1);
-
+mesh=importFFmesh('mesh.msh','seg');
+plotFF(mesh);
 

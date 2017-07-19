@@ -44,6 +44,8 @@ for ifield = 1:numfields
    switch(typefield)
         case('real')  
             Ndata = Ndata+1;
+        case('int')  
+            Ndata = Ndata+1;
         case('complex') 
             Ndata = Ndata+2;
         case('P1')  
@@ -63,6 +65,10 @@ for ifield = 1:numfields
     namefield = description{1}{2*ifield};
     switch(typefield)
         case('real')
+            value = data(indexdata);
+            indexdata = indexdata+1;
+            pdestruct=setfield(pdestruct,namefield,value);
+        case('int')
             value = data(indexdata);
             indexdata = indexdata+1;
             pdestruct=setfield(pdestruct,namefield,value);

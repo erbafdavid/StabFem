@@ -67,7 +67,7 @@ end
 
 disp('performing stability computation');
 
-    EV = FreeFem_Stability(baseflow,Re,m,shift,10)
+    EV = FreeFem_Stability(baseflow,'m',m,'shift',shift,'nev',10)
 
 system(['mkdir ' ffdatadir '/RUN' num2str(iRUN)]);
 system(['mv Eigenmode*.ff2m ' ffdatadir '/RUN' num2str(iRUN) '/']);

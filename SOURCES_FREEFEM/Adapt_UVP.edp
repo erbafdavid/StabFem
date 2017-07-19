@@ -1,6 +1,6 @@
 //
-//  PROGRAM Adapt_UVWP.edp
-//  adaptmesh for axisymmetric base flow
+//  PROGRAM Adapt_UVP.edp
+//  adaptmesh for 2D flow PLUS EIGENMODE
 //   
 //
 //  INPUT PARAMETERS (from pipe) :
@@ -18,7 +18,8 @@
 // 	ERROR MANAGEMENT : 
 //
 //  D. Fabre et al., June 2017
-
+//
+// THIS PROGRAM IS IDENTICAL TO Adapt_UVWP.edp EXCEPT FOR DATA FORMAT : p2p2p1 instead of p2p2p2p1
 
 
 
@@ -51,11 +52,11 @@ include "Param_Adaptmesh.edp";
         fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
         fespace femp2xfemp2xfemp2xfemp1(th,[P2,P2,P2,P1]);
         femp2xfemp2xfemp1 [vB,uB,pB]; // base flow
-        femp2xfemp2xfemp2xfemp1<complex> [vC,uC,wC,pC];	// structure of forced problem (complex)
-        femp2xfemp2xfemp2xfemp1 [v,u,w,p], [vi,ui,wi,pii],[vBR,uBR,wBR,pBR];	// real and imaginary parts
+        femp2xfemp2xfemp1<complex> [vC,uC,pC];	// structure of forced problem (complex)
+        femp2xfemp2xfemp1 [v,u,p], [vi,ui,pii],[vBR,uBR,pBR];	// real and imaginary parts
 	
 	cout << "###################################" << endl;
-cout << endl << "       Adapt_UVWP.edp        " << endl; 
+cout << endl << "       Adapt_UVP.edp        " << endl; 
 cout << endl << "###################################" << endl << endl;
 
 	
@@ -79,8 +80,8 @@ cin >> Re;
 
 //[v,u,p] = [real(vC)*exp(-y^2),real(uC)*exp(-y^2),real(pC)/abs(pC)*exp(-y^2)];
 
-[v,u,w,p] = [real(vC),real(uC),real(wC),real(pC)];
-[vi,ui,wi,pii] = [imag(vC),imag(uC),imag(wC),imag(pC)];
+[v,u,p] = [real(vC),real(uC),real(pC)];
+[vi,ui,pii] = [imag(vC),imag(uC),imag(pC)];
 
 
 cout << " lecture of field [V,U,P] from standart input for RE = " << Re;
@@ -132,7 +133,7 @@ real Lcut=2;
 			
 			mesh thold = th;
 			mesh thnew;				
-thnew = adaptmesh(th,[v,u,w,p],[vi,ui,wi,pii],[vBR,uBR,pBR],
+thnew = adaptmesh(th,[v,u,p],[vi,ui,pii],[vBR,uBR,pBR],
 nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,verbosity=Verbosity,splitpbedge=Splitpbedge);
 			
 			cout << endl << "...............New mesh created..............." << endl << endl;
@@ -145,9 +146,9 @@ nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,verbosity=
         fespace femp0N(thnew,P0);
         fespace femp2xfemp2xfemp2xfemp1N(thnew,[P2,P2,P2,P1]);
         fespace femp2xfemp2xfemp1N(thnew,[P2,P2,P1]);
-        femp2xfemp2xfemp2xfemp1N [vN,uN,wN,pN];
+        femp2xfemp2xfemp1N [vN,uN,pN];
         femp2xfemp2xfemp1N [vBN,uBN,pBN];
-        [vN,uN,wN,pN] = [v,u,w,p]; // interpolation of structure
+        [vN,uN,pN] = [v,u,p]; // interpolation of structure
        	[vBN,uBN,pBN] = [vB,uB,pB]; // interpolation of base flow
 
 cout << endl << "#### Mesh information AFTER ADAPT :" << endl;  
