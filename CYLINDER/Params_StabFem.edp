@@ -1,0 +1,50 @@
+/// 
+/// file Param_StabFem.edp
+///
+/// This file contains the case-dependent boundary conditions and posprocessing data.
+///
+/// This file can be customized according to requirements but it must contain the following macros :
+///
+/// boundary conditions : 
+/// macro BoundaryconditionsBaseFlow(u1,u2,v1,v2,symmetry) 
+/// macro BoundaryconditionsStability(u1,u2,v1,v2,symmetry)
+///
+///
+/// For post-processsing purposes :
+/// string PostProcessBaseFlowDescription 
+/// macro PostProcessBaseFlowOutput(file)
+/// 
+/// The following case is for the 2D cylinder.
+
+
+
+macro BoundaryconditionsBaseFlow(u1,u2,v1,v2,symmetry)
+	           on(bcinlet,bclat,u1=1.0-up1,u2=0.0) 
+             + on(bcwall,u1=0.0,u2=0.0)
+             + int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))       
+//
+
+macro BoundaryconditionsStability(u1,u2,v1,v2,symmetry)
+	           on(bcinlet,bclat,u1=0,u2=0.0) 
+             + on(bcwall,u1=0.0,u2=0.0)
+             + int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))       
+//
+
+
+
+	macro Trainee(u1,u2,p)   
+	(
+	int1d(th,2,21,22,23)(2*p*N.x)
+	-nu*int1d(th,2,21,22,23)( 2*(2*dx(u1)*N.x+(dx(u2)+dy(u1))*N.y))
+	)
+	//
+	
+
+    string PostProcessBaseFlowDescription = "real Drag";
+
+    macro PostProcessBaseFlowOutput(file)
+    real Drag = Trainee(u1,u2,p);
+	cout << "#### BLUFF BODY : " << endl; 
+	cout << "#    Drag =  " << Drag << endl << endl;
+    file << Drag << endl;
+    //
