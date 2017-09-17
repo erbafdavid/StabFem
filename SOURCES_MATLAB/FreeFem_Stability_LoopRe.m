@@ -1,9 +1,9 @@
-function sigma_branch=FreeFem_Stability_LoopRe(baseflow,Re_Range,m,shift,nev,filename)
+function sigma_branch=FreeFem_Stability_LoopRe(baseflow,Re_Range,varargin)%m,shift,nev,filename)
 
 % Matlab driver to compute stability curve : sigma as function of Re in a
 % given range.
 %
-% usage : sigma_branch = FreeFem_Stability_LoopRe(baseflow,Re_range,m,shift,nev,namefile)
+% usage : sigma_branch = FreeFem_Stability_LoopRe(baseflow,Re_range,[option1,value1])
 % Parameters : 
 % Reynolds (range under the form of a vector), 
 % wavenumber m, 
@@ -19,6 +19,21 @@ function sigma_branch=FreeFem_Stability_LoopRe(baseflow,Re_Range,m,shift,nev,fil
 
 global ff ffdir ffdatadir
 
+%%% management of optionnal parameters
+    p = inputParser;
+  %paramaters for axisymmetric case
+   addParameter(p,'m',1,@isnumeric);
+  %parameters for 2D case (to be implemented...)
+   addParameter(p,'k',0,@isnumeric);
+   addParameter(p,'sym','A',@ischar);
+   addParameter(p,'filename','',@ischar);
+   %parameters for the eigenvalue solver
+   addParameter(p,'shift',1+1i,@isnumeric);
+   addParameter(p,'nev',1,@isnumeric);
+   addParameter(p,'type','D',@ischar); 
+   parse(p,varargin{:});
+    shift = p.Results.shift;
+
 sigma_branch = [];
 system('rm Eigenmode_guess.txt');
 system('rm Branches.txt');
@@ -30,14 +45,14 @@ for Re = Re_Range
    %     system(['cp ' ffdatadir '/CHBASE/chbase_Re' num2str(Re) '.txt chbase.txt']);
    % else
    %     disp(['Re = ',num2str(Re), ' : computing base flow ']);
-        baseflow=FreeFem_BaseFlow(baseflow,Re)
+        baseflow=FreeFem_BaseFlow(baseflow,Re);
    % end
     
-    EV = FreeFem_Stability(baseflow,'m',m,'shift',shift,'nev',nev);
+    EV = FreeFem_Stability(baseflow,varargin{:},'shift',shift);
     sigma_branch = [sigma_branch,EV];
     
     system('cat ./Eigenvalues.txt >> Branches.txt'); %% file to put everything in case of crash
-    if (nev==1)
+    if (p.Results.nev==1)
         if(length(sigma_branch)>1) 
             shift = 2*sigma_branch(end)-sigma_branch(end-1); % guess is interpolated using two previous values  
         else
@@ -47,6 +62,6 @@ for Re = Re_Range
     end
 end
 
-if(nargin==6)
+if(length(p.Results.filename>0))
     system(['cp Branches.txt ', filename]);
 end

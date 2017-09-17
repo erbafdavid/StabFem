@@ -97,19 +97,32 @@ eigenvalues = EVr+1i*EVi;
 
 
 if(nargout==2) % handling output for the eigenmode(s)
-    if(p.Results.nev==1&&p.Results.type=='D')
+    if(p.Results.nev==1)
+        if (p.Results.type=='D')
         eigenvector=importFFdata(baseflow.mesh,'Eigenmode.ff2m');
+        eigenvector.type=p.Results.type;
          disp(['      ### Stability calculation completed, eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvector.iter),' iterations']);
-    elseif(p.Results.nev==1&&p.Results.type=='A')
+        elseif(p.Results.type=='A')
         eigenvector=importFFdata(baseflow.mesh,'EigenmodeA.ff2m');
+        eigenvector.type=p.Results.type;
          disp(['      ### Stability calculation completed (ADJOINT), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvector.iter),' iterations']);
+        elseif(p.Results.type=='S')
+        eigenvector=importFFdata(baseflow.mesh,'Eigenmode.ff2m','EigenmodeA.ff2m','Sensitivity.ff2m');
+        eigenvector.type=p.Results.type;
+         disp(['      ### Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvector.iter),' iterations']);
+        end
+        if(eigenvector.iter<0) 
+            error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1)']);
+        end   
     elseif(p.Results.nev>1&&p.Results.type=='D')
     for iev = 1:p.Results.nev
         eigenvector(iev)=importFFdata(baseflow.mesh,['Eigenmode' num2str(iev) '.ff2m']);
+        eigenvector(iev).type=p.Results.type;
     end
-    elseif(nev>1&&type=='D')
+    elseif(p.Results.nev>1&&p.Results.type=='A')
     for iev = 1:p.Results.nev
         eigenvector(iev)=importFFdata(baseflow.mesh,['EigenmodeA' num2str(iev) '.ff2m']);
+        eigenvector(iev).type=p.Results.type;
     end
     else
         error('ERROR');

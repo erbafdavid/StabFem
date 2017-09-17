@@ -84,6 +84,10 @@ if(baseflow.iter>1)
     message = ['      ### Base flow for Re = ' num2str(Re), ' ; converged in ',num2str(baseflow.iter),' iterations '];
     if(isfield(baseflow,'Drag')==1) %% adding drag information for blunt-body wake
         message = [message , '; Drag = ',num2str(baseflow.Drag)];
+    end    
+    if(isfield(baseflow,'Lx')==1) %% adding drag information for blunt-body wake
+        message = [message , '; Lx = ',num2str(baseflow.Lx)];
+    end
     if(isfield(baseflow,'deltaP0')==1) %% adding pressure drop information for jet flow
         message = [message , '; deltaP0 = ',num2str(baseflow.deltaP0)];
     end

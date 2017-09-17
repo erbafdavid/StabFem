@@ -15,7 +15,7 @@ if(status~=0)
 
 else
     disp('Freefem script was successfully ran');
-    Gmesh=importFFmesh('Gilgamesh.msh');
+    Gmesh=importFFmesh('Gilgamesh.msh','seg');
     heatS = importFFdata(Gmesh,'Heat_steady.ff2m');
     heatU = importFFdata(Gmesh,'Heat_unsteady.ff2m');
     

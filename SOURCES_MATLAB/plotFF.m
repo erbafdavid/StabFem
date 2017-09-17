@@ -9,7 +9,7 @@ function handle = plotFF(FFdata,field1,normalisation);
 %  field (specify '.re' or '.im')
 %
 %  4/ handle=plotFF(ffdata,'field',normalisation) % alternative method kept
-%  for compatibility
+%  for compatibility but to be abandoned
 %
 %  FFdata is the structure containing the data to plot
 %  field is the field to plot (the data may comprise multiple fields)
@@ -25,7 +25,7 @@ if(nargin==1)
 end
 
 % two-input mode (to plot a field, real or complex)
-if(nargin==2)
+if(nargin==2&&strcmp(field1,'mesh')==0)
    [dumb,field,suffix] = fileparts(field1); % to extract the suffix
    mesh=FFdata.mesh;
    if(strcmp(suffix,'im')==1)
@@ -42,7 +42,7 @@ if(nargin==3)
     mesh=FFdata.mesh;
  end
  
-if(strcmp(field,'mesh')~=1)
+if(strcmp(field1,'mesh')~=1)
  
 axes1 = axes('Parent',handle);
 box(axes1,'on');
@@ -52,7 +52,7 @@ if(any(strcmp('plottitle',fieldnames(FFdata))))
 end
 %pdemesh(mesh.points,mesh.seg,mesh.tri) ;
  
- pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,'mesh','off','colormap','jet');
+ pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,'mesh','off','colormap','parula');
  axis equal;
  
 if(any(strcmp('plottitle',fieldnames(FFdata)))) 
@@ -68,9 +68,15 @@ else
  xlabel('x');ylabel('r');
  if(any(strcmp('plottitle',fieldnames(FFdata)))) 
     title(FFdata.plottitle) 
+ end
+
+if(length(FFdata.mesh.seg)==1) % to construct the 'seg' structure necessary for ploting mesh
+    FFdata.mesh=importFFmesh('mesh.msh','seg');
 end
 
- pdemesh(mesh.points,mesh.seg,mesh.tri) ;
+ 
+
+ pdemesh(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri) ;
  axis equal ;
 
 end

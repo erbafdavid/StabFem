@@ -267,7 +267,7 @@ if (testCB==0)
     	 file << "EIGENMODE for a disk in a pipe (SHIFT-INVERT)" << endl;
     	 file << "Format :" << endl;
 	     file << "real Re real m complex sigma complex shift int iter P1c ux1 P1c ur1 P1c ut1 P1c p1 P1c vort1" << endl << endl ; 
-			file << Re << endl << m << endl << sigmar << " " << sigmai <<  "  " << i << " " << shiftr << " " << shifti  << endl << endl;
+			file << Re << endl << m << endl << sigmar << " " << sigmai  << " " << shiftr << " " << shifti  <<  "  " << i << endl << endl;
  		ux1=uz;
 		ur1=ur;
 		ut1=ut;

@@ -29,6 +29,10 @@ for i = 1:length(vars)
 end
 
 np=rawData1(1,1);
+meshstruct.np = np;
+
+if(nargin==2)&&(strcmp(opt,'nponly')==1) return; end %% in case only np is required ; for instance in adaptmesh processes
+
 k=0;
 for i=2:np+1
     k=k+1;
@@ -91,7 +95,7 @@ else
     seg = 0; 
 end 
 
-meshstruct.np = np;
+
 meshstruct.points = points;
 meshstruct.tri = tri;
 meshstruct.seg = seg;

@@ -74,17 +74,18 @@ switch tit
 
     % Unsteady mode branch
     if(exist('EVI')==0) 
-        Re_RangeI = [190:10:220];
+        Re_RangeI = [170:10:220];
         %guessI = -.43+2.06i; % starting point for Re=120
-        guessI = 1.813i;
-        EVI = FreeFem_Stability_LoopRe(baseflow,Re_RangeI,1,guessI,1,'Branch1.txt');
+        guessI = 1.85i-.1;
+        EVI = FreeFem_Stability_LoopRe(baseflow,Re_RangeI,'m',1,'shift',guessI,'nev',1);
     else
 %        data = importata(
     end
     % Steady mode branch
     if(exist('EVS')==0)
-        Re_RangeS = [120:10:150];
-        EVS = FreeFem_Stability_LoopRe(baseflow,Re_RangeS,1,-0.123,1,'Branch2.txt');
+        guessS = -.1;
+        Re_RangeS = [120:10:200];
+        EVS = FreeFem_Stability_LoopRe(baseflow,Re_RangeS,'m',1,'shift',guessS,'nev',1);
     end
     figure(11);
     subplot(2,1,1);

@@ -26,8 +26,8 @@ for Re = ReTab
     end
 end
 
-[eV,eM] = FreeFem_Stability(bf,Re,0,0.6301+5.7635i,10);
-[ev,em] = FreeFem_Stability(bf,Re,0,eV(1),1);
+[eV,eM] = FreeFem_Stability(bf,Re,'m',0,'shift',0.6301+5.7635i,'nev',10);
+[ev,em] = FreeFem_Stability(bf,Re,'m',0,'shift',eV(1),'nev',1);
 
 
 [bf]=FreeFem_Adapt(bf,em);  
@@ -69,13 +69,13 @@ Re_Range = [1000:-40:300];
 
     
     if(exist('EV1')==0)
-        EV1 = FreeFem_Stability_LoopRe(bf,Re_Range,0,guess1,1);
+        EV1 = FreeFem_Stability_LoopRe(bf,Re_Range,'m',0,'shift',guess1,'nev',1);
     end
     if(exist('EV2')==0)
-        EV2 = FreeFem_Stability_LoopRe(bf,Re_Range,0,guess2,1);
+        EV2 = FreeFem_Stability_LoopRe(bf,Re_Range,'m',0,'shift',guess2,'nev',1);
     end
     if(exist('EV3')==0)
-        EV3 = FreeFem_Stability_LoopRe(bf,Re_Range,0,guess3,1);
+        EV3 = FreeFem_Stability_LoopRe(bf,Re_Range,'m',0,'shift',guess3,'nev',1);
     end
     
     figure;

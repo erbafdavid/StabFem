@@ -25,7 +25,7 @@ real RADIUS=0.5;         /////// Cylinder Radius
  
 
 
-int n=1;                 
+real n=.5;                 
 int ns=40; 
 
 real xinlet=-40.;     

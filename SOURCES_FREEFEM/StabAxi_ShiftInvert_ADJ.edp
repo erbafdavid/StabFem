@@ -76,6 +76,7 @@
 	cin  >> shiftr >> shifti;
 	complex shift = 1i*shifti+shiftr;
 	
+	
 	int nev;
 //    cout << " Entrez nev (1 pour direct ; - 1 pour adjoint)" << endl;
 //    cin >> nev ;
@@ -222,7 +223,7 @@ int testCB = exec("ls EigenmodeA_guess.txt");
 	complex GG = Xn1Xn1/XnXn1;
 // at each step the inverse shifted eigenval. is approximated by <X_{n+1}, Y> / <X_n, Y>
 //      ( the choice Y = X_{n+1} is convenient but we could choose something else )
-	sigma = shift+1/GG;
+	sigma = conj(shift)+1/GG;
 	err = abs(sigma-sigma0);
 	cout << " iteration " << i << " : " << endl;	
 //	cout << " GG = " << GG << endl;
@@ -271,7 +272,7 @@ if (testCB==0)
     	 file << "EIGENMODE for a disk in a pipe (SHIFT-INVERT)" << endl;
     	 file << "Format :" << endl;
 	      file << "real Re real m complex sigma complex shift int iter P1c ux1 P1c ur1 P1c ut1 P1c p1 P1c vort1" << endl << endl ; 
-			file << Re << endl << m << endl << sigmar << " " << " " << i << sigmai << " " << shiftr << " " << shifti << endl << endl;
+			file << Re << endl << m << endl << sigmar << " " << sigmai << " " << shiftr << " " << shifti << " " << i  << endl << endl;
  		ux1=uz;
 		ur1=ur;
 		ut1=ut;

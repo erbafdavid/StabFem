@@ -60,16 +60,25 @@ fclose(fid);
 
 
 if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input
-  command = [ff,' ',ffdir,'Adapt_Axi.edp'];
+  command = [ff,' ',ffdir,'Adapt_BaseFlow.edp'];
   error = 'ERROR : FreeFem adaptmesh aborted';
   mysystem(command,error);
-  disp(['      ### ADAPT mesh to base flow for Re = ' num2str(baseflow.Re),' ; Number of points np = ',num2str(baseflow.mesh.np) ])
+  meshnp = importFFmesh('mesh_adapt.msh','nponly');
+  disp(['      ### ADAPT mesh to base flow for Re = ' num2str(baseflow.Re),' ; Number of points np = ',num2str(meshnp.np) ])
      
 else
     if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
         command = [ff,' ',ffdir,'Adapt_UVWP.edp < Eigenmode.txt'];
+        
     elseif (strcmp(baseflow.mesh.problemtype,'2D')==1)
-        command = [ff,' ',ffdir,'Adapt_UVP.edp < Eigenmode.txt'];
+        if(strcmp(eigenmode.type,'D')==1)
+            command = [ff,' ',ffdir,'Adapt_UVP.edp < Eigenmode.txt'];
+        elseif(strcmp(eigenmode.type,'A')==1)
+            command = [ff,' ',ffdir,'Adapt_UVP.edp < EigenmodeA.txt'];
+        else %if(strcmp(eigenmode.type,'S')==1)
+            command = [ff,' ',ffdir,'Adapt_Sensitivity.edp < Sensitivity.txt'];
+        end
+       
     % elseif(..) for possible other drivers
     end
    error = 'ERROR : FreeFem adaptmesh aborted';
@@ -79,8 +88,8 @@ else
  		system('mv chbase_ans.txt chbase_guess.txt');
         error(' ERROR in FreeFem_Adapt : recomputing base flow failed, going back to baseflow/mesh')
     end
-    
-    disp(['      ### ADAPT mesh to base flow AND MODE for Re = ' num2str(baseflow.Re),' ; Number of points np = ',num2str(baseflow.mesh.np) ])
+    meshnp = importFFmesh('mesh_adapt.msh','nponly');
+    disp(['      ### ADAPT mesh to base flow AND MODE ( type ',eigenmode.type, ' )  for Re = ' num2str(baseflow.Re),' ; Number of points np = ',num2str(meshnp.np) ])
  end
    
    
@@ -106,9 +115,9 @@ else
          % in case requested, recompute the eigenmode as well
          if(nargout==2&&isnumeric(eigenmode)==0)
             if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1) 
-                [ev,eigenmode]=FreeFem_Stability(baseflow,'m',eigenmode.m,'shift',eigenmode.sigma,'nev',1);
+                [ev,eigenmode]=FreeFem_Stability(baseflow,'m',eigenmode.m,'shift',eigenmode.sigma,'nev',1,'type',eigenmode.type);
             elseif(strcmp(baseflow.mesh.problemtype,'2D')==1) 
-                [ev,eigenmode]=FreeFem_Stability(baseflow,'shift',eigenmode.sigma,'nev',1);
+                [ev,eigenmode]=FreeFem_Stability(baseflow,'shift',eigenmode.sigma,'nev',1,'type',eigenmode.type);
             end
          end
    	else % Newton has probably diverged : revert to previous mesh/baseflow

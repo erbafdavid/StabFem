@@ -157,6 +157,15 @@ cout << endl << "#### Mesh information AFTER ADAPT :" << endl;
 					
 
 
+cout << "### Number of DOF : " << vBN[].n << endl << endl;  
+	cout << "#### MESH INFO : " << endl<< endl ; 
+	femp1N delta = hTriangle;
+	cout << "delta min : " << delta[].min << endl;
+	cout << "delta max : " << delta[].max << endl;
+	cout << "delta(0,.5) : ( boundary layer) : " << delta(0,.5) << endl ;
+	cout << "delta(2.5,.5) : ( sensitivity) : " << delta(2.5,.5) << endl ;
+	cout << "delta(4,0) : ( wake ) : " << delta(4,0) << endl << endl ;
+    cout << "delta(10,0) : ( far wake ) : " << delta(10,0) << endl << endl ;
 
 
 
