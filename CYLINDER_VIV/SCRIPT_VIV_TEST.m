@@ -55,7 +55,7 @@ plot(Re_tab,real(sigma_tab),'r');
 title('amplification rate');
 
 figure(2);
-plot(Re_tab,aimag(sigma_tab),'b');
+plot(Re_tab,imag(sigma_tab),'b');
 title('oscillation rate');
 
 
