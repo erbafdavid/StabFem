@@ -37,8 +37,8 @@ Re = 100;
 bf = FreeFem_BaseFlow(bf,Re) % compute baseflow with Newton iteration
 bf = FreeFem_Adapt(bf);      % adapts the mesh
 m=1;shift=-0.1549 + 5.343i;
-[ev,em] = FreeFem_Stability(bf,Re,m,shift,1) % computes one eigenmode
-plotFF(em,’ux1’,1) % plots the real part of the axial velocity component of the eigenmode
+[ev,em] = FreeFem_Stability(bf,'m',m,'shift',shift,'nev',1) % computes one eigenmode
+plotFF(em,’ux1.re’) % plots the real part of the axial velocity component of the eigenmode
 ```
 
 ## How to install and use this software ?
