@@ -33,10 +33,10 @@ fileToRead = varargin{i};
 if(exist([ffdatadir,fileToRead])==2) 
     fileToRead = [ffdatadir,fileToRead];
     rawData1 = importdata(fileToRead);
-if(verbosity>1) disp(['FUNCTION  importFFmesh.m : reading file ' fileToRead ]); end
+if(verbosity>1) disp(['FUNCTION  importFFdata.m : reading file ' fileToRead ]); end
 else
     rawData1 = importdata(fileToRead);
-    if(verbosity>1) disp(['FUNCTION  importFFmesh.m : reading file ' fileToRead ]); end
+    if(verbosity>1) disp(['FUNCTION  importFFdata.m : reading file ' fileToRead ]); end
 end
 rawData1 = importdata(fileToRead);
 data = rawData1.data;

@@ -5,7 +5,7 @@
 %  THIS SCRIPT DEMONSTRATES THE SOFTWARE FOR THE WAKE OF A CYLINDER
 
 global ff ffdir ffdatadir sfdir verbosity
-ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
+ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++-nw'; %% Freefem command with full path 
 ffdatadir = './WORK/';
 sfdir = '../SOURCES_MATLAB/'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
@@ -130,7 +130,7 @@ set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Lx_baseflow',figureformat);
 
 
-pause;
+pause(0.1);
 
 
 %%% CHAPTER 4 : COMPUTING STABILITY BRANCH
