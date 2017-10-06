@@ -372,7 +372,7 @@ cout << " LU-ing matrix... done" << endl;
 	
 	cout <<  "   ### omega = " << omega << endl;
 	cout << "   ### Energy of perturbation A = " << sqrt( 2* int2d(th)(abs(u1rx)^2+abs(u1ry)^2+abs(u1ix)^2+abs(u1iy)^2) ) << endl << endl;	
-	plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
+//	plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
 
 	iter++;
 	};
