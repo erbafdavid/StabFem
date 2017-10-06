@@ -9,7 +9,7 @@ ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++-nw'; %% Freefem command wi
 ffdatadir = './WORK/';
 sfdir = '../SOURCES_MATLAB/'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
-verbosity = 100;
+verbosity = 1;
 addpath(sfdir);
 system(['mkdir ' ffdatadir]);
 %figureformat= 'epsc'; % to generate eps figure files
@@ -290,6 +290,7 @@ else
 baseflow=SF_BaseFlow(baseflow,100);
 [ev,em] = SF_Stability(baseflow,'shift',0.12+0.72i,'nev',1,'type','D');
 lambdaSC_tab = [real(em.lambda),0.12 :-.005 :0];
+
 LiftSC_tab = [0]; EnergySC_tab = [0];
 [meanflow,mode] = SF_HarmonicBalance(baseflow,em,'sigma',0.12,'Lguess',0.0078)
 for lambdaSC = lambdaSC_tab(2:end)
@@ -301,7 +302,7 @@ end
 end
 
 figure(31);hold on;
-plot(lambdaSC_tab,LiftSC_tab,'b-+');
+plot(lambdaSC_tab,real(LiftSC_tab),'b-+');
 xlabel('sigma');ylabel('Lift');
 title('SC model results for Re=100');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*.56;set(gcf,'Position',pos); % resize aspect ratio

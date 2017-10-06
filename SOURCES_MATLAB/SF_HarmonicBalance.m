@@ -22,19 +22,22 @@ elseif(meanflow.datatype=='MeanFlow')
     disp('### SelfConsistent : with guess from MeanFlow/SCMode');
     system(['cp ',ffdatadir, 'MeanFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
     system(['cp ',ffdatadir, 'SelfConsistentMode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);  
+
+else
+    error('ERROR to be fixed on next monday (hihihi... DAvid)'); 
 end
 
  if(p.Results.Lguess~=-1) 
       disp(['starting with guess Lift ' num2str(p.Results.Lguess) ]);
      solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
-                  ' ''L'' ' num2str(p.Results.Lguess) ' | ' ff ' '  ffdir 'HarmonicBalance_2D.edp'];
+                  ' L ' num2str(p.Results.Lguess) ' | ' ff ' '  ffdir 'HarmonicBalance_2D.edp'];
  elseif(p.Results.Aguess~=-1)
       disp(['starting with guess amplitude (Energy) ' num2str(p.Results.Aguess) ]);
      solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
-                  ' ''E'' ' num2str(p.Results.Aguess) ' | ' ff ' '  ffdir 'HarmonicBalance_2D.edp'];
+                  ' E ' num2str(p.Results.Aguess) ' | ' ff ' '  ffdir 'HarmonicBalance_2D.edp'];
  else
      solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
-                  ' ''None'' | ' ff ' '  ffdir 'HarmonicBalance_2D.edp'];    
+                  ' None  | ' ff ' '  ffdir 'HarmonicBalance_2D.edp'];    
  end
    
    
