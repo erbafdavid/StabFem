@@ -6,13 +6,13 @@
 /////
 /////
 /////
-/////  			  DImensions correspond to mesh "C3" from Mantic-Lugo et al.
+/////  	VERY LARGE DOMAIN : DImensions correspond to TWICE the mesh "C6" from Mantic-Lugo et al.
 /////
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-include "Macros_StabFem.edp";
 //string ffdatadir = "./WORK/";
+include "Macros_StabFem.edp";
 
 load "iovtk"                       /// load library to write in vtk format
 load "BinaryIO"                 ////load libary to write the solution in binary form
@@ -24,12 +24,12 @@ real RADIUS=0.5;         /////// Cylinder Radius
  
 
 
-real n=.2;                 
-int ns=40; 
+real n=1/10.; // density far away                 
+int ns=40;  // density in the near wake
 
-real xinlet=-20.;     
-real xoutlet=40.; 
-real yside=20.;            //lateral distance from cylinder center
+real xinlet=-80.;     
+real xoutlet=240.; 
+real yside=80.;            //lateral distance from cylinder center
 
 /////////////////////////////////////////////////////////////////////////////////
 //int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;

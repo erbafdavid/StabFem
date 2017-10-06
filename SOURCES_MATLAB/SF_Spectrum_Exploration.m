@@ -1,4 +1,4 @@
-function FreeFem_Spectrum_Exploration(baseflow,Re_set,m_set,shift_set);
+function SF_Spectrum_Exploration(baseflow,Re_set,m_set,shift_set);
 %
 %  Spectrum exporator tool.
 %  
@@ -57,17 +57,17 @@ while(iRUN>0)
         shift = shift_RUNS(iRUN)
     end
     
-if(exist(['' ffdatadir '/CHBASE/chbase_Re' num2str(Re) '.txt'])==2);
+if(exist(['' ffdatadir '/BaseFlow_Re' num2str(Re) '.txt'])==2);
     disp('base flow already computed');
-    system(['cp ' ffdatadir '/CHBASE/chbase_Re' num2str(Re) '.txt chbase.txt']);
+    system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt BaseFlow.txt']);
 else
     disp('computing base flow ');
-    baseflow=FreeFem_BaseFlow(baseflow,Re);
+    baseflow=SF_BaseFlow(baseflow,Re);
 end
 
 disp('performing stability computation');
 
-    EV = FreeFem_Stability(baseflow,'m',m,'shift',shift,'nev',10)
+    EV = SF_Stability(baseflow,'m',m,'shift',shift,'nev',10)
 
 system(['mkdir ' ffdatadir '/RUN' num2str(iRUN)]);
 system(['mv Eigenmode*.ff2m ' ffdatadir '/RUN' num2str(iRUN) '/']);

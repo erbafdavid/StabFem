@@ -1,38 +1,50 @@
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-/////
-/////              FEM : Flow past a circular cylinder 
-/////              Stability: Direct eigenvalue problem
-/////                         A*v=lambda*B*v
-/////                         Hopf Bifurcation at Re_{cr}=46.7
-/////                         
-/////
-/////            See (for further details): 
-/////              1) O. Marquet, D. SiPb & L. Jacquin, JFM (2008), vol. 615, Pb.221-252
-/////              2) F. Giannetti & P.Luchini, JFM (2007), vol. 581, Pb.167-197
-/////              3) H. M. Blackburn & R. D. Henderson, JFM (1999), vol. 358, Pb.255-286
-/////                  ..........
-///// 
-/////              Authors: V. Citro, F. Giannetti & P. Luchini
-/////
-/////		Adapted for usage with matlab driver by D. Fabre, july 2017
-/////
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-//load "iovtk"                      //////// library to write vtk files
-//load "BinaryIO"                //////// library to read/write binary files 
-// load "BinaryIO_64"
-load "UMFPACK64"        ////////  load sparsesolver    
-real Re;                  ////////  Reynolds number for stability analysis
+//
+//  PROGRAM Stab_2D.edp
+//	
+//	Performs the linear stability analysis of a 2D flow
+//   
+//
+//  INPUT PARAMETERS (from keyboard or pipe) :
+//   	Re , shift(Re,im) , Symmetry, Type, nev 
+//
+//   this solver will use either Arnoldi (if nev>1) or simple Shift-invert (if nev=1)
+//
+//	INPUT FILES :
+//		BaseFlow.txt	-> base flow 
+// 		mesh.msh 			->  mesh in Freefem format
+//  OUTPUT FILES :
+//	single-mode calculation :
+//		Eigenmode.txt   (txt format for FreeFem)
+//      Eigenmode.ff2m  (ff2m format for stabfem)
+// 		EigenmodeA.txt  ADJOINT  (txt format for FreeFem)
+//      EigenmodeA.ff2m ADJOINT  (ff2m format for stabfem)
+//      Sensitivity.txt 
+//		Sensitivity.ff2m
+//
+// multiple-mode calculation :
+//  	Eigenmode##.txt   (txt format for FreeFem)
+//      Eigenmode##.ff2m  (ff2m format for stabfem)
+//
+// in all modes :
+//		Spectrum.txt -> All computed Eigenvalues
+//
+// 
+// 	ERROR MANAGEMENT : 
+//      if Newton iteration diverges, Eigenmode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
+//
 
-/////////////////////////////////////////////////////////////////////////////////
 
 
-/////////////////////////////////////////////////////////////////////////////////
+load "MUMPS_seq"        ////////  load sparsesolver    
+include "Macros_StabFem.edp";
+
+//////////////////////////////////////////////////////////////////////////////
 //////////////////----->             parameters         <-----///////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
 
+
+	real Re;                  
 	cout << " Enter Reynolds :   " << endl; 
 	cin  >> Re;
 	real nu=1.0/Re;  
@@ -71,54 +83,44 @@ real Re;                  ////////  Reynolds number for stability analysis
 
 
 
-mesh Th=readmesh("mesh.msh");                    ///// Read mesh
-int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
-
-/////////////////////////////////////////////////////////////////////////////////
-
-fespace Xh(Th,P2);             ////// f.e. space for vel.
-fespace Mh(Th,P1);            ////// f.e. space for pressure
-fespace XXMh(Th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
-XXMh<complex> [u1,u2,p];                 ///////  -> unknown for the Navier-Stokes problem
-XXMh [v1,v2,q];                 ///////  -> test for Navier-Stokes
-XXMh [Ub1,Ub2,Pb];          ///////  -> Base Flow
+mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
 
 
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////  
-/////////////////////////////////////////////////////////////////////////////
-//cout << " -.-.-.-.-.-.-.-. info -.-.-.-.-.-.-.-.-.-" << endl;
-//cout << " nb of degree of freedom : " << XXMh.ndof << endl;
-//cout << " nb of Triangles: " << Th.nt << endl;
-//cout << " nb of Vertices: " << Th.nv << endl;
-//cout << " -.-.-.-.-.-.-.-._________-.-.-.-.-.-.-.-." << endl;
-/////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+fespace Xh(th,P2);             ////// f.e. space for vel.
+fespace Mh(th,P1);            ////// f.e. space for pressure
+fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
+XXMh<complex> [ux,uy,p];                 ///////  -> unknown for the Navier-Stokes problem
+XXMh [vx,vy,q];                 ///////  -> test for Navier-Stokes
+XXMh [Ubx,Uby,Pb];          ///////  -> Base Flow
 
-macro div(u1,u2) (dx(u1)+dy(u2)) //
-macro grad(u1,u2) [dx(u1),dy(u2)] //
-macro ugrad(u1,u2,v) (u1*dx(v)+u2*dy(v)) //
-macro Ugrad(u1,u2,v1,v2) [ugrad(u1,u2,v1),ugrad(u1,u2,v2)] //
-macro Conv(ua1,ua2,ub1,ub2,v1,v2) (Ugrad(ua1,ua2,ub1,ub2)'*[v1,v2]+Ugrad(ub1,ub2,ua1,ua2)'*[v1,v2]) // convection operator
-macro Diffusion(nu,u1,u2,v1,v2)  (-nu*( dx(u1)*dx(v1)+dy(u1)*dy(v1)+dx(u2)*dx(v2)+dy(u2)*dy(v2))) // integration by parts of nu (v.Delta u) 
 
-macro Boundaryconditions(u1,u2,v1,v2,symmetry)
-	           on(bcinlet,bclat,u1=0.0,u2=0.0) 
-             + on(bcwall,u1=0.0,u2=0.0)
-             + int1d(Th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="D"))
-             //
-//+ on(bcaxis,u1=1*(symmetry=="S"),u2=1*(symmetry~="A")) alternative way
-// 
 
-real eps=1.e-7; 
-       
+
+/*macro div(ux,uy) (dx(ux)+dy(uy)) //
+macro grad(ux,uy) [dx(ux),dy(uy)] //
+macro ugrad(ux,uy,v) (ux*dx(v)+uy*dy(v)) //
+macro Ugrad(ux,uy,vx,vy) [ugrad(ux,uy,vx),ugrad(ux,uy,vy)] //
+macro Conv(ua1,ua2,Ubx,Uby,vx,vy) (Ugrad(ua1,ua2,Ubx,Uby)'*[vx,vy]+Ugrad(Ubx,Uby,ua1,ua2)'*[vx,vy]) // convection operator
+macro D(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] // 
+macro Diffusion(nu,ux,uy,vx,vy)  (-nu*( dx(ux)*dx(vx)+dy(ux)*dy(vx)+dx(uy)*dx(vy)+dy(uy)*dy(vy))) // integration by parts of nu (v.Delta u) 
+*/
+real eps = 1e-12; // desingularisation term for matrix B, useful with some solvers
+
+
+macro div(u) (dx(u#x)+dy(u#y))// macro for divergence 
+macro Conv(ua,ub,v) ( 
+              ((ua#x*dx(ub#x)+ua#y*dy(ub#x))+(ub#x*dx(ua#x)+ub#y*dy(ua#x)))*v#x 
+            + ((ua#x*dx(ub#y)+ua#y*dy(ub#y))+(ub#x*dx(ua#y)+ub#y*dy(ua#y)))*v#y 
+                    ) // macro for mutual convection operator
+macro D(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] // macro for rate-of-deformation tensor
+
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 ///////////  Load baseflow   ////////////////////////////////////////////////////
 {
-ifstream cbin("chbase.txt");
-cbin >> Ub1[];
+ifstream cbin(ffdatadir+"BaseFlow.txt");
+cbin >> Ubx[];
 }
 
 
@@ -127,31 +129,35 @@ cbin >> Ub1[];
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-varf   LNSE ([u1,u2,p],[v1,v2,q]) =
-   int2d(Th)( Diffusion(nu,u1,u2,v1,v2)
+varf   LNSE ([ux,uy,p],[vx,vy,q]) =
+   int2d(th)( 
+   			-2*nu*(D(u):D(v))
+   			//Diffusion(nu,ux,uy,vx,vy)
              + p*q*(eps) 
-            + p*div(v1,v2)
-             - div(u1,u2)*q
-             - Conv(u1,u2,Ub1,Ub2,v1,v2)
+             + p*div(v)
+             + div(u)*q
+             - Conv(u,Ub,v)
              )
- + int2d(Th)( -shift*(u1*v1+u2*v2+p*q*0.0) )
- + Boundaryconditions(u1,u2,v1,v2,symmetry);
+ + int2d(th)( -shift*(ux*vx+uy*vy+p*q*0.0) )
+ + BoundaryconditionsStability(u,v,symmetry);
  
-varf   LNSEadjoint ([u1,u2,p],[v1,v2,q]) =
-   int2d(Th)( Diffusion(nu,u1,u2,v1,v2)
+varf   LNSEadjoint ([ux,uy,p],[vx,vy,q]) =
+   int2d(th)( 
+   			-2*nu*(D(u):D(v))
+            //Diffusion(nu,ux,uy,vx,vy)
              + p*q*(eps) 
-            + p*div(v1,v2)
-             - div(u1,u2)*q
-             - Conv(v1,v2,Ub1,Ub2,u1,u2)
+             + p*div(v)
+             + div(u)*q
+             - Conv(v,Ub,u)
              )
- + int2d(Th)( -conj(shift)*(u1*v1+u2*v2+p*q*0.0) ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
- + Boundaryconditions(u1,u2,v1,v2,symmetry); 
+ + int2d(th)( -conj(shift)*(ux*vx+uy*vy+p*q*0.0) ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
+ + BoundaryconditionsStability(u,v,symmetry); 
 
 
 
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
-	varf b([u1,u2,p],[v1,v2,q]) = int2d(Th)( (u1*v1+u2*v2+p*q*0.0) );
+	varf b([ux,uy,p],[vx,vy,q]) = int2d(th)( (ux*vx+uy*vy+p*q*0.0) );
 		matrix<complex> B= b(XXMh,XXMh,solver=CG);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -161,7 +167,18 @@ complex shiftOP,shiftOPA;
 
 
 
-/// SOLUTION AND POSTPROCESSING FOR NEV>1 (built-in eigenvalue solver)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if(nev>1)
@@ -169,98 +186,89 @@ if(nev>1)
 
 {
 
-////// BUILD OP-MATRIX=A-sigma*B //////////////////////////////////////////////////////////////
+////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
 if(iadjoint=="D")
-{
-OP=LNSE(XXMh,XXMh,solver=sparsesolver);
-shiftOP = shift;
-}
+{ OP=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = shift; }
 else if(iadjoint=="A")
-{
-OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver);
-shiftOP = conj(shift);
-}
-else if(iadjoint=="S")
-{
-cout << " WARNING : in this program option S will work only for nev=1" << endl;
-};
+{ OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
+else if(iadjoint=="S") { cout << " WARNING : in this program option S will work only for nev=1" << endl; };
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 
 complex[int] ev(nev);                     ////// vector to store eigenvalues
-XXMh<complex> [int] [eu1,eu2,eup](nev);   ////// vector to store EIGENVECTORS 
+XXMh<complex> [int] [eux,euy,eup](nev);   ////// vector to store EIGENVECTORS 
 
 
 ///////////////////// CALL TO ARPACK++ ////////////////////////////////// //////////
-int k=EigenValue(OP,B,sigma=shiftOP,value=ev,vector=eu1,tol=1e-6,maxit=0,ncv=ncv);    //Arpack call
+int k=EigenValue(OP,B,sigma=shiftOP,value=ev,vector=eux,tol=1e-6,maxit=0,ncv=ncv);    //Arpack call
 if(iadjoint=="A") { ev = conj(ev); } ;
 ////////////////////////////////////////////////////////////////////////////////////
 
-
-	fespace p1(Th,P1); 
-	p1 xx,yy;
-	xx=x;
-	yy=y;
-    p1<complex> ux1,uy1,pp1,vort1;
-	
-    string namefile;
-    
-    if(iadjoint=="D"){namefile="Eigenvalues.txt";}
-    else {namefile="EigenvaluesA.txt";};
-    
-    
+	string namefile;
+    namefile=ffdatadir+"Spectrum.txt";
     ofstream fileVP1(namefile); 
+	
 	for (int i=0;i<nev;i++)
 	{
        fileVP1 << real(ev[i]) << " " << imag(ev[i]) << " " << Re << " " << 0 << " " << real(shift) << " " << imag(shift) << endl;
        	cout << " valeur propre : " << i+1 << "  : " << ev[i] << endl;
-		{
- 		 if(iadjoint=="D"){namefile="Eigenmode"+(i+1)+".ff2m";}
- 		 else{namefile="EigenmodeA"+(i+1)+".ff2m";};
+
+ 		 if(iadjoint=="D"){namefile=ffdatadir+"Eigenmode"+(i+1);}
+ 		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
+ 		 {ofstream fileMode(namefile+".txt");
+ 		  fileMode << eux[i][]; 
+ 		  fileMode << endl << endl << Re << endl << endl << real(ev[i]) << "   " << imag(ev[i])  << endl;
+ 		  }
  		 cout << "Writing eigenmode in file " << namefile << endl;
- 		 ofstream file(namefile);
- 		 file << "### Data generated by Freefem++ ; " << endl;
-    	 file << "EIGENMODE for the flow around a 2D cylinder" << endl;
-    	 file << "Format :" << endl;
-	     file << "real Re  complex sigma complex shift P1c ux1 P1c uy1 P1c p1 P1c vort1" << endl << endl ; 
-		 file << Re  << endl << real(ev[i]) << " " << imag(ev[i]) << " " << shiftr << " " << shifti << endl << endl;
- 		ux1=eu1[i];
-		uy1=eu2[i];
-		pp1=eup[i];
-		vort1=dy(eu1[i])-dx(eu2[i]);
-		for (int j=0;j<ux1[].n ; j++) file << real(ux1[][j]) << " " << imag(ux1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) file << real(uy1[][j]) << " " << imag(uy1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) file << real(pp1[][j]) << " " << imag(pp1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) file << real(vort1[][j]) << " " << imag(vort1[][j]) << endl;
-		};
-	};
+ 		 SFWriteMode(namefile+".ff2m",eux[i],euy[i],eup[i],ev[i],shift,"EigenModeD",1);	 // MACRO DEFINED in StabFem_Macros.edp
+ 		 
+ 	};
 	cout << "it's done" << endl;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 else
 
 /// SIMPLE SHIFT-INVERT IF ONLY ONE MODE IS RESQUESTED
 {
-XXMh<complex> [u10,u20,p0],[u1direct,u2direct,pdirect],[u1adjoint,u2adjoint,padjoint]; 
+XXMh<complex> [ux0,uy0,p0],[uxdirect,uydirect,pdirect],[uxadjoint,uyadjoint,padjoint]; 
 
-int testCB = exec("ls Eigenmode_guess.txt");
+int testCB = exec("ls WORK/Eigenmode_guess.txt");
     	if (testCB!=0)
 		{
 		cout << "no file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
-		[u10,u20,p0] = [1,0,0];
+		[ux0,uy0,p0] = [1,0,0];
 		} 
 		else
 		{
 		cout << "starting shift/invert from mode in file Eigenmode_guess.txt" << endl;
-		ifstream cbin("Eigenmode_guess.txt");
-		cbin >> u10[];
+		ifstream cbin(ffdatadir+"Eigenmode_guess.txt");
+		cbin >> ux0[];
 		};
 
 
@@ -304,133 +312,91 @@ else if(iadjoint=="S")
 	};
 
 
-	int itmax = 30;
-	complex sigma0 = 1e6;
+	int itmax = 150;
+	complex lambda0 = 1e6;
 	real err = 1e6;
 	real errmax=1e-6;
-	complex sigma;
+	complex lambda;
 	
-	varf brhs([u1,u2,p],[v1,v2,q]) = int2d(Th)( (u10*v1+u20*v2) );
+	varf brhs([ux,uy,p],[vx,vy,q]) = int2d(th)( (ux0*vx+uy0*vy) );
 	set(OP,solver=sparsesolver);  //// factorize matrix
 	
 	/// ITERATION LOOP
-	int i;
-	for (i=0; ((err>errmax)&&(i<itmax)); i++)
+	int iter;
+	for (iter=0; ((err>errmax)&&(iter<itmax)); iter++)
 	{
-		//	complex[int] rhs = B*u10[];
+		//	complex[int] rhs = B*ux0[];
     	complex[int] rhs= brhs(0,XXMh);  //////// see freefem++doc.pdf for the solver 
 		complex[int] w = OP^-1*rhs;
-		u1[] = w;
+		ux[] = w;
 	
-		complex XnXn1 = int2d(Th)(u10*u1+u20*u2);
-		complex Xn1Xn1 =  int2d(Th)(u1*u1+u2*u2);
+		complex XnXn1 = int2d(th)(ux0*ux+uy0*uy);
+		complex Xn1Xn1 =  int2d(th)(ux*ux+uy*uy);
 		complex GG = Xn1Xn1/XnXn1;
 		// at each step the inverse shifted eigenval. is approximated by <X_{n+1}, Y> / <X_n, Y>
 		//      ( the choice Y = X_{n+1} is convenient but we could choose something else )
-		sigma = shiftOP+1/GG;
-		err = abs(sigma-sigma0);
-		cout << " iteration " << i+1 << " : " << endl;	
+		lambda = shiftOP+1/GG;
+		err = abs(lambda-lambda0);
+		cout << " iteration " << iter+1 << " : " << endl;	
 		//	cout << " GG = " << GG << endl;
 		//	cout << " XnXn = " << XnXn << endl;
-		cout << " estimated eigenvalue sigma = " << sigma << endl;	
+		cout << " estimated eigenvalue lambda = " << lambda << endl;	
 	
-		u10[] = 1/sqrt(abs(Xn1Xn1))*u1[];
-		sigma0 = sigma;
+		ux0[] = 1/sqrt(abs(Xn1Xn1))*ux[];
+		lambda0 = lambda;
 	};
 	/// END ITERATION LOOP	
-	if(directadjoint==2){sigma=conj(sigma);};
+	
+	if(directadjoint==2){lambda=conj(lambda);};
  	// renormalization by MAXIMUM
- 	Xh NormU = sqrt(abs(u1)^2+abs(u2)^2);
-	u1[] = 1/NormU[].max*u1[];
-	 
-	if(i<itmax)
+ 	Xh NormU = sqrt(abs(ux)^2+abs(uy)^2);
+	ux[] = 1/NormU[].max*ux[];
+	
+	
+	string namefile,namefileFF,descriptionFF,typeDA; 
+	if(iter<itmax)
+	
 	// post-processing if iteration was successful
 	{	
-		real sigmar = real(sigma) ; real sigmai = imag(sigma);
-		string namefile,namefileFF,descriptionFF;
+		real lambdar = real(lambda) ; real lambdai = imag(lambda);
     	if(directadjoint==1)
     	{
-    		ofstream file("Eigenvalues.txt");
-    		file << sigmar << " " << sigmai << " " << Re <<  " " << real(shift) << " " << imag(shift) << endl;
-    		namefile="Eigenmode.txt";
-    		namefileFF="Eigenmode.ff2m";
-    		descriptionFF="real Re  complex sigma complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1";
+    		ofstream fileVP(ffdatadir+"Spectrum.txt");
+    		fileVP << lambdar << " " << lambdai << " " << Re <<  " " << real(shift) << " " << imag(shift) << endl;
+    		namefile=ffdatadir+"Eigenmode.txt";
+    		namefileFF=ffdatadir+"Eigenmode.ff2m";
+    		typeDA = "D";
+    		uxdirect[]=ux[];
     	};
+    	
     	if(directadjoint==2)
     	{
-    		ofstream file("EigenvaluesA.txt");
-           	file << sigmar << " " << sigmai << " " << Re << " " << real(shift) << " " << imag(shift) << endl;
-    		namefile="EigenmodeA.txt";
-    		namefileFF="EigenmodeA.ff2m";
-    		descriptionFF="real Re  complex sigma complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj ";
+    		ofstream fileVP(ffdatadir+"Spectrum.txt");
+           	fileVP << lambdar << " " << lambdai << " " << Re << " " << real(shift) << " " << imag(shift) << endl;
+    		namefile=ffdatadir+"EigenmodeA.txt";
+    		namefileFF=ffdatadir+"EigenmodeA.ff2m";	
+    		typeDA = "A";
+    		uxadjoint[]=ux[];
     	};
-
-	if(iadjoint=="S"&&directadjoint==1)
-		{
-			u1direct[]=u1[];
-		};
-	if(iadjoint=="S"&&directadjoint==2)
-		{
-			cout << " toto" << endl;
-			u1adjoint[]=u1[];
-		};
     
+    // write outpout in .txt format (for freefem)
     {
     ofstream file(namefile);
-  	file << u1[] ;	
+  	file << ux[] ;	
    	file << endl << endl << Re << endl
-   	<< endl << sigmar << "   " << sigmai  << endl;
+   	<< endl << lambdar << "   " << lambdai  << endl;
     }
-    
-	fespace p1(Th,P1); 
-	p1 xx,yy;
-	xx=x;
-	yy=y;
-    p1<complex> ux1,uy1,pp1,vort1;
 
- 		 cout << "Writing eigenmode in file " << namefileFF << endl;
- 		 ofstream fileFF(namefileFF);
- 		 fileFF << "### Data generated by Freefem++ ; " << endl;
-    	 fileFF << "EigenMode" << endl;
-    	 fileFF << "Format :" << endl;
-	     fileFF << descriptionFF << endl << endl ; 
-		 fileFF << Re  << endl << real(sigma) << " " << imag(sigma)  
-		 << " " << shiftr << " " << shifti << " " << i << endl << endl;
- 		ux1=u1;
-		uy1=u2;
-		pp1=p;
-		vort1=dy(u1)-dx(u2);
-		for (int j=0;j<ux1[].n ; j++) fileFF << real(ux1[][j]) << " " << imag(ux1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) fileFF << real(uy1[][j]) << " " << imag(uy1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) fileFF << real(pp1[][j]) << " " << imag(pp1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) fileFF << real(vort1[][j]) << " " << imag(vort1[][j]) << endl;
-		
+    // write output in .dff.2m format (for StabFem)
+	SFWriteMode(namefileFF,ux,uy,p,lambda,shift,"EigenMode"+typeDA,iter);	 // MACRO DEFINED in StabFem_Macros.edp
 	
-	
-} // end of post processing of simple shift-invert case
+	} // end of post processing of simple shift-invert case
 else // case iteration failed
 {
 	cout << " ERROR : shift-invert iteration failed ; shift is probably wrong" << endl;
-//	exec("rm Eigenmode.txt");
-//	exec("rm EigenmodeA.txt");
-	//exec("rm Eigenmode.ff2m");
-	//exec("rm EigenmodeA.ff2m");
-	{string namefileFF="Eigenmode.ff2m";
- 	ofstream fileFF(namefileFF);
- 		 fileFF << "### Data generated by Freefem++ ; " << endl;
-    	 fileFF << "EIGENMODE for a 2D flow" << endl;
-    	 fileFF << "Format :" << endl;
-	     fileFF << "int iter" << endl << endl ; 
-		 fileFF << -1 << endl;}
-	exec("cp Eigenmode.ff2m EigenmodeA.ff2m");
-	{ofstream file("Eigenvalues.txt");
-    		file << " 0 0 0 0 0 " << endl;}
-	exec("cp Eigenvalues.txt EigenvaluesA.txt");    		
+	SFWriteMode(namefileFF,ux,uy,p,lambda,shift,"EigenMode"+typeDA,-1);	 // MACRO DEFINED in StabFem_Macros.edp
 
 };
-
-
-
 
 if (testCB==0)
 		{
@@ -445,36 +411,33 @@ if(iadjoint=="S")
 {
 cout << "Computation of sensitivity after direct and adjoint" << endl;
 
-//	cout << "STAT" << u1direct(2.5,.5) << " " << u1adjoint(2.5,.5) << " " << u2direct(2.5,.5) << " " << u2adjoint(2.5,.5) << endl ;
+//	cout << "STAT" << uxdirect(2.5,.5) << " " << uxadjoint(2.5,.5) << " " << uydirect(2.5,.5) << " " << uyadjoint(2.5,.5) << endl ;
 
-	fespace p2(Th,P2);fespace p1(Th,P1);
-	p2 sensitivity = sqrt(abs(u1adjoint)^2+abs(u2adjoint)^2) * sqrt(abs(u1direct)^2+abs(u2direct)^2);
-	// at this stage [u1,u2,p] is the last computed, namely the adjoint eigenmode
-//	real norm = abs(int2d(Th)(u1adjoint*u1direct+u2direct*u2adjoint));
+	fespace p2(th,P2);fespace p1(th,P1);
+	p2 sensitivity = sqrt(abs(uxadjoint)^2+abs(uyadjoint)^2) * sqrt(abs(uxdirect)^2+abs(uydirect)^2);
+	// at this stage [ux,uy,p] is the last computed, namely the adjoint eigenmode
 	real norm = sensitivity[].max;
 	sensitivity=1/norm*sensitivity;
-	
-//	cout << "STAT" << u1direct(2.5,.5) << " " << u1adjoint(2.5,.5) << " " << u2direct(2.5,.5) << " " << u2adjoint(2.5,.5) << endl ;
-
-	
+		
 	string namefile,namefileFF;
-    namefile="Sensitivity.txt";
+    namefile=ffdatadir+"Sensitivity.txt";
     {
     ofstream file(namefile);
   	file << sensitivity[] ;	
     }    
-    namefileFF="Sensitivity.ff2m";
+    namefileFF=ffdatadir+"Sensitivity.ff2m";
 	p1 xx,yy,sensitivityP1;
 	xx=x;
 	yy=y;
     sensitivityP1 = sensitivity;
-     ofstream fileFF(namefileFF);
- 		 fileFF << "### Data generated by Freefem++ ; " << endl;
-    	 fileFF << "EigenMode D+A+S" << endl;
+         {
+         ofstream fileFF(namefileFF);
+         fileFF << "### Data generated by Freefem++ ; " << endl;
+         fileFF << "Sensitivity" << endl;
     	 fileFF << "Format :" << endl;
 	     fileFF << "P1 sensitivity" << endl << endl ;
 		 for (int j=0;j<sensitivityP1[].n ; j++) fileFF << sensitivityP1[][j] << endl;
-
+         };
 
 
 
@@ -483,40 +446,4 @@ cout << "Computation of sensitivity after direct and adjoint" << endl;
 
 
 };
-
-
-
-// NEXT IS INITIAL POST-PROCESSING OF VINCENZO ET AL
-/*
-int index=0;
-cout << "Mode index [?]: ";
-cin >> index ;         //input from keyboard
-index=index-1;
-exec("mkdir -v MODES");
-
-[Ub1,Ub2,Pb]=[real(eu1[index]),real(eu2[index]),real(eup[index])];    //real part 
-
-{
-ofstream realout("./MODES/REALCylRe"+Re+".txt");      
-realout << Ub1[];
-};
-
-[Ub1,Ub2,Pb]=[imag(eu1[index]),imag(eu2[index]),imag(eup[index])];    //imag part
-{
-ofstream imagout("./MODES/IMAGCylRe"+Re+".txt");
-imagout << Ub1[];
-};
-
-//////////////////////////////////// SAVE SPECTRUM /////////////////////////////////
-
-{
-  ofstream fileSpectra("MODES/Spectra.out",append);
-  //  fileSpectra.precision(12);         // set the number of digits to 12 
-  for (int ij=0;ij<k;ij++)
-   {
-    fileSpectra  << Re << " " << real(ev[ij]) << " " << imag(ev[ij]) << endl;
-   };
-};
-*/
-
 

@@ -1,8 +1,8 @@
-function [eigenvalues,eigenvector] = FreeFem_Stability(baseflow,varargin)
+function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 
 % Matlab/FreeFem driver for Base flow calculation (Newton iteration)
 %
-% usage : [eigenvalues,eigenvectors] = FreeFem_Stability(baseflow [,param1,value1] [,param2,value2] [...])
+% usage : [eigenvectors] = SF_Stability(baseflow [,param1,value1] [,param2,value2] [...])
 % Parameters include :
 % Re : Reynolds number (specify only if it differs from the base flow, which is not usual)
 % m : azimuthal wavenumer (for axisymmetric problem)
@@ -13,7 +13,8 @@ function [eigenvalues,eigenvector] = FreeFem_Stability(baseflow,varargin)
 % type : 'D' for direct problem ; 'A' for ajoint problem ; 'DA' for discrete adjoint 
 %
 % the solver will use Arnoldi method if nev>1 and shift-invert if nev=1
-% output : eigenvalues (vector of size nev) ; eigenvector(s)
+% output :  eigenvector(s) (structures)
+% with two outputs, the second Spectrum is the set of eigenvalues
 %
 % Version 2.0 by D. Fabre , june 2017
 %
@@ -32,17 +33,18 @@ persistent sigmaPrev sigmaPrevPrev
    addParameter(p,'sym','A',@ischar);
    %parameters for the eigenvalue solver
    addParameter(p,'shift',1+1i);
-   addParameter(p,'nev',10,@isnumeric);
+   addParameter(p,'nev',1,@isnumeric);
    addParameter(p,'type','D',@ischar); 
    addParameter(p,'Re',baseflow.Re,@isnumeric);
+   addParameter(p,'PlotSpectrum','no',@ischar); 
    
    addParameter(p,'STIFFNESS',0);
    addParameter(p,'MASS',0);
    addParameter(p,'DAMPING',0);
    
    parse(p,varargin{:});
-   if(isempty(sigmaPrev)) 
-       sigmaPrev = p.Results.shift; sigmaPrevPrev = p.Results.shift; end;
+   if(isempty(sigmaPrev))   sigmaPrev = p.Results.shift; sigmaPrevPrev = p.Results.shift; end;
+   
    if(strcmp(p.Results.shift,'prev')==1)
        shift = sigmaPrev;       
        if(verbosity>1) disp(['   # SHIFT from previous computation = ' num2str(shift)]); end
@@ -52,7 +54,7 @@ persistent sigmaPrev sigmaPrevPrev
    elseif(isnumeric(p.Results.shift)==1);
        shift = p.Results.shift;
         if(verbosity>1) disp(['   # SHIFT specified by user = ' num2str(shift)]); end
-   else disp('   # ERROR in FreeFem_Stabilty while specifying the shift') 
+   else disp('   # ERROR in SF_Stabilty while specifying the shift') 
    end
  
 % run the relevant freefem script
@@ -60,20 +62,20 @@ if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
     % Axisymmetric base flow (for sphere, whistling jet, etc..)
     % four different programs (to be unified !)
     if ((p.Results.type=='D')&&(p.Results.nev==1))
-        if(verbosity>0) disp('      ### FUNCTION FreeFem_Stability : computation of 1 eigenvalue/mode (DIRECT) with shift/invert method'); end
+        if(verbosity>0) disp('      ### FUNCTION SF_Stability : computation of 1 eigenvalue/mode (DIRECT) with shift/invert method'); end
         [status]=mysystem(['echo ' num2str(p.Results.Re) ' ' num2str(p.Results.m) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ... 
            '  | ' ff ' ' ffdir 'StabAxi_ShiftInvert.edp']);
     elseif((p.Results.type=='D')&&(p.Results.nev>1)) 
-        if(verbosity>0) disp(['      ### FUNCTION FreeFem_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
+        if(verbosity>0) disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
         [status]=mysystem(['echo ' num2str(p.Results.Re) ' ' num2str(p.Results.m) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ' ' num2str(p.Results.nev)... 
            '  | ' ff ' ' ffdir 'StabAxi.edp']);
     elseif ((p.Results.type=='A')&&(p.Results.nev==1))
-        if(verbosity>0)disp('      ### FUNCTION FreeFem_Stability : computation of 1 eigenvalue/mode (ADJOINT) with shift/invert method');end
+        if(verbosity>0)disp('      ### FUNCTION SF_Stability : computation of 1 eigenvalue/mode (ADJOINT) with shift/invert method');end
         [status]=mysystem(['echo ' num2str(p.Results.Re) ' ' num2str(p.Results.m) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ... 
            '  | ' ff ' ' ffdir 'StabAxi_ShiftInvert_ADJ.edp']);
          system('cp Eigenmode.txt Eigenmode_guess.txt');
     elseif((p.Results.type=='A')&&(p.Results.nev>1))
-        if(verbosity>0)disp(['      ### FUNCTION FreeFem_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (ADJOINT) with FF solver']);end
+        if(verbosity>0)disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (ADJOINT) with FF solver']);end
         [status]=mysystem(['echo ' num2str(p.Results.Re) ' ' num2str(p.Results.m) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ' ' num2str(p.Results.nev)... 
            '  | ' ff ' ' ffdir 'StabAxi_ADJ.edp']);
     end
@@ -83,7 +85,7 @@ elseif(strcmp(baseflow.mesh.problemtype,'2D')==1)
     
         if(p.Results.STIFFNESS==0&p.Results.MASS==0&p.Results.DAMPING==0) 
          
-        if(verbosity>0)disp(['      ### FUNCTION FreeFem_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
+        if(verbosity>0)disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
         solvercommand = ['echo '' ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab2D.edp'];
         status = mysystem(solvercommand);
@@ -91,7 +93,7 @@ elseif(strcmp(baseflow.mesh.problemtype,'2D')==1)
   
         else
             
-             if(verbosity>0)disp(['      ### FUNCTION FreeFem_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
+             if(verbosity>0)disp(['      ### FUNCTION SF_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
         solvercommand = ['echo '' ' num2str(p.Results.Re) ' ' ...
                              num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' ' num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
@@ -115,9 +117,9 @@ end
 
 
 if (p.Results.type=='D')
-    rawData1 = importdata(['./Eigenvalues.txt']);
+    rawData1 = importdata([ffdatadir 'Spectrum.txt']);
 else
-    rawData1 = importdata(['./EigenvaluesA.txt']);
+    rawData1 = importdata([ffdatadir 'Spectrum.txt']);
 end
 EVr = rawData1(:,1);
 EVi = rawData1(:,2); 
@@ -132,37 +134,49 @@ sigmaPrevPrev = eigenvalues(1);
 sigmaPrev = eigenvalues(1); 
 end
 
-if(nargout==2) % handling output for the eigenmode(s)
+    if(nargout>1) %% process output of eigenmodes
     if(p.Results.nev==1)
         if (p.Results.type=='D')
-        eigenvector=importFFdata(baseflow.mesh,'Eigenmode.ff2m');
-        eigenvector.type=p.Results.type;
-         disp(['      # Stability calculation completed, eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvector.iter),' iterations']);
+        eigenvectors=importFFdata(baseflow.mesh,'Eigenmode.ff2m');
+        eigenvectors.type=p.Results.type;
+         disp(['      # Stability calculation completed, eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         elseif(p.Results.type=='A')
-        eigenvector=importFFdata(baseflow.mesh,'EigenmodeA.ff2m');
-        eigenvector.type=p.Results.type;
-         disp(['      # Stability calculation completed (ADJOINT), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvector.iter),' iterations']);
+        eigenvectors=importFFdata(baseflow.mesh,'EigenmodeA.ff2m');
+        eigenvectors.type=p.Results.type;
+         disp(['      # Stability calculation completed (ADJOINT), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         elseif(p.Results.type=='S')
-        eigenvector=importFFdata(baseflow.mesh,'Eigenmode.ff2m','EigenmodeA.ff2m','Sensitivity.ff2m');
-        eigenvector.type=p.Results.type;
-         disp(['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvector.iter),' iterations']);
+        eigenvectors=importFFdata(baseflow.mesh,'Eigenmode.ff2m','EigenmodeA.ff2m','Sensitivity.ff2m');
+        eigenvectors.type=p.Results.type;
+         disp(['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         end
-        if(eigenvector.iter<0) 
+        if(eigenvectors.iter<0) 
             error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1)']);
         end   
     elseif(p.Results.nev>1&&p.Results.type=='D')
-    for iev = 1:p.Results.nev
-        eigenvector(iev)=importFFdata(baseflow.mesh,['Eigenmode' num2str(iev) '.ff2m']);
-        eigenvector(iev).type=p.Results.type;
-    end
+    eigenvectors=[];
+        for iev = 1:p.Results.nev
+        egv=importFFdata(baseflow.mesh,['Eigenmode' num2str(iev) '.ff2m']);
+        egv.type=p.Results.type;
+        eigenvectors = [eigenvectors egv];
+        end
     elseif(p.Results.nev>1&&p.Results.type=='A')
+    eigenvectors=[];
     for iev = 1:p.Results.nev
-        eigenvector(iev)=importFFdata(baseflow.mesh,['EigenmodeA' num2str(iev) '.ff2m']);
-        eigenvector(iev).type=p.Results.type;
+        egv=importFFdata(baseflow.mesh,['EigenmodeA' num2str(iev) '.ff2m']);
+        egv.type=p.Results.type;
+        eigenvectors = [eigenvectors egv];
     end
     else
         error('ERROR');
     end
+    
+    end
+    
+    if(strcmp(p.Results.PlotSpectrum,'yes')==1)
+        eigenvalues
+        plot(imag(eigenvalues),real(eigenvalues),'x');
+        title('Spectrum');
+    end
+    
 end
 
-end

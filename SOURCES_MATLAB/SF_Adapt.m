@@ -1,9 +1,9 @@
-function [baseflow,eigenmode] = FreeFem_Adapt(varargin)
+function [baseflow,eigenmode] = SF_Adapt(varargin)
 % 
 % This is part of StabFem Project, version 2.1, D. Fabre, July 2017
 % Matlab driver for Adapting Mesh 
 %
-% usage : [baseflow,eigenmode] = FreeFem_Adapt(baseflow,eigenmode)
+% usage : [baseflow,eigenmode] = SF_Adapt(baseflow,eigenmode)
 %
 % with only one input argument the adaptation will be done only on base
 % flow.
@@ -36,7 +36,7 @@ else
 end
 %    addRequired(p,'baseflow');
 %    addOptional(p,'eigenmode',0);
-addParameter(p,'Hmax',0.5);
+addParameter(p,'Hmax',10);
 addParameter(p,'Hmin',1e-4);
 addParameter(p,'Ratio',10.);               	
 addParameter(p,'InterpError',1e-2);			
@@ -46,8 +46,8 @@ parse(p,vararginopt{:});
    
    
     
-system('cp mesh.msh mesh_ans.msh');
-system('cp chbase.txt chbase_ans.txt');
+%%system('cp mesh.msh mesh_ans.msh');
+%%system('cp BaseFlow.txt BaseFlow_ans.txt');
 
 %%% Writing parameter file for Adapmesh
 fid = fopen('Param_AdaptMesh.edp','w');
@@ -65,11 +65,14 @@ end
 fclose(fid);
 
 disp(' '); 
-if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input
-  command = [ff,' ',ffdir,'Adapt_BaseFlow.edp'];
+
+
+
+if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input : adapt to base flow only
+  command = ['echo BFonly | ',ff,' ',ffdir,'Adapt_Mode.edp'];
   error = 'ERROR : FreeFem adaptmesh aborted';
   mysystem(command,error);
-  meshnp = importFFmesh('mesh_adapt.msh','nponly');
+  meshnp = importFFmesh('mesh.msh','nponly');
   disp(['      ### ADAPT mesh to base flow ' ...% for Re = ' num2str(baseflow.Re)... 
             ' ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])  
   if(verbosity>=1)
@@ -81,17 +84,23 @@ if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input
   disp(['      # h_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
         num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]);    
   end
-else
+  
+  
+else % Adaptation to base flow + mode (or other specified field)
     if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
-        command = [ff,' ',ffdir,'Adapt_UVWP.edp < Eigenmode.txt'];
+        system(['cp ',ffdatadir,'Eigenmode.txt ',ffdatadir,'AdaptField.txt']);
+        command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
         
     elseif (strcmp(baseflow.mesh.problemtype,'2D')==1)
         if(strcmp(eigenmode.type,'D')==1)
-            command = [ff,' ',ffdir,'Adapt_UVP.edp < Eigenmode.txt'];
+            command = ['echo UVP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+            system(['cp ',ffdatadir,'Eigenmode.txt ',ffdatadir,'AdaptField.txt']);
         elseif(strcmp(eigenmode.type,'A')==1)
-            command = [ff,' ',ffdir,'Adapt_UVP.edp < EigenmodeA.txt'];
+             command = ['echo UVP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+            system(['cp ',ffdatadir,'Eigenmode.txt ',ffdatadir,'AdaptField.txt']);
         else %if(strcmp(eigenmode.type,'S')==1)
-            command = [ff,' ',ffdir,'Adapt_Sensitivity.edp < Sensitivity.txt'];
+             command = ['echo Sensitivity | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+            system(['cp ',ffdatadir,'Sensitivity.txt ',ffdatadir,'AdaptField.txt']);
         end
        
     % elseif(..) for possible other drivers
@@ -99,14 +108,15 @@ else
    error = 'ERROR : FreeFem adaptmesh aborted';
     status=mysystem(command,'skip');
     if(status~=0)
-        system('mv mesh_ans.msh mesh.msh');
- 		system('mv chbase_ans.txt chbase_guess.txt');
-        error(' ERROR in FreeFem_Adapt : recomputing base flow failed, going back to baseflow/mesh')
+        system(['mv ',ffdatadir,'mesh_ans.msh ',ffdatadir,'mesh.msh']);
+ 		system(['mv ',ffdatadir,'BaseFlow_ans.txt ',ffdatadir,'BaseFlow.txt']);
+        system(['mv ',ffdatadir,'BaseFlow_ans.txt ',ffdatadir,'BaseFlow_guess.txt']);
+        error(' ERROR in SF_Adapt : recomputing base flow failed, going back to baseflow/mesh')
     end
 %    meshnp = importFFmesh('mesh_adapt.msh','nponly'); // old version to
 %    discard this and correct soon
      
-     disp(['      ### ADAPT mesh to base flow AND MODE ( type ',eigenmode.type, ' )  for Re = ' num2str(baseflow.Re)... 
+     disp(['      ### ADAPT mesh to base flow AND MODE ( type ',eigenmode.type,... ' )  for Re = ' num2str(baseflow.Re)... 
             ' ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])     
 %     disp([' ; Number of points np = ',num2str(meshinfo.np) ' ; Ndof = ' num2str(meshinfo.Ndof)]; ])
 if(verbosity>=1)    
@@ -122,36 +132,41 @@ end
    
    
     % recomputing base flow after adapt
-    system('cp mesh_adapt.msh mesh.msh'); 
-	system('cp chbase_adaptguess.txt chbase_guess.txt');
+%    system('cp mesh_adapt.msh mesh.msh'); 
+%	system('cp BaseFlow_adaptguess.txt BaseFlow_guess.txt');
     baseflowNew = baseflow; % initialise structure
-    baseflowNew.mesh=importFFmesh('mesh.msh');
+    baseflowNew.mesh=importFFmesh([ffdatadir 'mesh.msh']);
     
-    baseflowNew = FreeFem_BaseFlow(baseflowNew,'Re',baseflow.Re,'type','NEW');
-    if(exist('chbase.txt')==2)
+    baseflowNew = SF_BaseFlow(baseflowNew,'Re',baseflow.Re,'type','NEW');
+    if(baseflowNew.iter>0)
 		%  Newton successful : store base flow
 		baseflow=baseflowNew;
-		baseflow.mesh.namefile=[ffdatadir '/CHBASE/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
-    	system(['cp chbase.txt ' ffdatadir '/CHBASE/chbase_adapt_Re' num2str(baseflow.Re) '.txt']);
-    	baseflow.namefile = [ ffdatadir '/CHBASE/chbase_Re' num2str(baseflow.Re) '.txt'];
-    	system(['cp mesh.msh ' ffdatadir '/CHBASE/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
-    	 % clean 'CHBASE' directory to avoid mesh/baseflow incompatibilities
-    	 system(['rm ' ffdatadir '/CHBASE/chbase_Re*']); 
-         system(['cp chbase.txt ' ffdatadir '/CHBASE/chbase_Re' num2str(baseflow.Re) '.txt']);%except last one...`
-         system(['cp chbase.ff2m ' ffdatadir '/CHBASE/chbase_Re' num2str(baseflow.Re) '.ff2m']);%except last one...
+		baseflow.mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
+    	system(['cp BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
+    	baseflow.namefile = [ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
+    	system(['cp mesh.msh ' ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
+    	 % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
+    	 system(['rm ' ffdatadir '/BASEFLOWS/BaseFlow_Re*']); 
+         system(['cp BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);%except last one...`
+         system(['cp BaseFlow.ff2m ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);%except last one...
     	 
          % in case requested, recompute the eigenmode as well
          if(nargout==2&&isnumeric(eigenmode)==0)
             if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1) 
-                [ev,eigenmode]=FreeFem_Stability(baseflow,'m',eigenmode.m,'shift',eigenmode.sigma,'nev',1,'type',eigenmode.type);
-            elseif(strcmp(baseflow.mesh.problemtype,'2D')==1) 
-                [ev,eigenmode]=FreeFem_Stability(baseflow,'shift',eigenmode.sigma,'nev',1,'type',eigenmode.type);
+                [ev,eigenmode]=SF_Stability(baseflow,'m',eigenmode.m,'shift',eigenmode.lambda,'nev',1,'type',eigenmode.type);
+            elseif(strcmp(baseflow.mesh.problemtype,'2D')==1)
+                if(strcmp(eigenmode.type,'D')==1) 
+                      system(['cp ',ffdatadir,'Adaptfield_guess.txt ',ffdatadir,'Eigenmode_guess.txt']);
+                else
+                    system(['rm ',ffdatadir,'Eigenmode_guess.txt']);
+                end
+                [ev,eigenmode]=SF_Stability(baseflow,'shift',eigenmode.lambda,'nev',1,'type',eigenmode.type);
             end
          end
    	else % Newton has probably diverged : revert to previous mesh/baseflow
- 		system('mv mesh_ans.msh mesh.msh');
- 		system('mv chbase_ans.txt chbase_guess.txt');
-        error(' ERROR in FreeFem_Adapt : recomputing base flow failed, going back to baseflow/mesh') 
+ 		system(['mv ',ffdatadir,'mesh_ans.msh ',ffdatadir,'mesh.msh']);
+ 		system(['mv ',ffdatadir,'BaseFlow_ans.txt ',ffdatadir,'BaseFlow_guess.txt']);
+        error(' ERROR in SF_Adapt : recomputing base flow failed, going back to baseflow/mesh') 
     end
-        system('rm mesh_ans.msh chbase_ans.txt');
+        %system(['rm ',ffdatadir,'mesh_ans.msh ',ffdatadir,'BaseFlow_ans.txt']);
 end

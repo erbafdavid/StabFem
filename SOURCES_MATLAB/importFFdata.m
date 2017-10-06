@@ -21,18 +21,23 @@ function pdestruct=importFFdata(mesh,varargin)
 % 
 %  D. Fabre 2017 ; modified from an original program by J.Dambrine(2010)
 
-%disp(['FUNCTION  importFFdata.m : reading file ' fileToRead1 ]);
-%fileToRead1
+global ff ffdir ffdatadir sfdir verbosity
 
-%if(exist(struct.mesh)==1) 
-%    mesh = struct;
-    
+
 np = mesh.np;
 % Import the file
 
 for i=1:nargin-1
 fileToRead = varargin{i};
 
+if(exist([ffdatadir,fileToRead])==2) 
+    fileToRead = [ffdatadir,fileToRead];
+    rawData1 = importdata(fileToRead);
+if(verbosity>1) disp(['FUNCTION  importFFmesh.m : reading file ' fileToRead ]); end
+else
+    rawData1 = importdata(fileToRead);
+    if(verbosity>1) disp(['FUNCTION  importFFmesh.m : reading file ' fileToRead ]); end
+end
 rawData1 = importdata(fileToRead);
 data = rawData1.data;
 
