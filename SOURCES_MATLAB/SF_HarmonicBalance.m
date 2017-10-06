@@ -22,6 +22,9 @@ elseif(meanflow.datatype=='MeanFlow')
     disp('### SelfConsistent : with guess from MeanFlow/SCMode');
     system(['cp ',ffdatadir, 'MeanFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
     system(['cp ',ffdatadir, 'SelfConsistentMode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);  
+
+else
+    error('ERROR to be fixed on next monday (hihihi... DAvid)'); 
 end
 
  if(p.Results.Lguess~=-1) 
