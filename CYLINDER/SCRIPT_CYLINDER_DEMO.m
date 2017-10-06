@@ -9,7 +9,7 @@ ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++-nw'; %% Freefem command wi
 ffdatadir = './WORK/';
 sfdir = '../SOURCES_MATLAB/'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
-verbosity = 100;
+verbosity = 1;
 addpath(sfdir);
 system(['mkdir ' ffdatadir]);
 %figureformat= 'epsc'; % to generate eps figure files
