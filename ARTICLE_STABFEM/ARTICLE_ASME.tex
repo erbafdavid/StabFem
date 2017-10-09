@@ -65,7 +65,7 @@ A review and a simple implementation for the wake of a cylinder}
   %  }
 %}
 
-
+\usepackage{cprotect}
 
 \begin{document}
 \lstset{numbers=left, numberstyle=\small, numbersep=8pt, frame = single, language=Matlab, framexleftmargin=15pt}
@@ -88,7 +88,7 @@ Please use this template to test how your figures will look on the printed journ
 
 \section{Introduction}
 
-The destabilization of a flow as a parameter is varied, leading from a steady solution to a unsteady one, is an ubiquous situation in fluid dynamics. Specific analytical and numerical methods suited to the description have emerged in the second part of the 19th century and continuously evolved up to the present day. When the flow has no analytical expression, the stability problem requires a numerical resolution, and when there are at least two spatial variables, the class of methods suited to solve such problems are generally called "global stability approaches."\footnote{Sorry Laurette !}
+The destabilization of a flow as a parameter is varied, leading from a steady solution to a unsteady one, is an ubiquous situation in fluid dynamics. Specific analytical and numerical methods suited to the description have emerged in the second part of the 19th century and continuously evolved up to the present day. When the flow has no analytical expression, the stability problem requires a numerical resolution, and when there are at least two spatial variables, the class of methods suited to solve such problems are generally called "global stability approaches."%\footnote{Sorry Laurette !}
 
 Among all instability problems, one of the most famous and most studied is the flow around a 2D cylinder, which becomes unsteady for $Re \approx 47$ leading to the well-known Bénard-Von Karman vortex alley. This situation has served as a benchmark in the development of this class of methods.  
 If one is only interested in predicting the stability or instability of a flow, it is enough to conduct an  {\em linear stability analysis} which is the fundamental brick of global stability approaches. 
@@ -111,7 +111,10 @@ in two ways:
 First, we give a concise but self-contained exposition of the main concepts and 
 specific numerical methods pertaining to global stability, including basic linear stability, adjoint-based sensitivity, as well as the most recent nonlinear developments.
 \item
-Secondly we offer an open-source and user-friendly software called  "StabFem" to perform such calculations. The software combines program written in both FreeFem++ and Matlab languages. 
+Secondly we offer an open-source and user-friendly software called  "StabFem"
+\cprotect\footnote{The StabFem software may be obtained at the following url : 
+\verb| https://github.com/erbafdavid/StabFem |} 
+to perform such calculations. The software combines program written in both FreeFem++ and Matlab languages. 
 FreeFem++ is used to generate and adapt the meshes and to solve the various linear problems arising in the analysis. Matlab is used as a driver to monitor the computations, perform the required loops over parameters, and plot the results.
 \end{itemize}
 
@@ -320,7 +323,8 @@ plot(Re_Range,real(lambda_branch),'b+-');
 plot(Re_Range,imag(lambda_branch)/(2*pi),'b+-');
 \end{lstlisting}
 \normalsize
-\caption{Illustration of the computation of base-flow properties with StabFem (from script)}
+\caption{Illustration of the usage of the StabFem software to produce an adapted mesh and study the base flow and the linear stability properties of a cylinder
+(from script {\em SCRIPT\_CYLINDER\_DEMO.m})}
 \label{Listing2}
 \end{figure*}
 
@@ -359,10 +363,11 @@ the classical Delaunay-Voronoi algorithm produces a mesh with gridpoint distribu
 To build an optimal mesh for the base-flow calculation, the idea is to use as the objective function $u_h$ the solution ${\bf u}_b$ itself, as computed on a previous mesh.%The procedure thus ensures that the mesh will be locally adapted to the gradients of the base flow. 
 The base flow is then recomputed on the adapted mesh, providing a better approximation of the solution. The procedure can be repeated a few steps to ensure a right convergence.
 
-The mesh generated in the previous way may not be optimal for the stability calculations as the structure of the eigenmode may be more complex than that of the base flow. To remedy with this, the idea is to subsequently adapt the mesh to both the mesh flow and the results of the stability calculation. This is easily done with FreeFem, as the  AdaptMesh procedure can be used with several objective functions. We have experimented two different ideas. The first is to adapt the mesh to the base flow and the structure of the leading eigenmode. A second and smarter idea is to adapt the mesh to the base flow and the structural sensitivity. Since this quantity is directly linked to the sensitivity of the eigenvalues to perturbations of any kind (including spatial discretization errors), this procedure yields a lighter mesh while ensuring that the eigenvalue is effectively converged with respect to discretization errors. 
-On the other hand, if one is interested to know the structure of the eigenmode (which may extend far away from the wavemaker region), it is more recommended to use mesh adaptation on the structure of the eigenmode.
+The mesh generated in the previous way may not be optimal for the stability calculations as the structure of the eigenmode may be more complex than that of the base flow. To remedy with this, the idea is to subsequently adapt the mesh to both the mesh flow and the results of the stability calculation. This is easily done with FreeFem, as the  AdaptMesh procedure can be used with several objective functions. We have experimented two different ideas. The first is to adapt the mesh to the base flow and the structure of the leading eigenmode. A second and smarter idea is to adapt the mesh to the base flow and the structural sensitivity. Results show that the two procedures yield the same values for the eigenvalues with less than $1\%$ error, but that the second method gives a mesh with about 3 times less grid points, leading to much faster computations (see appendix A). So, if one is interested only in the eigenvalues, for instance to plot growth rates as function of Reynolds or to identify the critical Reynolds number, mesh adaptation to the sensitivity gives the best option. On the other hand, if one is interested in the detailed structure of the eigenmode, which may extend far away from the wavemaker region, it is advised to use mesh adaptation on the eigenmode. 
 
-In our implementation, the whole process is performed using the Matlab driver {\em Freefem\_AdaptMesh.m} ; the kind of adaptation (to base flow only, to eigenmode, or to sensitivity) is decided by the choice of parameters transmitted to this function.
+In our implementation, the whole process is performed using the Matlab driver {\em Freefem\_AdaptMesh.m} ; the kind of adaptation  (to base flow only, to eigenmode, or to sensitivity) is decided by the choice of parameters transmitted to this function.
+
+
 
 
 
@@ -378,9 +383,41 @@ Cylinder of unit diameter (radius $r=1/2$), velocity $U = 1$ at inlet.
 
 Domain dimension $[-40,80]x[0,40]$. No-stress conditions at outlet AND LATERAL BOUNDARY.
 
+Definition of lift and drag operators :
+
+
+
+\be{drag}
+F_x ({\bf u},p) = 
+ \int_{\Gamma_w} \left[-p {\bf n} + \frac{2}{Re} {\bf D}({\bf u}) \cdot {\bf n} \right]   \cdot {\bf e_x} 
+\ee
+
+
+\be{lift}
+F_y ({\bf u},p) = 
+ \int_{\Gamma_w} \left[-p {\bf n} + \frac{2}{Re} {\bf D}({\bf u}) \cdot {\bf n} \right]   \cdot {\bf e_y} 
+\ee
+
+
+
 \paragraph{Mesh adaptation procedure}
 
-Lines 1-7 of the script.
+First we build an initial mesh (line 1), and compute base flow solutions for increasing values of the Reynolds number up to $Re = 60$ (lines 3-9).
+Then we perform the mesh adaptation with the structural sensitivity, as explained in a previously (line 13). 
+The resulting mesh is used for the rest of the computation presented in this paper (except for displaying the eigenmode in figure 4$a$). 
+Appendix A presents additional test regarding mesh convergence, and demonstrate that results obtained with the resulting mesh are trustable within $1\%$ accuracy for the eigenvalue, while requiring a very reasonable number of grid points compared to previous studies of this problem. 
+
+
+%It is shown that as well as doing mesh adaptation with the eigenmode structure instead of the sensitivity, as discussed above, gives comparable results within $1\%$ as for the eigenvalue of the most amplified mode.
+
+
+
+
+
+
+
+%The produced outputs (lines 14-17) gives information about the resulting mesh. 
+%Note the values $h_{min}$ and $h_{max}$ of the smaller and larger edges, as well as the local grid size at four points A,B,C,D defined as $(x_A,y_A) = (0.5,0)$ (at the surface of the cylinder at the position of maximum shear), $(x_B,y_B) = (0.5,2.5)$ (at the location of the peak of structural sensitivity, see next section), $(x_C,y_C) = (0.,4)$ (in the near wake), and $(x_D,y_D) = (0.,10)$ (in the the far wake). Finally, the base flow is automatically recomputed on the resulting mesh (line 18-19). Finally, lines 21-22 plot the mesh and base flow structure, producing the result displayed in figure (\ref{fig:Baseflow}).
 
 \paragraph{Base flow}
 
@@ -479,10 +516,6 @@ To allow resolution we thus need an extra equation to fix this phase. Several ch
 \Im F_y({\bf u}_1) =0
 \ee
 
-With $F_y ({\bf u_1}) = 
- \int_{\Gamma_w} \left[-p_1 {\bf n} + \frac{2}{Re} {\bf D}({\bf u_1}) \cdot {\bf n} \right]   \cdot {\bf e_y}  = 0.$
-
-
 Mathematically, the problem $\ref{HBEq0,HBEq1,HBphase}$ for the unknown $[{\bf u }_0, {\bf u }_{1}, \omega]$ is well posed, and can be solved using a Newton iteration just as explained for the base flow in section 2. To allow resolution, we separate the mode into real and imaginary part, by writing ${\bf u }_1 = {\bf u }_{1,r} +  i {\bf u }_{1,i} $.
 We then assume that we know a 'guess' 
 $$
@@ -572,7 +605,9 @@ such that $0< \sigma_{SC}(A) < \sigma_{lin}$.
 \includegraphics[width=.9 \linewidth]{Cylinder_Lift_Re_SC.png}
 \includegraphics[width=.9 \linewidth]{Cylinder_Energy_Re_SC.png}
 \end{center}
-\caption{Harmonic-balance results : mode characteristics}
+\caption{Harmonic-balance results : characteristics of the limit cycle.
+NOTE THAT THE AMPLITUDE IS NOTABLY LOWER THAN IN MANTIC-LUGO. TO BE EXPLAINED.
+}
 \label{fig:HB}
 \end{figure}
 
@@ -581,8 +616,8 @@ such that $0< \sigma_{SC}(A) < \sigma_{lin}$.
 \includegraphics[width=.9 \linewidth]{Cylinder_SC100_EnergySigma.png}
 \includegraphics[width=.9 \linewidth]{Cylinder_SC100_LiftSigma.png}
 \end{center}
-\caption{SELF CONSISTENT APPROACH FOR THE WAKE OF A CYLINDER, $Re = 60$}
-\label{fig:SC60}
+\caption{SELF CONSISTENT APPROACH FOR THE WAKE OF A CYLINDER, $Re = 100$. NOTE THAT THE AMPLITUDE IS NOTABLY LOWER THAN IN MANTIC-LUGO. TO BE EXPLAINED.}
+\label{fig:SC100}
 \end{figure}
 
 
@@ -597,6 +632,14 @@ such that $0< \sigma_{SC}(A) < \sigma_{lin}$.
 SECTION TO BE COMPLETED
 
 \paragraph{Illustration of mesh convergence procedure for a cylinder}
+
+
+\begin{figure}
+\includegraphics[width=.9 \linewidth]{Cylinder_Sigma_Re_TESTMESHES.png}
+\includegraphics[width=.9 \linewidth]{Cylinder_Strouhal_Re_TESTMESHES.png}
+\caption{Growth rate $\sigma$ $(a)$  and Strouhal number $St = (a \omega)/(2\pi U_0)$ ($b$) as function of Reynolds number FOR 8 DIFFERENT MESHES}
+\label{fig:MeshConvergence}
+\end{figure}
 
 \begin{figure*}
 \small
@@ -662,23 +705,37 @@ SECTION TO BE COMPLETED
 \caption{Illustration of the procedure to adapt the mesh for stability calculations with StabFem (from script {\em SCRIPT\_CYLINDER.m}. }
 \end{figure*}
 
+In this appendix we compare the results obtained with 8 different meshes, to demonstrate the efficency of the mesh adaptation process. The whole results can be obtained using the script {\em SCRIPT\_CYLINDER\_MESHCONVERGENCE.m} available in the StabFem repository.
+
+The Reference mesh is adapted to the Structural sensitivity, for $Re= 60$, with interpolation error 0.01, mesh dimensions $[-40,120]\times[0,40]$, and no-stress boundary conditions at the outlet and lateral boundaries.
 
 
-We illustrate the procedure in the case of a cylinder.  Figure 1 gives a retranscription of the sequence of commands (from {\em SCRIPT\_CYLINDER\_ADAPTMESH\_BASEFLOW}) 
-and the output produced.
-First we build an initial mesh (line 1), and compute base flow solutions for increasing values of the Reynolds number up to $Re = 60$ (lines 3-9).
+Figure \ref{fig:MeshConvergence} displays the results.
 
-Then we perform the mesh adaptation (line 13). The produced outputs (lines 14-17) gives information about the resulting mesh. 
-Note the values $h_{min}$ and $h_{max}$ of the smaller and larger edges, as well as the local grid size at four points A,B,C,D defined as $(x_A,y_A) = (0.5,0)$ (at the surface of the cylinder at the position of maximum shear), $(x_B,y_B) = (0.5,2.5)$ (at the location of the peak of structural sensitivity, see next section), $(x_C,y_C) = (0.,4)$ (in the near wake), and $(x_D,y_D) = (0.,10)$ (in the the far wake). Finally, the base flow is automatically recomputed on the resulting mesh (line 18-19). Finally, lines 21-22 plot the mesh and base flow structure, producing the result displayed in figure (\ref{fig:Baseflow}).
+\begin{table}
+$$
+\begin{array}{c|c|c|c|c|c|c|}
+\mbox{ Mesh } & N_p & N_{d.o.f} & \mbox{ Dimensions } & h_{min} & h_{wall} & h_{wake} \\ 
+\mbox{ BaseFlow } & 1468 & 12856 \\
+\mbox{ Ref.} & 2055 & 18105\\
+\mbox{ Mode} &12308 & 109788 \\
+\mbox{ Err= }0.005 & 4355 & 38559 \\
+\mbox{Slip B.C.} & \\ 
+\mbox{Larger} & \\
+\mbox{Smaller} &  
+\end{array}
+$$
+\caption{Description of the 8 different meshes used in the convergence study}
+\end{table}
 
 
 
-\begin{figure}
-\includegraphics[width=.9 \linewidth]{Cylinder_Sigma_Re_TESTMESHES.png}
-\includegraphics[width=.9 \linewidth]{Cylinder_Strouhal_Re_TESTMESHES.png}
-\caption{Growth rate $\sigma$ $(a)$  and Strouhal number $St = (a \omega)/(2\pi U_0)$ ($b$) as function of Reynolds number FOR 8 DIFFERENT MESHES}
-\label{fig:SigmaOmega}
-\end{figure}
+%Figure 1 gives a retranscription of the sequence of commands (from {\em SCRIPT\_CYLINDER\_ADAPTMESH\_BASEFLOW}) 
+%and the output produced.
+
+
+
+
 
 \section{Detail of the weak formulation}
 %The problem can be set into weak form by multiplying by multiplying Eq. \ref{Newton2} by a test function ${\bf v}$ and the associated divergence constraint by a test function $q$. After a few integration by parts we are led to :

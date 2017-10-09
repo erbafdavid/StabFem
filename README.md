@@ -32,12 +32,12 @@ Here is an example of the sequence of commands you should type in a Matlab termi
 to compute the leading eigenmode for Re=100.
 
 ```
-bf = FreeFem_Init('Mesh.edp'); % initialize a mesh/baseflow
+bf = SF_Init('Mesh.edp'); % initialize a mesh/baseflow
 Re = 100;
-bf = FreeFem_BaseFlow(bf,Re) % compute baseflow with Newton iteration
-bf = FreeFem_Adapt(bf);      % adapts the mesh
+bf = SF_BaseFlow(bf,'Re',Re) % compute baseflow with Newton iteration
+bf = Sf_Adapt(bf);      % adapts the mesh
 m=1;shift=-0.1549 + 5.343i;
-[ev,em] = FreeFem_Stability(bf,'m',m,'shift',shift,'nev',1) % computes one eigenmode
+[ev,em] = SF_Stability(bf,'m',m,'shift',shift,'nev',1) % computes one eigenmode
 plotFF(em,’ux1.re’) % plots the real part of the axial velocity component of the eigenmode
 ```
 
@@ -67,25 +67,64 @@ After experimenting several ways to monitor the calculations and post-process th
 to do all from a script or from a console in interactive mode. 
 
 
-## Stable version (branch master)
 
-At the moment, the demonstrator works for the wake of axisymetrical bluff bodies (disks, spheres,…) 
-but it will be easy to adapt it to 2D objects (cylinders, etc..).
-check out the two scripts in the directory  EXAMPLES :
-- SCRIPT_Lshape.edp -> demonstation of the data exchange format and plotting.  
-- SCRIPT_DiskIntube.edp -> stability (and much more !) for a simple test-case
-of a disk in a pipe)
+
+## Current Status 
+
+The software is still under development. At the moment, the included cases are the following :
+
+# CYLINDER : 
+
+Study of the Bénard-Von Karman instability for Re>47 in the wake of a cylinder. This directory contains scripts performing the base flow computation, linear stability analysis, adjoint and sensitivity analysis, as well as a nonlinear determination of the limit cycle using "harmonic balance" method.
+
+# Example_DISK_IN_PIPE
+
+An example in axisymmetric coordinates : flow around a disk within a pipe. This directory contains a demonstrator of the software which performs the stability analysis, displays the spectrum, allows to click on eigenvalues to plot the corresponding eigenmodes, computes instability branches (eigenvalue as function of Re), and performs the weakly nonlinear analysis of the leading instability (steady, non-axisymmetric).
+
+
+# Example_Lshape
+
+A simple example to demonstrate the matlab/FreeFem exchange data format for a simple problem
+
+# SPHERE_WORK
+
+(under development ; may not work)
+
+# BIRDCALL
+
+(under work ; may not work due to recent changes in the nomenclature. If interested, get branch "Version2.0" instead of branch "Master").
+ 
+
+
+## Planned developments.
+
+
+In near future we plan to incorporate the following cases :
+
+# CYLINDER_VIV
+Study of the vortex-induced vibrations around a spring-mounted cylinder.
+
+#  STRAINED_BUBBLE
+equilibrium shape and oscillation modes of a bubble within a uniaxial straining flow.
+
+
+At longer term, a translation of the Software in python is under reflection.
+
+
+
+## Authors :
+
+The Matlab part of the software is by D. Fabre (2017).
+
+The FreeFem part incorporates a number of sources from J. Tchoufag, P. Bonnefis, J. Mougel, V. Citro 
+and many other students and collegues.
 
 Note that the plotting part of the interface is based on a previous package FreeFem2Matlab
 written by Julien Dambrine and deposited on mathworks. This latter uses the pdeplot 
 command from pdetools library, and I don’t know an alternative with octave/scilab.
 
-
-
-## History :
-Developped by D. Fabre in june 2017, incorporating a number of FreeFem sources from 
-J. Tchoufag, P. Bonnefis, J. Mougel, V. Citro and many other students and collegues.
-
 Initially uploaded on GitHub with help of Alexei Stukov on july 7, 2017. 
+
+
 
 
