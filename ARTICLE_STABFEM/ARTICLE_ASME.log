@@ -1,0 +1,631 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.12.4)  9 OCT 2017 21:32
+entering extended mode
+ \write18 enabled.
+ %&-line parsing enabled.
+**ARTICLE_ASME.tex
+(./ARTICLE_ASME.tex
+LaTeX2e <2015/01/01>
+Babel <3.9l> and hyphenation patterns for 79 languages loaded.
+(./asme2ej.cls
+
+LaTeX Warning: You have requested document class `asme2ej',
+               but the document class provides `asme2e'.
+
+Document Class: asme2e 2001/2/14 v2.0 Standard LaTeX document class
+(/usr/local/texlive/2015/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/times.sty
+Package: times 2005/04/12 PSNFSS-v9.2a (SPQR) 
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/mathptm.sty
+Package: mathptm 2005/04/12 PSNFSS-v9.2a Times w/ Math (SPQR, WaS) 
+
+
+Package mathptm Warning: This package is to be regarded as obsolete.
+(mathptm)                See the PSNFSS documentation.
+
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 31.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  OT1/cmr/m/n --> OT1/ptmcm/m/n on input line 31.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/cmr/bx/n --> OT1/ptmcm/m/n on input line 31.
+LaTeX Font Info:    Redeclaring symbol font `letters' on input line 32.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `normal'
+(Font)                  OML/cmm/m/it --> OML/ptmcm/m/it on input line 32.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `bold'
+(Font)                  OML/cmm/b/it --> OML/ptmcm/m/it on input line 32.
+LaTeX Font Info:    Redeclaring symbol font `symbols' on input line 33.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `normal'
+(Font)                  OMS/cmsy/m/n --> OMS/pzccm/m/n on input line 33.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
+(Font)                  OMS/cmsy/b/n --> OMS/pzccm/m/n on input line 33.
+LaTeX Font Info:    Redeclaring symbol font `largesymbols' on input line 34.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
+(Font)                  OMX/cmex/m/n --> OMX/psycm/m/n on input line 34.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
+(Font)                  OMX/cmex/m/n --> OMX/psycm/m/n on input line 34.
+\symbold=\mathgroup4
+\symitalic=\mathgroup5
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 37.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
+(Font)                  OT1/cmr/bx/n --> OT1/ptm/bx/n on input line 37.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
+(Font)                  OT1/cmr/bx/n --> OT1/ptm/bx/n on input line 37.
+LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 38.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
+(Font)                  OT1/cmr/m/it --> OT1/ptm/m/it on input line 38.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/cmr/bx/it --> OT1/ptm/m/it on input line 38.
+) (/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
+)
+Ten Point
+LaTeX Font Info:    Try loading font information for OT1+phv on input line 301.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1phv.fd
+File: ot1phv.fd 2001/06/04 scalable font definitions for OT1/phv.
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\tempbox=\box26
+\c@figure=\count85
+\c@table=\count86
+\@authcnt=\count87
+\@tmpcnt=\count88
+\bibindent=\dimen102
+\tempbox=\box27
+\minute=\count89
+\hour=\count90
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/epsfig.sty
+Package: epsfig 1999/02/16 v1.7a (e)psfig emulation (SPQR)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2014/10/28 v1.0g Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2014/10/28 v1.0p Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 94.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
+)
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count91
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+)
+\epsfxsize=\dimen105
+\epsfysize=\dimen106
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/listings/listings.sty
+\lst@mode=\count92
+\lst@gtempboxa=\box28
+\lst@token=\toks15
+\lst@length=\count93
+\lst@currlwidth=\dimen107
+\lst@column=\count94
+\lst@pos=\count95
+\lst@lostspace=\dimen108
+\lst@width=\dimen109
+\lst@newlines=\count96
+\lst@lineno=\count97
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\lst@maxwidth=\dimen110
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2014/09/06 1.5e (Carsten Heinz)
+\c@lstnumber=\count98
+\lst@skipnumbers=\count99
+\lst@framebox=\box29
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/listings/listings.cfg
+File: listings.cfg 2014/09/06 1.5e listings configuration
+))
+Package: listings 2014/09/06 1.5e (Carsten Heinz)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/cprotect/cprotect.sty
+Package: cprotect 2011/01/27 v1.0e (Bruno Le Floch)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/bigfoot/suffix.sty
+Package: suffix 2006/07/15 1.5a Variant command support
+)
+\CPT@WriteOut=\write3
+\c@CPT@WriteCount=\count100
+\c@CPT@numB=\count101
+\CPT@commandatend@toks=\toks16
+)
+(./ARTICLE_ASME.aux
+
+LaTeX Warning: Label `fig:HB' multiply defined.
+
+)
+\openout1 = `ARTICLE_ASME.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 70.
+LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 70.
+ (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1ptm.fd
+File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
+)
+\big@size=\dimen111
+
+(/usr/local/texlive/2015/texmf-dist/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count102
+\scratchdimen=\dimen112
+\scratchbox=\box30
+\nofMPsegments=\count103
+\nofMParguments=\count104
+\everyMPshowfont=\toks17
+\MPscratchCnt=\count105
+\MPscratchDim=\dimen113
+\MPnumerator=\count106
+\makeMPintoPDFobject=\count107
+\everyMPtoPDFconversion=\toks18
+) (/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2010/08/19 v1.1 Manage graphics extensions (HO)
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+Package: kvdefinekeys 2011/04/07 v1.3 Define keys (HO)
+))
+(/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 452.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+\c@lstlisting=\count108
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2014/09/06 1.5e listings language file
+)
+LaTeX Font Info:    Try loading font information for OT1+ptmcm on input line 73
+.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1ptmcm.fd
+File: ot1ptmcm.fd 2000/01/03 Fontinst v1.801 font definitions for OT1/ptmcm.
+)
+LaTeX Font Info:    Try loading font information for OML+ptmcm on input line 73
+.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/omlptmcm.fd
+File: omlptmcm.fd 2000/01/03 Fontinst v1.801 font definitions for OML/ptmcm.
+)
+LaTeX Font Info:    Try loading font information for OMS+pzccm on input line 73
+.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/omspzccm.fd
+File: omspzccm.fd 2000/01/03 Fontinst v1.801 font definitions for OMS/pzccm.
+)
+LaTeX Font Info:    Try loading font information for OMX+psycm on input line 73
+.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/omxpsycm.fd
+File: omxpsycm.fd 2000/01/03 Fontinst v1.801 font definitions for OMX/psycm.
+)
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 73.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7.4> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 73.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <6> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 73.
+
+Underfull \hbox (badness 10000) detected at line 73
+[]
+ []
+
+
+Overfull \hbox (39.74762pt too wide) in paragraph at lines 73--73
+ [] 
+ []
+
+Missing character: There is no Ã in font ptmr7t!
+Missing character: There is no © in font ptmr7t!
+\openout3 = `ARTICLE_ASME-1.cpt'.
+
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <8> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 116.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <5> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 116.
+(./ARTICLE_ASME-1.cpt
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 2.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1pcr.fd
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+))
+Underfull \hbox (badness 1924) in paragraph at lines 116--116
+[][]\OT1/ptm/m/n/8 The StabFem soft-ware may be ob-tained at the fol-low-ing ur
+l :
+ []
+
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 123.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/omsptm.fd
+File: omsptm.fd 
+)
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 123.
+
+Overfull \vbox (5.96382pt too high) has occurred while \output is active []
+
+
+[1{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+
+]
+Overfull \hbox (6.09375pt too wide) detected at line 142
+[]\OML/ptmcm/m/it/10 @[]\OT1/ptm/b/n/10 u \OT1/ptmcm/m/n/10 = \OML/ptmcm/m/it/1
+0 NS\OT1/ptmcm/m/n/10 (\OT1/ptm/b/n/10 u\OT1/ptmcm/m/n/10 ; \OML/ptmcm/m/it/10 
+p\OT1/ptmcm/m/n/10 ) \OMS/pzccm/m/n/10 ^^Q ^^@\OT1/ptm/b/n/10 u \OMS/pzccm/m/n/
+10 ^^A r\OT1/ptm/b/n/10 u \OMS/pzccm/m/n/10 ^^@ r\OML/ptmcm/m/it/10 p \OT1/ptmc
+m/m/n/10 + []\OMS/pzccm/m/n/10 r ^^A \OT1/ptm/b/n/10 D\OT1/ptmcm/m/n/10 (\OT1/p
+tm/b/n/10 u\OT1/ptmcm/m/n/10 ) [[]\OMS/pzccm/m/n/10 r ^^A \OT1/ptm/b/n/10 u \OT
+1/ptmcm/m/n/10 = 0]\OML/ptmcm/m/it/10 :[] 
+ []
+
+
+Underfull \hbox (badness 6284) in paragraph at lines 186--189
+ \OT1/ptm/b/n/10 New-ton it-er-a-tion[] \OT1/ptm/m/n/10 We look for a steady ba
+se-flow
+ []
+
+Missing character: There is no Â in font zptmcmr!
+Missing character: There is no   in font zptmcmr!
+[2]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 306.
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <9> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 311.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 311.
+ <./FIGURES/Cylinder_Mesh.png, id=22, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Mesh.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Mesh.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Mesh.png used on input line 334.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_BaseFlowRe60.png, id=23, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_BaseFlowRe60.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_BaseFlowRe60.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_BaseFlowRe60.png used on input line
+ 337.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 334--339
+[][]
+ []
+
+<./FIGURES/Cylinder_Lx_baseflow.png, id=24, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Lx_baseflow.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Lx_baseflow.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Lx_baseflow.png used on input line 
+344.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_Drag_baseflow.png, id=25, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Drag_baseflow.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Drag_baseflow.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Drag_baseflow.png used on input lin
+e 345.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 344--346
+[][]
+ []
+
+
+Underfull \hbox (badness 1472) in paragraph at lines 359--362
+\OT1/ptm/m/n/10 adap-ta-tion method. The im-ple-men-ta-tion re-lies on the
+ []
+
+[3] [4] <./FIGURES/Cylinder_EigenModeRe60.png, id=33, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_EigenModeRe60.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_EigenModeRe60.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_EigenModeRe60.png used on input lin
+e 444.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_EigenModeAdjRe60.png, id=34, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_EigenModeAdjRe60.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_EigenModeAdjRe60.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_EigenModeAdjRe60.png used on input 
+line 447.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_SensitivityRe60.png, id=35, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_SensitivityRe60.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_SensitivityRe60.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_SensitivityRe60.png used on input l
+ine 449.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 444--451
+[][]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 444--451
+[]
+ []
+
+<./FIGURES/Cylinder_Sigma_Re.png, id=36, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Sigma_Re.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Sigma_Re.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Sigma_Re.png used on input line 457
+.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_Strouhal_Re.png, id=37, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Strouhal_Re.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Strouhal_Re.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Strouhal_Re.png used on input line 
+458.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 457--459
+[][]
+ []
+
+
+Underfull \hbox (badness 7796) in paragraph at lines 459--459
+[]\OT1/phv/m/n/8 Fig. 5. Growth rate $\OML/ptmcm/m/it/10 ^^[$ $\OT1/ptmcm/m/n/1
+0 (\OML/ptmcm/m/it/10 a\OT1/ptmcm/m/n/10 )$ \OT1/phv/m/n/8 and Strouhal num-ber
+ $\OML/ptmcm/m/it/10 St \OT1/ptmcm/m/n/10 =
+ []
+
+Missing character: There is no Ã in font ptmr7t!
+Missing character: There is no © in font ptmr7t!
+[5 <./FIGURES/Cylinder_Mesh.png (PNG copy)> <./FIGURES/Cylinder_BaseFlowRe60.pn
+g (PNG copy)> <./FIGURES/Cylinder_Lx_baseflow.png (PNG copy)> <./FIGURES/Cylind
+er_Drag_baseflow.png (PNG copy)> <./FIGURES/Cylinder_EigenModeRe60.png (PNG cop
+y)> <./FIGURES/Cylinder_EigenModeAdjRe60.png (PNG copy)> <./FIGURES/Cylinder_Se
+nsitivityRe60.png (PNG copy)>]
+
+LaTeX Warning: Reference `HBEq0,HBEq1,HBphase' on page 6 undefined on input lin
+e 519.
+
+
+Underfull \hbox (badness 2460) in paragraph at lines 519--521
+[]\OT1/ptm/m/n/10 Mathematically, the prob-lem $[]$ for the un-known
+ []
+
+[6 <./FIGURES/Cylinder_Sigma_Re.png (PNG copy)> <./FIGURES/Cylinder_Strouhal_Re
+.png (PNG copy)>]
+
+LaTeX Warning: Reference `LEP' on page 7 undefined on input line 578.
+
+<./FIGURES/Cylinder_Lx_Re_HB.png, id=44, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Lx_Re_HB.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Lx_Re_HB.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Lx_Re_HB.png used on input line 595
+.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_Drag_Re_HB.png, id=45, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Drag_Re_HB.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Drag_Re_HB.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Drag_Re_HB.png used on input line 5
+96.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_Strouhal_Re_HB.png, id=46, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Strouhal_Re_HB.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Strouhal_Re_HB.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Strouhal_Re_HB.png used on input li
+ne 604.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_Lift_Re_SC.png, id=47, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Lift_Re_SC.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Lift_Re_SC.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Lift_Re_SC.png used on input line 6
+05.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_Energy_Re_SC.png, id=48, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_Energy_Re_SC.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Energy_Re_SC.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Energy_Re_SC.png used on input line
+ 606.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_SC100_EnergySigma.png, id=49, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_SC100_EnergySigma.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_SC100_EnergySigma.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_SC100_EnergySigma.png used on input
+ line 616.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_SC100_LiftSigma.png, id=50, 562.2606pt x 314.6154pt>
+File: ./FIGURES/Cylinder_SC100_LiftSigma.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_SC100_LiftSigma.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_SC100_LiftSigma.png used on input l
+ine 617.
+(pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
+
+<./FIGURES/Cylinder_Sigma_Re_TESTMESHES.png, id=51, 562.2606pt x 449.5194pt>
+File: ./FIGURES/Cylinder_Sigma_Re_TESTMESHES.png Graphic file (type png)
+
+<use ./FIGURES/Cylinder_Sigma_Re_TESTMESHES.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Sigma_Re_TESTMESHES.png used on inp
+ut line 638.
+(pdftex.def)             Requested size: 217.24239pt x 173.67938pt.
+
+<./FIGURES/Cylinder_Strouhal_Re_TESTMESHES.png, id=52, 562.2606pt x 449.5194pt>
+File: ./FIGURES/Cylinder_Strouhal_Re_TESTMESHES.png Graphic file (type png)
+<use ./FIGURES/Cylinder_Strouhal_Re_TESTMESHES.png>
+Package pdftex.def Info: ./FIGURES/Cylinder_Strouhal_Re_TESTMESHES.png used on 
+input line 639.
+(pdftex.def)             Requested size: 217.24239pt x 173.67938pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 638--640
+[][]
+ []
+
+
+Underfull \hbox (badness 7796) in paragraph at lines 640--640
+[]\OT1/phv/m/n/8 Fig. 9. Growth rate $\OML/ptmcm/m/it/10 ^^[$ $\OT1/ptmcm/m/n/1
+0 (\OML/ptmcm/m/it/10 a\OT1/ptmcm/m/n/10 )$ \OT1/phv/m/n/8 and Strouhal num-ber
+ $\OML/ptmcm/m/it/10 St \OT1/ptmcm/m/n/10 =
+ []
+
+LaTeX Font Info:    Try loading font information for OML+ptm on input line 647.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/omlptm.fd
+File: omlptm.fd 
+)
+LaTeX Font Info:    Font shape `OML/ptm/m/n' in size <9> not available
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 647.
+
+Overfull \hbox (1.75513pt too wide) in paragraph at lines 688--689
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (1.75513pt too wide) in paragraph at lines 699--700
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Overfull \hbox (1.75513pt too wide) in paragraph at lines 700--702
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+
+Underfull \hbox (badness 1102) in paragraph at lines 708--709
+\OT1/ptm/m/n/10 the script \OT1/ptm/m/it/10 SCRIPT[]CYLINDER[]MESHCONVERGENCE.m
+
+ []
+
+
+Overfull \hbox (5.65678pt too wide) in alignment at lines 750--762
+ [][][] []
+ []
+
+[7 <./FIGURES/Cylinder_Lx_Re_HB.png (PNG copy)> <./FIGURES/Cylinder_Drag_Re_HB.
+png (PNG copy)> <./FIGURES/Cylinder_Strouhal_Re_HB.png (PNG copy)> <./FIGURES/C
+ylinder_Lift_Re_SC.png (PNG copy)> <./FIGURES/Cylinder_Energy_Re_SC.png (PNG co
+py)>] [8 <./FIGURES/Cylinder_SC100_EnergySigma.png (PNG copy)> <./FIGURES/Cylin
+der_SC100_LiftSigma.png (PNG copy)> <./FIGURES/Cylinder_Sigma_Re_TESTMESHES.png
+ (PNG copy)> <./FIGURES/Cylinder_Strouhal_Re_TESTMESHES.png (PNG copy)>]
+[9] (./ARTICLE_ASME.aux)
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 4013 strings out of 493089
+ 58074 string characters out of 6134842
+ 203022 words of memory out of 5000000
+ 7394 multiletter control sequences out of 15000+600000
+ 55043 words of font info for 107 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 38i,11n,40p,1301b,1610s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
+exlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/te
+xlive/2015/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb></usr/local
+/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/
+texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/local/te
+xlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texl
+ive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texli
+ve/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive
+/2015/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2015/te
+xmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/2015/texmf-dis
+t/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts
+/type1/urw/symbol/usyr.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/
+times/utmb8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/times/utmr
+8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/times/utmri8a.pfb></
+usr/local/texlive/2015/texmf-dist/fonts/type1/urw/zapfchan/uzcmi8a.pfb>
+Output written on ARTICLE_ASME.pdf (9 pages, 993571 bytes).
+PDF statistics:
+ 113 PDF objects out of 1000 (max. 8388607)
+ 68 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 91 words of extra memory for PDF output out of 10000 (max. 10000000)
+
