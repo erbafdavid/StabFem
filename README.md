@@ -73,24 +73,24 @@ to do all from a script or from a console in interactive mode.
 
 The software is still under development. At the moment, the included cases are the following :
 
-# CYLINDER : 
+### CYLINDER : 
 
 Study of the Bénard-Von Karman instability for Re>47 in the wake of a cylinder. This directory contains scripts performing the base flow computation, linear stability analysis, adjoint and sensitivity analysis, as well as a nonlinear determination of the limit cycle using "harmonic balance" method.
 
-# Example_DISK_IN_PIPE
+### Example_DISK_IN_PIPE
 
 An example in axisymmetric coordinates : flow around a disk within a pipe. This directory contains a demonstrator of the software which performs the stability analysis, displays the spectrum, allows to click on eigenvalues to plot the corresponding eigenmodes, computes instability branches (eigenvalue as function of Re), and performs the weakly nonlinear analysis of the leading instability (steady, non-axisymmetric).
 
 
-# Example_Lshape
+### Example_Lshape
 
 A simple example to demonstrate the matlab/FreeFem exchange data format for a simple problem
 
-# SPHERE_WORK
+### SPHERE_WORK
 
 (under development ; may not work)
 
-# BIRDCALL
+### BIRDCALL
 
 (under work ; may not work due to recent changes in the nomenclature. If interested, get branch "Version2.0" instead of branch "Master").
  
@@ -101,10 +101,10 @@ A simple example to demonstrate the matlab/FreeFem exchange data format for a si
 
 In near future we plan to incorporate the following cases :
 
-# CYLINDER_VIV
+### CYLINDER_VIV
 Study of the vortex-induced vibrations around a spring-mounted cylinder.
 
-#  STRAINED_BUBBLE
+###  STRAINED_BUBBLE
 equilibrium shape and oscillation modes of a bubble within a uniaxial straining flow.
 
 
