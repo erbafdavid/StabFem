@@ -302,6 +302,7 @@ xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
 legend('Adapt to BF', 'Ref', 'Adapt to mode', 'Err=0.005', 'Adapt for Re=100','Slip BC','[-80,240]x[0,80]','[-20,40]x[0,20]');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*.8;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 16);
+legend('Location','SouthEast')
 saveas(gca,'Cylinder_Sigma_Re_TESTMESHES',figureformat);
 
 figure(81);

@@ -166,7 +166,7 @@ plot(Re_Range,imag(lambda_branch)/(2*pi),'b+-');
 xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-%saveas(gca,'Cylinder_Strouhal_Re',figureformat);
+saveas(gca,'Cylinder_Strouhal_Re',figureformat);
 pause(0.1);
     
 figure(22);hold off;

@@ -330,7 +330,7 @@ plot(Re_Range,imag(lambda_branch)/(2*pi),'b+-');
 \includegraphics[width=.9 \linewidth]{Cylinder_Mesh.png}
 %\vspace{-.5cm}
 %\vspace{-.5cm}
-\includegraphics[width=.9 \linewidth]{Cylinder_BaseFlowReC.png}
+\includegraphics[width=.9 \linewidth]{Cylinder_BaseFlowRe60.png}
 %\vspace{-1.cm}
 \caption{Adapted mesh $(a)$  and base flow (axial velocity component) ($b$) for the flow over a cylinder at $Re=Re_c = 46.7$.}
 \label{fig:Baseflow}
@@ -404,12 +404,12 @@ In particular, for low Reynolds, the recirculation $L_x(Re)$ is equal to $0.5$ (
 
 \begin{figure}
 %\vspace{-.5cm}
-\includegraphics[width=.9 \linewidth]{Cylinder_EigenModeReC.png}
+\includegraphics[width=.9 \linewidth]{Cylinder_EigenModeRe60.png}
 %\vspace{-.5cm}
 %\vspace{-.5cm}
-\includegraphics[width=.9 \linewidth]{Cylinder_EigenModeAdjReC.png}
+\includegraphics[width=.9 \linewidth]{Cylinder_EigenModeAdjRe60.png}
 %\vspace{-.5cm}\vspace{-.5cm}
-\includegraphics[width=.9 \linewidth]{Cylinder_SensitivityReC.png}
+\includegraphics[width=.9 \linewidth]{Cylinder_SensitivityRe60.png}
 %\vspace{-.5cm}
 \caption{Eigenmode $(a)$  (axial velocity component),  Adjoint mode $(b)$ and structural sensitivity ($c$) for the cylinder's wake at $Re=Re_c = 46.7$.}
 \label{fig:Eigenmode}
@@ -673,16 +673,12 @@ Note the values $h_{min}$ and $h_{max}$ of the smaller and larger edges, as well
 
 
 
-\begin{figure*}
-\small
-\begin{lstlisting}
-\end{lstlisting}
-\normalsize
-
-\caption{Illustration of the procedure to adapt the mesh for stability calculations with StabFem (from script {\em SCRIPT\_CYLINDER.m}. }
-\label{listing3}
-\end{figure*}
-
+\begin{figure}
+\includegraphics[width=.9 \linewidth]{Cylinder_Sigma_Re_TESTMESHES.png}
+\includegraphics[width=.9 \linewidth]{Cylinder_Strouhal_Re_TESTMESHES.png}
+\caption{Growth rate $\sigma$ $(a)$  and Strouhal number $St = (a \omega)/(2\pi U_0)$ ($b$) as function of Reynolds number FOR 8 DIFFERENT MESHES}
+\label{fig:SigmaOmega}
+\end{figure}
 
 \section{Detail of the weak formulation}
 %The problem can be set into weak form by multiplying by multiplying Eq. \ref{Newton2} by a test function ${\bf v}$ and the associated divergence constraint by a test function $q$. After a few integration by parts we are led to :
