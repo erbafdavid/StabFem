@@ -74,18 +74,34 @@ switch tit
 
     % Unsteady mode branch
     if(exist('EVI')==0) 
-        Re_RangeI = [170:10:220];
-        %guessI = -.43+2.06i; % starting point for Re=120
+        Re_RangeI = [170:10:220];EVI = [];
         guessI = 1.85i-.1;
-        EVI = SF_Stability_LoopRe(baseflow,Re_RangeI,'m',1,'shift',guessI,'nev',1);
+        baseflow=SF_BaseFlow(baseflow,'Re',170);
+        [ev,em] = SF_Stability(baseflow,'m',1,'shift',guessI,'nev',1,'type','D');
+        for Re = Re_RangeI
+        baseflow = SF_BaseFlow(baseflow,'Re',Re);
+        [ev,em] = SF_Stability(baseflow,'m',1,'nev',1,'shift','cont');
+        EVI = [EVI ev];
+        end  
+        
+        
     else
 %        data = importata(
     end
     % Steady mode branch
     if(exist('EVS')==0)
         guessS = -.1;
-        Re_RangeS = [120:10:200];
-        EVS = SF_Stability_LoopRe(baseflow,Re_RangeS,'m',1,'shift',guessS,'nev',1);
+        Re_RangeS = [120:10:200];EVS = [];
+       % EVS = SF_Stability_LoopRe(baseflow,Re_RangeS,'m',1,'shift',guessS,'nev',1);
+        
+        baseflow=SF_BaseFlow(baseflow,'Re',120);
+        [ev,em] = SF_Stability(baseflow,'m',1,'shift',guessS,'nev',1,'type','D');
+        for Re = Re_RangeS
+        baseflow = SF_BaseFlow(baseflow,'Re',Re);
+        [ev,em] = SF_Stability(baseflow,'m',1,'nev',1,'shift','cont');
+        EVS = [EVS ev];
+        end
+        
     end
     figure(11);
     subplot(2,1,1);
@@ -106,13 +122,13 @@ switch tit
     if(exist('eigenmode')==0)
         [ev,eigenmode]=SF_Stability(baseflow,'m',m,'shift',shift,'nev',1);
     end
-    eigenmode.plottitle=['Direct eigenmode with sigma = ',num2str(eigenmode.sigma)]; 
+    eigenmode.plottitle=['Direct eigenmode with lambda = ',num2str(eigenmode.lambda)]; 
     plotFF(eigenmode,'ux1',1);
     
     if(exist('eigenmodeA')==0)
         [evA,eigenmodeA]=SF_Stability(baseflow,'m',m,'shift',shift,'nev',1,'type','A');
     end
-    eigenmodeA.plottitle=['Adjoint eigenmode with sigma = ',num2str(eigenmodeA.sigma)]; 
+    eigenmodeA.plottitle=['Adjoint eigenmode with lambda = ',num2str(eigenmodeA.lambda)]; 
     plotFF(eigenmodeA,'ux1',1);
     
     wavemaker.mesh = eigenmode.mesh;

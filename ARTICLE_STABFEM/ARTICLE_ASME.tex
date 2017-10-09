@@ -287,26 +287,6 @@ If one wants to compute a larger number of eigenvalues, one can revert to a gene
 
 
 
-
-
-\subsection{Mesh adaptation procedure}
-\vspace{.2cm}
-
-As for any numerical method, a crucial point in the numerical efficiency is the design of the mesh. The finite element method allows to use unstructured mesh and hence to locally adapt the refinement. %Following Sipp \& Lebedev, 
-The most common procedure is to decompose the domain into several parts with different grid densities ; for instance for the wake of a cylinder, we will design a near-wall region with very small  size, a "wake" region with intermediate mesh size, and an outer region with large mesh size. The inconvenient is that the design relies on an a priori expectation of the regions where gradients will be large. 
-
-In our implementation, we used an automatic mesh adaptation method. %which provides an optimal mesh adapted to the structure of the flow. 
-The implementation relies on the AdaptMesh procedure of the FreeFem++ software. This procedure is detailed in detail in ref. []. In short, 
-the classical Delaunay-Voronoi algorithm produces a mesh with gridpoint distribution specified by a {\em Metric } matrix $\cal M$. The AdaptMesh algorithm consists of using as a metric the {\em Hessian} (second-order spatial derivative) of an objective function $u_h$ defined over the domain, i.e. ${\cal M} = \nabla \nabla u_h$. The precision can be controlled by specifying an objective value for the interpolation error of the function on the new mesh.
-
-To build an optimal mesh for the base-flow calculation, the idea is to use as the objective function $u_h$ the solution ${\bf u}_b$ itself, as computed on a previous mesh.%The procedure thus ensures that the mesh will be locally adapted to the gradients of the base flow. 
-The base flow is then recomputed on the adapted mesh, providing a better approximation of the solution. The procedure can be repeated a few steps to ensure a right convergence.
-In our implementation, the whole process is performed using the Matlab driver
- {\em Freefem\_AdaptMesh.m}.
-
-
-
-
 \begin{figure*}[t]
 \small
 \begin{lstlisting}
@@ -365,16 +345,42 @@ plot(Re_Range,imag(lambda_branch)/(2*pi),'b+-');
 
 
 
+
+\subsection{Mesh adaptation procedure}
+\vspace{.2cm}
+
+As for any numerical method, a crucial point in the numerical efficiency is the design of the mesh. The finite element method allows to use unstructured mesh and hence to locally adapt the refinement. %Following Sipp \& Lebedev, 
+The most common procedure is to decompose the domain into several parts with different grid densities ; for instance for the wake of a cylinder, we will design a near-wall region with very small  size, a "wake" region with intermediate mesh size, and an outer region with large mesh size. The inconvenient is that the design relies on an a priori expectation of the regions where gradients will be large. 
+
+In our implementation, we used an automatic mesh adaptation method. %which provides an optimal mesh adapted to the structure of the flow. 
+The implementation relies on the AdaptMesh procedure of the FreeFem++ software. This procedure is detailed in detail in ref. []. In short, 
+the classical Delaunay-Voronoi algorithm produces a mesh with gridpoint distribution specified by a {\em Metric } matrix $\cal M$. The AdaptMesh algorithm consists of using as a metric the {\em Hessian} (second-order spatial derivative) of an objective function $u_h$ defined over the domain, i.e. ${\cal M} = \nabla \nabla u_h$. The precision can be controlled by specifying an objective value for the interpolation error of the function on the new mesh.
+
+To build an optimal mesh for the base-flow calculation, the idea is to use as the objective function $u_h$ the solution ${\bf u}_b$ itself, as computed on a previous mesh.%The procedure thus ensures that the mesh will be locally adapted to the gradients of the base flow. 
+The base flow is then recomputed on the adapted mesh, providing a better approximation of the solution. The procedure can be repeated a few steps to ensure a right convergence.
+
+The mesh generated in the previous way may not be optimal for the stability calculations as the structure of the eigenmode may be more complex than that of the base flow. To remedy with this, the idea is to subsequently adapt the mesh to both the mesh flow and the results of the stability calculation. This is easily done with FreeFem, as the  AdaptMesh procedure can be used with several objective functions. We have experimented two different ideas. The first is to adapt the mesh to the base flow and the structure of the leading eigenmode. A second and smarter idea is to adapt the mesh to the base flow and the structural sensitivity. Since this quantity is directly linked to the sensitivity of the eigenvalues to perturbations of any kind (including spatial discretization errors), this procedure yields a lighter mesh while ensuring that the eigenvalue is effectively converged with respect to discretization errors. 
+On the other hand, if one is interested to know the structure of the eigenmode (which may extend far away from the wavemaker region), it is more recommended to use mesh adaptation on the structure of the eigenmode.
+
+In our implementation, the whole process is performed using the Matlab driver {\em Freefem\_AdaptMesh.m} ; the kind of adaptation (to base flow only, to eigenmode, or to sensitivity) is decided by the choice of parameters transmitted to this function.
+
+
+
+
 \section{Illustration for the wake of a cylinder} 
 \vspace{.2cm}
 
+SECTION TO BE COMPLETED.
+
 \paragraph{Problem description}
 
-We will now illustrate the applicati
+Cylinder of unit diameter (radius $r=1/2$), velocity $U = 1$ at inlet.
+
+Domain dimension $[-40,80]x[0,40]$. No-stress conditions at outlet AND LATERAL BOUNDARY.
 
 \paragraph{Mesh adaptation procedure}
 
-
+Lines 1-7 of the script.
 
 \paragraph{Base flow}
 
@@ -428,34 +434,10 @@ In particular, for low Reynolds, the recirculation $L_x(Re)$ is equal to $0.5$ (
 
 \paragraph{Linear stability results}
 
+Figure \ref{fig:Eigenmode} : description of eigenmode.
 
- 
-%popular class of method are {\em power methods} which allow to compute a limited set 
+Figure \ref{fig:SigmaOmega} : growth rates/Strouhal.
 
-%based on the idea that the repeated application of an operator mostly amplifies the perturbations along the eigenspaces with largest eigenvalues. 
-
-%These de Andrea Fani
-
-
-
-%\paragraph{Implementation and mesh adaptation for stability calculations}
-
-
-
-Matlab driver...
-
-
-%\paragraph{Sample results}
-
-
-
-%\subsection{Illustration of the mesh adaptation for stability calculations}
-
-%See listing....
-
-%\subsection{Sample results for a cylinder}
-
-%\clearpage
 
 \section{Nonlinear global stability approaches}
 \vspace{.2cm}
@@ -545,6 +527,7 @@ After discretization, this leads to a linear problem with the form $A X = Y$ whe
 
 \paragraph{Results for the wake of a cylinder}
 
+SECTION TO BE COMPLETED
 
 \paragraph{Link with the Self-Consistent approach}
 
@@ -611,6 +594,7 @@ such that $0< \sigma_{SC}(A) < \sigma_{lin}$.
 
 \section{Appendix : details on mesh convergence}
 
+SECTION TO BE COMPLETED
 
 \paragraph{Illustration of mesh convergence procedure for a cylinder}
 
@@ -702,6 +686,14 @@ Note the values $h_{min}$ and $h_{max}$ of the smaller and larger edges, as well
 
 \section{Detail of the weak formulation}
 %The problem can be set into weak form by multiplying by multiplying Eq. \ref{Newton2} by a test function ${\bf v}$ and the associated divergence constraint by a test function $q$. After a few integration by parts we are led to :
+
+SECTION TO BE COMPLETED.
+
+We have to explain the integration by parts of the viscous term.
+
+
+
+
 \begin{eqnarray}
 \label{NewtonWeak}
 &\forall ({\bf v};q), \\

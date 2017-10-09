@@ -24,7 +24,7 @@ elseif(meanflow.datatype=='MeanFlow')
     system(['cp ',ffdatadir, 'SelfConsistentMode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);  
 
 else
-    error('ERROR to be fixed on next monday (hihihi... DAvid)'); 
+    error('wrong type of field for Harmonic balance'); 
 end
 
  if(p.Results.Lguess~=-1) 
@@ -48,6 +48,9 @@ disp(['#### SELF CONSISTENT CALCULATION COMPLETED with Re = ' num2str(p.Results.
 meanflow=importFFdata(meanflow.mesh,'MeanFlow.ff2m');
 mode=importFFdata(meanflow.mesh,'SelfConsistentMode.ff2m');
 
+if(meanflow.iter<0)
+    error('ERROR in SF_HarmonicBalance : Newton iteration did not converge')
+end
 
 disp(['#### omega =  ' num2str(imag(mode.lambda)) ]);
 %disp(['#### A =  ' num2str(mode.A) ]);

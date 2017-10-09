@@ -4,21 +4,16 @@
 %  
 %  Demonstration script for the test-case of a SPHERE
 %
-% Version 2.0 by D. Fabre , june 2017 - september 2017 
+% Version 2.0 by D. Fabre , june 2017
 
-% WARNING : this is ongoing work, far from being finalized !
-
-global ff ffdir ffdatadir sfdir 
-ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
+close all;
+clear all;
+global ff ffdir ffdatadir
+ff = '/usr/local/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
+ffdir = './SOURCES_FREEFEM/'; % where to find the freefem scripts
 ffdatadir = './DATA_FREEFEM_SPHERE';
-sfdir = '../SOURCES_MATLAB'; % where to find the matlab drivers
-ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
-
-addpath(sfdir);
-system(['mkdir ' ffdatadir]);
 
 % 
-    
 
     disp(' ');disp('### '); disp('### CHAPTER 0 : ');disp('### ');disp(' ');
     disp('Computing base flow and adapting mesh');
@@ -27,40 +22,33 @@ system(['mkdir ' ffdatadir]);
     Re_start = [10 , 100 , 250]; % values of Re for progressive increasing up to end
     for Rei = Re_start
         baseflow=FreeFem_BaseFlow(baseflow,Rei) 
-        baseflow=FreeFem_Adapt(baseflow,'Hmax',5)
+        baseflow=FreeFem_Adapt(baseflow)
     end
     Re = 250;
     
  % optional : adapting mesh on eigenmode structure as well  
- % shift = -0.071+0.707i;% for unsteady mode
- 
+ %shift = -0.071+0.707i;% for unsteady mode
  shift = 0.0867;%for steady mode
+ [ev,eigenmode] = FreeFem_Stability(baseflow,Re,1,shift,1)
+ [baseflow,eigenmode]=FreeFem_Adapt(baseflow,eigenmode);  
  
- [ev,eigenmode] = FreeFem_Stability(baseflow,'m',1,'shift',shift,'nev',1,'type','D') 
- [baseflow,eigenmode]=FreeFem_Adapt(baseflow,eigenmode,'Hmax',5);  
- 
- baseflow.xlim=[-1,3]; %x-range for plots
- baseflow.ylim=[0,3];  %y-range for plots
- 
+ baseflow.mesh.xlim=[-1,3]; %x-range for plots
+ baseflow.mesh.ylim=[0,3];  %y-range for plots
+ plotFF(baseflow,'mesh');
  plotFF(baseflow,'u0');  
 
- plotFF(baseflow,'mesh');
- 
- pause(0.1);
 
- if(1==0)
- 
   disp(' ');disp('### '); disp('### CHAPTER 1 : ');disp('### ');disp(' ');
  disp('Computing stability branches in the range Re = [200-300] for the first two branches');
     % stability calculations with loop over Re
-    Re_RangeS = [200:25:300];
-    Re_RangeI = [250:25:300];
+    Re_RangeS = [200:10:300];
+    Re_RangeI = [250:10:300];
 if(1==0)
     
     % Unsteady mode branch
-        EVI = FreeFem_Stability_LoopRe(baseflow,Re_RangeI,'m',1,'shift',-.076+0.707i,'nev',1);
+        EVI = FreeFem_Stability_LoopRe(baseflow,Re_RangeI,1,-.076+0.707i,1);
     % Steady mode branch
-        EVS = FreeFem_Stability_LoopRe(baseflow,Re_RangeS,'m',1,'shift',-0.038,'nev',1);
+        EVS = FreeFem_Stability_LoopRe(baseflow,Re_RangeS,1,-0.038,1);
   
     figure;
     subplot(2,1,1);
@@ -83,23 +71,17 @@ end
     baseflow = FreeFem_BaseFlow(baseflow,250);
     baseflow.mesh.xlim = [-1,3];
     baseflow.mesh.ylim = [0 3];
-    [evD,eigenmodeD]=FreeFem_Stability(baseflow,'m',m,'shift',shift,'nev',1);
+    [evD,eigenmodeD]=FreeFem_Stability(baseflow,Re,m,shift,1);
     disp([' eigenvalue = ',num2str(eigenmode.sigma)]);
     eigenmodeD.plottitle = 'Direct mode';
-    eigenmodeD.mesh.xlim = [-1,3];
-    eigenmodeD.mesh.ylim = [0 3];
     plotFF(eigenmodeD,'ux1',1);
    
-    [evA,eigenmodeA]=FreeFem_Stability(baseflow,'m',m,'shift',shift,'nev',1,'type','A');
+    [evA,eigenmodeA]=FreeFem_Stability(baseflow,Re,m,shift,1,'A');
     eigenmodeA.plottitle = 'Adjoint mode';
-    eigenmodeA.mesh.xlim = [-1,3];
-    eigenmodeA.mesh.ylim = [0 3];
     plotFF(eigenmodeA,'ux1',1);
     
     wavemaker.mesh = eigenmode.mesh;
     wavemaker.plottitle = 'structural sensitivity';
-    wavemaker.mesh.xlim = [-1,3];
-    wavemaker.mesh.ylim = [0 3];
     wavemaker.sensitivity=abs(eigenmode.ux1).*abs(eigenmodeA.ux1)+abs(eigenmode.ur1).*abs(eigenmodeA.ur1)+abs(eigenmode.ut1).*abs(eigenmodeA.ut1);
     plotFF(wavemaker,'sensitivity');
     
@@ -115,12 +97,12 @@ end
          
         disp(['Rec = ', num2str(Rec)]);
         baseflow=FreeFem_BaseFlow(baseflow,Rec);
-        [evD,eigenmodeD]=FreeFem_Stability(baseflow,'m',m,'shift',0,'nev',1)
-        eigenmodeD
-        [evA,eigenmodeA]=FreeFem_Stability(baseflow,'m',m,'shift',0,'nev',1,'type','A');
-        eigenmodeA
+        [evD,eigenmodeD]=FreeFem_Stability(baseflow,Rec,m,0,1);
+        eigenmodeD;
+        [evA,eigenmodeA]=FreeFem_Stability(baseflow,Rec,m,0,1,'A');
+        eigenmodeA;
         wnl_coeffs = FreeFem_WNL(baseflow)
             
     
 
- end
+
