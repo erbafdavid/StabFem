@@ -490,12 +490,61 @@ retroaction of the eigenmode. However, if one is interested in the limit cycle a
 the approach is actually equivalent to a Fourier series decomposition of the flow with respect to time (an approach also known as {\em harmonic balance}) retaining only the two first terms. 
 %The approach is based on a generalisation of the eigenmode ansatz \ref{} and 
 
-In the next section we thus present this model and propose a direct resolution method. The relation with the initial method of Mantic-Lugo et al. will be discussed afterwards.
+In the next sections we thus successively present the weakly nonlinear model, the self-consistent model and eventually the harmonic-balance model, and propose a direct resolution method. 
+%The relation with the initial method of Mantic-Lugo et al. will be discussed afterwards.
+
+In this section, to simplify the notations, The Navier-Stokes equations will be written symbolically as 
+$\partial_t  {\bf u }  = NS(  {\bf u } )$, therefore dropping the systematic reference of the incompressibility constraint and associated pressure field.
+
+\paragraph{Weakly nonlinear model}
+
+We give here a brief account of the Weakly nonlinear model of Sipp \& Lebedev, also discussed by
+Gallaire et al. (FDR 2016). The derivation is based on a multiple scale decomposition based on the parameter $\epsilon = 1/Re - 1/Re_c$, and the slow time scale $\tau = \epsilon t$. The starting point is an expansion of the flow under the following form :
+
+\begin{eqnarray}
+{\bf u} &=& {\bf u}_{bc} + \epsilon \left[ A(\tau) \hat{\bf u}_c e^{i \omega_c t} + c.c. \right] \label{WNL1}\\
+&+& \epsilon^2 \left[ {\bf u}_\epsilon + |A|^2  {\bf u}_{2,0} + \left(  A^2 {\bf u}_{2,2} e^{2 i \omega_c t} + c.c. \right) \right] + {\cal O}( \epsilon ^3)
+\nonumber
+\end{eqnarray}
+where ${\bf u}_{bc}$ is the base flow at the threshold $Re_c$, $\hat{\bf u}$ the neutral eigenmode at $Re_c$, $A(\tau)$ a slowly varying amplitude.
+The order $\epsilon^2$ contains three terms respectively computed as the solutions of the following linear problems :
+\begin{eqnarray}
+NSL_{{\bf u}_bc} ({\bf u}_\epsilon) + 2 \nabla \cdot {\bf D}( \hat{\bf u}) &=&0,\\
+NSL_{{\bf u}_bc} ({\bf u}_{2,0}) &=& {\cal C}(\hat{\bf u}, ,\overline{\hat{\bf u}}),\\
+NSL_{{\bf u}_bc} ({\bf u}_{2,2}) - 2 i \omega_c {\bf u}_{2,2}  &=& \frac{1}{2} {\cal C}(\hat{\bf u},\hat{\bf u}).
+ \end{eqnarray}
+
+Finally compatibility conditions are imposed at order 3 leading to an amplitude equation with the following
+form :
+\be{WNL3}
+\frac{\partial A }{\partial \tau} = \Lambda A - (\nu_0+\nu_2)  |A|^2 A
+\ee
+With 
+\begin{eqnarray}
+\Lambda &=& \frac{ \left< {\hat{\bf u}}^\dag, 
+\left( {\cal C}({\bf u}_\epsilon, \hat{\bf u}) - 2 \nabla \cdot  {\bf D}( \hat{\bf u}) \right) \right>}
+{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> },\\
+\nu_0 &=& -\frac{ \left< {\hat{\bf u}}^\dag,  {\cal C}({\bf u}_{20}, \hat{\bf u} ) \right>}
+{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> },\\
+\nu_2 &=& -\frac{ \left< {\hat{\bf u}}^\dag,  {\cal C}({\bf u}_{22}, \overline{\hat{\bf u}})  \right>}
+{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> }.
+ \end{eqnarray}
+
+If one is interested in the amplitude of the limit cycle, we have 
+$|\tilde{A}| = \sqrt{\Lambda_r/(\nu{0,r}+\nu{2,r})}$ and eventually, reintroducing the scaling :
+\be 
+|A| =  \frac{\Lambda_r}{\nu{0,r}+\nu{2,r} } \sqrt{\frac{1}{Re_c}-\frac{1}{Re}}
+\ee
+
+The approach gives good prediction in the imediate vicinity of $Re_c$, but deviation appears very 
+rapidly and disagreement is already large at $Re=48$ (although, as discussed by Galaire et al. 
+and also observed by Tchoufag et al. (PRL), a convenient definition of the $\epsilon$ improves the results).
+
+
+
 
 \paragraph{Harmonic balance : equations and procedure }
 
-In this section, to simplify the notations, The Navier-Stokes equations will be written symbolically as 
-$\partial_t  {\bf u }  = NS(  {\bf u } )$, therefore droping the systematic reference of the incompressibility constraint and associated pressure field.
 
 We thus start with a Fourier decomposition of the limit cycle under the form :
 \be{HB}

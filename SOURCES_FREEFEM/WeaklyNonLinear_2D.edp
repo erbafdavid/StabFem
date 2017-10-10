@@ -1,0 +1,228 @@
+//
+//  PROGRAM WeaklyNonLinear_2D.edp
+//	
+//	Solves directly the Harmonic-Balance equations to decribe the limit cycle with two time-Fourier modes
+//   
+//
+//  INPUT PARAMETERS : none
+//
+//
+//	INPUT FILES :
+//		BaseFlow.txt	
+//      EigenMode.txt
+//		EigenModeA.txt 
+// 		mesh.msh 			->  mesh in Freefem format
+//  OUTPUT FILES :
+//      WNL.ff2m 
+//
+// 	ERROR MANAGEMENT : 
+//      if Newton iteration diverges, SelfConsistentMode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
+//
+
+
+
+load "MUMPS_seq"
+include "Macros_StabFem.edp"
+
+/////////////////////////////////////////////////////////////////////////////////
+
+
+mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
+//int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+fespace Xh(th,P2);             ////// f.e. space for vel.
+fespace Mh(th,P1);            ////// f.e. space for pressure
+fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
+
+XXMh [ubx,uby,ubp]; // base flow 
+XXMh<complex> [u1x,u1y,u1p];    //eigenmode 
+XXMh<complex> [u1Cx,u1Cy,u1Cp];    //eigenmode conjugate   
+XXMh<complex> [u1Ax,u1Ay,u1Ap];    //Adjoint   
+XXMh<complex> [u1ACx,u1ACy,u1ACp];    //Conjugate of Adjoint  
+
+XXMh [uepsx,uepsy,uepsp]; // base flow correction
+XXMh<complex> [u20x,u20y,u20p], [u22x,u22y,u22p];    //terms |A|^2 and A^2
+
+
+XXMh [vx,vy,vp]; // test functions
+XXMh<complex> [vCx,vCy,vCp]; // test functions
+
+real Re, ReC, omegaC, sigmaC;
+
+     
+////////////////////////////////////////////////////////////////////////////////
+
+macro div(u) (dx(u#x)+dy(u#y))//EOM macro for divergence 
+macro Conv(ua,ub,v) ( 
+              ((ua#x*dx(ub#x)+ua#y*dy(ub#x))+(ub#x*dx(ua#x)+ub#y*dy(ua#x)))*v#x 
+            + ((ua#x*dx(ub#y)+ua#y*dy(ub#y))+(ub#x*dx(ua#y)+ub#y*dy(ua#y)))*v#y 
+                    ) //EOM macro for mutual convection operator
+macro D(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] 
+//EOM macro for rate-of-deformation tensor
+
+macro NS(nu,u,v) 
+		(
+		 -2*nu*(D(u):D(v))
+        + u#p*div(v)
+        + v#p*div(u)
+        - .5*Conv(u,u,v)
+        )
+//EOM
+     
+macro NSL(nu,U,u,v) 
+		(
+		-2*nu*(D(u):D(v))
+        + u#p*div(v)
+        + div(u)*v#p
+        - Conv(U,u,v)
+        )
+//EOM
+        
+macro Boundaryconditions(u,v,symmetry)
+	           on(bcinlet,u#x=0.0,u#y=0.0) 
+             + on(bcwall,u#x=0.0,u#y=0.0)
+             + int1d(th,bcaxis)(u#x*v#x*1e30*(symmetry=="A")+u#y*v#y*1e30*(symmetry=="S"))
+// 
+
+macro Lift(nu,u1,u2,p)   
+	(
+	int1d(th,2,21,22,23)(2*p*N.y)
+	+int1d(th,2,21,22,23)( -2*nu*(2*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x))
+	)
+//
+macro Drag(nu,u1,u2,p)   
+	(
+	int1d(th,2,21,22,23)(2*p*N.x)
+	+int1d(th,2,21,22,23)( -2*nu*(2*dx(u1)*N.x+(dx(u2)+dy(u1))*N.y))
+	)
+//
+
+
+       
+
+
+{
+ifstream cbin(ffdatadir+"BaseFlow.txt");
+cbin >> ubx[] >> Re;
+cout << "Drag of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
+}
+
+{
+cout << "Reading Eigenmode.txt" << endl;
+ifstream cbin(ffdatadir+"Eigenmode.txt");
+cbin >> u1x[] >> ReC >> sigmaC >> omegaC; 
+}
+
+u1Cx[] = conj(u1x[]);
+
+{
+cout << "Reading EigenmodeA.txt" << endl;
+ifstream cbin(ffdatadir+"EigenmodeA.txt");
+cbin >> u1Ax[] ; 
+}
+u1ACx[] = conj(u1Ax[]);
+
+
+string normalisation;
+//cout << " Normalisation choice ?  [none, L or E]" << endl;
+//cin >> normalisation ;
+//cout << " --> " << normalisation << endl;
+normalisation = "E";
+
+if(normalisation=="none")
+	{ cout << " -> No normalization for the mode " << endl;}
+else if(normalisation=="L")
+	{
+		real Liftguess = 1;
+		cout << "  -> Lift = " << Liftguess  << endl;
+
+		cout << "Lift before renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
+		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5
+			cout << "Lift after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
+	}	
+else if(normalisation=="E")
+		{
+		real Eguess = 1;
+		cout << "  -> Energy = " << Eguess << endl;
+
+		cout << "Energy before renarmalisation : " << sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
+		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
+		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
+		modenorm = sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2));
+		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that || ums ||_L2 = 1/sqrt(2)
+		cout << "Energy after renarmalisation : " << sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
+		};
+
+real nu = 1/Re;
+
+
+/////////////////////////////////////////////////////////////////////////////////
+//////// ORDER 2
+
+cout << " Solving problems at order 2 :" << endl;
+
+solve varfEpsilon([uepsx,uepsy,uepsp],[vx,vy,vp]) =
+  	 int2d(th)( NSL(nu,ub,ueps,v) )
+	+ int2d(th) (2*(D(ub):D(v))) 
+    + Boundaryconditions(ueps,v,"S")			
+	;
+	
+solve varf20([u20x,u20y,u20p],[vCx,vCy,vCp]) =
+  	 int2d(th)( NSL(nu,ub,u20,vC) )
+	- int2d(th)( Conv(u1,u1C,vC) ) 
+    + Boundaryconditions(u20,vC,"S")			
+	;
+	
+solve varf22([u22x,u22y,u22p],[vCx,vCy,vCp]) =
+  	 int2d(th)( NSL(nu,ub,u22,vC) ) -int2d(th)(2i*omegaC*(u22x*vCx+u22y*vCy) )
+	- int2d(th)(.5*Conv(u1,u1,vC) ) 
+    + Boundaryconditions(u22,vC,"S")			
+	;
+
+
+cout << " Drag associated to order epsilon correction : " << Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0) << endl;
+cout << " Drag associated to order |A|^2  : " << Drag(nu,u20x,u20y,u20p) << endl;
+cout << " Drag associated to order A^2  : " << Drag(nu,u22x,u22y,u22p) << endl;
+
+/////////////////////////////////////////////////////////////////////////////////
+/////// ORDER 3
+cout << " Computing coeffs at order 3 :" << endl;
+
+complex Cn = int2d(th)(u1ACx*u1x+u1ACy*u1y);
+
+cout << " Cn : " << Cn << endl;
+
+
+complex Lambda = -1/Cn*int2d(th)(Conv(ueps,u1,u1AC)-2*(D(u1):D(u1AC)));
+
+complex Nu0 = -1/Cn*int2d(th)(Conv(u20,u1,u1AC));
+
+complex Nu2 = -1/Cn*int2d(th)(Conv(u22,u1C,u1AC));
+
+	
+cout << "Lambda : "  << Lambda << " ; Nu0 = " << Nu0 << " ; Nu2 = " << Nu2 << endl;
+ 	
+	
+	{
+ 		 ofstream file("WNL_results.ff2m");
+ 		 file << "### Data generated by Freefem++ ; " << endl;
+    	 file << "Coefficients of the Amplitude Equation obtained by Weakly Non Linear analysis" << endl;
+    	 file << "Format :" << endl;
+	     file << "real Rec complex eigenvalue complex Lambda complex nu0 complex nu2 " 
+	          << " real Drag0 real Drageps real Drag20 complex Drag22" << endl << endl ; 
+	     file << ReC << endl 
+			  << 0 << " " << omegaC  << endl 
+			  << real(Lambda) << " " << imag(Lambda) << endl 
+			  << real(Nu0) << " " << imag(Nu0) << endl 
+			  << real(Nu2) << " " << imag(Nu2) <<  endl 
+			  << Drag(nu,ubx,uby,ubp) << endl 
+			  << Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0) << endl
+			  << " " << real(Drag(nu,u20x,u20y,u20p)) << endl  
+			  << " " << real(Drag(nu,u22x,u22y,u22p)) << " " << real(Drag(nu,u22x,u22y,u20p)) << endl;
+};
+	
+	
+	
