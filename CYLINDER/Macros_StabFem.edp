@@ -91,7 +91,7 @@ macro SFWriteBaseFlow(filename,ux,uy,p,typeFlow,iter)
     file << typeFlow << endl;
     file << "Format : " << endl;	
 	file << "real Re P1 ux P1 uy P1 p P1 vort P1 psi real iter " ;
-	string PostProcessBaseFlowDescription = "real Drag real Lx"; /* customizable output */ 
+	string PostProcessBaseFlowDescription = "real Cx real Lx"; /* customizable output */ 
 	file << PostProcessBaseFlowDescription << endl << endl ; 
 	file << Re << endl;	
 			for (int j=0;j<ut[].n ; j++) file << ut[][j] << endl;
@@ -104,8 +104,8 @@ macro SFWriteBaseFlow(filename,ux,uy,p,typeFlow,iter)
 	cout << "#### customisable output for WAKE OF A 2D BLUFF BODY : " << endl; 
     /* Calcul de la trainee */
     real DragMode = Trainee(ux,uy,p,symmetryBaseFlow);
-	cout << "#    Drag =  " << DragMode << endl;
-    file << DragMode << " " ; 
+	cout << "#    Cx =  " << 2*DragMode << endl; /* factor 2 because Fx = 1/2 Cx */
+    file << 2*DragMode << " " ; 
     
     /* mesure de la longueur de recirculation */
     real Lx, Uap, Uav;
@@ -152,9 +152,9 @@ macro SFWriteMode(namefile,ux,uy,p,ev,shift,typeFlow,iter)
     	 file << "Format :" << endl;
     	 string descriptionFF;
     	 if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
-    	 	{  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real Energy complex Lift"; }
+    	 	{  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real Energy complex Cy"; }
     	 else 
-    	    {  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real Energy complex Lift"; }
+    	    {  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real EnergyAdj complex CyAdj"; }
 	     file << descriptionFF << endl << endl ; 
 		 file << Re  << endl << real(ev) << " " << imag(ev) << " " << real(shift) << " " << imag(shift) << " " << iter << endl << endl;
  		ux1=ux;
@@ -170,13 +170,14 @@ macro SFWriteMode(namefile,ux,uy,p,ev,shift,typeFlow,iter)
 		cout << "#### customisable output for a mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
 
 	
-		real EnergyMode = sqrt(2*int2d(th)(abs(ux)^2+abs(uy)^2));
+		real EnergyMode = sqrt(2*int2d(th)(abs(ux)^2+abs(uy)^2))*2; 
+		/* nb here the factor 2 is because in mantic-lugo the radius is 1, while here it is 0.5 ! */
 		cout << "#   Energy (with defition of Mantic-Lugo) = " << EnergyMode << endl;
 		file << EnergyMode << endl;
 
 		complex LiftMode = Portance(ux,uy,p,"A"); 
-		cout << "#   Lift = " << LiftMode << endl;
-		file << real(LiftMode) << " " << imag(LiftMode) << endl;
+		cout << "#   Cy = " << 2*LiftMode << endl;
+		file << 2*real(LiftMode) << " " << 2*imag(LiftMode) << endl;
 		
 		};
 //EOM	

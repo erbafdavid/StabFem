@@ -115,7 +115,6 @@ ifstream cbin(ffdatadir+"Eigenmode.txt");
 cbin >> u1x[] >> ReC >> sigmaC >> omegaC; 
 }
 
-u1Cx[] = conj(u1x[]);
 
 {
 cout << "Reading EigenmodeA.txt" << endl;
@@ -136,25 +135,28 @@ if(normalisation=="none")
 else if(normalisation=="L")
 	{
 		real Liftguess = 1;
-		cout << "  -> Lift = " << Liftguess  << endl;
+		cout << "  -> Cy = " << Liftguess  << endl;
 
-		cout << "Lift before renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
-		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
+		cout << "Cy before renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		complex modenorm = 2*Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5
-			cout << "Lift after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
+			cout << "Cy after renarmalisation : " << 2*Lift(1/Re,u1x,u1y,u1p) << endl;	
 	}	
 else if(normalisation=="E")
 		{
 		real Eguess = 1;
 		cout << "  -> Energy = " << Eguess << endl;
 
-		cout << "Energy before renarmalisation : " << sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
+		cout << "Energy before renarmalisation : " << 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
-		modenorm = sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2));
+		modenorm = 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2));
 		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that || ums ||_L2 = 1/sqrt(2)
-		cout << "Energy after renarmalisation : " << sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
+		cout << "Energy after renarmalisation : " << 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
 		};
+
+
+u1Cx[] = conj(u1x[]);
 
 real nu = 1/Re;
 
@@ -183,9 +185,9 @@ solve varf22([u22x,u22y,u22p],[vCx,vCy,vCp]) =
 	;
 
 
-cout << " Drag associated to order epsilon correction : " << Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0) << endl;
-cout << " Drag associated to order |A|^2  : " << Drag(nu,u20x,u20y,u20p) << endl;
-cout << " Drag associated to order A^2  : " << Drag(nu,u22x,u22y,u22p) << endl;
+cout << " Cx associated to order epsilon correction : " << 2*(Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0)) << endl;
+cout << " Cx associated to order |A|^2  : " << 2*Drag(nu,u20x,u20y,u20p) << endl;
+cout << " Cx associated to order A^2  : " << 2*Drag(nu,u22x,u22y,u22p) << endl;
 
 /////////////////////////////////////////////////////////////////////////////////
 /////// ORDER 3
@@ -198,9 +200,9 @@ cout << " Cn : " << Cn << endl;
 
 complex Lambda = -1/Cn*int2d(th)(Conv(ueps,u1,u1AC)-2*(D(u1):D(u1AC)));
 
-complex Nu0 = -1/Cn*int2d(th)(Conv(u20,u1,u1AC));
+complex Nu0 = 1/Cn*int2d(th)(Conv(u20,u1,u1AC));
 
-complex Nu2 = -1/Cn*int2d(th)(Conv(u22,u1C,u1AC));
+complex Nu2 = 1/Cn*int2d(th)(Conv(u22,u1C,u1AC));
 
 	
 cout << "Lambda : "  << Lambda << " ; Nu0 = " << Nu0 << " ; Nu2 = " << Nu2 << endl;
@@ -212,16 +214,16 @@ cout << "Lambda : "  << Lambda << " ; Nu0 = " << Nu0 << " ; Nu2 = " << Nu2 << en
     	 file << "Coefficients of the Amplitude Equation obtained by Weakly Non Linear analysis" << endl;
     	 file << "Format :" << endl;
 	     file << "real Rec complex eigenvalue complex Lambda complex nu0 complex nu2 " 
-	          << " real Drag0 real Drageps real Drag20 complex Drag22" << endl << endl ; 
+	          << " real Cx0 real Cxeps real Cx20 complex Cx22" << endl << endl ; 
 	     file << ReC << endl 
 			  << 0 << " " << omegaC  << endl 
 			  << real(Lambda) << " " << imag(Lambda) << endl 
 			  << real(Nu0) << " " << imag(Nu0) << endl 
 			  << real(Nu2) << " " << imag(Nu2) <<  endl 
-			  << Drag(nu,ubx,uby,ubp) << endl 
-			  << Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0) << endl
-			  << " " << real(Drag(nu,u20x,u20y,u20p)) << endl  
-			  << " " << real(Drag(nu,u22x,u22y,u22p)) << " " << real(Drag(nu,u22x,u22y,u20p)) << endl;
+			  << 2*Drag(nu,ubx,uby,ubp) << endl 
+			  << 2*(Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0)) << endl
+			  << " " << 2*real(Drag(nu,u20x,u20y,u20p)) << endl  
+			  << " " << 2*real(Drag(nu,u22x,u22y,u22p)) << " " << 2*real(Drag(nu,u22x,u22y,u20p)) << endl;
 };
 	
 	

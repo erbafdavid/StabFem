@@ -148,14 +148,14 @@ if(normalisation=="none")
 else if(normalisation=="L")
 	{
 		real Liftguess;
-		cout << "Value of Lift for renormalisation ?"<< endl;
+		cout << "Value of Lift coefficient Cy for renormalisation ?"<< endl;
 		cin >> Liftguess;
-		cout << "  -> Lift = " << Liftguess  << endl;
+		cout << "  -> Cy = " << Liftguess  << endl;
 
-		cout << "Lift before renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
-		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
+		cout << "Cy before renormalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		complex modenorm = 2*Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5
-			cout << "Lift after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
+			cout << "Cy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
 	}	
 else if(normalisation=="E")
 		{
@@ -164,12 +164,12 @@ else if(normalisation=="E")
 		cin >> Eguess;
 		cout << "  -> Energy = " << Eguess << endl;
 
-		cout << "Energy before renarmalisation : " << sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
+		cout << "Energy before renarmalisation : " << 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
-		modenorm = sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2));
+		modenorm = 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2));
 		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that || ums ||_L2 = 1/sqrt(2)
-		cout << "Energy after renarmalisation : " << sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
+		cout << "Energy after renarmalisation : " << 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
 		};
 
 [u0x,u0y,u0p] = [ubx,uby,ubp]; 

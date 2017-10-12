@@ -4,7 +4,8 @@
 %  1/ Generation of an adapted mesh
 %  2/ Base-flow properties for Re = [2-40]
 %  3/ Stability curves St(Re) and sigma(Re) for Re = [40-100]
-%  4/ Determination of the instability threshold
+%  4/ Determination of the instability threshold and Weakly-Nonlinear
+%  analysis
 %  5/ Harmonic-Balance for Re = REc-100
 %  6/ Self-consistent model for Re=100
 
@@ -97,14 +98,14 @@ saveas(gca,'Cylinder_SensitivityRe60',figureformat);
 
 %%%% CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)
 
-if(exist('Re_RangeB')==0)
+if(exist('Cx_BF')==0)
 
-Re_RangeB = [2 : 2: 50];
-Drag_tabB = []; Lx_tabB = [];
-    for Re = Re_RangeB
+Re_BF = [2 : 2: 50];
+Cx_BF = []; Lx_BF = [];
+    for Re = Re_BF
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tabB = [Drag_tabB,baseflow.Drag];
-        Lx_tabB = [Lx_tabB,baseflow.Lx];
+        Cx_BF = [Cx_BF,baseflow.Cx];
+        Lx_BF = [Lx_BF,baseflow.Lx];
     end
     
 end
@@ -112,14 +113,14 @@ end
 %%% chapter 2B : figures
  
 figure(22);hold off;
-plot(Re_RangeB,Drag_tabB,'b+-');
-xlabel('Re');ylabel('Drag');
+plot(Re_BF,Cx_BF,'b+-');
+xlabel('Re');ylabel('Cx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-saveas(gca,'Cylinder_Drag_baseflow',figureformat);
+saveas(gca,'Cylinder_Cx_baseflow',figureformat);
 
 figure(23);hold off;
-plot(Re_RangeB,Lx_tabB,'b+-');
+plot(Re_BF,Lx_BF,'b+-');
 xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -131,23 +132,23 @@ pause(0.1);
 
 %%% CHAPTER 3 : COMPUTING STABILITY BRANCH
 
-if(exist('lambda_branch')==1)
+if(exist('lambda_LIN')==1)
     disp('STABILITY BRANCH ALREADY COMPUTED')
 else
     disp('COMPUTING STABILITY BRANCH')
 
 % LOOP OVER RE FOR BASEFLOW + EIGENMODE
-Re_Range = [40 : 2: 100];
+Re_LIN = [40 : 2: 100];
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-.03+.72i,'nev',1,'type','D');
 
-Drag_tab = []; Lx_tab = [];lambda_branch=[];
-    for Re = Re_Range
+Cx_LIN = []; Lx_LIN = [];lambda_LIN=[];
+    for Re = Re_LIN
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
-        Lx_tab = [Lx_tab,baseflow.Lx];
+        Cx_LIN = [Cx_LIN,baseflow.Cx];
+        Lx_LIN = [Lx_LIN,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
-        lambda_branch = [lambda_branch ev];
+        lambda_LIN = [lambda_LIN ev];
     end    
 end
 
@@ -155,14 +156,14 @@ end
 %%% CHAPTER 3b : figures
 
 figure(20);
-plot(Re_Range,real(lambda_branch),'b+-');
+plot(Re_LIN,real(lambda_LIN),'b+-');
 xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Sigma_Re',figureformat);
 
 figure(21);hold off;
-plot(Re_Range,imag(lambda_branch)/(2*pi),'b+-');
+plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');
 xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -171,13 +172,13 @@ pause(0.1);
     
 figure(22);hold off;
 set(gca,'FontSize', 18);
-xlabel('Re');ylabel('Drag');
+xlabel('Re');ylabel('Cx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-%saveas(gca,'Cylinder_Drag_baseflow',figureformat);
+%saveas(gca,'Cylinder_Cx_baseflow',figureformat);
 
 figure(23);hold off;
-plot(Re_Range,Lx_tab,'b+-');
+plot(Re_LIN,Lx_LIN,'b+-');
 xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); %pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -189,40 +190,68 @@ pause(0.1);
 
 if(exist('Rec')==1)
     disp('INSTABILITY THRESHOLD ALREADY COMPUTED');
+    baseflow=SF_BaseFlow(baseflow,Rec);
+    [ev,em] = SF_Stability(baseflow,'shift',em.lambda,'type','S','nev',1);
 else 
 %%% DETERMINATION OF THE INSTABILITY THRESHOLD
 disp('COMPUTING INSTABILITY THRESHOLD');
 baseflow=SF_BaseFlow(baseflow,'Re',50);
 [ev,em] = SF_Stability(baseflow,'shift',+.75i,'nev',1,'type','D');
 [baseflow,em]=SF_FindThreshold(baseflow,em);
-Rec = baseflow.Re;  Dragc = baseflow.Drag; 
+Rec = baseflow.Re;  Cxc = baseflow.Cx; 
 Lxc=baseflow.Lx;    Omegac=imag(em.lambda);
 %[ev,em] = SF_Stability(baseflow,'shift',em.lambda,'type','S','nev',1);
 end
+
+
+wnl = SF_WNL(baseflow);
+
+epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
+Re_WNL = 1./(1/Rec-epsilon2_WNL);
+A_WNL = sqrt(real(wnl.Lambda)/real(wnl.nu0+wnl.nu2))*real(sqrt(epsilon2_WNL));
+Cy_WNL = 2*abs(em.Cy)/em.Energy*A_WNL; 
+omega_WNL =Omegac+epsilon2_WNL*imag(wnl.Lambda)-imag(wnl.nu0+wnl.nu2)*A_WNL.^2;
+%omega_WNLno2 =Omegac+epsilonRANGE.*(imag(wnl.Lambda)-real(wnl.Lambda)*imag(wnl.nu0)/real(wnl.nu0));
+Cx_WNL = wnl.Cx0+wnl.Cxeps*epsilon2_WNL+wnl.Cx20*A_WNL.^2;
+
+figure(20);hold on;
+plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,'g--');hold on;
+
+figure(21);hold on;
+plot(Re_WNL,omega_WNL/(2*pi),'g--');hold on;
+
+figure(22);hold on;
+plot(Re_WNL,Cx_WNL,'g--');hold on;
+
+figure(24); hold on;
+plot(Re_WNL,Cy_WNL,'g--');
+
+figure(25);hold on;
+plot(Re_WNL,A_WNL,'g--');
 
 
 
 
 %%% CHAPTER 5 : HARMONIC BALANCE
 
-if(exist('Lxtab')==1)
+if(exist('Lx_HB')==1)
     disp('Harmonic balance on the range [Rec , 100] already computed');
 else
     disp('Computing Harmonic balance on the range [Rec , 100]');
-Retab = [Rec 47.5 48 49 50 55 60 65 70 75 80 85 90 95 100];
-Dragtab = [Dragc]; Lxtab = [Lxc]; omegatab = [Omegac]; Aenergytab = [0]; Lifttab = [0];
+Re_HB = [Rec 47.5 48 49 50 55 60 65 70 75 80 85 90 95 100];
+Cx_HB = [Cxc]; Lx_HB = [Lxc]; omega_HB = [Omegac]; Aenergy_HB = [0]; Cy_HB = [0];
 
 baseflow=SF_BaseFlow(baseflow,47.5);
 [ev,em] = SF_Stability(baseflow,'shift',Omegac*i);
-[meanflow,mode] = SF_HarmonicBalance(baseflow,em,'sigma',0.,'Re',47.5,'Aguess',0.4);
+[meanflow,mode] = SF_HarmonicBalance(baseflow,em,'sigma',0.,'Re',47.5,'Aguess',0.8);
 
-for Re = Retab(2:end)
+for Re = Re_HB(2:end)
     [meanflow,mode] = SF_HarmonicBalance(meanflow,mode,'Re',Re);
-    Lxtab = [Lxtab meanflow.Lx];
-    Dragtab = [Dragtab meanflow.Drag];
-    omegatab = [omegatab imag(mode.lambda)];
-    Aenergytab  = [Aenergytab mode.Energy];
-    Lifttab = [Lifttab mode.Lift];
+    Lx_HB = [Lx_HB meanflow.Lx];
+    Cx_HB = [Cx_HB meanflow.Cx];
+    omega_HB = [omega_HB imag(mode.lambda)];
+    Aenergy_HB  = [Aenergy_HB mode.Energy];
+    Cy_HB = [Cy_HB mode.Cy];
 end
    
 end
@@ -231,57 +260,63 @@ end
 %%% chapter 5b : figures
 
 figure(21);hold off;
-plot(Re_Range,imag(lambda_branch)/(2*pi),'b+-');hold on;
-plot(Retab,omegatab/(2*pi),'r+-');
+plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');hold on;
+plot(Re_WNL,omega_WNL/(2*pi),'g--');hold on;
+plot(Re_HB,omega_HB/(2*pi),'r+-');
 plot(Rec,Omegac/2/pi,'ro');
 xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('Linear','HB','Location','northwest');
+legend('Linear','WNL','HB','Location','northwest');
 saveas(gca,'Cylinder_Strouhal_Re_HB',figureformat);
 
 figure(22);hold off;
-plot(Re_Range,Drag_tab,'b+-');hold on;
-plot(Retab,Dragtab,'r+-');
-plot(Rec,Dragc,'ro')
-xlabel('Re');ylabel('Drag');
+plot(Re_LIN,Cx_LIN,'b+-');hold on;
+plot(Re_WNL,Cx_WNL,'g--');hold on;
+plot(Re_HB,Cx_HB,'r+-');
+plot(Rec,Cxc,'ro')
+xlabel('Re');ylabel('Cx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('Linear','HB','Location','northwest');
-saveas(gca,'Cylinder_Drag_Re_HB',figureformat);
+legend('BF','WNL','HB','Location','south');
+saveas(gca,'Cylinder_Cx_Re_HB',figureformat);
 
 figure(23);hold off;
-plot(Re_Range,Lx_tab,'b+-');hold on;
-plot(Retab,Lxtab,'r+-');
+plot(Re_LIN,Lx_LIN,'b+-');hold on;
+plot(Re_HB,Lx_HB,'r+-');
 plot(Rec,Lxc,'ro');
 xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('Linear','HB','Location','northwest');
+legend('BF','HB','Location','northwest');
 saveas(gca,'Cylinder_Lx_Re_HB',figureformat);
 
-figure(24);hold on;
-plot(Retab,real(Lifttab),'r+-');
-title('Harmonic Balance results');xlabel('Re');ylabel('Lift')
+figure(24);hold off;
+plot(Re_WNL,2*Cy_WNL,'g--');hold on;
+plot(Re_HB,2*real(Cy_HB),'r+-');
+%title('Harmonic Balance results');
+xlabel('Re');ylabel('Cy')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-saveas(gca,'Cylinder_Lift_Re_SC',figureformat);
+legend('WNL','HB','Location','south');
+saveas(gca,'Cylinder_Cy_Re_SC',figureformat);
 
-figure(25);hold on;
-plot(Retab,Aenergytab,'r+-');
-title('Harmonic Balance results');xlabel('Re');ylabel('A')
+figure(25);hold off;
+plot(Re_WNL,A_WNL,'g--');hold on;
+plot(Re_HB,Aenergy_HB,'r+-');
+%title('Harmonic Balance results');
+xlabel('Re');ylabel('A')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
+legend('WNL','HB','Location','south');
 saveas(gca,'Cylinder_Energy_Re_SC',figureformat);
 
 pause(0.1);
 
 
-
-
 %%% CHAPTER 6 : SELFCONSISTENT APPROACH WITH RE = 100
 
-if(exist('LiftSC_tab')==1)
+if(exist('CySC_tab')==1)
     disp(' SC model for Re=100 : calculation already done');
 else
     disp(' COMPUTING SC model for Re=100');
@@ -289,32 +324,36 @@ else
 
 baseflow=SF_BaseFlow(baseflow,100);
 [ev,em] = SF_Stability(baseflow,'shift',0.12+0.72i,'nev',1,'type','D');
-lambdaSC_tab = [real(em.lambda),0.12:-.0025:0];
+sigma_SC = [real(em.lambda),0.12:-.0025:.1,.09:-.01:0];
 
-LiftSC_tab = [0]; EnergySC_tab = [0];
-[meanflow,mode] = SF_HarmonicBalance(baseflow,em,'sigma',0.12,'Lguess',0.0078)
-for lambdaSC = lambdaSC_tab(2:end)
-    [meanflow,mode] = SF_HarmonicBalance(meanflow,mode,'sigma',lambdaSC)
-    LiftSC_tab = [LiftSC_tab mode.Lift];
-    EnergySC_tab = [EnergySC_tab mode.Energy];
+Cy_SC = [0]; Energy_SC = [0];
+[meanflow,mode] = SF_HarmonicBalance(baseflow,em,'sigma',0.12,'Lguess',0.0156)
+for sigma = sigma_SC(2:end)
+    [meanflow,mode] = SF_HarmonicBalance(meanflow,mode,'sigma',sigma)
+    Cy_SC = [Cy_SC mode.Cy];
+    Energy_SC = [Energy_SC mode.Energy];
 end
 
 end
 
 figure(31);hold on;
-plot(lambdaSC_tab,real(LiftSC_tab),'b-+');
-xlabel('sigma');ylabel('Lift');
+plot(sigma_SC,real(Cy_SC),'b-+');
+xlabel('sigma');ylabel('Cy');
 title('SC model results for Re=100');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-saveas(gca,'Cylinder_SC100_LiftSigma',figureformat);
+saveas(gca,'Cylinder_SC100_CySigma',figureformat);
 
 
 figure(32);hold on;
-plot(EnergySC_tab,lambdaSC_tab,'b-+');
+plot(Energy_SC,sigma_SC,'b-+');
 ylabel('$\sigma$','Interpreter','latex');xlabel('A');
 title('SC model results for Re=100');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_SC100_EnergySigma',figureformat);
+
+
+save('Results_Cylinder.mat');
+
 
