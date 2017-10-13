@@ -209,7 +209,7 @@ wnl = SF_WNL(baseflow);
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);
 A_WNL = sqrt(real(wnl.Lambda)/real(wnl.nu0+wnl.nu2))*real(sqrt(epsilon2_WNL));
-Cy_WNL = 2*abs(em.Cy)/em.Energy*A_WNL; 
+Cy_WNL = 2*abs(em.Cy)/em.AEnergy*A_WNL; 
 omega_WNL =Omegac+epsilon2_WNL*imag(wnl.Lambda)-imag(wnl.nu0+wnl.nu2)*A_WNL.^2;
 %omega_WNLno2 =Omegac+epsilonRANGE.*(imag(wnl.Lambda)-real(wnl.Lambda)*imag(wnl.nu0)/real(wnl.nu0));
 Cx_WNL = wnl.Cx0+wnl.Cxeps*epsilon2_WNL+wnl.Cx20*A_WNL.^2;
@@ -250,7 +250,7 @@ for Re = Re_HB(2:end)
     Lx_HB = [Lx_HB meanflow.Lx];
     Cx_HB = [Cx_HB meanflow.Cx];
     omega_HB = [omega_HB imag(mode.lambda)];
-    Aenergy_HB  = [Aenergy_HB mode.Energy];
+    Aenergy_HB  = [Aenergy_HB mode.AEnergy];
     Cy_HB = [Cy_HB mode.Cy];
 end
    
@@ -331,7 +331,7 @@ Cy_SC = [0]; Energy_SC = [0];
 for sigma = sigma_SC(2:end)
     [meanflow,mode] = SF_HarmonicBalance(meanflow,mode,'sigma',sigma)
     Cy_SC = [Cy_SC mode.Cy];
-    Energy_SC = [Energy_SC mode.Energy];
+    AEnergy_SC = [Energy_SC mode.AEnergy];
 end
 
 end
@@ -346,7 +346,7 @@ saveas(gca,'Cylinder_SC100_CySigma',figureformat);
 
 
 figure(32);hold on;
-plot(Energy_SC,sigma_SC,'b-+');
+plot(AEnergy_SC,sigma_SC,'b-+');
 ylabel('$\sigma$','Interpreter','latex');xlabel('A');
 title('SC model results for Re=100');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio

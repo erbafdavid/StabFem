@@ -152,9 +152,9 @@ macro SFWriteMode(namefile,ux,uy,p,ev,shift,typeFlow,iter)
     	 file << "Format :" << endl;
     	 string descriptionFF;
     	 if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
-    	 	{  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real Energy complex Cy"; }
+    	 	{  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Cy"; }
     	 else 
-    	    {  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real EnergyAdj complex CyAdj"; }
+    	    {  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj complex CyAdj"; }
 	     file << descriptionFF << endl << endl ; 
 		 file << Re  << endl << real(ev) << " " << imag(ev) << " " << real(shift) << " " << imag(shift) << " " << iter << endl << endl;
  		ux1=ux;
@@ -170,10 +170,10 @@ macro SFWriteMode(namefile,ux,uy,p,ev,shift,typeFlow,iter)
 		cout << "#### customisable output for a mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
 
 	
-		real EnergyMode = sqrt(2*int2d(th)(abs(ux)^2+abs(uy)^2))*2; 
+		real AEnergyMode = sqrt(2*int2d(th)(abs(ux)^2+abs(uy)^2))*2; 
 		/* nb here the factor 2 is because in mantic-lugo the radius is 1, while here it is 0.5 ! */
-		cout << "#   Energy (with defition of Mantic-Lugo) = " << EnergyMode << endl;
-		file << EnergyMode << endl;
+		cout << "#   Energy (with defition of Mantic-Lugo) = " << AEnergyMode << endl;
+		file << AEnergyMode << endl;
 
 		complex LiftMode = Portance(ux,uy,p,"A"); 
 		cout << "#   Cy = " << 2*LiftMode << endl;
