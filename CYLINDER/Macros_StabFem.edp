@@ -172,7 +172,7 @@ macro SFWriteMode(namefile,ux,uy,p,ev,shift,typeFlow,iter)
 	
 		real AEnergyMode = sqrt(2*int2d(th)(abs(ux)^2+abs(uy)^2))*2; 
 		/* nb here the factor 2 is because in mantic-lugo the radius is 1, while here it is 0.5 ! */
-		cout << "#   Energy (with defition of Mantic-Lugo) = " << AEnergyMode << endl;
+		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
 		file << AEnergyMode << endl;
 
 		complex LiftMode = Portance(ux,uy,p,"A"); 
