@@ -64,6 +64,7 @@
         fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
         fespace femp2xfemp2xfemp2xfemp1(th,[P2,P2,P2,P1]);
         femp2xfemp2xfemp1 [vB,uB,pB]; // base flow
+        femp2xfemp2xfemp2xfemp1 [vBS,uBS,wBS,pBS]; // base flow
         femp2xfemp2xfemp1<complex> [vC,uC,pC];	// structure for adaptation (case UVP)
         femp2xfemp2xfemp2xfemp1<complex> [uCC,vCC,wCC,pCC];	// structure for adaptation (case UVWP)
         femp2 Sensitivity;
@@ -78,11 +79,42 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	    cout << "### Dimension of matrices " << vB[].n << endl << endl;
 	
 	real Re;
-	{
-	ifstream U(ffdatadir+"BaseFlow.txt");		
-	U >> vB[];
-	U >> Re;
-	}
+	
+	
+	
+/// LECTURE BASE FLOW	
+	    
+	    int NdimUVP = uB[].n;
+    	int NdimUVWP = uBS[].n;
+    	int NdimBaseFlow;
+    	real Reans;
+	    {
+          ifstream file(ffdatadir+"BaseFlow.txt");
+          file >> NdimBaseFlow ;
+    	}
+		
+		if(NdimBaseFlow == NdimUVP) 
+		{
+        cout << "Ndim = " << NdimUVP << " : reading UVP baseflow " << endl;
+        ifstream file(ffdatadir+"BaseFlow.txt");
+        file >> uB[];
+        [vBS,uBS,wBS,pBS] = [vB,uB,0,pB];
+		file >> Reans;
+        }
+        else if(NdimBaseFlow == NdimUVWP) 
+        {
+        cout << "Ndim = " << NdimUVWP << " : reading UVWP baseflow " << endl;
+        ifstream file(ffdatadir+"BaseFlow.txt");
+        file >> uBS[]; 
+		file >> Reans;
+        }
+        else 
+        {
+        cout << " Error : Wrong dimension For BaseFlow_guess.txt file" << endl;
+        };
+
+	
+	
     cout << " lecture of Base flow : Reynolds number = " << Re << endl;
 
 
@@ -92,7 +124,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 // selection of the type of adaptation to be done 
 	if(type=="BFonly")
 	{
-	thnew = adaptmesh(th,[vB,uB,pB],
+	thnew = adaptmesh(th,[vBS,uBS,wBS,pBS],
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
 	}
@@ -111,7 +143,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 		if(ui[].max<1e-6){ cout << " (Real field ; most likely a base flow) " << endl;}
 		else{  cout << " (complex field ; most likely an eigenmode or response to a forcing) "<< endl; };
 			
-		thnew = adaptmesh(th,[v,u,p],[vi,ui,pii],[vB,uB,pB],
+		thnew = adaptmesh(th,[v,u,p],[vi,ui,pii],[vBS,uBS,wBS,pBS],
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
 	}
@@ -129,7 +161,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 		if(ui[].max<1e-6){ cout << " (Real field ; most likely a base flow) " << endl;}
 		else{  cout << " (complex field ; most likely an eigenmode or response to a forcing) "<< endl; };
 			
-		thnew = adaptmesh(th,[u,v,w,p],[ui,vi,wi,pii],[vB,uB,pB],
+		thnew = adaptmesh(th,[u,v,w,p],[ui,vi,wi,pii],[vBS,uBS,wBS,pBS],
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
 	}
@@ -143,7 +175,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 				
 		cout << " lecture of field with structure P2" << endl;
 			
-		thnew = adaptmesh(th,Sensitivity,[vB,uB,pB],
+		thnew = adaptmesh(th,Sensitivity,[vBS,uBS,wBS,pBS],
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
 	}

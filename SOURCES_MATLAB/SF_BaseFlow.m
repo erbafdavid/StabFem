@@ -3,11 +3,10 @@ function baseflow = SF_BaseFlow(baseflow,varargin)
 %
 % usage : baseflow = SF_BaseFlow(baseflow1,'Re',Re,[...])
 %
-% this driver will lanch the SF_ "Newton" program of the coresponding
+% this driver will lanch the "Newton" program of the coresponding
 % case. NB if base flow was already created it simply copies it from
-% "CHASE" directory.
+% "BASEFLOW" directory.
 %
-%  Other syntax : baseflow = SF_BaseFlow(baseflow1,Re) (kept for compatibility but to be abandonned in future versions)  
 %
 % 		NB if for some reason the mesh/baseflow compatibility was lost, use SF__BaseFlow(baseflow,'Re',Re,'type','PREV') 
 %	    to recontstruct the structures and reposition the files correctly.
@@ -18,29 +17,61 @@ function baseflow = SF_BaseFlow(baseflow,varargin)
 % Version 2.0 by D. Fabre , september 2017
 % 
 
-
-
 global ff ffdir ffdatadir sfdir verbosity
 
-%%% management of optionnal parameters
-if(nargin~=2) % recommended syntax with parameter selector
-    p = inputParser;
-   addParameter(p,'Re',baseflow.Re,@isnumeric);
-   addParameter(p,'type','Normal',@ischar);
-   parse(p,varargin{:});
-   Re = p.Results.Re;
-else % old syntax with two inputs
-   p.Results.Re = varargin{1};
-   p.Results.type = 'Normal';
-   Re =  varargin{1};
+%%% MANAGEMENT OF PARAMETERS (Re, Mach, Omegax, Porosity...)
+% Explanation
+% (Mode 1) if parameters are transmitted to the function we use these ones. 
+%      (for instance baseflow = SF_BaseFlow(baseflow1,'Re',10)
+% (Mode 2) if no parameters are passed and if the field exists in the previous
+% baseflow, we take these
+%      (for instance SF_BaseFlow(bf) is equivalent to SF_Baseflow(bf,'Re',bf.Re) )
+% (Mode 3) if no previous value we will define default values set in the next lines.
+%
+% This syntax allows to do baseflow=SF_BaseFlow(baseflow) which is useful
+% for instance to recompute the baseflow after mesh adaptation.
+%
+% Parameters currently handled comprise : Re, Omegax, Porosity. 
+% usage of Parameter 'type' is to be rationalized...
+
+
+
+% check if fields previously exist (Mode 2) or assign default value (mode 3)
+if(isfield(baseflow,'Porosity')) 
+    Porosity=baseflow.Porosity; 
+else
+    Porosity=0; 
+end
+if(isfield(baseflow,'Omegax')) 
+    Omegax=baseflow.Omegax; 
+else
+    Omegax = 0; 
 end
 
+%%% check which parameters are transmitted to varargin (Mode 1) 
+    p = inputParser;
+   addParameter(p,'Re',baseflow.Re,@isnumeric); % Reynolds
+   addParameter(p,'Omegax',Omegax,@isnumeric); % rotation rate (for swirling body)
+   addParameter(p,'Porosity',Porosity,@isnumeric); % For porous body
+   addParameter(p,'type','Normal',@ischar); % mode 
+   parse(p,varargin{:});
+   
+% Now the right parameters are in p.Results   
+   Re = p.Results.Re;
+   Omegax = p.Results.Omegax;
+   Porosity=p.Results.Porosity;
 
 
 %%% SELECTION OF THE SOLVER TO BE USED DEPENDING ON THE CASE
 if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
             % Newton calculation for axisymmetric base flow
-            solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_Axi.edp'];  
+                if(verbosity>1)  disp('## solving base flow (axisymmetric case)'); end
+                    solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_Axi.edp']; 
+ 
+elseif(strcmp(baseflow.mesh.problemtype,'AxiXRPOROUS')==1) % axisymmetric WITH SWIRL
+               if(verbosity>1)  disp('## solving base flow (axisymmetric case WITH SWIRL)'); end
+                    solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Omegax) ' ' num2str(p.Results.Porosity) ' | ',ff,' ',ffdir,'Newton_AxiSWIRL.edp'];   
+          
         elseif(strcmp(baseflow.mesh.problemtype,'2D')==1)
             solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_2D.edp']; 
         % elseif (other cases...)
@@ -60,6 +91,8 @@ error = 'ERROR : SF_ base flow computation aborted';
     mesh = importFFmesh('mesh.msh');
     mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
     baseflow.mesh=mesh;
+    baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
+    baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
     baseflow.iter=0;
     
  elseif(exist([ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'])==2&&strcmp(p.Results.type,'NEW')~=1)   
@@ -67,6 +100,8 @@ error = 'ERROR : SF_ base flow computation aborted';
         system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt  ' ffdatadir 'BaseFlow.txt']);
         system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt  ' ffdatadir 'BaseFlow_guess.txt']);
         system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m ' ffdatadir 'BaseFlow.ff2m']);
+        baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
+        baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
         baseflow.iter=0;
         
  else
@@ -85,12 +120,14 @@ error = 'ERROR : SF_ base flow computation aborted';
         
         system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt']);
         system(['cp ' ffdatadir 'BaseFlow.ff2m ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m']);
+         baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
+         baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
+        
 %        system(['cp BaseFlow.txt BaseFlow_guess.txt']);    
  end
 
  
-               baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
-               baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
+              
  
  
 if(baseflow.iter>=1)

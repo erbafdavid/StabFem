@@ -11,16 +11,8 @@
 
 % CHAPTER 0 : set the global variables needed by the drivers
 
-global ff ffdir ffdatadir sfdir verbosity
-%ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++-nw'; % on IMFT network
-ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw'; % on DF's macbookpro 
-ffdatadir = './WORK/';
-sfdir = '../SOURCES_MATLAB/'; % where to find the matlab drivers
-ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
-verbosity = 1;
-addpath(sfdir);
-system(['mkdir ' ffdatadir]);
-figureformat='png'; AspectRatio = 0.56; % for figure
+run('../SOURCES_MATLAB/SF_Start.m');
+figureformat='png'; AspectRatio = 0.56; % for figures
 
 %##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
 
@@ -34,7 +26,7 @@ disp(' STARTING ADAPTMESH PROCEDURE : ');
 disp(' ');
 disp(' LARGE MESH : [-40:80]x[0:40] ');
 disp(' ');    
-baseflow=SF_Init('Mesh_Cylinder_Large.edp');
+baseflow=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
 baseflow=SF_BaseFlow(baseflow,1);
 baseflow=SF_BaseFlow(baseflow,10);
 baseflow=SF_BaseFlow(baseflow,60);

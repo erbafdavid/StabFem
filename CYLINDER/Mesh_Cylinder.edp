@@ -4,9 +4,10 @@
 ///// 
 /////                              MESH GENERATOR for a cylinder
 /////
+/////             This file creates a mesh and an initial base flow for the "StabFem" program.
 /////
-/////
-/////  			  DImensions correspond to mesh "C3" from Mantic-Lugo et al.
+/////             input parameters : Xmin Xmax Ymax
+/////  			  
 /////
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -14,22 +15,29 @@
 include "Macros_StabFem.edp";
 //string ffdatadir = "./WORK/";
 
-load "iovtk"                       /// load library to write in vtk format
-load "BinaryIO"                 ////load libary to write the solution in binary form
+// load "iovtk"                       /// load library to write in vtk format
+// load "BinaryIO"                 ////load libary to write the solution in binary form
 // load "BinaryIO_64"
-load "UMFPACK64"         /////// loading sparsesolver
+
 
 
 real RADIUS=0.5;         /////// Cylinder Radius
  
 
 
-real n=.2;                 
-int ns=40; 
+real n=.5;                 
+int ns=50; 
 
-real xinlet=-20.;     
-real xoutlet=40.; 
-real yside=20.;            //lateral distance from cylinder center
+cout << " Generation of an initial mesh for a 2D cylinder" << endl;
+cout << " Enter the dimensions xmin, xmax, ymax ? " << endl; 
+
+//real xinlet=-20.;     
+//real xoutlet=40.; 
+//real yside=20.;       
+real xinlet , xoutlet,yside ;
+
+cin >> xinlet >> xoutlet >> yside ;
+cout << "Xmin = " << xinlet << " ; Xmax = " << xoutlet << " ; ymax = " << yside << endl;  
 
 /////////////////////////////////////////////////////////////////////////////////
 //int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;

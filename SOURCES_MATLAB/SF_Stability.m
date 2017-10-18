@@ -59,47 +59,45 @@ persistent sigmaPrev sigmaPrevPrev
  
 % run the relevant freefem script
 if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
-    % Axisymmetric base flow (for sphere, whistling jet, etc..)
-    % four different programs (to be unified !)
-    if ((p.Results.type=='D')&&(p.Results.nev==1))
-        if(verbosity>0) disp('      ### FUNCTION SF_Stability : computation of 1 eigenvalue/mode (DIRECT) with shift/invert method'); end
-        [status]=mysystem(['echo ' num2str(p.Results.Re) ' ' num2str(p.Results.m) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ... 
-           '  | ' ff ' ' ffdir 'StabAxi_ShiftInvert.edp']);
-    elseif((p.Results.type=='D')&&(p.Results.nev>1)) 
-        if(verbosity>0) disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
-        [status]=mysystem(['echo ' num2str(p.Results.Re) ' ' num2str(p.Results.m) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ' ' num2str(p.Results.nev)... 
-           '  | ' ff ' ' ffdir 'StabAxi.edp']);
-    elseif ((p.Results.type=='A')&&(p.Results.nev==1))
-        if(verbosity>0)disp('      ### FUNCTION SF_Stability : computation of 1 eigenvalue/mode (ADJOINT) with shift/invert method');end
-        [status]=mysystem(['echo ' num2str(p.Results.Re) ' ' num2str(p.Results.m) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ... 
-           '  | ' ff ' ' ffdir 'StabAxi_ShiftInvert_ADJ.edp']);
-         system('cp Eigenmode.txt Eigenmode_guess.txt');
-    elseif((p.Results.type=='A')&&(p.Results.nev>1))
-        if(verbosity>0)disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (ADJOINT) with FF solver']);end
-        [status]=mysystem(['echo ' num2str(p.Results.Re) ' ' num2str(p.Results.m) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ' ' num2str(p.Results.nev)... 
-           '  | ' ff ' ' ffdir 'StabAxi_ADJ.edp']);
-    end
+    
+     if(verbosity>0)disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
+     if(verbosity>0)disp(['      ### USING Axisymmetric Solver']);end
+     solvercommand = ['echo '' ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab_Axi.edp'];
+        status = mysystem(solvercommand);
+        
+        
+elseif(strcmp(baseflow.mesh.problemtype,'AxiXRPOROUS')==1)
+    
+     if(verbosity>0)disp(['      ### FUNCTION SF_Stability POROUS : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
+     if(verbosity>0)disp(['      ### USING Axisymmetric Solver WITH POROSITY AND SWIRL']);end
+     solvercommand = ['echo '' ' num2str(p.Results.Re) ' ' num2str(baseflow.Porosity) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab_Axi_Porous.edp'];
+        status = mysystem(solvercommand);        
+    
+ 
+   
 
 elseif(strcmp(baseflow.mesh.problemtype,'2D')==1)
          % 2D flow (cylinder, etc...)
     
-        if(p.Results.STIFFNESS==0&p.Results.MASS==0&p.Results.DAMPING==0) 
          
         if(verbosity>0)disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
+        if(verbosity>0)disp(['      ### USING 2D Solver']);end
         solvercommand = ['echo '' ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab2D.edp'];
         status = mysystem(solvercommand);
    
   
-        else
-            
-             if(verbosity>0)disp(['      ### FUNCTION SF_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
+elseif(strcmp(baseflow.mesh.problemtype,'2DMobile')==1)  % for spring-mounted cylinder
+             
+        if(verbosity>0)disp(['      ### FUNCTION SF_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
+        if(verbosity>0)disp(['      ### USING 2D Solver FOR MOBILE OBJECT (e.g. spring-mounted)']);end
         solvercommand = ['echo '' ' num2str(p.Results.Re) ' ' ...
                              num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' ' num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
         status = mysystem(solvercommand);
             
-        end
 %elseif(strcmp(baseflow.mesh.problemtype,keyword)==1)
     % adapt to your case !
     

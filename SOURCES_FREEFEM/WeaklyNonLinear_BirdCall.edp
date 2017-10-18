@@ -5,7 +5,7 @@
 //  Références : Meliga, Tchoufag, etc...
 //
 //
-/// THIS PROGRAM IS TO BE REWRITTEN USING MACROS !
+
 
 
 verbosity = 0;
@@ -19,7 +19,7 @@ fespace p2xp2xp2(th,[P2,P2,P2]);
 real Re, Rec, sigmara, sigmaia, sigmarB, sigmaiB,nu;
 real omegaE;
 int mE;
-p2xp2xp1 [urp,uzp,pp];// base flow at Rec=1/2(RecA+RecB)
+p2xp2xp1 [urp,uzp,pp];// base flow at Rec
 p2xp2xp2xp1<complex> [FrE,FtE,FzE,FpE]; // terme de forcage 
 p2xp2xp2xp1<complex> [urE,utE,uzE,pE],[vrC,vtC,vzC,qC];
 p2 yy=y+1e-12;
@@ -28,33 +28,6 @@ p2 yy=y+1e-12;
 /// CHAPITRE 0 : MACROS ET DEFINITIONS
 ///
 
-// MACROS POUR OBJET 3D (sphere, disque, etc...)
-
-// TRAINEE POUR UN ECOULEMENT AXI (ur,uz,p)
-macro Trainee(ur,uz,p)   
-	(
-	int1d(th,2,21,22,23)(p*2*pi*y*N.x)
-	-nu*int1d(th,2,21,22,23)( (2*dx(uz)*N.x+(dx(ur)+dy(uz))*N.y)*2*pi*y)
-	)
-//
-
-// PORTANCE COMPLEXE POUR UN ECOULEMENT M=1 (ur,ut,uz,p)
-macro Portance(ur,ut,uz,p)
-  	(
-	int1d(th,2,21,22,23)(p*N.y*y*pi)
- 	- nu*int1d(th,2,21,22,23)( ( 2*dy(ur)*N.y + (dy(uz)+dx(ur))*N.x ) *pi*y) 
-	+1i* nu*int1d(th,2,21,22,23)( ( (dy(ut)-ut/y)*N.y + (dx(ut))*N.x ) *pi*y)
-	)
-//
-
-// COUPLE COMPLEXE POUR UN ECOULEMENT M=1
-macro Couple(ur,ut,uz,p) 
-        (
-	int1d(th,2,21,22,23)(p*pi*y*(N.y*x-N.x*y))
-	- nu *   int1d(th,2,21,22,23)( ((2*dy(ur)*N.y + (dy(uz)+dx(ur))*N.x)*x -(2*dx(uz)*N.x + (dy(uz)+dx(ur))*N.y)*y )*pi*y) 
-	+1i*nu * int1d(th,2,21,22,23)( ( (dy(ut)-ut/y+1i*1*ur/y)*N.y + (dx(ut)+1i*1/y*uz)*N.x )*x * pi*y) 
-	)
-//
 
 
 // MACROS POUR JET SIFFLANT
@@ -160,31 +133,21 @@ y*(uz2*dx(uz1)+uz1*dx(uz2)+ur1*dy(uz2)+ur2*dy(uz1) )
 //// CHAPITRE 1 : CHAMP DE BASE A REC ///////
 ////
 
-p2xp2xp1 [u1,u2,up];
+
 {
- ifstream file0("BaseFlow.txt");
- file0 >> u1[];
+ ifstream file0("chbase.txt");
+ file0 >> urp[];
  file0 >> Rec;
 };
-[urp,uzp,pp] = [u2,u1,up]; /// to be harmonized !!! 
-
-
 nu=1./Rec;
 real Trainee0;
 
 cout << endl << "### CHAMP DE BASE POUR RE = " << Rec << endl;
 
 string typegeom, typemode;
-if (int1d(th,1)(abs(y)+abs(x))>0) 
-	{
-		cout << " Champ de base de type BLUFF BODY AXI"<< endl;
-		typegeom="BLUFFBODYAXI"; 
-		Trainee0 =  Trainee(urp,uzp,pp);
-		cout << "Trainee due au champ de base : " << Trainee0 << endl;
 
-	}
 	
-else if (int1d(th,11)(abs(y)+abs(x))>0)
+if (int1d(th,11)(abs(y)+abs(x))>0)
 	{	cout << " Champ de base de type JET AXI"<< endl;
 		typegeom="JETAXI"; 	
 		real  UM0 =  UMeanHole1(urp,utp,uzp,pp);
@@ -214,15 +177,6 @@ p2xp2xp2xp1<complex> [urAAdj,utAAdj,uzAAdj,pAAdj]; //ua adjoint
 /// LECTURE DANS DES FICHIERS
 
  
-
-// ifstream file1("ModeADir.txt");
-// p2xp2xp2xp1 [urR,utR,uzR,pR],[urI,utI,uzI,pI];
-// ATTENTION AVEC SLEPC STOCKAGE SEPARE PARTIES REELE / IMAGINAIRE
-// file1 >> urR[];
-// file1 >> urI[];
-// file1 >> ReM >> lambdaM;
-// [urA,utA,uzA,pA] = [urR+1i*urI,utR+1i*utI,uzR+1i*uzI,pR+1i*pI];
-
 real ReM, lambdaMR, lambdaMI; complex lambdaM; int mM;
  ifstream file1("Eigenmode.txt");
  file1 >> urA[];
@@ -232,15 +186,6 @@ real ReM, lambdaMR, lambdaMI; complex lambdaM; int mM;
 
 
 {
-// p2xp2xp2xp1 [urR,utR,uzR,pR],[urI,utI,uzI,pI]; 
-// ifstream file1a("ModeAAdj.txt");
-// file1a >> urR[];
-// file1a >> urI[];
-// file1a >> ReM >> lambdaM;
-// cout << "Lecture Mode Adjoint : Re = " << ReM << " ; lambda = " << lambdaM << endl;
-// [urAAdj,utAAdj,uzAAdj,pAAdj] = [urR+1i*urI,utR+1i*utI,uzR+1i*uzI,pR+1i*pI];
-
-
 real ReMA, lambdaMAR, lambdaMAI; complex lambdaMA; int mMA;
 
  ifstream file1("EigenmodeA.txt");
@@ -254,31 +199,6 @@ real ReMA, lambdaMAR, lambdaMAI; complex lambdaMA; int mMA;
 /// NORMALISATION ET STATISTIQUES SUR LES MODES PROPRES
 
 complex COUPLEA;
-if(typegeom=="BLUFFBODYAXI")
-	{
-//Normalization : LATERAL FORCE = 1
-	complex FyAT = Portance(urA,utA,uzA,pA);
-	urA[]=.5/FyAT*urA[]; 
-		
-// RENORMALISATION DE L ADJOINT (FACULTATIF)
-	complex FyATS = Portance(urAAdj,utAAdj,uzAAdj,pAAdj);
-	urAAdj[]=1./FyATS*urAAdj[];
-	
-	cout << "PORTANCE COMPLEXE DU MODE A APRES RENORMALISATION = " << Portance(urA,utA,uzA,pA) << 
-	            " ; " << Portance(urAAdj,utAAdj,uzAAdj,pAAdj) << endl;
-	cout << "     ( = 1/2 avant ajout du complexe conjugue )" << endl; 	    
-	cout << "Valeurs en (x=1.2 ; y=0.2)" << endl;
-	cout << "Direct :" << endl;
-	cout << "ur = " << urA(1.2,.2) << " ; ut = " << utA(1.2,.2) << " ; uz = " << uzA(1.2,.2)  
-		 << " ; p = " << pA(1.2,.2) << endl;    
-		    
-	cout << "Adjoint :" << endl;
-	cout << "ur = " << urAAdj(1.2,.2) << " ; ut = " << utAAdj(1.2,.2) << " ; uz = " << uzAAdj(1.2,.2)  
-		 << " ; p = " << pAAdj(1.2,.2) << endl;    
-	COUPLEA = 2*Couple(urA,utA,uzA,pA); 	    
-	cout << "COUPLE COMPLEXE = " << COUPLEA << endl;	   
-	
-	};
 	
 	if(typegeom=="JETAXI")
 	{
@@ -349,7 +269,7 @@ problem PBUdelta([urD,utD,uzD,pD],[vr,vt,vz,q]) = // for the direct computation 
 	      y*dx(uzp)*dx(vz)+y*dy(uzp)*dy(vz) 
 	    + y*dx(urp)*dx(vr)+y*dy(urp)*dy(vr)+1/y*urp*vr  
 	           ) 
-	+ on(1,uzD=0.,urD=0.,utD=0.)
+	+ on(1,11,12,7,uzD=0.,urD=0.,utD=0.)
   	+ on(2,21,22,23,uzD=0.,urD=0.,utD=0.)	
 	+ on(4,urD=0.)
 	+ on(6,urD=0.,utD=0.); //for m=0
@@ -360,51 +280,52 @@ problem PBUdelta([urD,utD,uzD,pD],[vr,vt,vz,q]) = // for the direct computation 
        };
 
 
-// LECTURE DANS UN FICHIER
-//        {
-//        ifstream file0("UD.txt");
-//        file0 >> urD[];
-//        };
-
         cout << "TERME U delta : valeurs en (.2,.2) : " < endl << urD(.2,.2) << " ; " << utD(.2,.2) << " ; "
 		     << uzD(.2,.2) << " ; " << pD(.2,.2) << endl;
 
-real TraineeEpsilon;
 
-if(typegeom=="BLUFFBODYAXI")
+
+
+	// Perte de charge associée à cette correction
+	real UmeaninletD = int1d(th,11)(uzD*y)/(int1d(th,11)(y)+1e-20);
+	real Umean1D =int1d(th,91)(uzD*y)/(int1d(th,91)(y)+1e-20);
+	real Umean2D =int1d(th,92)(uzD*y)/(int1d(th,92)(y)+1e-20);
+	real deltaPeps = pD(-5,5)-pD(15,5);
+	real Q0D = int1d(th,11)(uzD*y)*2*pi;
+	cout << "# Flow rate across inlet : " << Q0D << endl;
+	cout << "# Flow rate across hole 1 : " << int1d(th,91)(uzD*y)*2*pi << endl;
+	cout << "# Flow rate across hole 2 : " << int1d(th,92)(uzD*y)*2*pi << endl << endl;
+	cout << "# Mean velocity across inlet  : " << UmeaninletD << endl;
+	cout << "# Mean velocity across hole 1 : " << Umean1D << endl;
+	cout << "# Mean velocity across hole 2 : " << Umean2D << endl;
+	cout << "# DeltaP_eps : " << deltaPeps << endl;
+	cout << "# DeltaP_eps/Rec^2  " << deltaPeps/Rec^2 << endl;
+	real CDD = Umean1D/sqrt(2*deltaPeps);
+	real alphaVCD = 1/CDD;
+	cout << "# Venna-contracta coefficient  alpha : " << alphaVCD << endl;
+	cout << "# Discharge coefficient CD = " << CDD << endl << endl;
+	
+	
+// ecriture dans un fichier	
 {
-	// Traînée due à cette correction
-	real TraineeDP     =      int1d(th,2,21,22,23)(pD*2*pi*y*N.x);
-	real TraineeDV1    =  -nu*int1d(th,2,21,22,23)( (2*dx(uzD)*N.x+(dx(urD)+dy(uzD))*N.y)*2*pi*y);
-	real TraineeDV2    =      int1d(th,2,21,22,23)( (2*dx(uzp)*N.x+(dx(urp)+dy(uzp))*N.y)*2*pi*y);
-        cout << "Trainee due a la correction en viscosite : " 
-	     << TraineeDP << " + " << TraineeDV1 << " + " << TraineeDV2 << endl;
-	TraineeEpsilon = TraineeDP+TraineeDV1+TraineeDV2;
-        cout << "Total : " << TraineeEpsilon << endl;
-	cout << " /Re^2 =  " << (TraineeDP+TraineeDV1+TraineeDV2)/Rec^2 << endl;
-
-	cout << "AUTRE METHODE :" << Trainee(urD,uzD,pD)+TraineeDV2 << endl;
-};
-
-if(typegeom=="JETAXI")
-{
-	// Traînée due à cette correction
-	real TraineeDP     =      int1d(th,2,21,22,23)(pD*2*pi*y*N.x);
-	real TraineeDV1    =  -nu*int1d(th,2,21,22,23)( (2*dx(uzD)*N.x+(dx(urD)+dy(uzD))*N.y)*2*pi*y);
-	real TraineeDV2    =      int1d(th,2,21,22,23)( (2*dx(uzp)*N.x+(dx(urp)+dy(uzp))*N.y)*2*pi*y);
-        cout << "Trainee due a la correction en viscosite : " 
-	     << TraineeDP << " + " << TraineeDV1 << " + " << TraineeDV2 << endl;
-	real TraineeEpsilon = TraineeDP+TraineeDV1+TraineeDV2;
-        cout << "Total : " << TraineeEpsilon << endl;
-	cout << " /Re^2 =  " << (TraineeDP+TraineeDV1+TraineeDV2)/Rec^2 << endl;
-
-	cout << "AUTRE METHODE :" << Trainee(urD,uzD,pD)+TraineeDV2 << endl;
+	ofstream file("UDelta.ff2m");
+	real Rpipe = yy[].max;
+	    file << "### Data generated by Freefem++ ; " << endl;
+    file << "Base flow for a JET through one or two holes" << endl;
+    file << "Format : " << endl;	
+	file << "real Re P1 u2delta P1 v2delta P1 p2delta  real Umean1 real Q0D real deltaPeps real CDD real alphaD" << endl << endl ; 
+	file << Re << endl;	
+			{
+			for (int j=0;j<utD[].n ; j++) file << uzD[][j] << endl;
+			for (int j=0;j<utD[].n ; j++) file << urD[][j] << endl;
+			//for (int j=0;j<utD[].n ; j++) file << utD[][j] << endl;
+			//for (int j=0;j<utD[].n ; j++) file << vort[][j] << endl;
+			file << endl << Umean1D << " " << Q0D << " " << deltaPeps << " " << CDD << " " << alphaVCD << endl;	
+			
+		}			
 };
 	
 	
-
-
-
 
 
 
@@ -418,9 +339,9 @@ cout << endl << "### MODIFICATION D'ORDRE EPSILON DE LA VP : " << endl;
 
 
 // PREMIER MORCEAU : CONVECTION
-//	int m=1;
+
 	p2xp2xp2xp1<complex> [FDr,FDt,FDz,FDp]; // terme de forcage 
-        [FDr,FDt,FDz,FDp] = CMN(1,urA,utA,uzA,0,urD,utD,uzD);	
+        [FDr,FDt,FDz,FDp] = CMN(mM,urA,utA,uzA,0,urD,utD,uzD);	
 	complex sigma11 = -int2d(th)((FDr*conj(urAAdj)+FDt*conj(utAAdj)+FDz*conj(uzAAdj)))/denomA;
 	cout << "lambdaA partie convection : " << sigma11 << endl; 
 	
@@ -428,9 +349,9 @@ cout << endl << "### MODIFICATION D'ORDRE EPSILON DE LA VP : " << endl;
 // SECOND MORCEAU : DIFFUSION
 		
         [FDr,FDt,FDz,FDp]= 
-	[ - y*(dxx(urA)+dyy(urA)+1/yy*dy(urA)-(1^2+1)/yy^2*urA-2i*1/yy^2*utA ),         
-	  - y*(dxx(utA)+dyy(utA)+1/yy*dy(utA)-(1^2+1)/yy^2*utA+2i*1/yy^2*urA ),
-	  - y*(dxx(uzA)+dyy(uzA)+1/yy*dy(uzA)-1^2/yy^2*uzA ),
+	[ - y*(dxx(urA)+dyy(urA)+1/yy*dy(urA)-(mM^2+1)/yy^2*urA-2i*1/yy^2*utA ),         
+	  - y*(dxx(utA)+dyy(utA)+1/yy*dy(utA)-(mM^2+1)/yy^2*utA+2i*1/yy^2*urA ),
+	  - y*(dxx(uzA)+dyy(uzA)+1/yy*dy(uzA)-mM^2/yy^2*uzA ),
 	  0
 	];	
         complex sigma12 = int2d(th)((FDr*conj(urAAdj)+FDt*conj(utAAdj)+FDz*conj(uzAAdj)))/denomA;
@@ -440,6 +361,10 @@ cout << endl << "### MODIFICATION D'ORDRE EPSILON DE LA VP : " << endl;
         cout << "lambdaA/Re^2 =  " << lambdaA/Rec^2 << endl;
 
         
+ 		
+
+
+/////// SUITE DU DEV NON LINEAIRE POUR BLUFF BODY AXI
 
 
 ////
@@ -454,7 +379,7 @@ p2xp2xp2xp1<complex> [urAAs,utAAs,uzAAs,pAAs],[urAA,utAA,uzAA,pAA]; // Terme U^2
 /// PREMIER MORCEAU : CONVECTION PAR LE TERME A Aetoile AXISYMETRIQUE
 		
 		// Forcage a l'ordre 2, composante axi.		
- 	        [FrE,FtE,FzE,FpE]= CMN(1,urA,utA,uzA,-1,urAC,utAC,uzAC);
+ 	        [FrE,FtE,FzE,FpE]= CMN(0,urA,utA,uzA,0,urAC,utAC,uzAC);
                 FrE[] = -FrE[] ;  // celui la compte double !
   	        // Resolution du probleme a l'ordre 2 :
                 omegaE=0;
@@ -462,37 +387,39 @@ p2xp2xp2xp1<complex> [urAAs,utAAs,uzAAs,pAAs],[urAA,utAA,uzAA,pAA]; // Terme U^2
 		NSELEMm0;
 		[urAAs,utAAs,uzAAs,pAAs] = [urE,utE,uzE,pE];
 		
+		real DeltaPAAs = real(pAAs(-5,5)-pAAs(15,5));
+		
 		cout << "Calcul du terme d'ordre 2 proportionnel a  (A As) . " << endl;
 		cout << "TERME U A A ETOILE : valeurs en (.2,.2) : " < endl << urAAs(.2,.2) << " ; " << utAAs(.2,.2) << " ; "
 		     << uzAAs(.2,.2) << " ; " << pAAs(.2,.2) << endl;
-		complex TraineeAAs = Trainee(urAAs,uzAAs,pAAs);
-		cout << "Contribution a la trainee proportionnelle a A As : " << TraineeAAs << endl;
+		//complex TraineeAAs = Trainee(urAAs,uzAAs,pAAs);
+		//cout << "Contribution a la trainee proportionnelle a A As : " << TraineeAAs << endl;
 		
 		// Forcage pour le probleme a l'ordre 3 :	
-		[FrE,FtE,FzE,FpE]= CMN(1,urA,utA,uzA,0,urAAs,utAAs,uzAAs); //
-                complex muA1 = int2d(th)(FrE*conj(urAAdj)+FtE*conj(utAAdj)+FzE*conj(uzAAdj))/denomA;
-                cout << "MuA1 : " << muA1 << endl;
+		[FrE,FtE,FzE,FpE]= CMN(0,urA,utA,uzA,0,urAAs,utAAs,uzAAs); //
+                complex muA0 = int2d(th)(FrE*conj(urAAdj)+FtE*conj(utAAdj)+FzE*conj(uzAAdj))/denomA;
+                cout << "MuA0 : " << muA0 << endl;
 
-// SECOND MORCEAU : CONVECTION PAR LE TERME A A DE GEOMETRIE M=2
+// SECOND MORCEAU : CONVECTION PAR LE TERME A A (ici m=0 et omega = 2 omega)
 
                 // Forcage a l'ordre 2, composante m=2
- 	        [FrE,FtE,FzE,FpE]= CMN(1,urA,utA,uzA,1,urA,utA,uzA);
+ 	        [FrE,FtE,FzE,FpE]= CMN(0,urA,utA,uzA,0,urA,utA,uzA);
 	        FrE[] = -.5*FrE[];
  	        // Resolution du probleme a l'ordre 2 :
-                omegaE=0;
-		mE=2;
-		NSELEMm2;
+                omegaE=2*lambdaMI;
+		mE=0;
+		NSELEMm0;
 		[urAA,utAA,uzAA,pAA] = [urE,utE,uzE,pE];
 		cout << "Calcul du terme d'ordre 2 proportionnel a  (A A) . " << endl;
 		cout << "TERME U A A  : valeurs en (.2,.2) : " < endl << urAA(.2,.2) << " ; " << utAA(.2,.2) << " ; "
 		     << uzAA(.2,.2) << " ; " << pAA(.2,.2) << endl;
 		cout << "(pas de contribution a la trainee) " << endl;
 		// Forcage pour le probleme a l'ordre 3 :	
-		[FrE,FtE,FzE,FpE]= CMN(-1,urAC,utAC,uzAC,2,urAA,utAA,uzAA); //
+		[FrE,FtE,FzE,FpE]= CMN(0,urAC,utAC,uzAC,0,urAA,utAA,uzAA); //
                 complex muA2 = int2d(th)(FrE*conj(urAAdj)+FtE*conj(utAAdj)+FzE*conj(uzAAdj))/denomA;
 		cout << "MuA2 : " << muA2 << endl;
-		complex muA = muA1+muA2;
-                cout << "muA = " << muA1 << " + " << muA2 << " = " << muA1+muA2 << endl; 
+		complex muA = muA0+muA2;
+                cout << "muA = " << muA0 << " + " << muA2 << " = " << muA0+muA2 << endl; 
 
 
 
@@ -501,74 +428,50 @@ p2xp2xp2xp1<complex> [urAAs,utAAs,uzAAs,pAAs],[urAA,utAA,uzAA,pAA]; // Terme U^2
 /// DERNIER CHAPITRE : BILAN SUR LES FORCES
 
 
-cout << endl << "####" << endl << "#### BILAN SUR LES FORCES :"<< endl << "#####" <<  endl;
+cout << endl << "####" << endl << "#### BILAN SUR L'EQUATION d'AMPLITUDE  :"<< endl << "#####" <<  endl;
 		
-cout << "Portance = |A| = sqrt(lambdaA/muA)*sqrt(epsilon)" << endl;
-cout << "                 = " << sqrt(abs(lambdaA/muA)) << " *sqrt(epsilon) " << endl;
-cout << "                 = " << sqrt(abs(lambdaA/muA))/Rec << " *sqrt(Re-Rec) " << endl;
+cout << " dA / dt =  epsilon*lambdaA * A - muA* |A|^2 *A " << endl;
+cout << " lamddaA = " << lambdaA << " ; muA = " << muA << endl << endl;  
+		
+cout << "Flow rate = |A| = sqrt(lambdaA,r/muA,r)*sqrt(epsilon)" << endl;
+cout << "                 = " << sqrt(real(lambdaA)/real(muA)) << " *sqrt(epsilon) " << endl;
+cout << "                 = " << sqrt(real(lambdaA)/real(muA))/Rec << " *sqrt(Re-Rec) " << endl;
 //cout << "COUPLE : " << endl;
 //cout << "                 = " << sqrt(abs(lambdaA/muA))*real(COUPLEA) << " *sqrt(epsilon) " << endl;
 //cout << "                 = " << sqrt(abs(lambdaA/muA))/Rec*real(COUPLEA) << " *sqrt(Re-Rec) " << endl;
 
+cout << "FREQUENCY : omega = " << lambdaMI << " + " << (imag(lambdaA)-imag(muA)*real(lambdaA)/real(muA)) << " * epsilon " << endl;
+cout << "                  = " << lambdaMI << " + " << (imag(lambdaA)-imag(muA)*real(lambdaA)/real(muA))/Rec^2 << " * (Re-Rec) " << endl;
+
+ 		 real DeltaPeps = pD(-5,5)-pD(15,5);
+ 		 real DeltaP0 = pp(-5,5)-pp(15,5);
+
 		
-cout << "Trainee (avant seuil) = " << Trainee0 << " + " << TraineeEpsilon << " * epsilon" << endl;
-cout << "                      = " << Trainee0 << " + " << TraineeEpsilon/Rec^2 << " * (Re-Rec)" << endl;
-cout << "Trainee (apres seuil) = " << Trainee0 << " + " 
-                                   << TraineeEpsilon+real(TraineeAAs*lambdaA/muA) << " * epsilon" << endl;
-cout << "                      = " << Trainee0 << " + " 
-                                   << (TraineeEpsilon+real(TraineeAAs*lambdaA/muA))/Rec^2 << " * (Re-Rec)" << endl;
+cout << "DeltaP (avant seuil) = " << DeltaP0 << " + " << DeltaPeps << " * epsilon" << endl;
+cout << "                      = " << DeltaP0 << " + " << DeltaPeps/Rec^2 << " * (Re-Rec)" << endl;
+cout << "DeltaP (apres seuil) = " << DeltaP0 << " + " 
+                                   << DeltaPeps+DeltaPAAs*real(lambdaA)/real(muA) << " * epsilon" << endl;
+cout << "                      = " << DeltaP0 << " + " 
+                                   << (DeltaPeps+DeltaPAAs*real(lambdaA)/real(muA))/Rec^2 << " * (Re-Rec)" << endl;
                                    
 
 
 
-////
-//// CHAPITRE 5 : effet de la rotation 
-////
-        
-complex apL,avL,apC,avC;
 
-apL = -int1d(th,2,21,22,23)(y/2*pAAdjC*(x*N.y-y*N.x))/denomA;
-avL = -nu*int1d(th,2,21,22,23)(y/2*
-	(     (dy(urAAdjC)*N.y+dx(urAAdjC)*N.x)*x
-	 + 1i*(dy(utAAdjC)*N.y+dx(utAAdjC)*N.x)*x
-	 -    (dy(uzAAdjC)*N.y+dx(uzAAdjC)*N.x)*y ) )/denomA;
-
-//apC = -int1d(th,2,21,22,23)(y/2*pAAdjC*(x*N.y-y*N.x))/denomA;
-//avC = -nu*int1d(th,2,21,22,23)(y/2*
-//	(     (dy(urAAdjC)*N.y+dx(urAAdjC)*N.x)*x
-//	 + 1i*(dy(utAAdjC)*N.y+dx(utAAdjC)*N.x)*x
-//	 -    (dy(uzAAdjC)*N.y+dx(uzAAdjC)*N.x)*y )*(x*N.y-y*N.x) )/denomA;
-
-
-
-	cout << endl << endl << "#### PRISE EN COMPTE DE LA ROTATION : " << endl << endl;
-    cout << "#### on pose u1 = A uhat + omega uh " << endl;
-    cout << "####  la cond de compatibilite conduit a un terme a omega A dans l'eq d'amplitude" << endl;
-     
-	cout << " terme a : " << endl <<    " ( pression :) " << apL << endl
-	<< " (visqueux :)" << avL << endl << " ( total    :) " << apL+avL << endl;
-
-        cout << "APPLICATION SPHERE TOURNANTE (solution lineaire :)" << endl
-             << " A = omega/epsilon * " << -(apL+avL)/lambdaA << endl
-             << "          = omega/(d Re ) * " << -(apL+avL)/lambdaA*Rec^2 << endl
-	     << " Couple   = alpha/epsilon * " << -(apC+avC)/lambdaA << endl
-             << "          = alpha/(d Re ) * " << -(apC+avC)/lambdaA*Rec^2 << endl
-             << " Couple  = omega/epsilon * " << -(apL+avL)/lambdaA*COUPLEA << endl
-             << "          = omega/(d Re ) * " << -(apL+avL)/lambdaA*Rec^2*COUPLEA << endl;  
-
-
-{
+// ecriture des resultats dans un fichier ff2m pour post-traitement matlab
+ {
+ 		
+ 		 		 //real DeltaPAAs = 0;complex muA = 0;
  		 ofstream file("WNL_results.ff2m");
  		 file << "### Data generated by Freefem++ ; " << endl;
     	 file << "Coefficients of the Amplitude Equation obtained by Weakly Non Linear analysis" << endl;
     	 file << "Format :" << endl;
-	     file << "real Rec complex eigenvalue complex lambdaA complex muA complex a0 " 
-	          << " real Drag0 real Drageps real DragAAs" << endl << endl ; 
-			file << Rec << endl 
-				<< lambdaMR << " " << lambdaMI  << endl 
-				<< real(lambdaA) << " " << imag(lambdaA) << endl 
-			     << real(muA) << " " << imag(muA) <<  endl 
-			     << real(apL+avL) << " " << imag(apL+avL) << endl 
-			     << Trainee0 << " " << TraineeEpsilon << " " << real(TraineeAAs) << endl;
-};
+	     file << "real Rec complex eigenvalue complex lambdaA complex muA complex muA0 complex muA2" 
+	          << " real DeltaP0 real DeltaPeps real DeltaPAAs" << endl ; 
+			file << Rec << " " << lambdaMR << " " << lambdaMI  << " " 
+				<< real(lambdaA) << " " << imag(lambdaA) << " " 
+			     << real(muA) << " " << imag(muA)  << " " << real(muA0) << " " << imag(muA0)  << " " << real(muA2) << " " << imag(muA2)  << " "
+			     << DeltaP0 << " " << DeltaPeps << " " << real(DeltaPAAs) << endl;
+}
+//
 
