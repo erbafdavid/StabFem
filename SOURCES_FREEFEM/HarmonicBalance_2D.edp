@@ -384,8 +384,8 @@ cout << " LU-ing matrix... done" << endl;
 	
 	if(abs(dXX)>1000) 
 	{
-	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",ubx,uby,ubp,"MeanFlow",-1);
-	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1x,u1y,u1p,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",-1);
+	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",ub,"MeanFlow",-1);
+	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",-1);
 	cout << " Newton Loop DIVERGED " << endl;	
 	}
 	
@@ -402,7 +402,7 @@ cout << " LU-ing matrix... done" << endl;
 	file << endl << endl << Re;
 }; 
 
-SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0x,u0y,u0p,"MeanFlow",iter);
+SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0,"MeanFlow",iter);
 
     [u1x,u1y,u1p] = [u1rx+1i*u1ix,u1ry+1i*u1iy,u1rp+1i*u1ip]; 
 
@@ -415,7 +415,7 @@ SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0x,u0y,u0p,"MeanFlow",iter);
 
 
 
-SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1x,u1y,u1p,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
+SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
 
 	}
 

@@ -89,7 +89,7 @@ mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
 fespace Xh(th,P2);             ////// f.e. space for vel.
 fespace Mh(th,P1);            ////// f.e. space for pressure
 fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
-XXMh<complex> [ux,uy,p];                 ///////  -> unknown for the Navier-Stokes problem
+XXMh<complex> [ux,uy,up];                 ///////  -> unknown for the Navier-Stokes problem
 XXMh [vx,vy,q];                 ///////  -> test for Navier-Stokes
 XXMh [Ubx,Uby,Pb];          ///////  -> Base Flow
 
@@ -129,35 +129,35 @@ cbin >> Ubx[];
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-varf   LNSE ([ux,uy,p],[vx,vy,q]) =
+varf   LNSE ([ux,uy,up],[vx,vy,q]) =
    int2d(th)( 
    			-2*nu*(D(u):D(v))
    			//Diffusion(nu,ux,uy,vx,vy)
-             + p*q*(eps) 
-             + p*div(v)
+             + up*q*(eps) 
+             + up*div(v)
              + div(u)*q
              - Conv(u,Ub,v)
              )
- + int2d(th)( -shift*(ux*vx+uy*vy+p*q*0.0) )
+ + int2d(th)( -shift*(ux*vx+uy*vy) )
  + BoundaryconditionsStability(u,v,symmetry);
  
-varf   LNSEadjoint ([ux,uy,p],[vx,vy,q]) =
+varf   LNSEadjoint ([ux,uy,up],[vx,vy,q]) =
    int2d(th)( 
    			-2*nu*(D(u):D(v))
             //Diffusion(nu,ux,uy,vx,vy)
-             + p*q*(eps) 
-             + p*div(v)
+             + up*q*(eps) 
+             + up*div(v)
              + div(u)*q
              - Conv(v,Ub,u)
              )
- + int2d(th)( -conj(shift)*(ux*vx+uy*vy+p*q*0.0) ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
+ + int2d(th)( -conj(shift)*(ux*vx+uy*vy) ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
  + BoundaryconditionsStability(u,v,symmetry); 
 
 
 
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
-	varf b([ux,uy,p],[vx,vy,q]) = int2d(th)( (ux*vx+uy*vy+p*q*0.0) );
+	varf b([ux,uy,up],[vx,vy,q]) = int2d(th)( (ux*vx+uy*vy) );
 		matrix<complex> B= b(XXMh,XXMh,solver=CG);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -220,8 +220,9 @@ if(iadjoint=="A") { ev = conj(ev); } ;
  		  fileMode << eux[i][]; 
  		  fileMode << endl << endl << Re << endl << endl << real(ev[i]) << "   " << imag(ev[i])  << endl;
  		  }
+ 		  ux[] = eux[i][]; 
  		 cout << "Writing eigenmode in file " << namefile << endl;
- 		 SFWriteMode(namefile+".ff2m",eux[i],euy[i],eup[i],ev[i],shift,"EigenModeD",1);	 // MACRO DEFINED in StabFem_Macros.edp
+ 		 SFWriteMode(namefile+".ff2m",u,ev[i],shift,"EigenModeD",1);	 // MACRO DEFINED in StabFem_Macros.edp
  		 
  	};
 	cout << "it's done" << endl;
@@ -388,13 +389,13 @@ else if(iadjoint=="S")
     }
 
     // write output in .dff.2m format (for StabFem)
-	SFWriteMode(namefileFF,ux,uy,p,lambda,shift,"EigenMode"+typeDA,iter);	 // MACRO DEFINED in StabFem_Macros.edp
+	SFWriteMode(namefileFF,u,lambda,shift,"EigenMode"+typeDA,iter);	 // MACRO DEFINED in StabFem_Macros.edp
 	
 	} // end of post processing of simple shift-invert case
 else // case iteration failed
 {
 	cout << " ERROR : shift-invert iteration failed ; shift is probably wrong" << endl;
-	SFWriteMode(namefileFF,ux,uy,p,lambda,shift,"EigenMode"+typeDA,-1);	 // MACRO DEFINED in StabFem_Macros.edp
+	SFWriteMode(namefileFF,u,lambda,shift,"EigenMode"+typeDA,-1);	 // MACRO DEFINED in StabFem_Macros.edp
 
 };
 

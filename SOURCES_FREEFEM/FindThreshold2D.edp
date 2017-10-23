@@ -6,6 +6,9 @@
 /////		Adapted for usage with matlab driver by D. Fabre, july 2017
 /////
 /////		NEEDS SOME CLEAN-UP !
+/////
+/////  this program should be rewritten in the same way as HarmonicBalance_2D.edp
+/////
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 //load "iovtk"                      //////// library to write vtk files
@@ -382,7 +385,9 @@ real nu=1/Re;
 		  file << endl << endl << Re;
 }; 
 
-SFWriteBaseFlow(ffdatadir+"BaseFlow_threshold.ff2m",u1b,u2b,pb,"BaseFlow",i);
+XXMh [ubbx,ubby,ubbp] = [u1b,u2b,pb]; // ugly fix
+ cout << "Writing base flow in file BaseFlow_threshold.ff2m" << endl;
+ SFWriteBaseFlow(ffdatadir+"BaseFlow_threshold.ff2m",ubb,"BaseFlow",i);
 
 
 
@@ -401,6 +406,8 @@ SFWriteBaseFlow(ffdatadir+"BaseFlow_threshold.ff2m",u1b,u2b,pb,"BaseFlow",i);
 	xx=x;
 	yy=y;
     p1<complex> ux1,uy1,pp1,vort1;
+
+XXMh<complex> [umm1x,umm1y,umm1p] = [um1s,um2s,pms]; // ugly fix
 
  	 cout << "Writing eigenmode in file Eigenmode_threshold.ff2m" << endl;
      SFWriteMode(ffdatadir+"Eigenmode_threshold.ff2m",um1s,um2s,pms,1i*omega,1i*omega,"EigenModeD",i)

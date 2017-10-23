@@ -29,7 +29,7 @@ else
     for p = parameters;
         stringparam = [stringparam, num2str(p), '  ' ]; 
     end
-    command = ['echo  '' ', stringparam, ' '' | ',ff,' ',meshfile]
+    command = ['echo  '' ', stringparam, ' '' | ',ff,' ',meshfile];
 end
 
 error = 'ERROR : Freefem not working (path may be wrong, change variable ff in script)';

@@ -32,9 +32,11 @@ for i = 1:length(vars)
 end
 
 np=rawData1(1,1);
-meshstruct.np = np;
 
-if(nargin==2)&&(strcmp(opt,'nponly')==1) return; end %% in case only np is required ; for instance in adaptmesh processes
+if(nargin==2)&&(strcmp(opt,'nponly')==1) 
+    meshstruct.np = np;
+    return; 
+end %% in case only np is required ; for instance in adaptmesh processes (to be rationalized)
 
 k=0;
 for i=2:np+1
@@ -99,23 +101,37 @@ else
 end 
 
 
+
+[filepath,name,ext] = fileparts(fileToRead1);
+fileToRead2 = [filepath,'/',name,'.ff2m'];
+
+if(exist([fileToRead2])==2)
+    if(verbosity>0)  disp(['FUNCTION  importFFmesh.m : reading complementary file ' fileToRead2 ]); end
+    mesh1.np = np;
+    meshstruct = importFFdata(mesh1,fileToRead2);
+    meshstruct = rmfield(meshstruct,'mesh');
+    % Nb this is ugly programming. to be rationalized in next version
+end
+
+
+meshstruct.np = np;
 meshstruct.points = points;
 meshstruct.tri = tri;
 meshstruct.seg = seg;
 meshstruct.name = fileToRead1;
+meshstruct.problemtype=meshstruct.datatype;
+meshstruct = rmfield(meshstruct,'datatype');
+%    rawData2 = importdata([ fileToRead1 'info'] );
+%    problem=rawData2.textdata{3};
+%    meshstruct.problemtype=problem;
+%    header = rawData2.textdata{5};
+%    description=textscan(header,'%s');
+%    for ii = 1:length(rawData2.data);
+%        description{1}{ii};
+%        meshstruct=setfield(meshstruct,description{1}{ii},rawData2.data(ii));
+%    end
 
-if(exist([fileToRead1 'info'])==2)
-    if(verbosity>0)  disp(['FUNCTION  importFFmesh.m : reading complementary file ' fileToRead1 'info' ]); end
-    rawData2 = importdata([ fileToRead1 'info'] );
-    problem=rawData2.textdata{3};
-    meshstruct.problemtype=problem;
-    header = rawData2.textdata{5};
-    description=textscan(header,'%s');
-    for ii = 1:length(rawData2.data);
-        description{1}{ii};
-        meshstruct=setfield(meshstruct,description{1}{ii},rawData2.data(ii));
-    end
-end
+
 
 
 

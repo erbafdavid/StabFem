@@ -18,7 +18,7 @@ figureformat='png'; AspectRatio = 0.56; % for figures
 
 if(exist('baseflow')==1)
 disp(' ADAPTMESH PROCEDURE WAS PREVIOUSLY DONE, START WITH EXISTING MESH : '); 
-baseflow=SF_BaseFlow(baseflow,60);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
 [ev,em] = SF_Stability(baseflow,'shift',0.04+0.76i,'nev',1,'type','S');
 else
    
@@ -27,9 +27,9 @@ disp(' ');
 disp(' LARGE MESH : [-40:80]x[0:40] ');
 disp(' ');    
 baseflow=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
-baseflow=SF_BaseFlow(baseflow,1);
-baseflow=SF_BaseFlow(baseflow,10);
-baseflow=SF_BaseFlow(baseflow,60);
+baseflow=SF_BaseFlow(baseflow,'Re',1);
+baseflow=SF_BaseFlow(baseflow,'Re',10);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
 baseflow=SF_Adapt(baseflow,'Hmax',5);
 baseflow=SF_Adapt(baseflow,'Hmax',5);
 disp(' ');
@@ -43,7 +43,7 @@ end
 
 % plot the mesh (full size)
 plotFF(baseflow,'mesh');
-title('Adapted mesh (full size)');
+title('Initial mesh (full size)');
 box on; %pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Mesh_Full',figureformat); 
@@ -51,7 +51,7 @@ saveas(gca,'Cylinder_Mesh_Full',figureformat);
 % plot the mesh (zoom)
 baseflow.xlim = [-2 4]; baseflow.ylim=[0,3];
 plotFF(baseflow,'mesh');
-title('Adapted mesh (zoom)');
+title('Initial mesh (zoom)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Mesh',figureformat);
@@ -182,7 +182,7 @@ pause(0.1);
 
 if(exist('Rec')==1)
     disp('INSTABILITY THRESHOLD ALREADY COMPUTED');
-    baseflow=SF_BaseFlow(baseflow,Rec);
+    baseflow=SF_BaseFlow(baseflow,'Re',Rec);
     [ev,em] = SF_Stability(baseflow,'shift',em.lambda,'type','S','nev',1);
 else 
 %%% DETERMINATION OF THE INSTABILITY THRESHOLD
@@ -233,7 +233,7 @@ else
 Re_HB = [Rec 47.5 48 49 50 55 60 65 70 75 80 85 90 95 100];
 Cx_HB = [Cxc]; Lx_HB = [Lxc]; omega_HB = [Omegac]; Aenergy_HB = [0]; Cy_HB = [0];
 
-baseflow=SF_BaseFlow(baseflow,47.5);
+baseflow=SF_BaseFlow(baseflow,'Re',47.5);
 [ev,em] = SF_Stability(baseflow,'shift',Omegac*i);
 [meanflow,mode] = SF_HarmonicBalance(baseflow,em,'sigma',0.,'Re',47.5,'Aguess',0.8);
 
@@ -314,7 +314,7 @@ else
     disp(' COMPUTING SC model for Re=100');
 % determination of meanflow/selfconsistentmode for Re = 100
 
-baseflow=SF_BaseFlow(baseflow,100);
+baseflow=SF_BaseFlow(baseflow,'Re',100);
 [ev,em] = SF_Stability(baseflow,'shift',0.12+0.72i,'nev',1,'type','D');
 sigma_SC = [real(em.lambda),0.12:-.0025:.1,.09:-.01:0];
 
