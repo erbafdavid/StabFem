@@ -62,7 +62,7 @@ if(exist(['' ffdatadir '/BaseFlow_Re' num2str(Re) '.txt'])==2);
     system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt BaseFlow.txt']);
 else
     disp('computing base flow ');
-    baseflow=SF_BaseFlow(baseflow,Re);
+    baseflow=SF_BaseFlow(baseflow,'Re',Re);
 end
 
 disp('performing stability computation');

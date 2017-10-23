@@ -7,13 +7,16 @@ figureformat = 'png';
 
 % Chapter 1 : generation of a baseflow and a mesh for Re=200
 baseflow=SF_Init('mesh_Disk.edp');
-baseflow=SF_BaseFlow(baseflow,'Re',10,'Porosity',1e-3,'Omegax',0.1);
-
+baseflow=SF_BaseFlow(baseflow,'Re',10,'Porosity',1e-3,'Omegax',0.);
 baseflow = SF_Adapt(baseflow,'Hmin',5e-3);
+
 baseflow=SF_BaseFlow(baseflow,'Re',30);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
 baseflow=SF_BaseFlow(baseflow,'Re',100);
+baseflow=SF_BaseFlow(baseflow,'Re',150);
+baseflow = SF_Adapt(baseflow,'Hmin',5e-3);
 baseflow=SF_BaseFlow(baseflow,'Re',200);
-baseflow = SF_Adapt(baseflow);
+baseflow = SF_Adapt(baseflow,'Hmin',5e-3);
 
 baseflow.xlim = [-2 4]; baseflow.ylim=[0,3];
 plotFF(baseflow,'ux');pause(0.1);
