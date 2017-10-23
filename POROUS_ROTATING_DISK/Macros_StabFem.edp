@@ -20,6 +20,7 @@
 /// The following case is for the AXISYMMETRIC DISK and includes the additional macros
 /// required to compute lift and drag forces : Trainee(u,symmetry) and Portance(u,symmetry)
 
+
 IFMACRO(!ncomponentsBF)
 macro ncomponentsBF 3//EOM  // THIS PARAMETERS SHOULD BE 2 if BASE FLOW is (U,V,P) and 3 if it is (U,V,W,P) (case with rotation)
 ENDIFMACRO
