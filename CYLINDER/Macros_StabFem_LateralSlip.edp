@@ -28,7 +28,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 
 macro BoundaryconditionsBaseFlow(du,u,v)
 	           on(bcinlet,du#x=1.0-upx,du#y=0.0)
-	         + on(bclat,du#y=0.0) 
+	         + on(bclat,du#y=0.0)  
              + on(bcwall,du#x=0.0,du#y=0.0)
              + int1d(th,bcaxis)(du#x*v#x*1e30*(symmetryBaseFlow=="A")+du#y*v#y*1e30*(symmetryBaseFlow=="S"))       
 //EOM
@@ -44,23 +44,23 @@ macro BoundaryconditionsStability(u,v,symmetry)
 
 // HERE ARE SOME MACROS WHICH ARE USEFUL FOR POST-PROCESSING WITH A 2D FLOW OVER A BLUFF BODY
 
-macro Trainee(ux,uy,p,symmetry)   
+macro Trainee(u,symmetry)   
 	(
 	(1*(symmetry=="N")+2*(symmetry=="S"))
 	*(
-	int1d(th,2,21,22,23)(p*N.x)
-	-nu*int1d(th,2,21,22,23)( (2*dx(ux)*N.x+(dx(uy)+dy(ux))*N.y))
+	int1d(th,2,21,22,23)(u#p*N.x)
+	-nu*int1d(th,2,21,22,23)( (2*dx(u#x)*N.x+(dx(u#y)+dy(u#x))*N.y))
 	)
 	)
 //EOM
 	
 
-macro Portance(ux,uy,p,symmetry)   
+macro Portance(u,symmetry)   
 	(
 	(1*(symmetry=="N")+2*(symmetry=="A"))
 	*(
-	int1d(th,2,21,22,23)(p*N.y)
-	-nu*int1d(th,2,21,22,23)( (2*dy(uy)*N.y+(dx(uy)+dy(ux))*N.x))
+	int1d(th,2,21,22,23)(u#p*N.y)
+	-nu*int1d(th,2,21,22,23)( (2*dy(u#y)*N.y+(dx(u#y)+dy(u#x))*N.x))
 	)
 	)
 //EOM
@@ -68,7 +68,7 @@ macro Portance(ux,uy,p,symmetry)
 
 
 
-macro SFWriteBaseFlow(filename,ux,uy,p,typeFlow,iter)
+macro SFWriteBaseFlow(filename,u,typeFlow,iter)
 	if(iter>=0)
 	{
 	fespace p1forff2m(th,P1);  
@@ -76,10 +76,10 @@ macro SFWriteBaseFlow(filename,ux,uy,p,typeFlow,iter)
 	xx=x;
 	yy=y;
     p1forff2m ut,vt,pt,vort;
-	ut=ux;
-	vt=uy;
-	pt=p;
-	vort=dy(ux)-dx(uy); /* vorticity */
+	ut=u#x;
+	vt=u#y;
+	pt=u#p;
+	vort=dy(u#x)-dx(u#y); /* vorticity */
 	p1forff2m psi,phi;
 /*	solve Laplace(psi,phi, solver = CG) */
 /* 	= int2d(th)(dx(psi)*dx(phi)+dy(psi)*dy(phi)) */
@@ -91,7 +91,7 @@ macro SFWriteBaseFlow(filename,ux,uy,p,typeFlow,iter)
     file << typeFlow << endl;
     file << "Format : " << endl;	
 	file << "real Re P1 ux P1 uy P1 p P1 vort P1 psi real iter " ;
-	string PostProcessBaseFlowDescription = "real Drag real Lx"; /* customizable output */ 
+	string PostProcessBaseFlowDescription = "real Cx real Lx"; /* customizable output */ 
 	file << PostProcessBaseFlowDescription << endl << endl ; 
 	file << Re << endl;	
 			for (int j=0;j<ut[].n ; j++) file << ut[][j] << endl;
@@ -103,9 +103,9 @@ macro SFWriteBaseFlow(filename,ux,uy,p,typeFlow,iter)
 	
 	cout << "#### customisable output for WAKE OF A 2D BLUFF BODY : " << endl; 
     /* Calcul de la trainee */
-    real DragMode = Trainee(ux,uy,p,symmetryBaseFlow);
-	cout << "#    Drag =  " << DragMode << endl;
-    file << DragMode << " " ; 
+    real DragMode = Trainee(u,symmetryBaseFlow);
+	cout << "#    Cx =  " << 2*DragMode << endl; /* factor 2 because Fx = 1/2 Cx */
+    file << 2*DragMode << " " ; 
     
     /* mesure de la longueur de recirculation */
     real Lx, Uap, Uav;
@@ -139,7 +139,7 @@ macro SFWriteBaseFlow(filename,ux,uy,p,typeFlow,iter)
 	
 	
 	
-macro SFWriteMode(namefile,ux,uy,p,ev,shift,typeFlow,iter)
+macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 		 {
 		 ofstream file(namefile);
    		 fespace p1forff2m(th,P1); 
@@ -152,15 +152,15 @@ macro SFWriteMode(namefile,ux,uy,p,ev,shift,typeFlow,iter)
     	 file << "Format :" << endl;
     	 string descriptionFF;
     	 if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
-    	 	{  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real Energy complex Lift"; }
+    	 	{  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Cy"; }
     	 else 
-    	    {  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real Energy complex Lift"; }
+    	    {  descriptionFF="real Re  complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj complex CyAdj"; }
 	     file << descriptionFF << endl << endl ; 
 		 file << Re  << endl << real(ev) << " " << imag(ev) << " " << real(shift) << " " << imag(shift) << " " << iter << endl << endl;
- 		ux1=ux;
-		uy1=uy;
-		pp1=p;
-		vort1=dy(ux)-dx(uy);
+ 		ux1=u#x;
+		uy1=u#y;
+		pp1=u#p;
+		vort1=dy(u#x)-dx(u#y);
 		
 		for (int j=0;j<ux1[].n ; j++) file << real(ux1[][j]) << " " << imag(ux1[][j]) << endl;
 		for (int j=0;j<ux1[].n ; j++) file << real(uy1[][j]) << " " << imag(uy1[][j]) << endl;
@@ -170,13 +170,13 @@ macro SFWriteMode(namefile,ux,uy,p,ev,shift,typeFlow,iter)
 		cout << "#### customisable output for a mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
 
 	
-		real EnergyMode = sqrt(2*int2d(th)(abs(ux)^2+abs(uy)^2));
-		cout << "#   Energy (with defition of Mantic-Lugo) = " << EnergyMode << endl;
-		file << EnergyMode << endl;
+		real AEnergyMode = sqrt(2*int2d(th)(abs(u#x)^2+abs(u#y)^2)); 
+		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
+		file << AEnergyMode << endl;
 
-		complex LiftMode = Portance(ux,uy,p,"A"); 
-		cout << "#   Lift = " << LiftMode << endl;
-		file << real(LiftMode) << " " << imag(LiftMode) << endl;
+		complex LiftMode = Portance(u,"A"); 
+		cout << "#   Cy = " << 2*LiftMode << endl;
+		file << 2*real(LiftMode) << " " << 2*imag(LiftMode) << endl;
 		
 		};
 //EOM	
