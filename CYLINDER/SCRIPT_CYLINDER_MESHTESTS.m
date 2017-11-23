@@ -4,15 +4,8 @@
 
 % CHAPTER 0 : set the global variables needed by the drivers
 
-global ff ffdir ffdatadir sfdir verbosity
-%ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++-nw -v 0'; % on IMFT network
-ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; % on DF's macbookpro 
-ffdatadir = './WORK/';
-sfdir = '../SOURCES_MATLAB/'; % where to find the matlab drivers
-ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
-verbosity = 1;
-addpath(sfdir);
-system(['mkdir ' ffdatadir]);
+run('../SOURCES_MATLAB/SF_Start.m');
+
 figureformat='png'; AspectRatio = 0.56; % for figure
 
 
@@ -23,10 +16,10 @@ disp(' ');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-baseflow=SF_Init('Mesh_Cylinder_Large.edp');
-baseflow=SF_BaseFlow(baseflow,1);
-baseflow=SF_BaseFlow(baseflow,10);
-baseflow=SF_BaseFlow(baseflow,60);
+baseflow=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
+baseflow=SF_BaseFlow(baseflow,'Re',1);
+baseflow=SF_BaseFlow(baseflow,'Re',10);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 
@@ -40,7 +33,7 @@ Re_Range = [40 : 5: 100];
 Drag_tab = []; Lx_tab = [];lambda_branch=[];
     for Re = Re_Range
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
+        Drag_tab = [Drag_tab,baseflow.Cx];
         Lx_tab = [Lx_tab,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda_branch = [lambda_branch ev];
@@ -70,7 +63,7 @@ Re_Range = [40 : 5: 100];
 Drag_tab = []; Lx_tab = [];lambda_branch=[];
     for Re = Re_Range
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
+        Drag_tab = [Drag_tab,baseflow.Cx];
         Lx_tab = [Lx_tab,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda_branch = [lambda_branch ev];
@@ -110,7 +103,7 @@ baseflow=SF_BaseFlow(baseflow,'Re',40);
 Drag_tab = []; Lx_tab = [];lambda_branch=[];
     for Re = Re_Range
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
+        Drag_tab = [Drag_tab,baseflow.Cx];
         Lx_tab = [Lx_tab,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda_branch = [lambda_branch ev];
@@ -141,7 +134,7 @@ Re_Range = [40 : 5: 100];
 Drag_tab = []; Lx_tab = [];lambda_branch=[];
     for Re = Re_Range
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
+        Drag_tab = [Drag_tab,baseflow.Cx];
         Lx_tab = [Lx_tab,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda_branch = [lambda_branch ev];
@@ -171,7 +164,7 @@ Re_Range = [40 : 5: 100];
 Drag_tab = []; Lx_tab = [];lambda_branch=[];
     for Re = Re_Range
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
+        Drag_tab = [Drag_tab,baseflow.Cx];
         Lx_tab = [Lx_tab,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda_branch = [lambda_branch ev];
@@ -203,7 +196,7 @@ Re_Range = [40 : 5: 100];
 Drag_tab = []; Lx_tab = [];lambda_branch=[];
     for Re = Re_Range
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
+        Drag_tab = [Drag_tab,baseflow.Cx];
         Lx_tab = [Lx_tab,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda_branch = [lambda_branch ev];
@@ -225,10 +218,10 @@ disp(' ' );
 system('cp Macros_StabFem_LateralNeuman.edp Macros_StabFem.edp');
 
 
-baseflow=SF_Init('Mesh_Cylinder_VeryLarge.edp');
-baseflow=SF_BaseFlow(baseflow,1);
-baseflow=SF_BaseFlow(baseflow,10);
-baseflow=SF_BaseFlow(baseflow,60);
+baseflow=SF_Init('Mesh_Cylinder.edp',[-80 160 80]);
+baseflow=SF_BaseFlow(baseflow,'Re',1);
+baseflow=SF_BaseFlow(baseflow,'Re',10);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 
@@ -243,7 +236,7 @@ Drag_tab = []; Lx_tab = [];lambda_branch=[];
 Re_Range = [40 : 5: 100];
     for Re = Re_Range
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
+        Drag_tab = [Drag_tab,baseflow.Cx];
         Lx_tab = [Lx_tab,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda_branch = [lambda_branch ev];
@@ -263,10 +256,10 @@ disp(' ' );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-baseflow=SF_Init('Mesh_Cylinder.edp');
-baseflow=SF_BaseFlow(baseflow,1);
-baseflow=SF_BaseFlow(baseflow,10);
-baseflow=SF_BaseFlow(baseflow,60);
+baseflow=SF_Init('Mesh_Cylinder.edp',[-20 40 20]);
+baseflow=SF_BaseFlow(baseflow,'Re',1);
+baseflow=SF_BaseFlow(baseflow,'Re',10);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 
@@ -281,7 +274,7 @@ Re_Range = [40 : 2 : 100];
 Drag_tab = []; Lx_tab = [];lambda_branch=[];
     for Re = Re_Range
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Drag];
+        Drag_tab = [Drag_tab,baseflow.Cx];
         Lx_tab = [Lx_tab,baseflow.Lx];
         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda_branch = [lambda_branch ev];
