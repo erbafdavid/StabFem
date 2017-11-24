@@ -123,6 +123,9 @@ EVr = rawData1(:,1);
 EVi = rawData1(:,2); 
 eigenvalues = EVr+1i*EVi;
 
+% sort eigenvalues
+[t,o]=sort(-real(eigenvalues)+1e-4*imag(eigenvalues)); eigenvalues=eigenvalues(o); 
+
 % updating two previous iterations
 if(strcmp(p.Results.shift,'cont')==1)
 sigmaPrevPrev = sigmaPrev;
@@ -157,6 +160,7 @@ end
         egv.type=p.Results.type;
         eigenvectors = [eigenvectors egv];
         end
+        eigenvectors=eigenvectors(o);%sort the eigenvectors with the same filter as the eigenvalues
     elseif(p.Results.nev>1&&p.Results.type=='A')
     eigenvectors=[];
     for iev = 1:p.Results.nev
@@ -164,6 +168,7 @@ end
         egv.type=p.Results.type;
         eigenvectors = [eigenvectors egv];
     end
+    eigenvectors=eigenvectors(o);%sort the eigenvectors with the same filter as the eigenvalues
     else
         error('ERROR');
     end
