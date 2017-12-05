@@ -1,0 +1,205 @@
+
+
+// README :
+// This file is adapted from "Newton_FormePont_V.edp" from "LiquidBridges++_V1.3".
+// Rapidly adapted by DF in december 2017 but it should be rationalised a lot !
+
+
+
+verbosity = 0;
+
+
+
+
+// Calcul de la forme d'equilibre d'un pont liquide axisymetrique
+
+
+// Parametres :
+real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueur (eviter de changer !)
+
+// La forme d'equilibre correspond a  K0 = constante
+// La methode consiste a deformer iterativement la forme 
+// de la surface jusqu'a aboutir a cet equilibre.
+
+// Remarque : la forme est parametree par la courbure K0, donc la methode ne
+// marche pas au voisinage d'un extremum de K0... 
+// (dans ce cas utiliser Newton_FormePont_Volume)
+
+// La forme initiale est lue dans le fichier "MeshBridge_guess.msh". 
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+include "Macros_StabFem.edp"
+
+mesh th=readmesh(ffdatadir+"mesh_guess.msh");
+mesh Shempty=emptymesh(th); 	// Maillage 'surface'
+//mesh Shempty=th;
+real K0 = 1; // guess
+real K1;
+real dpdz;
+
+include "Macros_Geometrie_Surface.edp"
+
+
+// Calcul des normales et des courbures
+CalcGeomSurf;
+
+// Plots
+//ExtendC;
+//plot(K0ext,[N0r,N0z],fill=1,value=1,wait=0,cmm="Normales de la forme initiale et Courbure K0 prolongee dans le plan");
+// plot(K0ext,fill=1,value=1,wait=0,cmm="Courbure K0 prolongee dans le plan");
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+real Zmin = yPointSurf(0);
+real Zmax = yPointSurf(Nsurface);
+real L = Zmax-Zmin;
+
+
+string typecont;
+
+cout << "COMPUTATION OF A MENISCUS (static equilibrium shape of a free surface) and corresponding mesh" << endl;
+cout << "Type of continuation : V (impose volume), P (impose pressure) or S (arclength continuation) ?" << endl;
+cin >>  typecont;
+
+real VolObj;
+
+
+if(typecont=="V")
+{
+cout << " ENTREZ LA VALEUR DU VOLUME RECHERCHE ?" << endl;
+cin >> VolObj;
+cout << "==> Volume reduit = " << VolObj/(pi*L) << endl;
+
+VolObj = VolObj/(2*pi);
+// Warning the "volume" used in the code is actually volume/(2 pi) ; to be rationalised someday
+}
+else if(typecont=="P")
+{
+cout << " ENTREZ LA VALEUR DE LA Courbure ?" << endl;
+cin >> K0;
+cout << "==> Courbure = " << K0 << endl;
+}
+
+
+real gamma ; // tension de surface (parametre pas encore utilisé dans cette version du programme mais a integrer proprement
+cout << "ENTREZ LA VALEUR DE LA TENSION DE SURFACE ?" << endl;
+cin >> gamma ;
+
+gamma = 1; // A virer quand ca sera fait proprement !
+
+
+cout << " ENTREZ LE PARAMETRE DE GRAVITE rho g  " << endl;
+cin >> dpdz;
+cout << "==> dpdz = " << dpdz << endl;
+
+
+////////////////////////////////////////////////////////////////
+//
+// ALGORIthME DE NEWTON
+//
+////////////////////////////////////////////////////////////////
+
+
+
+
+real Res=1;
+int Itmax = 30;
+
+
+for(int i = 0; (i<Itmax)&(Res>1e-9);i++)
+{
+
+// Calcul de la deformation de surface 
+
+if(typecont=="V")
+{
+CalcEtaV(etaNewton,K1,VolObj);
+cout << " Modif courbure : K1 = " << K1 << endl;
+K0 = K0+K1;
+cout << " Nouvelle courbure : K0 : " << K0 << endl;
+}
+else if(typecont=="P")
+{
+CalcEta;
+}
+else
+{
+cout << "ERROR : typecont should only be V or P (S not implemented yet)" << endl;
+exit(10);
+};
+
+ExtendEta; plot(etaext,fill=1,value=1,wait=0,cmm="eta ext"); //(pour visualisation)
+
+// Calcul d'un champ de deplacement du maillage 
+CalcDef;
+plot([ur,uz],fill=1,value=1,wait=0,cmm="champ de deformation calcule iteration "+i);
+
+// Deplacement du maillage
+th = movemesh(th,[x+ur,y+uz]);
+plot(th,Shempty,cmm="Deformation maillage iteration "+i,wait=1);
+real NewVolume = int2d(th)(x);
+cout << "NewVolume = " << NewVolume << endl; 
+//Shempty = emptymesh(th);
+Shempty = movemesh(Shempty,[x+ur,y+uz]);
+
+// Recalcul des normales et courbures
+CalcGeomSurf;
+ExtendC;
+K0ext = K0ext-(K0-dpdz*y);
+plot(K0ext,fill=1,value=1,cmm="Erreur courbure iteration "+i,wait=1);
+Res = int1d(Shempty,2)( (K0a+K0b-(K0-dpdz*y))^2 );
+cout << " iteration " << i << " : Res = " << Res << " Volume = " << NewVolume <<  " K1 = " << K1 
+<< " K0 : " << K0 <<  endl; 
+
+}
+//  ----------------------------------------------------------------------------------------------------
+// Fin du Newton 
+//  ----------------------------------------------------------------------------------------------------
+
+
+cout << endl << " ------- NEWTON TERMINE -------" << endl << endl;
+// Ecriture du maillage dans un fichier
+
+if (Res < 1e-4)
+{ cout << "solution convergee : on copie le maillage dans mesh.msh" << endl;
+ savemesh(th,ffdatadir+"mesh.msh");
+}
+else
+{
+cout << "ATTENTION : pas de convergence du Newton !" << endl;
+exit(-10);
+};
+
+
+SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+exec("cp "+ffdatadir+"mesh.msh "+ffdatadir+"mesh_guess.msh");
+exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_guess.ff2m");
+
+	
+	
+//// EXPORTATION DU CHAMP DE BASE AUX FORMAT FF2M
+	
+	
+		fespace femp2(th,P2);
+		femp2 phi = 0;
+		fespace femp1(th,P1);
+		femp1 phiP1 = 0;
+				
+		ofstream file(ffdatadir+"BaseFlow.txt");
+	    file << phi[] << endl;
+	    file <<  endl << 0 << endl;
+
+
+SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",phiP1);
+
+
+
+cout << endl << "The end..." << endl << endl;

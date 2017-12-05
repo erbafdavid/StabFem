@@ -26,81 +26,113 @@ persistent sigmaPrev sigmaPrevPrev
 
 %%% management of optionnal parameters
     p = inputParser;
-  %paramaters for axisymmetric case
-   addParameter(p,'m',1,@isnumeric);
-  %parameters for 2D case (to be implemented...)
-   addParameter(p,'k',1,@isnumeric);
-   addParameter(p,'sym','A',@ischar);
+  
    %parameters for the eigenvalue solver
    addParameter(p,'shift',1+1i);
    addParameter(p,'nev',1,@isnumeric);
    addParameter(p,'type','D',@ischar); 
-   addParameter(p,'Re',baseflow.Re,@isnumeric);
+  
+   % parameters for the post-processing options
    addParameter(p,'PlotSpectrum','no',@ischar); 
+   addParameter(p,'sort','no',@ischar); 
    
+   % parameter for most cases
+    if(isfield(baseflow,'Re')) ReDefault = baseflow.Re ; else ReDefault = 0; end;
+   addParameter(p,'Re',ReDefault,@isnumeric);
+   
+   %paramaters for axisymmetric case
+   addParameter(p,'m',1,@isnumeric);
+ 
+   %parameters for 2D case (to be implemented...)
+   addParameter(p,'k',1,@isnumeric);
+   addParameter(p,'sym','A',@ischar);   
+   
+   %parameters for spring-mounted object  
    addParameter(p,'STIFFNESS',0);
    addParameter(p,'MASS',0);
    addParameter(p,'DAMPING',0);
+   
+   % parameters for free-surface problems
+    if(isfield(baseflow,'gamma')) gammaDefault = baseflow.gamma ;else gammaDefault = 0; end;
+    addParameter(p,'gamma',gammaDefault,@isnumeric);
+    if(isfield(baseflow,'rhog')) rhogDefault = baseflow.gamma ;else rhogDefault = 0; end;
+    addParameter(p,'rhog',rhogDefault);
+    if(isfield(baseflow,'nu')) nuDefault = baseflow.nu ;else nuDefault = 0; end;
+    addParameter(p,'nu',nuDefault);
    
    parse(p,varargin{:});
    if(isempty(sigmaPrev))   sigmaPrev = p.Results.shift; sigmaPrevPrev = p.Results.shift; end;
    
    if(strcmp(p.Results.shift,'prev')==1)
        shift = sigmaPrev;       
-       if(verbosity>1) disp(['   # SHIFT from previous computation = ' num2str(shift)]); end
+       mydisp(5,['   # SHIFT from previous computation = ' num2str(shift)]); 
    elseif(strcmp(p.Results.shift,'cont')==1)      
        shift = 2*sigmaPrev-sigmaPrevPrev;      
-       if(verbosity>1) disp(['   # SHIFT extrapolated from two previous computations = ' num2str(shift)]); end
+       mydisp(5,['   # SHIFT extrapolated from two previous computations = ' num2str(shift)]); 
    elseif(isnumeric(p.Results.shift)==1);
        shift = p.Results.shift;
-        if(verbosity>1) disp(['   # SHIFT specified by user = ' num2str(shift)]); end
-   else disp('   # ERROR in SF_Stabilty while specifying the shift') 
+       mydisp(5,['   # SHIFT specified by user = ' num2str(shift)]); 
+   else
+       error('   # ERROR in SF_Stabilty while specifying the shift')
    end
  
 % run the relevant freefem script
-if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
-    
-     if(verbosity>0)disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
-     if(verbosity>0)disp(['      ### USING Axisymmetric Solver']);end
-     solvercommand = ['echo '' ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
-                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab_Axi.edp'];
+
+switch baseflow.mesh.problemtype
+
+    case('AxiXR')
+     
+     mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+     mydisp(1,['      ### USING Axisymmetric Solver']);
+     argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ...
+                          ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+     solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi.edp'];
         status = mysystem(solvercommand);
         
         
-elseif(strcmp(baseflow.mesh.problemtype,'AxiXRPOROUS')==1)
+    case('AxiXRPOROUS')
     
-     if(verbosity>0)disp(['      ### FUNCTION SF_Stability POROUS : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
-     if(verbosity>0)disp(['      ### USING Axisymmetric Solver WITH POROSITY AND SWIRL']);end
-     solvercommand = ['echo '' ' num2str(p.Results.Re) ' ' num2str(baseflow.Porosity) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
-                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab_Axi_Porous.edp'];
+     mydisp(1,['      ### FUNCTION SF_Stability POROUS : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+     mydisp(1,['      ### USING Axisymmetric Solver WITH POROSITY AND SWIRL']);
+     argumentstring = [ ' " ' num2str(p.Results.Re) ' ' num2str(baseflow.Porosity) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ' ];
+     solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi_Porous.edp'];
         status = mysystem(solvercommand);        
     
  
-   
-
-elseif(strcmp(baseflow.mesh.problemtype,'2D')==1)
+    case('2D')
          % 2D flow (cylinder, etc...)
-    
          
-        if(verbosity>0)disp(['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
-        if(verbosity>0)disp(['      ### USING 2D Solver']);end
-        solvercommand = ['echo '' ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
-                             ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab2D.edp'];
+        mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        mydisp(1,['      ### USING 2D Solver']);
+        argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D.edp'];
         status = mysystem(solvercommand);
    
-  
-elseif(strcmp(baseflow.mesh.problemtype,'2DMobile')==1)  % for spring-mounted cylinder
+    case('2DMobile')
+        % for spring-mounted cylinder
              
-        if(verbosity>0)disp(['      ### FUNCTION SF_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);end
-        if(verbosity>0)disp(['      ### USING 2D Solver FOR MOBILE OBJECT (e.g. spring-mounted)']);end
-        solvercommand = ['echo '' ' num2str(p.Results.Re) ' ' ...
-                             num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' ' num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
-                             ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' '' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
+        mydisp(1,['      ### FUNCTION SF_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        mydisp(1,['      ### USING 2D Solver FOR MOBILE OBJECT (e.g. spring-mounted)']);
+        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '... 
+                            num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
+                            ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ']; 
+        solvercommand = ['echo ' argumenstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
         status = mysystem(solvercommand);
+        
+     case('3DFreeSurfaceStatic')
+        % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
+        mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE POTENTIAL : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(10) ' " '];
+        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
+        status = mysystem(solvercommand);     
             
-%elseif(strcmp(baseflow.mesh.problemtype,keyword)==1)
+    %case(...)    
     % adapt to your case !
     
+    case default
+        error(['Error in SF_Stability : "problemtype =',baseflow.mesh.problemtype,'  not possible or not yet implemented !'])
 end
     
 
@@ -123,8 +155,26 @@ EVr = rawData1(:,1);
 EVi = rawData1(:,2); 
 eigenvalues = EVr+1i*EVi;
 
-% sort eigenvalues
-[t,o]=sort(-real(eigenvalues)+1e-4*imag(eigenvalues)); eigenvalues=eigenvalues(o); 
+% sort eigenvalues 
+%           (NB the term 1e-4 is a trick so that the sorting still
+%           works when eigenvalues come in complex-conjugate pairs)
+    switch(p.Results.sort)
+        case('LR') % sort by decreasing real part of eigenvalue
+            [t,o]=sort(-real(eigenvalues)+1e-4*abs(imag(eigenvalues)));
+        case('SR') % sort by increasing real part of eigenvalue
+            [t,o]=sort(real(eigenvalues)+1e-4*abs(imag(eigenvalues)));
+        case('SM') % sort by increasing magnitude of eigenvalue
+            [t,o]=sort(abs(eigenvalues)+1e-4*abs(imag(eigenvalues)));
+        case('LM') % sort by increasing magnitude of eigenvalue
+            [t,o]=sort(-abs(eigenvalues)+1e-4*abs(imag(eigenvalues)));
+        case('SI') % sort by increasing imaginary part of eigenvalue
+            [t,o]=sort(imag(eigenvalues));
+        case('SIA') % sort by increasing imaginary part (abs) of eigenvalue
+            [t,o]=sort(abs(imag(eigenvalues))+1e-4*imag(eigenvalues)+1e-4*real(eigenvalues));    
+        case('no')
+            o = [1:length(eigenvalues)];
+    end
+    eigenvalues=eigenvalues(o); 
 
 % updating two previous iterations
 if(strcmp(p.Results.shift,'cont')==1)
@@ -180,6 +230,8 @@ end
         plot(imag(eigenvalues),real(eigenvalues),'x');
         title('Spectrum');
     end
+    
+   mydisp(1,'END Function SF_Stability :');  
     
 end
 

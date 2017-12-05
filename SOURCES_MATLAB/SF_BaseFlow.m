@@ -63,19 +63,25 @@ end
 
 
 %%% SELECTION OF THE SOLVER TO BE USED DEPENDING ON THE CASE
-if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
+
+switch(baseflow.mesh.problemtype)
+
+    case ('AxiXR')
             % Newton calculation for axisymmetric base flow
                 if(verbosity>1)  disp('## solving base flow (axisymmetric case)'); end
                     solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_Axi.edp']; 
  
-elseif(strcmp(baseflow.mesh.problemtype,'AxiXRPOROUS')==1) % axisymmetric WITH SWIRL
+    case('AxiXRPOROUS') % axisymmetric WITH SWIRL
                if(verbosity>1)  disp('## solving base flow (axisymmetric case WITH SWIRL)'); end
-                    solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Omegax) ' ' num2str(p.Results.Porosity) ' | ',ff,' ',ffdir,'Newton_AxiSWIRL.edp'];   
+                    solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Omegax) ' ' num2str(p.Results.Porosity) ' | ',ff,' ',ffdir,'Newton_AxiSWIRL.edp']   
           
-        elseif(strcmp(baseflow.mesh.problemtype,'2D')==1)
-            solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_2D.edp']; 
-        % elseif (other cases...)
-end
+    case('2D')
+            if(verbosity>1)  disp('## solving base flow (2D CASE)'); end
+            solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_2D.edp'];
+                      
+   % case (other cases...)
+        
+end %switch
 
 error = 'ERROR : SF_ base flow computation aborted';
         

@@ -1,0 +1,111 @@
+
+
+/// CECI EST UN SCRIPT FREEFEM ECRIT EN... FREEFEM
+// (on pourrait aussi faire en bash, en matlab voire en python….)
+
+
+//	string ff ="/PRODCOM/FREEFEM/suse-11.2/3.10/bin/FreeFem++";
+	string ff ="FreeFem++";
+
+	real L = 4;
+	int  d = 45;
+	real Rmax = 1.;
+	int m=1;
+	
+	
+	/*
+
+	// creation mesh initial cylindrique
+	exec("echo ' 0 "+L+" "+d+"' | "+ff+"-nw -v 0 MeshInit.edp > OUT");
+	//
+	
+	// boucle sur K0 pour valeurs croissantes 
+	for (real K0=1 ; K0<1.3; K0=K0+.04)
+	{
+	exec("echo '"+K0+" " +0+"' | "+ff+"-nw -v 0 Newton_FormePont.edp >> OUT");
+	exec("cat Infos_Geom.txt >> Geom_Ponts_L"+L+".dat");
+	exec("echo '"+m+"' | "+ff+"-nw -v 0 Eigen_Bridge_Potential.edp");
+	exec("cat spectrum.dat >> Eigen_Ponts_L"+L+"_m"+m+".dat");
+	};	
+
+	*/
+	
+	
+	
+
+	
+	//
+
+	// boucle sur K0 pour valeurs decroissantes  jusqu'a .86
+	exec("echo ' 0 "+L+" "+d+"' | "+ff+"-nw -v 0 MeshInit.edp > OUT");
+	for (real K0=1 ; K0>.96; K0=K0-.01)
+	{
+	exec("echo '"+K0+"' | "+ff+"-nw -v 0 Newton_FormePont.edp >> OUT");
+	exec("cp MeshBridge.msh MeshBridge_guess.msh");
+	exec("cat Infos_Geom.txt >> Geom_Ponts_L"+L+".dat");
+	exec("echo '"+m+"' | "+ff+"-nw -v 0 Eigen_Bridge_Potential.edp");
+	exec("cat spectrum.dat >> Eigen_Ponts_L"+L+"_m"+m+".dat");
+
+	};	
+	for (real K0=.961 ; K0>.941; K0=K0-.002)
+	{
+	exec("echo '"+K0+"' | "+ff+"-nw -v 0 Newton_FormePont.edp >> OUT");
+	exec("cp MeshBridge.msh MeshBridge_guess.msh");
+	exec("cat Infos_Geom.txt >> Geom_Ponts_L"+L+".dat");
+	exec("echo '"+m+"' | "+ff+"-nw -v 0 Eigen_Bridge_Potential.edp");
+	exec("cat spectrum.dat >> Eigen_Ponts_L"+L+"_m"+m+".dat");
+
+	};	
+	for (real K0=.94 ; K0>.85; K0=K0-.01)
+	{
+	exec("echo '"+K0+"' | "+ff+"-nw -v 0 Newton_FormePont.edp >> OUT");
+	exec("cp MeshBridge.msh MeshBridge_guess.msh");
+	exec("cat Infos_Geom.txt >> Geom_Ponts_L"+L+".dat");
+	exec("echo '"+m+"' | "+ff+"-nw -v 0 Eigen_Bridge_Potential.edp");
+	exec("cat spectrum.dat >> Eigen_Ponts_L"+L+"_m"+m+".dat");
+
+	};	
+
+	//
+	/*
+	// boucle sur K0 pour valeurs decroissantes au dela de .84
+	// on repart d'un maillage bombe pour explorer cette branche
+	Rmax = 3;
+	exec("echo '"+L+" "+Rmax+" "+d+"' | "+ff+"-nw -v 0 MeshInit.edp>> OUT");
+	for (real K0=.85 ; K0>.75; K0=K0-.01)
+	{
+	exec("echo '"+K0+"' | "+ff+"-nw -v 0 Newton_FormePont.edp >> OUT");
+	exec("cp MeshBridge.msh MeshBridge_guess.msh");
+	exec("cat Infos_Geom.txt >> Geom_Ponts_L"+L+".dat");
+	exec("echo '"+m+"' | "+ff+"-nw -v 0 Eigen_Bridge_Potential.edp");
+	exec("cat spectrum.dat >> Eigen_Ponts_L"+L+"_m"+m+".dat");
+	};	
+*/
+
+
+	// zoom sur l'intervalle .84 -> 0.92
+	// on repart d'un maillage bombe pour explorer cette branche
+	Rmax = 3;
+	exec("echo ' 3 "+L+" "+d+" "+3.+"' | "+ff+"-nw -v 0 MeshInit.edp > OUT");
+/*
+	for (real K0=.85 ; K0<.92; K0=K0+.005)
+	{
+	exec("echo '"+K0+"' | "+ff+"-nw -v 0 Newton_FormePont.edp >> OUT");
+	exec("cp MeshBridge.msh MeshBridge_guess.msh");
+	exec("cat Infos_Geom.txt >> Geom_Ponts_L"+L+".dat");
+	exec("echo '"+m+"' | "+ff+"-nw -v 0 Eigen_Bridge_Potential.edp");
+	exec("cat spectrum.dat >> Eigen_Ponts_L"+L+"_m"+m+".dat");
+	};	
+*/
+
+for (real K0=.92 ; K0<.96; K0=K0+.001)
+	{
+	exec("echo '"+K0+"' | "+ff+"-nw -v 0 Newton_FormePont.edp >> OUT");
+	exec("cp MeshBridge.msh MeshBridge_guess.msh");
+	exec("cat Infos_Geom.txt >> Geom_Ponts_L"+L+".dat");
+	exec("echo '"+m+"' | "+ff+"-nw -v 0 Eigen_Bridge_Potential.edp");
+	exec("cat spectrum.dat >> Eigen_Ponts_L"+L+"_m"+m+".dat");
+	};
+
+
+

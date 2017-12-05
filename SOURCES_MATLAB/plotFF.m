@@ -17,6 +17,7 @@ function handle = plotFF(FFdata,field1,normalisation);
 %  (may be useful, for instance, to plot re/im parts of a complex field)
 
 handle = figure();
+%handle = gcf;
 
 % single-input mode (to plot mesh)
 if(nargin==1)
@@ -28,7 +29,7 @@ end
 if(nargin==2&&strcmp(field1,'mesh')==0)
    [dumb,field,suffix] = fileparts(field1); % to extract the suffix
    mesh=FFdata.mesh;
-   if(strcmp(suffix,'im')==1)
+   if(strcmp(suffix,'.im')==1)
         data = imag(getfield(FFdata,field));
    else
         data = real(getfield(FFdata,field));

@@ -22,8 +22,9 @@ The kind of computation currently implemented comprises :
 - (...)
 
 The kind of geometry handled comprises :
-- axisymmetric geometry (bluff body, jet through a hole, etc..)
 - 2D geometry (flow around a cylinder, etc...)
+- axisymmetric geometry (bluff body, jet through a hole, etc..)
+- Free surface problems (oscillation of bubbles and liquid bridges, etc..)
 
 
 ## Example
@@ -32,6 +33,7 @@ Here is an example of the sequence of commands you should type in a Matlab termi
 to compute the leading eigenmode for Re=100.
 
 ```
+run('../SOURCES_MATLAB/SF_Start.edp'); % set the global variables (path names, etc...) for stabfem
 bf = SF_Init('Mesh.edp'); % initialize a mesh/baseflow
 Re = 100;
 bf = SF_BaseFlow(bf,'Re',Re) % compute baseflow with Newton iteration
@@ -50,8 +52,19 @@ plotFF(em,’ux1.re’) % plots the real part of the axial velocity component of
 git clone https://github.com/erbafdavid/StabFem
 ```
 
+- If you want to participare to the project you should create a git account.
 
-- If you want to participare to the project you should create a git account (...)
+
+### Instalation remarks :
+
+To run properly the software you should previously install matlab and FreeFem++ on you system.
+
+- On Mac OSX the instalation should not pose any problem 
+
+- On Ubuntu 18 there is a little issue with the library libstdc++.so.6 which is not where Matlab looks for it
+(see Instalationnotes.md for a simple solution to this problem) 
+
+- On Windows, no one has tried yet. who wants to beta-test ???
 
 
 ## Motivation
@@ -69,7 +82,7 @@ to do all from a script or from a console in interactive mode.
 
 
 
-## Current Status 
+## Test-cases currently implemented :
 
 The software is still under development. At the moment, the included cases are the following :
 
@@ -81,34 +94,46 @@ Study of the Bénard-Von Karman instability for Re>47 in the wake of a cylinder.
 
 An example in axisymmetric coordinates : flow around a disk within a pipe. This directory contains a demonstrator of the software which performs the stability analysis, displays the spectrum, allows to click on eigenvalues to plot the corresponding eigenmodes, computes instability branches (eigenvalue as function of Re), and performs the weakly nonlinear analysis of the leading instability (steady, non-axisymmetric).
 
+- LiquidBridge :
+
+An example with a free surface : computation of the equilibrium shape of a liquid bridge and of the oscillation modes of this bridge (in the inviscid, potential case).
+
+(see Chireux et al., Phys. Fluids 2015 for details on this case)  
+
+(NB This case is operational but the way the curvature is computed is not optimal and should be improved...)
+
+- POROUS_ROTATING_DISK
+
+Flow over/across a porous disk. Work in progress.
+
+- SQUARE_CONFINED
+
+flow in a pipe with a square object. Work in progress.
 
 - Example_Lshape :
 
 A simple example to demonstrate the matlab/FreeFem exchange data format for a simple problem
 
-- SPHERE_WORK
+### Test-cases currently not operational :
+
+The next cases may not be operational with the present version and need to be updated to run with the latest version of StabFem.
+
+- SPHERE_WORK :
 
 (under development ; may not work)
 
-- BIRDCALL
+- BIRDCALL :
 
 (under work ; may not work due to recent changes in the nomenclature. If interested, get branch "Version2.0" instead of branch "Master").
  
-
-
-## Planned developments.
-
-
-In near future we plan to incorporate the following cases :
-
-### CYLINDER_VIV
+- CYLINDER_VIV :
 Study of the vortex-induced vibrations around a spring-mounted cylinder.
 
-###  STRAINED_BUBBLE
-equilibrium shape and oscillation modes of a bubble within a uniaxial straining flow.
+- STRAINED_BUBBLE :
+
+Equilibrium shape and oscillation modes of a bubble within a uniaxial straining flow.
 
 
-At longer term, a translation of the Software in python is under reflection.
 
 
 
@@ -123,7 +148,11 @@ Note that the plotting part of the interface is based on a previous package Free
 written by Julien Dambrine and deposited on mathworks. This latter uses the pdeplot 
 command from pdetools library, and I don’t know an alternative with octave/scilab.
 
+At longer term, a translation of the Software in python is under reflection.
+
 Initially uploaded on GitHub with help of Alexei Stukov on july 7, 2017. 
+
+
 
 
 

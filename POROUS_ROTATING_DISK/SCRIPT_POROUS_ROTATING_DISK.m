@@ -1,6 +1,6 @@
 
 run('../SOURCES_MATLAB/SF_Start.m');
-ffdatadir = './'; %% to be fixed : this should be "./WORK" but some of the solvers are not yet operational
+ffdatadir = 'WORK/'; %% to be fixed : this should be "./WORK" but some of the solvers are not yet operational
 verbosity=100;
 AspectRatio = 0.7;
 figureformat = 'png';

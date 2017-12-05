@@ -20,14 +20,14 @@ if(nargin==1)
 end
     
 
-if(verbosity<=10) % quiet mode
+if(verbosity<10) % quiet mode
 [status,result]=system(command);
     if(status~=0)&&(strcmp(errormessage,'skip')==0)  
         result
         error(errormessage);
     end
 else % verbose mode
- [status]=system(command);
+ [status]=system(command)
     if(status~=0)&&(strcmp(errormessage,'skip')==0)
         error(errormessage);
     end   

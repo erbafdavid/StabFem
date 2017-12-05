@@ -81,8 +81,8 @@ if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input : adapt to b
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
   disp(['      #  h_min, h_max : ',num2str(meshinfo.deltamin), ' , ',...
         num2str(meshinfo.deltamax)]);    
-  disp(['      # h_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
-        num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]);    
+%  disp(['      # h_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
+%        num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]);    
   end
   
   
@@ -125,8 +125,8 @@ meshinfo = importFFdata(baseflow.mesh,'mesh_adapt.ff2m');
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
   disp(['      #  deltamin, deltapax : ',num2str(meshinfo.deltamin), ' , ',...
         num2str(meshinfo.deltamax)]);    
-  disp(['      #  delta_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
-        num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]); 
+%  disp(['      #  delta_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
+%        num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]); 
 end
  end
    

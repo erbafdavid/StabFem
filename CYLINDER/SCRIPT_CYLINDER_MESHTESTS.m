@@ -5,7 +5,7 @@
 % CHAPTER 0 : set the global variables needed by the drivers
 
 run('../SOURCES_MATLAB/SF_Start.m');
-
+verbosity=2;
 figureformat='png'; AspectRatio = 0.56; % for figure
 
 
@@ -23,8 +23,12 @@ baseflow=SF_BaseFlow(baseflow,'Re',60);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 
-disp(' ' );
-disp('### 1 : ADAPT ON BASE FLOW');
+disp(' ');
+disp('### Mesh grid size at point A,B,C,D : ');
+disp(['A : ' num2str(baseflow.mesh.deltaA)]);
+disp(['B : ' num2str(baseflow.mesh.deltaB)]);
+disp(['C : ' num2str(baseflow.mesh.deltaC)]);
+disp(['D : ' num2str(baseflow.mesh.deltaD)]);
 disp(' ' );
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
@@ -57,6 +61,15 @@ baseflow=SF_BaseFlow(baseflow,'Re',60);
 [ev,em] = SF_Stability(baseflow,'shift',0.04+.72i,'type','S');
 baseflow=SF_Adapt(baseflow,em,'Hmax',10);
 
+disp(' ');
+disp('### Mesh grid size at point A,B,C,D : ');
+disp(['A : ' num2str(baseflow.mesh.deltaA)]);
+disp(['B : ' num2str(baseflow.mesh.deltaB)]);
+disp(['C : ' num2str(baseflow.mesh.deltaC)]);
+disp(['D : ' num2str(baseflow.mesh.deltaD)]);
+disp(' ' );
+
+
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');
 Re_Range = [40 : 5: 100];
@@ -87,6 +100,15 @@ baseflow=SF_BaseFlow(baseflow,'Re',60);
 [ev,em] = SF_Stability(baseflow,'shift',.04+.72i,'type','D');
 baseflow=SF_Adapt(baseflow,em,'Hmax',10);
 [ev,em] = SF_Stability(baseflow,'shift','prev','type','D');
+
+disp(' ');
+disp('### Mesh grid size at point A,B,C,D : ');
+disp(['A : ' num2str(baseflow.mesh.deltaA)]);
+disp(['B : ' num2str(baseflow.mesh.deltaB)]);
+disp(['C : ' num2str(baseflow.mesh.deltaC)]);
+disp(['D : ' num2str(baseflow.mesh.deltaD)]);
+disp(' ' );
+
 
 % create figure for this mode;
 em.xlim = [-2 8]; em.ylim=[0,5];
@@ -127,6 +149,14 @@ baseflow=SF_BaseFlow(baseflow,'Re',60);
 [ev,em] = SF_Stability(baseflow,'shift',0.04+.72i,'type','S');
 baseflow=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
 
+disp(' ');
+disp('### Mesh grid size at point A,B,C,D : ');
+disp(['A : ' num2str(baseflow.mesh.deltaA)]);
+disp(['B : ' num2str(baseflow.mesh.deltaB)]);
+disp(['C : ' num2str(baseflow.mesh.deltaC)]);
+disp(['D : ' num2str(baseflow.mesh.deltaD)]);
+disp(' ' );
+
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');
@@ -158,6 +188,15 @@ baseflow=SF_BaseFlow(baseflow,'Re',100);
 [ev,em] = SF_Stability(baseflow,'shift',.12+.73i,'type','S');
 baseflow=SF_Adapt(baseflow,em,'Hmax',10);
 
+disp(' ');
+disp('### Mesh grid size at point A,B,C,D : ');
+disp(['A : ' num2str(baseflow.mesh.deltaA)]);
+disp(['B : ' num2str(baseflow.mesh.deltaB)]);
+disp(['C : ' num2str(baseflow.mesh.deltaC)]);
+disp(['D : ' num2str(baseflow.mesh.deltaD)]);
+disp(' ' );
+
+
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');
 Re_Range = [40 : 5: 100];
@@ -183,12 +222,24 @@ disp('### 6 : Slip conditions on lateral boundary');
 disp(' ' );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-system('cp Macros_StabFem_LateralSlip.edp Macros_StabFem.edp');
-system(['rm ',ffdatadir,'BASEFLOWS/*']);
 
-baseflow=SF_BaseFlow(baseflow,'Re',60.1); % 60.1 to force recomputation
+baseflow=SF_Init('Mesh_Cylinder_SlipConditions.edp',[-40 80 40]);
+baseflow=SF_BaseFlow(baseflow,'Re',1);
+baseflow=SF_BaseFlow(baseflow,'Re',10);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
+baseflow=SF_Adapt(baseflow,'Hmax',10);
+
 [ev,em] = SF_Stability(baseflow,'shift',0.04+.72i,'type','S');
 baseflow=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.01);
+
+disp(' ');
+disp('### Mesh grid size at point A,B,C,D : ');
+disp(['A : ' num2str(baseflow.mesh.deltaA)]);
+disp(['B : ' num2str(baseflow.mesh.deltaB)]);
+disp(['C : ' num2str(baseflow.mesh.deltaC)]);
+disp(['D : ' num2str(baseflow.mesh.deltaD)]);
+disp(' ' );
+
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');
@@ -209,13 +260,12 @@ plot(Re_Range,imag(lambda_branch));
 hold on;
 pause(0.1);
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp(' ' );
 disp('### 7 : VERY LARGE MESH');
 disp(' ' );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-system('cp Macros_StabFem_LateralNeuman.edp Macros_StabFem.edp');
+
 
 
 baseflow=SF_Init('Mesh_Cylinder.edp',[-80 160 80]);
@@ -228,6 +278,16 @@ baseflow=SF_Adapt(baseflow,'Hmax',10);
 baseflow=SF_BaseFlow(baseflow,'Re',60);
 [ev,em] = SF_Stability(baseflow,'shift',0.04+.72i,'type','S');
 baseflow=SF_Adapt(baseflow,em,'Hmax',10);
+
+
+
+disp(' ');
+disp('### Mesh grid size at point A,B,C,D : ');
+disp(['A : ' num2str(baseflow.mesh.deltaA)]);
+disp(['B : ' num2str(baseflow.mesh.deltaB)]);
+disp(['C : ' num2str(baseflow.mesh.deltaC)]);
+disp(['D : ' num2str(baseflow.mesh.deltaD)]);
+disp(' ' );
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');
@@ -266,6 +326,15 @@ baseflow=SF_Adapt(baseflow,'Hmax',10);
 baseflow=SF_BaseFlow(baseflow,'Re',60);
 [ev,em] = SF_Stability(baseflow,'shift',0.04+.72i,'type','S');
 baseflow=SF_Adapt(baseflow,em,'Hmax',10);
+
+
+disp(' ');
+disp('### Mesh grid size at point A,B,C,D : ');
+disp(['A : ' num2str(baseflow.mesh.deltaA)]);
+disp(['B : ' num2str(baseflow.mesh.deltaB)]);
+disp(['C : ' num2str(baseflow.mesh.deltaC)]);
+disp(['D : ' num2str(baseflow.mesh.deltaD)]);
+disp(' ' );
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');

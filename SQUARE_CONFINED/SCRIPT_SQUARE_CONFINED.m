@@ -31,7 +31,7 @@ exportFF_tecplot(baseflow,'bf_08_200.plt')
 
 % compute and plot an eigenmode :
 [ev,em] = SF_Stability(baseflow,'shift',3.69i,'nev',1,'type','D');
-plotFF(em,'ux1r');
+plotFF(em,'ux1');
 % or if you prefer tecplot:
 exportFF_tecplot(em,'ModeU_08_200.plt')
 
