@@ -154,5 +154,5 @@ meshstruct.filename = fileToRead1;
 
 
 
-mydisp(2,['END FUNCTION importFFmesh.m'  newline])
+mydisp(2,['END FUNCTION importFFmesh.m'])
 end

@@ -158,9 +158,7 @@ for ifield = 1:numfields
     end
 
        
-
-
-mydisp(2,['END FUNCTION  importFFdata.m' newline]);
+mydisp(2,['END FUNCTION  importFFdata.m']);
 
 end
 
