@@ -14,13 +14,17 @@ function baseflow = SF_Init(meshfile,parameters)
 
 global ff ffdir ffdatadir sfdir verbosity
 
-[status,result]=system(['mkdir ' ffdatadir ]); 
-system(['rm ' ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh ']);
-[status,result]=system(['mkdir ' ffdatadir '/BASEFLOWS']); 
-[status,result]=system(['rm ' ffdatadir '/BASEFLOWS/*']); 
+if(exist(ffdatadir)~=7)
+    mysystem(['mkdir ' ffdatadir ]); 
+else
+    mysystem(['rm ' ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh '],'skip');
+end
 
+if(exist([ffdatadir 'BASEFLOWS'])~=7)
+    mysystem(['mkdir ' ffdatadir 'BASEFLOWS']); 
+end
+mysystem(['rm ' ffdatadir 'BASEFLOWS/*'],'skip'); 
 
-%[status,result]= system([ff,' ',ffdir,meshfile]);
 
 if(nargin==1)
     command = [ff,' ',meshfile];
@@ -38,8 +42,8 @@ mysystem(command,error);
    
 if(nargout==1)
 mesh = importFFmesh('mesh.msh');
-[status,result]=system(['cp mesh.msh ' ffdatadir '/mesh_init.msh']); 
-[status,result]=system(['cp BaseFlow_guess.txt ' ffdatadir 'BASEFLOWS/BaseFlow_init.txt']); 
+mysystem(['cp mesh.msh ' ffdatadir '/mesh_init.msh'],'skip'); 
+mysystem(['cp BaseFlow_guess.txt ' ffdatadir 'BASEFLOWS/BaseFlow_init.txt'],'skip'); 
 mesh.namefile=[ ffdatadir 'BASEFLOWS/mesh_init.msh'];
 baseflow=importFFdata(mesh,'BaseFlow.ff2m');
 baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_init.txt'];

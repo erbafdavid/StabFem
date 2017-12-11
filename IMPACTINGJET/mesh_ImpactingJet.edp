@@ -1,0 +1,97 @@
+
+include "Macros_StabFem.edp";
+
+real Lpipe;
+real Rpipe; // Rpipe= 2*D
+real H; //pour H/D=2
+real Rout;
+
+
+
+cout << " Generation of an initial mesh for an IMPACTING JET" << endl;
+cout << " geometry is a T-junction " << endl;
+cout << " D=1 so Half-thickness of inlet chanel is 0.5" << endl;
+Rpipe = 0.5;
+cout << " Enter the dimensions H (plate spacing) Lpipe (length of inlet pipe), Rout (lateral dimension of outlet)  " << endl; 
+
+cin >> H >> Lpipe  >> Rout ;
+
+
+// nouveaux bords pour le calcul des contraintes normales et tangentielles
+
+border axis(t=-Lpipe,H){ x=t; y=0;label=6;};
+
+border plate2in(t=0,Rout){x=H;y=t;label=21;};
+
+border outer(t=H,0){x=t;y=Rout;label=3;};
+
+border plate0(t=Rout,Rpipe){x=0;y=t;label=2;};
+
+border tube(t=0,-Lpipe){x=t;y=Rpipe;label=2;};
+
+border inlet(t=Rpipe,0){x=-Lpipe;y=t;label=1;};
+
+
+
+int NN=5;
+
+plot ( axis((Lpipe+H)*NN) + plate2in(Rout*NN) + outer(H*NN) 
++plate0((Rout-Rpipe)*NN)+tube(Lpipe*NN)+inlet(NN*Rpipe), wait=0 );
+
+
+	mesh th;
+            
+     th=buildmesh(axis((Lpipe+H)*NN) + plate2in(Rout*NN) + outer(H*NN) 
++plate0((Rout-Rpipe)*NN)+tube(Lpipe*NN)+inlet(NN*Rpipe) );
+
+plot(th);
+      
+
+// SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Definition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+			file << "2D" << endl;
+			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "real D real Xmin real H real Ymax" << endl;
+			file <<  2*Rpipe  << endl << -Lpipe << endl << H << endl << Rout  << endl;
+}
+
+// SECOND AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+			file2 << "real GeometricalParameterD = "  << 2*Rpipe << ";" << endl;
+			file2 << "real GeometricalParameterH = "  << H 		 << ";" << endl;
+			file2 << "real GeometricalParameterXmin = " << -Lpipe  << ";" << endl;
+			file2 << "real GeometricalParameterYmax = " << Rout  << ";" << endl;
+}
+
+
+// THIRD AUXILIARY FILE  for Stabfem : mesh.ff2m
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+ 		fespace femp1(th,P1);
+        fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+        femp2xfemp2xfemp1 [ux,uy,up]=[0,0,0];
+        real Re = 0;real nu=1; // these two are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+      	{
+      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+	    file << ux[] << endl;
+	    file <<  endl << 0 << endl;
+      	}
+      	
+// Save in ff2m format (for StabFem)	    
+	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
+	     
+
+
+

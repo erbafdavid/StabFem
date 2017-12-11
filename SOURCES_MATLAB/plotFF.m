@@ -1,4 +1,4 @@
-function handle = plotFF(FFdata,field1,normalisation);
+function handle = plotFF(FFdata,field1,varargin);
 %  function plotFF
 %  plots a data field imported from freefem using pdeplot command from
 %  toolbox pdetools
@@ -7,26 +7,28 @@ function handle = plotFF(FFdata,field1,normalisation);
 %  2/ handle=plotFF(ffdata,'field'); to plot isocontours of a P1 field
 %  3/ handle=plotFF(ffdata,'field.re'); to plot isocontours of a P1 complex
 %  field (specify '.re' or '.im')
-%
-%  4/ handle=plotFF(ffdata,'field',normalisation) % alternative method kept
-%  for compatibility but to be abandoned
+%  4/ handle=plotFF(ffdata,'field',[PARAM,VALUE,..])
+%      where [PARAM,VALUE] is any couple of parameters accepted by pdeplot.
+%       (help pdeplot for a list of possibilities)
 %
 %  FFdata is the structure containing the data to plot
 %  field is the field to plot (the data may comprise multiple fields)
 %  normalisation (optional) is used to plot real(field/normalisation)
 %  (may be useful, for instance, to plot re/im parts of a complex field)
 
+
+global ff ffdir ffdatadir sfdir verbosity
+
 handle = figure();
 %handle = gcf;
 
 % single-input mode (to plot mesh)
 if(nargin==1)
-    field = 'mesh';
-    mesh=FFdata;
+    field1 = 'mesh';
 end
 
 % two-input mode (to plot a field, real or complex)
-if(nargin==2&&strcmp(field1,'mesh')==0)
+if(strcmp(field1,'mesh')==0)
    [dumb,field,suffix] = fileparts(field1); % to extract the suffix
    mesh=FFdata.mesh;
    if(strcmp(suffix,'.im')==1)
@@ -36,13 +38,6 @@ if(nargin==2&&strcmp(field1,'mesh')==0)
    end
 end
 
-% three-input mode (to plot a renormalised field)
-if(nargin==3)
-    field = field1;
-    data = real(getfield(FFdata,field)/normalisation);
-    mesh=FFdata.mesh;
- end
- 
 if(strcmp(field1,'mesh')~=1)
  
 axes1 = axes('Parent',handle);
@@ -52,9 +47,20 @@ if(any(strcmp('plottitle',fieldnames(FFdata))))
     title(FFdata.plottitle) 
 end
 %pdemesh(mesh.points,mesh.seg,mesh.tri) ;
- 
- pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,'mesh','off','colormap','parula');
- axis equal;
+
+
+if(any(cellfun(@(x) isequal(x, 'Contour'), varargin))&&(length(FFdata.mesh.seg)==1))
+mydisp(2,'PlotFF : Reconstructing seg array for contour plots');
+    meshS=importFFmesh([ ffdatadir , 'mesh.msh'],'seg');
+    FFdata.mesh.seg=meshS.seg;
+end
+
+if(any(cellfun(@(x) isequal(x, 'ColorMap'), varargin))==0)
+    varargin={varargin{:} ,'ColorMap','parula'}
+end
+
+
+pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
  
 if(any(strcmp('plottitle',fieldnames(FFdata)))) 
     title(FFdata.plottitle) 
@@ -75,10 +81,7 @@ if(length(FFdata.mesh.seg)==1) % to construct the 'seg' structure necessary for 
     FFdata.mesh=importFFmesh('mesh.msh','seg');
 end
 
- 
-
  pdemesh(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri) ;
- axis equal ;
 
 end
 
