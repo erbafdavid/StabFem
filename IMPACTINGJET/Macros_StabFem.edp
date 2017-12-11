@@ -22,8 +22,10 @@ macro problemtype "2D"//EOM
 ENDIFMACRO
 
 IFMACRO(!NbComponentsMode)
-macro NbComponentsMode=3//EOM
+macro NbComponentsMode 3//EOM
 ENDIFMACRO
+
+
 
 string ffdatadir = "./WORK/";
 
@@ -156,8 +158,9 @@ macro SFWriteBaseFlow(filename,u,typeFlow,iter)
 //EOM
 	
 	
-	
 macro SFWriteMode(namefile,u,k,ev,shift,typeFlow,iter)
+/*macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
+real k=0;*/
 		 {
 		 ofstream file(namefile);
    		 fespace p1forff2m(th,P1); 
