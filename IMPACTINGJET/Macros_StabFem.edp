@@ -172,10 +172,19 @@ real k=0;*/
     	 file << typeFlow << endl;
     	 file << "Format :" << endl;
     	 string descriptionFF;
+    	 IFMACRO(NbComponentsMode,2)
     	 if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
     	 	{  descriptionFF="real Re real k complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy"; }
     	 else 
-    	    {  descriptionFF="real Re  real k complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj"; }
+    	    {  descriptionFF="real Re  real k complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj"; };
+    	 ENDIFMACRO
+    	  IFMACRO(NbComponentsMode,3)
+    	 if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
+    	 	{  descriptionFF="real Re real k complex lambda complex shift int iter P1c ux1 P1c uy1 P1c uz1 P1c p1 P1c vort1 real AEnergy"; }
+    	 else 
+    	    {  descriptionFF="real Re  real k complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c Uz1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj"; };
+    	 ENDIFMACRO
+
 	     file << descriptionFF << endl << endl ; 
 		 file << Re  << endl << k << endl << real(ev) << " " << imag(ev) << " " << real(shift) << " " << imag(shift) << " " << iter << endl << endl;
  		ux1=u#x;
