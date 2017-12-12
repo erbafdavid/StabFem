@@ -6,4 +6,7 @@ sfdir = '../SOURCES_MATLAB/'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
 verbosity = 1;
 addpath(sfdir);
-system(['mkdir ' ffdatadir]);
+if(exist(ffdatadir)~=7)
+    mysystem(['mkdir ' ffdatadir]);
+end
+mysystem(['echo "// File automatically created by StabFem" > SF_Geom.edp']);

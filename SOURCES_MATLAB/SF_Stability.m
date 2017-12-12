@@ -33,7 +33,8 @@ persistent sigmaPrev sigmaPrevPrev
    addParameter(p,'type','D',@ischar); 
   
    % parameters for the post-processing options
-   addParameter(p,'PlotSpectrum','no',@ischar); 
+   addParameter(p,'PlotSpectrum','no',@ischar);
+   addParameter(p,'PlotSpectrumField','ux1',@ischar);
    addParameter(p,'sort','no',@ischar); 
    
    % parameter for most cases
@@ -44,7 +45,7 @@ persistent sigmaPrev sigmaPrevPrev
    addParameter(p,'m',1,@isnumeric);
  
    %parameters for 2D case (to be implemented...)
-   addParameter(p,'k',1,@isnumeric);
+   addParameter(p,'k',0,@isnumeric);
    addParameter(p,'sym','A',@ischar);   
    
    %parameters for spring-mounted object  
@@ -102,13 +103,30 @@ switch baseflow.mesh.problemtype
  
     case('2D')
          % 2D flow (cylinder, etc...)
-         
+
+         if(p.Results.k==0)
+            % 2D Baseflow / 2D modes
         mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### USING 2D Solver']);
         argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D.edp'];
         status = mysystem(solvercommand);
+        
+         else 
+             
+             % 2D BaseFlow / 3D modes
+                 mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        mydisp(1,['      ### 3D Stability of 2D Base-Flow with k = ',num2str(p.Results.k)]);
+        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.k) ' '  num2str(real(shift)) ....
+            ' ' num2str(imag(shift)) ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+                         
+        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D_Modes3D.edp'];
+        status = mysystem(solvercommand);
+             
+             
+         end
+         
    
     case('2DMobile')
         % for spring-mounted cylinder
@@ -225,13 +243,25 @@ end
     
     end
     
+    % FINALLY : plot the spectrum in figure 100
+    
     if(strcmp(p.Results.PlotSpectrum,'yes')==1)
-        eigenvalues
-        plot(imag(eigenvalues),real(eigenvalues),'x');
-        title('Spectrum');
+        figure(100);
+        %%mycmp = [[0 0 0];[1 0 1] ;[0 1 1]; [1 1 0]; [1 0 0];[0 1 0];[0 0 1]]; %color codes for symbols
+        h=plot(imag(shift),real(shift),'o');hold on;
+        for ind = 1:length(eigenvalues)
+            h=plot(imag(eigenvalues(ind)),real(eigenvalues(ind)),'*');hold on;
+            %%%%  plotting command for eigenmodes and callback function
+            tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
+      'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
+      ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
+            set(h,'buttondownfcn',tt);
+
+        end
+    xlabel('\sigma_i');ylabel('\sigma_r');
+    title('Spectrum (click on eigenvalue to display corresponding eigenmode)');
     end
     
    mydisp(1,'END Function SF_Stability :');  
     
 end
-
