@@ -1,7 +1,7 @@
 //verbosity = 100;
 real R = 1,Rbase=1;
 real LL,RMAX,Lsurf,RP=0.5;
-int d=10;
+int d=20;
 int typegeom;
 
 real K0, dpdz,gamma;
