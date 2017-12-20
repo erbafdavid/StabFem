@@ -1,0 +1,202 @@
+//  Computation of the eigenvalues and eigenvectors for oscillations of a liquid bridge
+//  (inviscid theory)
+// ----------------------------------------
+// the problem is potential : u = i grad (phi) (mind the "i" factor !) 
+// PROBLEM : find $\omega$ and $[phi,eta]$  such that
+// 	$$ \Delta \phi = 0 $$ inside the domain
+// 	$$ \omega \phi = \gamma (-(K0a^2+K0b^2) \eta - \partial^2 \eta / \partial s^2 + m^2/r^2 \eta $$ on the free surface
+// 	$$ \omega \eta = grad \phi \dot n $$ on the free surface 
+// 
+//-----------------------------------------
+
+// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
+
+
+
+verbosity=0;
+
+// constantes physiques 
+real g=0;                 // Gravity field
+real gamma = 1;	  // Surface Tension
+real R=1;
+real dpdz ;
+
+int  testDIR = exec("ls RES_STAB > OUTRES");
+	
+	if (testDIR!=0)
+		{
+		cout << "Creation d'un repertoire RES_STAB" << endl;
+		exec("mkdir RES_STAB");
+		}
+
+// Parametres du calcul
+int m;  // Nombre d'onde
+int Nval = 20;  // nb. de valeurs propres à calculer
+int Nmodes = 0; // nb. de vecteurs propres à post-traiter
+
+cout << " ENTREZ Le nombre d'onde m ?" << endl;
+cin >> m;
+cout << "==> Calcul des valeurs propres pour m = " << m << endl;
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+
+mesh Th=readmesh("MeshBridge.msh");
+mesh MeshInt=Th; // autre nom possible...
+mesh Shempty=emptymesh(MeshInt); 	// Maillage 'surface'
+real L, K0, Vol, Area;
+
+include "Macros_Geometrie_Surface.edp"
+
+// Calcul des normales et des courbures
+CalcGeomSurf;
+
+// fichier info geom
+
+{
+ifstream fileG("Infos_Geom.txt");
+fileG >> L; 
+fileG >> Vol;
+fileG >> K0;
+fileG >> dpdz; 
+fileG >> Area;
+//fileG >> Nsurface;
+}
+dpdz= 0; // warning in future
+
+cout << " ####### Infos Geometrie    " << endl << endl;
+cout << " ## Longueur              : " << L << endl;
+cout << " ## Volume / Vol. cyl     : " << Vol << endl;
+cout << " ## K0                    : " << K0 << endl;
+cout << " ##  (Bo^-1)              : " << dpdz << endl;
+cout << " ## SURFACE               : " << Area << endl;
+cout << " ## Densite maillage      : " << Nsurface << endl;
+
+
+
+
+////////////////////////////////////////////////////
+//
+//  DECLARATION DES MATRICES
+//
+/////////////////////////////////////////////////////
+
+
+//fespace Vh(Th,P1);
+fespace VhxVh(Th,[P1,P1]);
+
+VhxVh [phi,eta],[q,v];
+
+
+real shift = 1e-12;  // value of the shift
+real RegEta = 1e-8;
+
+varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v] instead
+// Laplacian	  
+	  int2d(Th)(  (dx(phi)*dx(v) + dy(phi)*dy(v)+(m^2+1e-8)*phi*v/(x^2+1e-30))*x  ) 
+	  		// desingularisation term necessary if m=0 ; don't know why
+// Curvature	  
+	+ int1d(Th,2)(((Ds(eta))*(Ds(q))  -(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*abs(x))
+// gravity
+	+int1d(Th,2)(dpdz*eta*q*N0z*x)
+// shift 
+	- int1d(Th,2)(shift*(eta*v+q*phi)*x)
+// Pour regulariser eta dans le volume	
+		+ int2d(Th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*abs(x)) //  deuxieme idee : laplacien 
+// Conditions limites par penalisation
++ int1d(Th,1,5)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
++ int1d(Th,1)(m*phi*v*1e30) // CL axe pour m different de 0
+;
+
+
+varf b([phi,eta],[q,v]) = 
+        int1d(Th,2)(eta*v*x)
+       +int1d(Th,2)(q*phi*x)
+		      ;
+
+
+////////////////////////////////////////////////////
+//
+//  RESOLUTION DU PB AUX VALEURS PROPRES
+//
+/////////////////////////////////////////////////////
+
+
+matrix A= a(VhxVh,VhxVh,solver=UMFPACK); 
+matrix B= b(VhxVh,VhxVh,solver=GMRES,eps=1e-20); 
+
+int nev=Nval;  // number of computed eigen valeu close to sigma
+real[int] ev(nev),evi(nev); // to store nev eigein value
+VhxVh[int] [eVphi,eVeta](nev);   // to store nev eigen vector
+
+int k=EigenValue(A,B,sym=false,sigma=shift,value=ev,ivalue=evi,vector=eVphi,tol=1e-10,maxit=0,ncv=0);
+
+
+
+////////////////////////////////////////////////////
+//
+//    POST TRAITEMENT
+//
+///////////////////////////////////////////////////
+
+
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
+
+cout << " ### VP Calculees :" << endl;
+
+real[int]  eev(Nval);
+ofstream EV("spectrum.dat");
+EV.scientific;
+
+
+for (int i=0;i<k;i++)
+{
+  cout << " VP numero " <<  i<< " : " << ev[i] << "+i"<<evi[i] <<  endl;
+  EV << ev[i] << "  "<< evi[i] << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
+//    plot(u1,cmm="Eigen  Vector "+i+" valeur =" + ev[i]  ,wait=1,value=1);
+}; 
+  
+exec("cp spectrum.dat RES_STAB/VPBridge_L"+L+"_K"+K0+"_m"+m+".dat");  
+    
+    
+// Post-traitement MODES
+for (int i=0;i<Nmodes;i++)
+   {	
+    Vh ModePhi,ModeEta;
+    ModePhi=eVphi[i];
+    ModeEta=eVeta[i];
+    Vh ux,uy;
+    ux = dx(ModePhi);
+    uy = dy(ModePhi);
+	ofstream FilePhi("RES_STAB/ModeBridge_L"+L+"_K"+K0+"_m"+m+"_Mode"+i+"_PHI.dat");
+	ofstream FileEta("RES_STAB/ModeBridge_L"+L+"_K"+K0+"_m"+m+"_Mode"+i+"_ETA.dat");
+	cout << "post-traitement mode "+i+" : fichiers ModeBridge_L"+L+"_K"+K0+"_m"+m+"_Mode"+i+"_PHI.dat et _ETA.dat" << endl; 
+	
+	plot(ModePhi,cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : phi"  ,wait=1,value=1);
+        plot([ux,uy],cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : [u,v]"  ,wait=1,value=1);
+        plot(ModePhi,cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : eta"  ,wait=1,value=1);
+	
+	FilePhi << ModePhi[] << ModeEta[] << endl << endl << ev[i]  << " " <<  evi[i] <<  endl;
+	
+	for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
+	{
+	FileEta << S0PointSurf(ksurf) << "   "  << ModeEta(xPointSurf(ksurf), yPointSurf(ksurf) )  << "   " 
+		<< xPointSurf(ksurf) << "  "  << yPointSurf(ksurf) << "   " 
+	    << N0r(xPointSurf(ksurf), yPointSurf(ksurf) )<< "   " << N0z(xPointSurf(ksurf), yPointSurf(ksurf) )  << endl ;
+	};
+   };
+	
+
+
+
+

@@ -1,0 +1,213 @@
+verbosity = 0;
+
+// Calcul de la forme d'equilibre d'un pont liquide axisymetrique
+
+
+// Parametres :
+real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueur (eviter de changer !)
+
+// La forme d'equilibre correspond a  K0 = constante
+// La methode consiste a deformer iterativement la forme 
+// de la surface jusqu'a aboutir a cet equilibre.
+
+// Remarque : la forme est parametree par la courbure K0, donc la methode ne
+// marche pas au voisinage d'un extremum de K0... 
+// (dans ce cas utiliser Newton_FormePont_Volume)
+
+// La forme initiale est lue dans le fichier "MeshBridge_guess.msh". 
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+
+mesh MeshInt=readmesh("MeshBridge_guess.msh");
+mesh Shempty=emptymesh(MeshInt); 	// Maillage 'surface'
+//mesh Shempty=MeshInt;
+real K0 = 1; // guess
+real K1;
+real dpdz;
+
+//include "Macros_Geometrie_Surface.edp"
+
+include "Macros_Geometrie_Surface_VersionChireux.edp"
+
+
+
+// Calcul des normales et des courbures
+CalcGeomSurf;
+
+// Plots
+//ExtendC;
+//plot(K0ext,[N0r,N0z],fill=1,value=1,wait=0,cmm="Normales de la forme initiale et Courbure K0 prolongee dans le plan");
+// plot(K0ext,fill=1,value=1,wait=0,cmm="Courbure K0 prolongee dans le plan");
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+real Zmin = yPointSurf(0);
+real Zmax = yPointSurf(Nsurface);
+real L = Zmax-Zmin;
+
+
+
+
+real Volred;
+cout << " ENTREZ LA VALEUR DU VOLUME REDUIT RECHERCHE ?" << endl;
+cin >> Volred;
+real VolObj = Volred*L/2;
+
+cout << "==> Volume reduit = " << Volred << endl;
+cout << "==> Volume/2pi : = " << VolObj << endl;
+
+cout << " ENTREZ LA VALEUR Du Bond inverse (delta rho g R^2)/(sigma)  " << endl;
+cin >> dpdz;
+cout << "==> dpdz = " << dpdz << endl;
+
+
+////////////////////////////////////////////////////////////////
+//
+// ALGORITHME DE NEWTON
+//
+////////////////////////////////////////////////////////////////
+
+
+
+
+real Res=1;
+int Itmax = 30;
+
+
+for(int i = 0; (i<Itmax)&(Res>1e-9);i++)
+{
+
+// Calcul de la deformation de surface et deplacement du maillage
+//SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+
+CalcEtaV(etaNewton,K1,VolObj);
+
+cout << " Modif courbure : K1 = " << K1 << endl;
+K0 = K0+K1;
+cout << " Nouvelle courbure : K0 : " << K0 << endl;
+
+
+ ExtendEta; plot(etaext,fill=1,value=1,wait=0,cmm="eta ext"); //(pour visualisation)
+
+CalcDef;
+//plot([ur,uz],fill=1,value=1,wait=0,cmm="champ de deformation calcule iteration "+i);
+
+MeshInt = movemesh(MeshInt,[x+ur,y+uz]);
+plot(MeshInt,Shempty,cmm="Deformation maillage iteration "+i,wait=1);
+real NewVolume = int2d(MeshInt)(x);
+cout << "NewVolume = " << NewVolume << endl; 
+//Shempty = emptymesh(MeshInt);
+Shempty = movemesh(Shempty,[x+ur,y+uz]);
+
+// Recalcul des normales et courbures
+CalcGeomSurf;
+
+ExtendC;
+K0ext = K0ext-(K0-dpdz*y);
+plot(K0ext,fill=1,value=1,cmm="Erreur courbure iteration "+i,wait=1);
+Res = int1d(Shempty,2)( (K0a+K0b-(K0-dpdz*y))^2 );
+cout << " iteration " << i << " : Res = " << Res << " Volume = " << NewVolume <<  " K1 = " << K1 
+<< " K0 : " << K0 <<  endl; 
+}
+
+//  ----------------------------------------------------------------------------------------------------
+// Fin du Newton 
+//  ----------------------------------------------------------------------------------------------------
+
+cout << endl << " ------- NEWTON TERMINE -------" << endl << endl;
+// Ecriture du maillage dans un fichier
+savemesh(MeshInt,"MeshBridge.msh");
+
+if (Res < 1e-4)
+{ cout << "solution convergee : on copie le maillage dans MeshBridge_guess.msh" << endl;
+ savemesh(MeshInt,"MeshBridge_guess.msh");
+}
+else
+{
+cout << "ATTENTION : pas de convergence du Newton !" << endl;
+};
+
+
+////////////////////////////////////////////////////////////////
+//
+// POST-TRAITEMENT : fichiers Infos_Geom.txt et Geom_Surface.txt
+//
+////////////////////////////////////////////////////////////////
+
+
+// Construction de vecteurs contenant les points de la surface numerotes (cf. macro)  
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+
+
+// ##################  ECRITURE D'un fichier contenant la geometrie de la surface ############ 
+real LongueurSurface = S0PointSurf(Nsurface);
+ofstream filegeom("Geom_Surface.txt") ; // format : s0 x y K0a K0b N0r N0z,  ds(K0a K0b N0r N0z)
+// (Rem. abcisse s0 comptee a partir du sommet)
+	PP1 dsN0r = Ds(N0r);
+	PP1 dsN0z = Ds(N0z);
+	PP1 dsK0b = Ds(K0a);
+	PP1 dsK0a = Ds(K0b);
+for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
+	{
+	filegeom << LongueurSurface/2-S0PointSurf(ksurf) << "   " << xPointSurf(ksurf) << "  "  << yPointSurf(ksurf) << "   " 
+	<< K0a(xPointSurf(ksurf), yPointSurf(ksurf) ) << "   " << K0b(xPointSurf(ksurf), yPointSurf(ksurf) ) << "   "
+	<< N0r(xPointSurf(ksurf), yPointSurf(ksurf) )<< "   " << N0z[][IndexPointSurf(ksurf)  ] << "   " 
+	<< dsK0a(xPointSurf(ksurf), yPointSurf(ksurf) )<< "   " << dsK0b(xPointSurf(ksurf), yPointSurf(ksurf) ) << "   "
+	<< dsN0r(xPointSurf(ksurf), yPointSurf(ksurf) ) << "   " << dsN0z(xPointSurf(ksurf), yPointSurf(ksurf) ) << endl ;
+	};
+//
+
+
+
+// Calcul de diverses quantites interessantes
+real Vol = 2*pi*int2d(MeshInt)(x); // Volume
+real Area = 2*pi*int1d(MeshInt,2)(x); // Surface
+
+//real[int] T(dK0ext.n);
+//dK0ext = y;
+//T = dK0ext[];
+//real Rmax = T.max;
+//real Rmin = T.min;
+real Rmax = xPointSurf(0:Nsurface).max;
+real Rmin = xPointSurf(0:Nsurface).min;
+
+
+
+//dK0ext = x;
+//T = dK0ext[];
+//real Xmax = T.max;
+//real Xmin = T.min;
+
+
+
+cout << " ####### STATISTIQUES sur la forme : " << endl << endl;
+cout << " ## Longueur              : " << L << endl;
+cout << " ## Volume                : " << Vol << endl;
+cout << " ## Volume / Volume cyl   : " << Vol/(pi*L*Rbase^2) << endl;
+cout << " ## Courbure              : " << K0 << endl;
+cout << " ## SURFACE               : " << Area << endl;
+cout << " ## Rmax                  : " << Rmax << endl;
+cout << " ## Rmin                  : " << Rmin << endl;
+
+cout << endl;
+
+
+// fichier info geom
+{
+ofstream fileG("Infos_Geom.txt");
+fileG << L << " " ; 
+fileG << Vol/(pi*L*Rbase^2) << " " ;
+fileG << K0 << " " ; 
+fileG << Area << endl;
+//fileG << " ### INFOS GEOMETRIE : L, K0, V0, Aire, Nsurf" << endl;
+}
+
+
+cout << endl << "The end..." << endl << endl;
