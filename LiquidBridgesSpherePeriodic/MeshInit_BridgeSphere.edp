@@ -106,9 +106,9 @@ exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_guess.ff2m");
 //// (this is a	static problem so there is actually no base flow. However the file is created to ensure the right functioning of StabFem	
 	
 	
-		fespace femp2(th,P2);
+		fespace femp2(th,P2,periodic=[[8,x],[9,x]]);
 		femp2 phi = 0;
-		fespace femp1(th,P2);
+		fespace femp1(th,P2,periodic=[[8,x],[9,x]]);
 		femp1 phiP1 = 0;
 				
 		ofstream file(ffdatadir+"BaseFlow.txt");

@@ -1,9 +1,9 @@
 
 %% %%%% CLEAR WORKSPACE AND SET FOLDER AND DATA
 
-clear workspace;
-clear all;
-close all;
+% clear workspace;
+% clear all;
+% close all;
 
 run('../SOURCES_MATLAB/SF_Start.m');
 
@@ -11,12 +11,12 @@ run('../SOURCES_MATLAB/SF_Start.m');
 
 % Definition domain length, sphere, the radius of the jet is equal to 1
 
-n=6;
+n=6.0;
 kmax=1/sqrt(2);
 L=2*pi*n/(kmax);
 
 rsph=0.0; % radius sphere
-density=30; % mesh density
+density=10; % mesh density
 
 % Problem Initialisation
 
@@ -57,10 +57,8 @@ title('Structure of the computed modes');
 legend('m=0,1','m=0,2','m=0,3','m=0,4','m=0,5','m=0,6','m=0,7','m=0,8','m=0,9','m=0,10');
 
 figure(4);
-
 % dispersion relation comparison
-plot(kmax,abs(real(evm0)),'o'); hold on
-
+plot(kmax/(2*n),abs(real(evm0)),'^'); hold on
 % theoretical dispersion relation approximation of long-wavelength
 kth=0.0:0.01:1
 gamma=1;
