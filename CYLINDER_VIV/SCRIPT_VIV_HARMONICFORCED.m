@@ -7,7 +7,7 @@
 
 
 global ff ffdir ffdatadir sfdir verbosity
-ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
+ff = '/usr/local/bin/FreeFem++-nw'; %% Freefem command with full path 
 ffdatadir = './DATA_FREEFEM_CYLINDER';
 sfdir = '../SOURCES_MATLAB'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
@@ -25,7 +25,7 @@ disp(' ');
 disp(' GENERATING  MESH : [-40:120]x[0:40] ');
 disp(' ');
 
-baseflow=FreeFem_Init('Mesh_Cylinder_Large.edp');
+baseflow=SF_Init('Mesh_Cylinder_Large.edp');
 baseflow=FreeFem_BaseFlow(baseflow,'Re',1);
 baseflow=FreeFem_BaseFlow(baseflow,'Re',10);
 baseflow=FreeFem_BaseFlow(baseflow,'Re',60);

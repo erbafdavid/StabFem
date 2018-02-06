@@ -11,12 +11,12 @@ run('../SOURCES_MATLAB/SF_Start.m');
 
 %% Definition domain length, sphere, the radius of the jet is equal to 1
 
-n=1;
+n=3;
 kmax=1/sqrt(2);
 L=2*pi*n/(kmax);
 
 rsph=0.0; % radius sphere
-density=30; % mesh density
+density=50; % mesh density
 
 %% Problem Initialisation
 

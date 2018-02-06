@@ -1,9 +1,9 @@
 
-%% %%%% CLEAR WORKSPACE AND SET FOLDER AND DATA
+%%%%%% CLEAR WORKSPACE AND SET FOLDER AND DATA
 
-% clear workspace;
-% clear all;
-% close all;
+clear workspace;
+clear all;
+close all;
 
 run('../SOURCES_MATLAB/SF_Start.m');
 
@@ -11,32 +11,35 @@ run('../SOURCES_MATLAB/SF_Start.m');
 
 % Definition domain length, sphere, the radius of the jet is equal to 1
 
-n=6.0;
+n=0.5;
 kmax=1/sqrt(2);
 L=2*pi*n/(kmax);
 
-rsph=0.0; % radius sphere
-density=10; % mesh density
+rsph=0.5; % radius sphere
+vsph=0.0; % velocity sphere
+	
+density=100; % mesh density
 
 % Problem Initialisation
 
-bf=SF_Init('MeshInit_BridgeSphere.edp',[0 L rsph density]); %% creation of an initial mesh (cylindrical liquid bridge)
+bf=SF_Init('MeshInit_BridgeSphere.edp',[0 L rsph vsph density]); %% creation of an initial mesh (cylindrical liquid bridge)
 Vol0 = bf.mesh.Vol;
 Area0 = bf.mesh.Area;
 
 % Mesh plot
 
-figure(1);hold off;
-plot(bf.mesh.xsurf,bf.mesh.ysurf); hold on;
+%figure(1);hold off;
+%plot(bf.mesh.xsurf,bf.mesh.ysurf); hold on;
 
 %% %% CHAPTER 1 : Eigenvalue computation for m=0 (and m=1)
 % WARNING: Frequency: omega_r=imag(evm0), Amplification rate: omega_i=real(evm0)
 
-[evm0,emm0] =  SF_Stability(bf,'nev',10,'m',0,'sort','LR')
+%[evm0,emm0] =  SF_Stability(bf,'nev',10,'m',0,'sort','LR')
+[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D','m',0,'sym','S');
 
 %% %% RESULTS PLOTS
 figure(2);
-plot(imag(evm0),real(evm0),'ro');
+plot(imag(evm0),real(evm0),'o');
 title('Eigen value');
 xlabel('\omega_r');ylabel('\omega_i');
 
@@ -56,9 +59,9 @@ title('Structure of the computed modes');
 
 legend('m=0,1','m=0,2','m=0,3','m=0,4','m=0,5','m=0,6','m=0,7','m=0,8','m=0,9','m=0,10');
 
-figure(4);
+figure(1); hold on
 % dispersion relation comparison
-plot(kmax/(2*n),abs(real(evm0)),'^'); hold on
+plot(kmax/(2*n),abs(real(evm0)),'sk','MarkerFaceColor','k'); hold on
 % theoretical dispersion relation approximation of long-wavelength
 kth=0.0:0.01:1
 gamma=1;
@@ -66,7 +69,7 @@ rho=1;
 omegath=sqrt(gamma/(2*rho)*(kth.^2-kth.^4));
 plot(kth,omegath,'-k'); hold on
 
-figure(5);
+% figure(5);
 plotFF(emm0(1),'phi.im');title('Mode m=0,1'); hold on
 plotFF(emm0(2),'phi.im');title('Mode m=0,2');
 plotFF(emm0(3),'phi.im');title('Mode m=0,3');

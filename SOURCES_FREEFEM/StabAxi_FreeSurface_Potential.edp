@@ -94,26 +94,32 @@ real RegEta = 1e-8;
 
 varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v] instead
 // Laplacian	  
-	  int2d(th)(  (dx(phi)*dx(v) + dy(phi)*dy(v)+(m^2+1e-8)*phi*v/(x^2+1e-30))*x  ) 
+	  int2d(th)(  (dx(phi)*dx(v) + dy(phi)*dy(v)+(m^2+1e-8)*phi*v/(x^2+1e-30))*x  )  //try+ v*dx(phi)/(x+1e-8) ???
 	  		// desingularisation term necessary if m=0 ; don't know why
 // Curvature	  
-	+ int1d(th,2)(((Ds(eta))*(Ds(q))  -(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*abs(x))
+	+ int1d(th,2)(((Ds(eta))*(Ds(q))-(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*abs(x))
 // gravity
-	+int1d(th,2)(dpdz*eta*q*N0z*x)
+	+ int1d(th,2)(dpdz*eta*q*N0z*x)
 // shift 
 	- int1d(th,2)(shift*(eta*v+q*phi)*x)
-// Pour regulariser eta dans le volume	
+// Pour regulariser eta dans le volume
 		+ int2d(th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*abs(x)) //  deuxieme idee : laplacien 
 // Conditions limites par penalisation
 + int1d(th,1,5)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
 + int1d(th,1)(m*phi*v*1e30) // CL axe pour m different de 0
+
+// CONDITION LIMITE DE DIRICHLET SUR PHI (supprime la condition de neumann orthogonale)
+//+ int1d(th,6)(phi*v*1e30*abs(x)); //MARCHE
+//+ on(6,phi=0.0); //NE MARCHE PAS
 ;
+
 
 
 varf b([phi,eta],[q,v]) = 
         int1d(th,2)(eta*v*x)
        +int1d(th,2)(q*phi*x)
-		      ;
+	//+ int1d(th,6)(phi*v*1e30*abs(x))
+;
 
 
 ////////////////////////////////////////////////////
@@ -133,8 +139,6 @@ real[int] evr(Nval+1),evi(Nval+1); // to store nev eigein values
 VhxVh[int] [eVphi,eVeta](Nval+1);   // to store nev eigen vectors
 
 int k=EigenValue(A,B,sym=false,sigma=shift,value=evr,ivalue=evi,vector=eVphi,tol=1e-10,maxit=0,ncv=0);
-
-
 
 ////////////////////////////////////////////////////
 //

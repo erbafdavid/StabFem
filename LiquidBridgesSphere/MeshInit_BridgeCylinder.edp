@@ -1,7 +1,7 @@
 //verbosity = 100;
 real R = 1,Rbase=1;
 real LL,RMAX,Lsurf,RP=0.5;
-int d=10;
+int d=20;
 int typegeom;
 
 real K0, dpdz,gamma;
@@ -24,37 +24,33 @@ cout << " ENTREZ La densite du maillage ?" << endl;
 cin  >> d;
 
 
-border Side1(t=0,R){y=0;x=t;label=7;};
-border Axe1(t=LL,LL/2){y = t ; x = 0;label=1;};
-border Axe2(t=LL/2,0){y = t ; x = 0;label=1;};
-border Side2(t=R,0){y=LL ; x = t;label=8;};
+//border Side1(t=0,R){y=0;x=t;label=3;};
+//border Axe1(t=LL,LL/2+RP){y = t ; x = 0;label=1;};
+//border Axe2(t=LL/2-RP,0){y = t ; x = 0;label=1;};
+//border Side2(t=R,0){y=LL ; x = t;label=3;};
+//mesh th;
+//if (typegeom==0) // cylindre
+//{
+//RMAX = R;
+//border SurfBulle(t=0,LL){y=t;x=R;label=2;};
+//Lsurf=LL;
+//plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe1(LL/2*d)+Axe2(LL/2*d));
+//th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe1(LL/2*d)+Axe2(LL/2*d));
+//};
+
+border Side1(t=RP,R){y=0;x=t;label=3;};
+border Cyl(t=LL,0){y = t ; x = RP;label=6;};
+border Side2(t=R,RP){y=LL ; x = t;label=3;};
 mesh th;
+
 if (typegeom==0) // cylindre
 {
 RMAX = R;
 border SurfBulle(t=0,LL){y=t;x=R;label=2;};
 Lsurf=LL;
-plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe1(LL/2*d)+Axe2(LL/2*d));
-th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe1(LL/2*d)+Axe2(LL/2*d));
+plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Cyl((LL)*d));
+th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Cyl((LL)*d));
 };
-
-//if (RP>0) {
-//border Sideb1(t=0,R){y=0;x=t;label=3;};
-//border Axeb1(t=LL,LL/2+RP){y = t ; x = 0;label=1;};
-//border Sphb(t=pi,0){y=LL/2-RP*cos(t); x=RP*sin(t); label=6;};
-//border Axeb2(t=LL/2-RP,0){y = t ; x = 0;label=1;};
-//border Sideb2(t=R,0){y=LL ; x = t;label=3;};
-//mesh th;
-//
-//if (typegeom==0) // cylindre
-//{
-//RMAX = R;
-//border SurfBulleb(t=0,LL){y=t;x=R;label=2;};
-//Lsurf=LL;
-//plot(SurfBulleb(Lsurf*d)+Side1b(R*d)+Side2b(R*d)+Axe1b((LL-RP)/2*d)+Sphb(3.14*RP*d)+Axe2b((LL-RP)/2*d));
-//th = buildmesh(SurfBulleb(Lsurf*d)+Side1b(R*d)+Side2b(R*d)+Axe1b((LL-RP)/2*d)+Sphb(3.14*RP*d)+Axe2b((LL-RP)/2*d));
-//};
-//};
 
 
 cout << "==> Longueur = " << LL << endl;

@@ -27,11 +27,11 @@
 
 //mesh th=th;
 
-fespace Wh1(Shempty,P1,periodic=[[8,x],[9,x]]);
+fespace Wh1(Shempty,P1);
 Wh1 N0r,N0z,T0r,T0z,K0a,K0b,test,NormN;
-fespace Vh(th,P1,periodic=[[8,x],[9,x]]);
+fespace Vh(th,P1;
 
-fespace PP1(Shempty,P1,periodic=[[8,x],[9,x]]);
+fespace PP1(Shempty,P1);
 int nbboundaryelements = Shempty.nbe;
 int[int]  IndexPointSurf(nbboundaryelements+1); // Index du sommet dans la num�rotation g�n�rale
 real[int] xPointSurf(nbboundaryelements+1); 
@@ -212,7 +212,7 @@ problem ExtendEta(etaext,dK0ext) =
 +on(2,etaext=etaNewton);
 
 // Calcul du champ lagrangien pour deformation de maillage
-fespace Vh11(th,[P2,P2],periodic=[[8,x],[9,x]]);
+fespace Vh11(th,[P2,P2]);
 Vh11 [uz,ur], [vz,vr];
 problem CalcDef([uz,ur],[vz,vr])=
     int2d(th)( (dx(uz)*dx(vz)+dy(uz)*dy(vz)) + (dx(ur)*dx(vr)+dy(ur)*dy(vr)) )

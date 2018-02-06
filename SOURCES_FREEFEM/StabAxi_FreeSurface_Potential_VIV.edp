@@ -1,56 +1,66 @@
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-/////
-/////              FEM : Flow past a SPRING-MOUNTED circular cylinder  
-/////              Stability: 
-/////                        
-/////                         
-/////		FORMULATION : RELATIVE VELOCITIES / RELATIVE FRAME (cf assemat et al.)
-/////
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-//load "iovtk"                      //////// library to write vtk files
-//load "BinaryIO"                //////// library to read/write binary files 
-// load "BinaryIO_64"
-//load "UMFPACK64"        ////////  load sparsesolver    
-load "MUMPS_seq"
-real Re;                  ////////  Reynolds number for stability analysis
-real zero = 0;
-/////////////////////////////////////////////////////////////////////////////////
+///
+// THIS PROGRAM IS ADAPTED FROM Eigen_Bridge_Potential.edp from LiquidBridges++_V1.3
+// imported in STABFEM project by D. Fabre on december 2017.
+// STILL TO BE RATIONALIZED A LOT !!!
 
 
-/////////////////////////////////////////////////////////////////////////////////
-//////////////////----->             parameters         <-----///////////////////
-/////////////////////////////////////////////////////////////////////////////////
+//  Computation of the eigenvalues and eigenvectors for oscillations of a liquid bridge
+//  (inviscid theory)
+// ----------------------------------------
+// the problem is potential : u = i grad (phi) (mind the "i" factor !) 
+// PROBLEM : find $\omega$ and $[phi,eta]$  such that
+// 	$$ \Delta \phi = 0 $$ inside the domain
+// 	$$ \omega \phi = \gamma (-(K0a^2+K0b^2) \eta - \partial^2 \eta / \partial s^2 + m^2/r^2 \eta $$ on the free surface
+// 	$$ \omega \eta = grad \phi \dot n $$ on the free surface 
+// 
+//-----------------------------------------
+
+// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
 
 
-macro Portance(u1,u2,p)   
-	(
-	int1d(Th,2,21,22,23)(2*p*N.y)
-	-nu*int1d(Th,2,21,22,23)( 2*(2*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x))
-	)
-//EOM 
+include "Macros_StabFem.edp"
 
-	cout << " Enter Reynolds :   " << endl; 
-	cin  >> Re;
-	real nu=1.0/Re;  
-	
-	real MASS, STIFFNESS, DAMPING;
-	cout << " Enter MASS :   " << endl; 
-	cin  >> MASS;
-	cout << " Enter STIFFNESS :   " << endl; 
-	cin  >> STIFFNESS;
-	cout << " Enter DAMPING coeff :   " << endl; 
-	cin  >> DAMPING;
-	
+verbosity=0;
+
+real zero=0;
+// constantes physiques 
+//real g=0;       // Gravity field
+real gamma=1;	  // Surface Tension
+real R=1;
+real dpdz;
+
+
+cout << "ENTREZ LA TENSION DE SURFACE GAMMA : "<< endl;
+cin >> gamma;
+if(gamma != 1){ 
+	// TO BE MODIFIED !
+	cout << "WARNING : PROGRAM HAS TO BE ADAPTED FOR GAMMA ~= 1"<< endl; 
+	exit(-1);
+	} ;
+
+
+cout << "ENTREZ LE PARAMETRE DE GRAVITE dp/dz = rho g : "<< endl;
+cin >> dpdz;
+
+
+
+// Parametres du calcul
+int m;  // Nombre d'onde
+
+cout << " ENTREZ Le nombre d'onde m ?" << endl;
+cin >> m;
+cout << "==> Calcul des valeurs propres pour m = " << m << endl;
+
 	
 	real shiftr,shifti;	
 	cout << " Enter SHIFT (re,im) :   " << endl; 
 	cin  >> shiftr >> shifti;
 	complex shift = 1i*shifti+shiftr;
+
 	string symmetry;
 	cout << " Symmetry properties ?? (A, S or N)" << endl;
 	cin >> symmetry;
+
 	string iadjoint; // 0 for direct ; 1 for adjoint
 	cout << " Direct (D), Adjoint (A), or both+sensitivity (S) ?" << endl;
 	cin >> iadjoint;	
@@ -60,13 +70,11 @@ macro Portance(u1,u2,p)
     cin >> nev ;
 	int ncv = 4*nev;   ///// Krylov Basis
 
-
 	string formulation;
 	cout << "Formulation ?  [ A -> Absolute velocity in relative frame] [ R -> Relative velocity in relative frame]"<< endl; 
 	cin >> formulation;
 	
 	cout << " ### PARAMETERS SELECTED : " << endl;
-	cout << " Re = " << Re<< endl;
 	cout << " shift = " << shift << endl;
 	if (symmetry =="S") {cout << " Symmetric modes" << endl;}
 		else if (symmetry =="A") {cout << " Antiymmetric modes" << endl;}	
@@ -79,156 +87,126 @@ macro Portance(u1,u2,p)
 	
 	cout << " nev = " << nev << endl;
 	
-	
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+
+mesh th=readmesh(ffdatadir+"mesh.msh");
+//mesh th=th; // autre nom possible...
+mesh Shempty=emptymesh(th); 	// Maillage 'surface'
+real L, K0, Vol, Area;
+
+include "Macros_Geometrie_Surface.edp"
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
+// Calcul des normales et des courbures
+CalcGeomSurf;
+
+
+fespace Vh(th,P2);
+fespace VhxVh(th,[P1,P1]);
+
+VhxVh [phi,eta],[q,v];
+
+real shift = 1e-12;  // value of the shift
+real RegEta = 1e-8;
+
+// CONSTRUCTION DES MATRICES
+
+varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v] instead
+// Laplacian	  
+	  int2d(th)(  (dx(phi)*dx(v) + dy(phi)*dy(v)+(m^2+1e-8)*phi*v/(x^2+1e-30))*x  )  //try+ v*dx(phi)/(x+1e-8) ???
+	  		// desingularisation term necessary if m=0 ; don't know why
+// Curvature	  
+	+ int1d(th,2)(((Ds(eta))*(Ds(q))-(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*abs(x))
+// gravity
+	+ int1d(th,2)(dpdz*eta*q*N0z*x)
+// shift 
+	- int1d(th,2)(shift*(eta*v+q*phi)*x)
+// Pour regulariser eta dans le volume
+		+ int2d(th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*abs(x)) //  deuxieme idee : laplacien 
+// Conditions limites par penalisation
++ int1d(th,1,5)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
++ int1d(th,1)(m*phi*v*1e30) // CL axe pour m different de 0
+
+// CONDITION LIMITE DE DIRICHLET SUR PHI (supprime la condition de neumann orthogonale)
+//+ int1d(th,6)(phi*v*1e30*abs(x)); //MARCHE
+//+ on(6,phi=0.0); //NE MARCHE PAS
+;
 
 
 
-mesh Th=readmesh("mesh.msh");                    ///// Read mesh
-int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+varf b([phi,eta],[q,v]) = 
+        int1d(th,2)(eta*v*x)
+       +int1d(th,2)(q*phi*x)
+	//+ int1d(th,6)(phi*v*1e30*abs(x))
+;
 
-/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+//
+//  COUPLING OF MATRIX SYSTEMS
+//  
+/////////////////////////////////////////////////////
 
-fespace Xh(Th,P2);             ////// f.e. space for vel.
-fespace Mh(Th,P1);            ////// f.e. space for pressure
-fespace XXMh(Th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
-XXMh<complex> [u1,u2,p];                 ///////  -> unknown for the Navier-Stokes problem
-XXMh [v1,v2,q];                 ///////  -> test for Navier-Stokes
-XXMh [Ub1,Ub2,Pb];          ///////  -> Base Flow
+//MATRICE OF THE FLUID PROBLEM
+matrix<complex> Afluid = a(VhxVh,VhxVh,solver=UMFPACK); 
+matrix<complex> Bfluid = b(VhxVh,VhxVh,solver=GMRES,eps=1e-20);
 
+//FORCE FLUID ON SPHERE, COMMENTS : p=-rho*dphi/dt=-omega*phi
+varf bfluidvb([phi,eta],[q,v]) =
+	int1d(th,6)(-2*N.y*phi);
+complex[int] BFluidVB = bfluidvb(0,VhxVh);
 
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////  
-/////////////////////////////////////////////////////////////////////////////
-//cout << " -.-.-.-.-.-.-.-. info -.-.-.-.-.-.-.-.-.-" << endl;
-//cout << " nb of degree of freedom : " << XXMh.ndof << endl;
-//cout << " nb of Triangles: " << Th.nt << endl;
-//cout << " nb of Vertices: " << Th.nv << endl;
-//cout << " -.-.-.-.-.-.-.-._________-.-.-.-.-.-.-.-." << endl;
-/////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+//KINEMATIC CONDITIONS, COMMENTS : NO BASEFLOW => NO FLATTENING
+varf bvbfluid([phi,eta],[q,v]) = int2d(th)(0);
+complex[int] BVbFluid = bvbfluid(0,VhxVh);
 
-macro div(u1,u2) (dx(u1)+dy(u2)) //
-macro grad(u1,u2) [dx(u1),dy(u2)] //
-macro ugrad(u1,u2,v) (u1*dx(v)+u2*dy(v)) //
-macro Ugrad(u1,u2,v1,v2) [ugrad(u1,u2,v1),ugrad(u1,u2,v2)] //
-macro Conv(ua1,ua2,ub1,ub2,v1,v2) (Ugrad(ua1,ua2,ub1,ub2)'*[v1,v2]+Ugrad(ub1,ub2,ua1,ua2)'*[v1,v2]) // convection operator
-macro Diffusion(nu,u1,u2,v1,v2)  (-nu*( dx(u1)*dx(v1)+dy(u1)*dy(v1)+dx(u2)*dx(v2)+dy(u2)*dy(v2))) // integration by parts of nu (v.Delta u) 
+complex[int] AVbFluid(phi[].n);
+//if(formulation=="A")
+//{
+	varf avbfluid([phi,eta],[q,v]) = int1d(Th,6)(N.y*v);  
+	AVbFluid = avbfluid(0,VhxVh);
+//};
+//
+//if(formulation=="R")
+//{
+//	varf avbfluid([phi,eta],[q,v]) = int1d(Th,6)(0)
+//	- int2d(Th)(0);  
+//		AVbFluid = avbfluid(0,VhxVh);
+//};
 
-macro Boundaryconditions(u1,u2,v1,v2,symmetry)
-	           on(bcinlet,bclat,u1=0.0,u2=0.0) 
-             + on(bcwall,u1=0.0,u2=0.0)
-             + int1d(Th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="D"))
-             //
-//+ on(bcaxis,u1=1*(symmetry=="S"),u2=1*(symmetry~="A")) alternative way
-// 
-
-real eps=1.e-7; 
-       
-
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-///////////  Load baseflow   ////////////////////////////////////////////////////
-{
-ifstream cbin("BaseFlow.txt");
-cbin >> Ub1[];
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////
-//////// varf for generalized eigenvalue problem: 
-
-////////////////////////////////////////////////////////////////////////////////////
-
-varf   LNSE ([u1,u2,p],[v1,v2,q]) =
-   int2d(Th)( Diffusion(nu,u1,u2,v1,v2)
-             + p*q*(eps) 
-            + p*div(v1,v2)
-             - div(u1,u2)*q
-             - Conv(u1,u2,Ub1,Ub2,v1,v2)
-             )
-// + int2d(Th)( -shift*(u1*v1+u2*v2+p*q*0.0) )
-// + Boundaryconditions(u1,u2,v1,v2,symmetry);
-			 + on(bcinlet,bclat,u1=0) 
-			 + int1d(Th,bcinlet,bclat)(u2*v2*1e30)
-             + int1d(Th,bcwall)((u1*v1+u2*v2)*1e30)
-             + int1d(Th,bcaxis)(u1*v1*1e30); 
-
- 
-varf   LNSEadjoint ([u1,u2,p],[v1,v2,q]) =
-   int2d(Th)( Diffusion(nu,u1,u2,v1,v2)
-             + p*q*(eps) 
-            + p*div(v1,v2)
-             - div(u1,u2)*q
-             - Conv(v1,v2,Ub1,Ub2,u1,u2)
-             )
-// + int2d(Th)( -conj(shift)*(u1*v1+u2*v2+p*q*0.0) ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
- +  on(bcinlet,bclat,u1=0) 
-			+ int1d(Th,bcinlet,bclat)(u2*v2*1e30)
-             + on(bcwall,u1=0.0,u2=0.0)
-             + int1d(Th,bcaxis)(u1*v1*1e30); 
-// + Boundaryconditions(u1,u2,v1,v2,symmetry);
-
-
-
-////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
-	    varf b([u1,u2,p],[v1,v2,q]) = int2d(Th)( (u1*v1+u2*v2+p*q*0.0) );
-		matrix<complex> BFluid = b(XXMh,XXMh,solver=CG);  //////// see freefem++doc.pdf for the solver
-		varf bvbfluid([u1,u2,p],[v1,v2,q]) = int2d(Th)(v2*(formulation=="A"));  
-		complex[int] BVbFluid = bvbfluid(0,XXMh);
-		matrix<complex> B = 
-			[ 	[BFluid, BVbFluid,0],
-				[0,MASS,0],
-				[0,0,1]		];
-////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-matrix<complex> A;
-
-
-matrix<complex> Afluid;
-Afluid=LNSE(XXMh,XXMh,solver=sparsesolver);
-
-
-varf afluidvb([v1,v2,q],[u1,u2,p]) =
-	int1d(Th,2,21,22,23)(2*p*N.y)
-	-int1d(Th,2,21,22,23)( 2*(2*nu*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x));
-complex[int] AFluidVB = afluidvb(0,XXMh);
-
-
-complex[int] AVbFluid(u1[].n);
-if(formulation=="A")
-{
-	varf avbfluid([u1,u2,p],[v1,v2,q]) = int1d(Th,bcinlet,bclat)(v2*1e30);  
-		AVbFluid = avbfluid(0,XXMh);
-};
-
-if(formulation=="R")
-{
-	varf avbfluid([u1,u2,p],[v1,v2,q]) = int1d(Th,bcwall)(-v2*1e30)
-	- int2d(Th)(v1*dy(Ub1)+v2*dy(Ub2));  
-		AVbFluid = avbfluid(0,XXMh);
-};
-
-
-A = [
+//COUPLED SYSTEM
+matrix<complex> A = [
 		[Afluid,AVbFluid,0],
-		[AFluidVB',-DAMPING,-STIFFNESS],
+		[0,0,0],
 		[0,1,0]
-	 ];
+		];
 
+matrix<complex> B = [
+		[BFluid, BVbFluid,0],
+		[BFluidVB,MASS,0],
+		[0,0,1]
+		];
 
 matrix<complex> OP;
 complex shiftOP;
 shiftOP = shift;
-OP = A+ (-shiftOP)*B;
+OP = A + (-shiftOP)*B;
 
+////////////////////////////////////////////////////
+//
+//  RESOLUTION DU PB AUX VALEURS PROPRES
+//
+//  Important warning : here the computed eigenvalues correspond to omega = lambda/i !
+//  
+/////////////////////////////////////////////////////
 
-
-/// SOLUTION AND POSTPROCESSING FOR NEV>1 (built-in eigenvalue solver)
-
+// TO MODIFY CONSEQUENTLY 
 
 if(nev>1)
 /// SOLUTION AND POSTPROCESSING FOR NEV>1 (built-in eigenvalue solver)
@@ -322,23 +300,23 @@ complex[int,int] EVectors(u1[].n+2,nev);
 /////////////////////////////////////////////////////////////////////////
 
 
-else
+//else
 
 /// SIMPLE SHIFT-INVERT IF ONLY ONE MODE IS RESQUESTED
-{
-XXMh<complex> [u10,u20,p0],[u1direct,u2direct,pdirect],[u1adjoint,u2adjoint,padjoint]; 
+//{
+VhxVh<complex> [phi0,eta0],[phidirect,etadirect],[phiadjoint,etaadjoint]; 
 
 int testCB = exec("ls Eigenmode_guess.txt");
     	if (testCB!=0)
 		{
-		cout << "no file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
-		[u10,u20,p0] = [1,0,0];
+		cout << "no file Eigenmode_guess.txt : starting from arbitrary initial condition" << endl;
+		[phi0,eta0] = [1,0];
 		} 
 		else
 		{
-		cout << "starting shift/invert from mo de in file Eigenmode_guess.txt" << endl;
-		ifstream cbin("Eigenmode_guess .txt");
-		cbin >> u10[];
+		cout << "starting shift/invert from mode in file Eigenmode_guess.txt" << endl;
+		ifstream cbin("Eigenmode_guess.txt");
+		cbin >> phi0[];
 		};
 
 
@@ -392,7 +370,7 @@ else if(iadjoint=="S")
 //	varf brhs([u1,u2,p],[v1,v2,q]) = int2d(Th)( (u10*v1+u20*v2) );
 	set(OP,solver=sparsesolver);  //// factorize matrix
 
-	complex Vb0 = 0; complex Xb0=0;
+	complex Vb0=0; complex Xb0=0;
 	
 	complex Vb,Xb;
 	
@@ -400,13 +378,13 @@ else if(iadjoint=="S")
 	int i;
 	for (i=0; ((err>errmax)&&(i<itmax)); i++)
 	{
-    	complex[int] X0 = [u10[],Vb0,Xb0];
+    	complex[int] X0 = [phi0[],Vb0,Xb0];
     	complex[int] rhs= B*X0;  //////// see freefem++doc.pdf for the solver 
 		complex[int] X = OP^-1*rhs;
-		[u1[],Vb,Xb] = X;
-		
-		complex XnXn1 = int2d(Th)(u10*u1+u20*u2)+Vb0*Vb+Xb0*Xb;
-		complex Xn1Xn1 =  int2d(Th)(u1*u1+u2*u2)+Vb*Vb+Xb*Xb;
+		[phi[],Vb,Xb] = X;
+
+		complex XnXn1 = int2d(Th)(phi0*phi+eta0*eta)+Vb0*Vb+Xb0*Xb;
+		complex Xn1Xn1 = int2d(Th)(phi*phi+eta*eta)+Vb*Vb+Xb*Xb;
 		complex GG = Xn1Xn1/XnXn1;
 		// at each step the inverse shifted eigenval. is approximated by <X_{n+1}, Y> / <X_n, Y>
 		//      ( the choice Y = X_{n+1} is convenient but we could choose something else )
@@ -417,7 +395,7 @@ else if(iadjoint=="S")
 		//	cout << " XnXn = " << XnXn << endl;
 		cout << " estimated eigenvalue sigma = " << sigma << endl;	
 	
-		u10[] = 1/sqrt(abs(Xn1Xn1))*u1[];
+		phi0[] = 1/sqrt(abs(Xn1Xn1))*phi[];
 		Vb0 = 1/sqrt(abs(Xn1Xn1))*Vb;
 		Xb0 = 1/sqrt(abs(Xn1Xn1))*Xb;
 		sigma0 = sigma;
@@ -425,8 +403,8 @@ else if(iadjoint=="S")
 	/// END ITERATION LOOP	
 	if(directadjoint==2){sigma=conj(sigma);};
  	// renormalization by MAXIMUM
- 	Xh NormU = sqrt(abs(u1)^2+abs(u2)^2);
-	u1[] = 1/NormU[].max*u1[];
+ 	Vh NormU = sqrt(abs(phi)^2+abs(eta)^2);
+	phi[] = 1/NormU[].max*phi[];
 	Vb = 1/NormU[].max*Vb;
 	Xb = 1/NormU[].max*Xb;
 	 
@@ -441,7 +419,7 @@ else if(iadjoint=="S")
     		file << sigmar << " " << sigmai << " " << Re <<  " " << real(shift) << " " << imag(shift) << endl;
     		namefile="Eigenmode.txt";
     		namefileFF="Eigenmode.ff2m";
-    		descriptionFF="real Re  complex sigma complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 complex Vb complex Xb";
+    		descriptionFF="real Re  complex sigma complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 complex Vb complex Xb"; //problem???
     	};
     	if(directadjoint==2)
     	{
@@ -454,26 +432,26 @@ else if(iadjoint=="S")
 
 	if(iadjoint=="S"&&directadjoint==1)
 		{
-			u1direct[]=u1[];
+			phidirect[]=phi[];
 		};
 	if(iadjoint=="S"&&directadjoint==2)
 		{
 			cout << " toto" << endl;
-			u1adjoint[]=u1[];
+			phiadjoint[]=phi[];
 		};
     
     {
     ofstream file(namefile);
-  	file << u1[] ;	
+  	file << phi[] ;	
    	file << endl << endl << Re << endl
    	<< endl << sigmar << "   " << sigmai  << endl;
     }
     
-	fespace p1(Th,P1); 
+	fespace p1(th,P1); 
 	p1 xx,yy;
 	xx=x;
 	yy=y;
-    p1<complex> ux1,uy1,pp1,vort1;
+	p1<complex> phi,eta;
 
  		 cout << "Writing eigenmode in file " << namefileFF << endl;
  		 ofstream fileFF(namefileFF);
@@ -483,22 +461,14 @@ else if(iadjoint=="S")
 	     fileFF << descriptionFF << endl << endl ; 
 		 fileFF << Re  << endl << real(sigma) << " " << imag(sigma)  
 		 << " " << shiftr << " " << shifti << " " << i << endl << endl;
- 		ux1=u1;
-		uy1=u2;
-		pp1=p;
-		vort1=dy(u1)-dx(u2);
-		for (int j=0;j<ux1[].n ; j++) fileFF << real(ux1[][j]) << " " << imag(ux1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) fileFF << real(uy1[][j]) << " " << imag(uy1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) fileFF << real(pp1[][j]) << " " << imag(pp1[][j]) << endl;
-		for (int j=0;j<ux1[].n ; j++) fileFF << real(vort1[][j]) << " " << imag(vort1[][j]) << endl;
+		for (int j=0;j<phi[].n ; j++) fileFF << real(phi[][j]) << " " << imag(phi[][j]) << endl;
+		for (int j=0;j<phi[].n ; j++) fileFF << real(eta[][j]) << " " << imag(eta[][j]) << endl;
 		fileFF << real(Vb) << " " << imag(Vb) << endl;
 		fileFF << real(Xb) << " " << imag(Xb) << endl;
 
 cout << " Vb : " << 		Vb << endl;
-p1 realu1 = real(u1);
-plot(realu1,fill=1,value=1);
-p1 realu2 = real(u2);
-plot(realu2,fill=1,value=1);
+p1 realphi = real(phi);
+plot(realphi,fill=1,value=1);
 	
 } // end of post processing of simple shift-invert case
 else // case iteration failed
@@ -523,8 +493,6 @@ else // case iteration failed
 };
 
 
-
-
 if (testCB==0)
 		{
 		exec("rm Eigenmode_guess.txt");// to be sure this file is not reused unless explicitly requested
@@ -540,7 +508,9 @@ cout << "Computation of sensitivity after direct and adjoint" << endl;
 
 //	cout << "STAT" << u1direct(2.5,.5) << " " << u1adjoint(2.5,.5) << " " << u2direct(2.5,.5) << " " << u2adjoint(2.5,.5) << endl ;
 
-	fespace p2(Th,P2);fespace p1(Th,P1);
+	fespace p2(Th,P2);
+	fespace p1(Th,P1);
+
 	p2 sensitivity = sqrt(abs(u1adjoint)^2+abs(u2adjoint)^2) * sqrt(abs(u1direct)^2+abs(u2direct)^2);
 	// at this stage [u1,u2,p] is the last computed, namely the adjoint eigenmode
 //	real norm = abs(int2d(Th)(u1adjoint*u1direct+u2direct*u2adjoint));
@@ -574,41 +544,6 @@ cout << "Computation of sensitivity after direct and adjoint" << endl;
 }; // end of selection of mutliple mode (krylov) / single mode (simple shift-invert)
 
 
-};
-
-
-
-// NEXT IS INITIAL POST-PROCESSING OF VINCENZO ET AL
-/*
-int index=0;
-cout << "Mode index [?]: ";
-cin >> index ;         //input from keyboard
-index=index-1;
-exec("mkdir -v MODES");
-
-[Ub1,Ub2,Pb]=[real(eu1[index]),real(eu2[index]),real(eup[index])];    //real part 
-
-{
-ofstream realout("./MODES/REALCylRe"+Re+".txt");      
-realout << Ub1[];
-};
-
-[Ub1,Ub2,Pb]=[imag(eu1[index]),imag(eu2[index]),imag(eup[index])];    //imag part
-{
-ofstream imagout("./MODES/IMAGCylRe"+Re+".txt");
-imagout << Ub1[];
-};
-
-//////////////////////////////////// SAVE SPECTRUM /////////////////////////////////
-
-{
-  ofstream fileSpectra("MODES/Spectra.out",append);
-  //  fileSpectra.precision(12);         // set the number of digits to 12 
-  for (int ij=0;ij<k;ij++)
-   {
-    fileSpectra  << Re << " " << real(ev[ij]) << " " << imag(ev[ij]) << endl;
-   };
-};
-*/
+//};
 
 

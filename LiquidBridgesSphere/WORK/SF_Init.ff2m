@@ -3,5 +3,5 @@ Defininition of problem type and geometry for StabFem. Problem type :
 Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)
 real r real L real rsph
 1
-53.3146
-0
+4.4429
+0.5

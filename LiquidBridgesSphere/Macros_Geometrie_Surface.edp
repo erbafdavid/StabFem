@@ -83,12 +83,12 @@ problem CalcN0z(N0z,test)=
   +int2d(Shempty)((dx(N0z)*dx(test)+dy(N0z)*dy(test))*1e-30);
   
 //   +int1d(Shempty,5,6,qfe=qf3pE)(N0z*test)
-//    +int1d(Shempty,5,6,qfe=qf3pE)(-test*(y-1)/(abs(y-1)*(1-(x-1)^2/8)+1e-10));
+//   +int1d(Shempty,5,6,qfe=qf3pE)(-test*(y-1)/(abs(y-1)*(1-(x-1)^2/8)+1e-10));
 
 
 
  
-// Courbure : composante dans le plan medidien K0a et dans le plan perpendiculaire K0b 
+// Courbure : composante dans le plan meridien K0a et dans le plan perpendiculaire K0b 
 //problem CalcK0a(K0a,test)=
 //   int1d(Shempty,2,qfe=qf3pE)(K0a*test)
 // + int2d(Shempty)(1e-10*K0a*test)
@@ -167,7 +167,7 @@ Wh1 etaNewton ;
 problem CalcEta(etaNewton,test) = int1d(Shempty,2)(((K0a+K0b)-(K0-dpdz*y))*test*abs(x)) 
                     + int1d(Shempty,2)(((Ds(etaNewton))*(Ds(test))  -(K0a^2+K0b^2)*etaNewton*test +dpdz*etaNewton*test*N0z)*abs(x))
 		    + int2d(Shempty)(1e-20*etaNewton*test)
-		    +on(1,5,6,etaNewton=0);
+		    + on(1,5,6,etaNewton=0);
 		    
 // Nouvelle methode avec macro
 macro CalcEtaNEW

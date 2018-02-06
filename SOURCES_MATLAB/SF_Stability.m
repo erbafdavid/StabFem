@@ -142,11 +142,13 @@ switch baseflow.mesh.problemtype
      case('3DFreeSurfaceStatic')
         % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE POTENTIAL : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
-        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(10) ' " '];
-        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
+        % argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(10) ' " '];
+        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
+                            ' ' p.Results.type ' ' num2str(p.Results.nev) ' ' num2str(p.Results.m) ' " ']; 
+        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential_Try.edp'];
         status = mysystem(solvercommand);     
             
-    %case(...)    
+    % case(...)    
     % adapt to your case !
     
     case default

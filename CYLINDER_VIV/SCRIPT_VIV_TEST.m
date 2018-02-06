@@ -5,10 +5,9 @@
 %  THIS SCRIPT DEMONSTRATES THE MESH CONVERGENCE USING ADAPTMESH 
 %   TO BASEFLOW AND EIGENMODE.
 
-
 global ff ffdir ffdatadir sfdir verbosity
-ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
-ffdatadir = './DATA_FREEFEM_CYLINDER';
+ff = '/usr/local/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
+ffdatadir = './WORK/';
 sfdir = '../SOURCES_MATLAB'; % where to find the matlab drivers
 ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
 verbosity=1;
@@ -25,13 +24,13 @@ disp(' ');
 disp(' GENERATING  MESH : [-40:120]x[0:40] ');
 disp(' ');
 
-baseflow=FreeFem_Init('Mesh_Cylinder_Large.edp');
-baseflow=FreeFem_BaseFlow(baseflow,'Re',1);
-baseflow=FreeFem_BaseFlow(baseflow,'Re',10);
-baseflow=FreeFem_BaseFlow(baseflow,'Re',60);
+baseflow=SF_Init('Mesh_Cylinder_Large.edp');
+baseflow=SF_BaseFlow(baseflow,'Re',1);
+baseflow=SF_BaseFlow(baseflow,'Re',10);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
 plotFF(baseflow,'mesh');pause;
 
-baseflow=FreeFem_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
+baseflow=SF_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
 plotFF(baseflow,'mesh');pause(0.1);
 
 end
@@ -41,8 +40,8 @@ disp('ADAPTING MESH FOR RE=60 ')
 disp(' ');
 %baseflow=FreeFem_BaseFlow(baseflow,'Re',60);
 
-[ev,em] = FreeFem_Stability(baseflow,'shift',0.04+0.76i,'nev',1,'type','S');
-[baseflow,em]=FreeFem_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
+[ev,em] = SF_Stability(baseflow,'shift',0.04+0.76i,'nev',1,'type','S');
+[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
 plotFF(baseflow,'mesh');pause(0.1);
 
 %disp(' ');
@@ -56,16 +55,16 @@ disp(' ');
 disp('COMPUTING STABILITY BRANCH (fixed cylinder) ')
 disp(' ');
 % starting point
-baseflow=FreeFem_BaseFlow(baseflow,'Re',40);
-[ev,em] = FreeFem_Stability(baseflow,'shift',-.03+.72i,'nev',1,'type','D');
+baseflow=SF_BaseFlow(baseflow,'Re',40);
+[ev,em] = SF_Stability(baseflow,'shift',-.03+.72i,'nev',1,'type','D');
 
 
 
 Re_tab = [40 : 5 : 80];
 sigma_tab = [];
 for Re = Re_tab
-    baseflow = FreeFem_BaseFlow(baseflow,'Re',Re);
-    [ev,em] = FreeFem_Stability(baseflow,'shift','cont','nev',1,'type','D');
+    baseflow = SF_BaseFlow(baseflow,'Re',Re);
+    [ev,em] = SF_Stability(baseflow,'shift','cont','nev',1,'type','D');
     sigma_tab = [sigma_tab ev];
 end
 figure(1);hold on;
