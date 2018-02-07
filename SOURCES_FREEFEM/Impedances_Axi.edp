@@ -5,6 +5,8 @@
 
 /// DECLARATIONS FORMELLES
 
+	include "SF_Geom.edp";
+		include "Macros_StabFem.edp";
 
 
 

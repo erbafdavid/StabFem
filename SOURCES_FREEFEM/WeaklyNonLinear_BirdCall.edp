@@ -5,7 +5,8 @@
 //  Références : Meliga, Tchoufag, etc...
 //
 //
-
+//include "SF_Geom.edp";
+//include "Macros_StabFem.edp";
 
 
 verbosity = 0;

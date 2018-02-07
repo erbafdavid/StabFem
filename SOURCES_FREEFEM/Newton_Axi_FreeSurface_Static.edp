@@ -35,6 +35,7 @@ real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueu
 //
 ////////////////////////////////////////////////////////////////
 
+include "SF_Geom.edp";
 include "Macros_StabFem.edp"
 
 mesh th=readmesh(ffdatadir+"mesh_guess.msh");

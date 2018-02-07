@@ -17,7 +17,6 @@ include "Macros_StabFem.edp";
 
 
 
-
 		real S = 0.666;
 		
 		real l2=8; 
@@ -68,7 +67,7 @@ include "Macros_StabFem.edp";
                 int m=6;  // densite zone proche axe
                 int o=25; // densite boite centrale 
                 int n=30; //densite obstacle faces frontales
- 		int n2 = 30; // densité obstacle face laterale 
+ 		int n2 = 30; // densit? obstacle face laterale 
 
                 mesh th;
 
@@ -97,6 +96,21 @@ savemesh(th,ffdatadir+"mesh.msh");
 
 // SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
 	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization"  << endl ;
+            file2 << " real SFGeomHdisk = " << ep  << " ; " << endl ;
+            file2 << " real SFGeomRdisk = " << 0.5  << " ; " << endl ;
+            file2 << " real SFGeomRwall = " << 0.5/S  << " ; " << endl ;
+
+}
+
+
 
 
 

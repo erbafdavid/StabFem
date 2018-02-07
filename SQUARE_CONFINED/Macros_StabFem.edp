@@ -2,7 +2,7 @@
 /// file Macros_StabFem.edp
 ///
 /// This file contains the case-dependent Macros for boundary conditions and postprocessing output.
-///
+//
 /// This file can be customized according to requirements but it must contain the following macros :
 ///
 /// boundary conditions : 
@@ -30,9 +30,9 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 
 
 macro BoundaryconditionsBaseFlow(du,u,v)
-	           on(bcinlet,du#x=1.0*(1-4*y^2)-u#x,du#y=0.0)
+	           on(bcinlet,du#x=1.5*(1-4*y^2)-u#x,du#y=0.0)
 	       /*  + on(bclat,du#y=0.0)  */
-             + on(2,21,22,23,du#x=0.0,du#y=0.0)
+             + on(2,21,22,23,du#x=-u#x,du#y=-u#y)
              + int1d(th,bcaxis)(du#x*v#x*1e30*(symmetryBaseFlow=="A")+du#y*v#y*1e30*(symmetryBaseFlow=="S"))       
 //EOM
 
@@ -121,7 +121,7 @@ macro SFWriteBaseFlow(filename,u,typeFlow,iter)
     file << typeFlow << endl;
     file << "Format : " << endl;	
 	file << "real Re P1 ux P1 uy P1 p P1 vort P1 psi real iter " ;
-	string PostProcessBaseFlowDescription = "real Cx"; /* customizable output */ 
+	string PostProcessBaseFlowDescription = "real Cx real Lx"; /* customizable output */ 
 	file << PostProcessBaseFlowDescription << endl << endl ; 
 	file << Re << endl;	
 			for (int j=0;j<ut[].n ; j++) file << ut[][j] << endl;
@@ -135,8 +135,24 @@ macro SFWriteBaseFlow(filename,u,typeFlow,iter)
     /* Calcul de la trainee */
     real DragMode = Trainee(u,symmetryBaseFlow);
 	cout << "#    Cx =  " << 2*DragMode << endl; /* factor 2 because Fx = 1/2 Cx */
-    file << 2*DragMode << " " ;  
-   	}
+    file << 2*DragMode << " " ; 
+        /* mesure de la longueur de recirculation */
+        real Lx;
+		 if(iter>0)
+		{
+		real dx = 0.001;real Uav = -2e-10;real Uap=-1e-10;int ix;
+			for(ix=1;ix<20000;ix++)
+			{   
+				Uap =u#x(SFGeomBeta/2+ix*dx,0);
+				if(Uap*Uav<0){break;};
+				Uav = Uap;	
+			}
+			real xav = 0.5+(ix-1)*dx; 
+			real xap = 0.5+ix*dx;
+			Lx = xav *(Uap)/(Uap-Uav) + xap *(-Uav)/(Uap-Uav);
+		};
+		file << Lx << endl;
+	}
 	}
 	else
 	{

@@ -106,7 +106,7 @@ error = 'ERROR : SF_ base flow computation aborted';
         system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt  ' ffdatadir 'BaseFlow.txt']);
         system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt  ' ffdatadir 'BaseFlow_guess.txt']);
         system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m ' ffdatadir 'BaseFlow.ff2m']);
-        baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
+        baseflow = importFFdata(baseflow.mesh,[ffdatadir 'BaseFlow.ff2m']); 
         baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
         baseflow.iter=0;
         

@@ -12,7 +12,9 @@
 // load "BinaryIO_64"
 //load "UMFPACK64"        ////////  load sparsesolver    
 load "MUMPS_seq"
-include "Macros_StabFem.edp"
+include "SF_Geom.edp";
+include "Macros_StabFem.edp";
+
 
 /////////////////////////////////////////////////////////////////////////////////
 

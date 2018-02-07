@@ -6,42 +6,42 @@
 %
 % Version 2.0 by D. Fabre , june 2017
 
-
-%close all;
 run('../SOURCES_MATLAB/SF_Start.m');
-ffdatadir = './'; %% to be fixed : this should be "./WORK" but some of the solvers are not yet operational
+close all;
+%ffdatadir = './WORK/'; %% to be fixed : this should be "./WORK" but some of the solvers are not yet operational
 
 
 % 
 Re = 200;
-if(exist([ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'])==2)
+if(exist([ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'])==2)
      disp(['base flow and adapted mesh for Re = ' num2str(Re) ' already computed']);
-    if (exist('baseflow')==0); % if the data are present but the variables were cleared
+    if (exist('bf')==0); % if the data are present but the variables were cleared
     mesh=importFFmesh('mesh.msh');
-    baseflow =importFFdata(mesh,[ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m']);
+    bf =importFFdata(mesh,[ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m']);
     end
+    
 else
-    disp('computing base flow and adapting mesh')
-   
-    baseflow = SF_Init('meshInit_DiskInTube.edp'); 
+    disp('computing base flow and adapting mesh');
+    bf = SF_Init('meshInit_DiskInTube.edp'); 
     Re_start = [10 , 100 , 200]; % values of Re for progressive increasing up to end
     for Rei = Re_start
-        baseflow=SF_BaseFlow(baseflow,'Re',Rei); 
-        baseflow=SF_Adapt(baseflow);
+        bf=SF_BaseFlow(bf,'Re',Rei); 
+        bf=SF_Adapt(bf);
     end
     
  % optional : adapting mesh on eigenmode structure as well      
- [ev,eigenmode] = SF_Stability(baseflow,'m',1,'shift',0.021+1.771i,'nev',1,'type','S');
- [baseflow,eigenmode]=SF_Adapt(baseflow,eigenmode);  
- [baseflow,eigenmode]=SF_Adapt(baseflow,eigenmode); 
+ [ev,eigenmode] = SF_Stability(bf,'m',1,'shift',0.021+1.771i,'nev',1,'type','S');
+ [bf,eigenmode]=SF_Adapt(bf,eigenmode);  
+ [bf,eigenmode]=SF_Adapt(bf,eigenmode); 
 
 
 
-mesh = importFFmesh('mesh.msh','seg'); plotFF(baseflow,'mesh'); % to plot the mesh
+%mesh = importFFmesh([ffdatadir 'mesh.msh'],'seg'); 
+plotFF(bf,'mesh'); % to plot the mesh
 
-baseflow.mesh.xlim=[-1,3]; %x-range for plots
-baseflow.mesh.ylim=[0,1];
-plotFF(baseflow,'ux');  % to plot the baseflow
+bf.mesh.xlim=[-1,3]; %x-range for plots
+bf.mesh.ylim=[0,1];
+plotFF(bf,'ux');  % to plot the bf
 
 end
 
@@ -61,7 +61,7 @@ tit=myinput(' choice ?',1);
 switch tit
     case(1)
         % To plot spectrum and allow to click on modes to plot eigenmodes
-   SF_Spectrum_Exploration(baseflow);
+   SF_Spectrum_Exploration(bf);
 
     case(2)
     disp('Computing stability branches in the range Re = [120-220] for the fist two branches');
@@ -71,11 +71,11 @@ switch tit
     if(exist('EVI')==0) 
         Re_RangeI = [170:10:220];EVI = [];
         guessI = 1.85i-.1;
-        baseflow=SF_BaseFlow(baseflow,'Re',170);
-        [ev,em] = SF_Stability(baseflow,'m',1,'shift',guessI,'nev',1,'type','D');
+        bf=SF_BaseFlow(bf,'Re',170);
+        [ev,em] = SF_Stability(bf,'m',1,'shift',guessI,'nev',1,'type','D');
         for Re = Re_RangeI
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev,em] = SF_Stability(baseflow,'m',1,'nev',1,'shift','cont');
+        bf = SF_BaseFlow(bf,'Re',Re);
+        [ev,em] = SF_Stability(bf,'m',1,'nev',1,'shift','cont');
         EVI = [EVI ev];
         end  
         
@@ -87,13 +87,13 @@ switch tit
     if(exist('EVS')==0)
         guessS = -.1;
         Re_RangeS = [120:10:180];EVS = [];
-       % EVS = SF_Stability_LoopRe(baseflow,Re_RangeS,'m',1,'shift',guessS,'nev',1);
+       % EVS = SF_Stability_LoopRe(bf,Re_RangeS,'m',1,'shift',guessS,'nev',1);
         
-        baseflow=SF_BaseFlow(baseflow,'Re',120);
-        [ev,em] = SF_Stability(baseflow,'m',1,'shift',guessS,'nev',1,'type','D');
+        bf=SF_BaseFlow(bf,'Re',120);
+        [ev,em] = SF_Stability(bf,'m',1,'shift',guessS,'nev',1,'type','D');
         for Re = Re_RangeS
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev,em] = SF_Stability(baseflow,'m',1,'nev',1,'shift','cont');
+        bf = SF_BaseFlow(bf,'Re',Re);
+        [ev,em] = SF_Stability(bf,'m',1,'nev',1,'shift','cont');
         EVS = [EVS ev];
         end
         
@@ -111,19 +111,19 @@ switch tit
     Re = myinput('Enter Reynolds number : ',200);  
     m = myinput('Enter wavenumber m : ',1);  
     shift = myinput('Enter shift (complex)  : ',0.03+1.78i);
-    baseflow = SF_BaseFlow(baseflow,Re);
-    baseflow.mesh.xlim=[-1 3]; % xrange fixed in baseflow.mesh ; inherited by modes
+    bf = SF_BaseFlow(bf,'Re',Re);
+    bf.mesh.xlim=[-1 3]; % xrange fixed in bf.mesh ; inherited by modes
     
     
-    [ev,eigenmode]=SF_Stability(baseflow,'m',m,'shift',shift,'nev',1,'type','S');
+    [ev,eigenmode]=SF_Stability(bf,'m',m,'shift',shift,'nev',1,'type','S');
     
     eigenmode.plottitle=['Direct eigenmode with lambda = ',num2str(eigenmode.lambda)]; 
     plotFF(eigenmode,'ux1');
     
-    eigenmode.plottitle=['Adjoint eigenmode with lambda = ',num2str(eigenmodeA.lambda)]; 
+    eigenmode.plottitle=['Adjoint eigenmode with lambda = ',num2str(eigenmode.lambda)]; 
     plotFF(eigenmode,'ux1Adj');
     
-    eigenmode.plottitle=['Structural sensitivity with lambda = ',num2str(eigenmodeA.lambda)]; 
+    eigenmode.plottitle=['Structural sensitivity with lambda = ',num2str(eigenmode.lambda)]; 
     plotFF(eigenmode,'sensitivity');
      
     
@@ -135,8 +135,8 @@ switch tit
     if(exist('Cx_branch')==0)% to save time if already computed
     Cx_branch = [];
     for Re = Re_Range
-        baseflow=SF_BaseFlow(baseflow,Re);
-        Cx_branch = [Cx_branch,baseflow.Cx];
+        bf=SF_BaseFlow(bf,'Re',Re);
+        Cx_branch = [Cx_branch,bf.Cx];
     end
     end
     
@@ -155,12 +155,12 @@ switch tit
         disp('Computing coefficients of the weakly nonlinear amplitude equation');
         disp('NB : at the moment this will work only for steady, m=1 bifurcation');
         disp(['Rec = ', num2str(Rec)]);
-        baseflow=SF_BaseFlow(baseflow,Rec);
-        [evD,eigenmodeD]=SF_Stability(baseflow,'m',m,'shift',0,'nev',1);
+        bf=SF_BaseFlow(bf,'Re',Rec);
+        [evD,eigenmodeD]=SF_Stability(bf,'m',m,'shift',0,'nev',1);
         eigenmodeD
-        [evA,eigenmodeA]=SF_Stability(baseflow,'m',m,'shift',0,'type','A','nev',1);
+        [evA,eigenmodeA]=SF_Stability(bf,'m',m,'shift',0,'type','A','nev',1);
         eigenmodeA
-        wnl = SF_WNL(baseflow)
+        wnl = SF_WNL(bf)
         
     % plot 'linear' parts of the results on the drag/re and sigma/re curves
         

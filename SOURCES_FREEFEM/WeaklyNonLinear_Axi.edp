@@ -7,9 +7,12 @@
 //
 /// THIS PROGRAM IS TO BE REWRITTEN USING MACROS !
 
+include "SF_Geom.edp";
+include "Macros_StabFem.edp";
+
 
 verbosity = 0;
-mesh th=readmesh("mesh.msh");
+mesh th=readmesh(ffdatadir+"mesh.msh");
 fespace p2(th,P2);
 fespace p1(th,P1);
 fespace p0(th,P0);
@@ -30,22 +33,22 @@ p2 yy=y+1e-12;
 
 // MACROS POUR OBJET 3D (sphere, disque, etc...)
 
-// TRAINEE POUR UN ECOULEMENT AXI (ur,uz,p)
-macro Trainee(ur,uz,p)   
+// TraineeWNL POUR UN ECOULEMENT AXI (ur,uz,p)
+macro TraineeWNL(ur,uz,p)   
 	(
 	int1d(th,2,21,22,23)(p*2*pi*y*N.x)
 	-nu*int1d(th,2,21,22,23)( (2*dx(uz)*N.x+(dx(ur)+dy(uz))*N.y)*2*pi*y)
 	)
 //
 
-// PORTANCE COMPLEXE POUR UN ECOULEMENT M=1 (ur,ut,uz,p)
-macro Portance(ur,ut,uz,p)
+// PortanceWNL COMPLEXE POUR UN ECOULEMENT M=1 (ur,ut,uz,p)
+macro PortanceWNL(ur,ut,uz,p)
   	(
 	int1d(th,2,21,22,23)(p*N.y*y*pi)
  	- nu*int1d(th,2,21,22,23)( ( 2*dy(ur)*N.y + (dy(uz)+dx(ur))*N.x ) *pi*y) 
 	+1i* nu*int1d(th,2,21,22,23)( ( (dy(ut)-ut/y)*N.y + (dx(ut))*N.x ) *pi*y)
 	)
-//
+
 
 // COUPLE COMPLEXE POUR UN ECOULEMENT M=1
 macro Couple(ur,ut,uz,p) 
@@ -162,7 +165,7 @@ y*(uz2*dx(uz1)+uz1*dx(uz2)+ur1*dy(uz2)+ur2*dy(uz1) )
 
 p2xp2xp1 [u1,u2,up];
 {
- ifstream file0("BaseFlow.txt");
+ ifstream file0(ffdatadir+"BaseFlow.txt");
  file0 >> u1[];
  file0 >> Rec;
 };
@@ -170,7 +173,7 @@ p2xp2xp1 [u1,u2,up];
 
 
 nu=1./Rec;
-real Trainee0;
+real TraineeWNL0;
 
 cout << endl << "### CHAMP DE BASE POUR RE = " << Rec << endl;
 
@@ -179,8 +182,8 @@ if (int1d(th,1)(abs(y)+abs(x))>0)
 	{
 		cout << " Champ de base de type BLUFF BODY AXI"<< endl;
 		typegeom="BLUFFBODYAXI"; 
-		Trainee0 =  Trainee(urp,uzp,pp);
-		cout << "Trainee due au champ de base : " << Trainee0 << endl;
+		TraineeWNL0 =  TraineeWNL(urp,uzp,pp);
+		cout << "TraineeWNL due au champ de base : " << TraineeWNL0 << endl;
 
 	}
 	
@@ -224,7 +227,7 @@ p2xp2xp2xp1<complex> [urAAdj,utAAdj,uzAAdj,pAAdj]; //ua adjoint
 // [urA,utA,uzA,pA] = [urR+1i*urI,utR+1i*utI,uzR+1i*uzI,pR+1i*pI];
 
 real ReM, lambdaMR, lambdaMI; complex lambdaM; int mM;
- ifstream file1("Eigenmode.txt");
+ ifstream file1(ffdatadir+"Eigenmode.txt");
  file1 >> urA[];
  file1 >> ReM >> lambdaMR >> lambdaMI >> mM ;
  lambdaM = lambdaMR+1i*lambdaMI;
@@ -243,7 +246,7 @@ real ReM, lambdaMR, lambdaMI; complex lambdaM; int mM;
 
 real ReMA, lambdaMAR, lambdaMAI; complex lambdaMA; int mMA;
 
- ifstream file1("EigenmodeA.txt");
+ ifstream file1(ffdatadir+"EigenmodeA.txt");
  file1 >> urAAdj[];
  file1 >> ReMA >> lambdaMAR >> lambdaMAI >> mMA;
  lambdaMA = lambdaMAR+1i*lambdaMAI;
@@ -257,15 +260,15 @@ complex COUPLEA;
 if(typegeom=="BLUFFBODYAXI")
 	{
 //Normalization : LATERAL FORCE = 1
-	complex FyAT = Portance(urA,utA,uzA,pA);
+	complex FyAT = PortanceWNL(urA,utA,uzA,pA);
 	urA[]=.5/FyAT*urA[]; 
 		
 // RENORMALISATION DE L ADJOINT (FACULTATIF)
-	complex FyATS = Portance(urAAdj,utAAdj,uzAAdj,pAAdj);
+	complex FyATS = PortanceWNL(urAAdj,utAAdj,uzAAdj,pAAdj);
 	urAAdj[]=1./FyATS*urAAdj[];
 	
-	cout << "PORTANCE COMPLEXE DU MODE A APRES RENORMALISATION = " << Portance(urA,utA,uzA,pA) << 
-	            " ; " << Portance(urAAdj,utAAdj,uzAAdj,pAAdj) << endl;
+	cout << "PortanceWNL COMPLEXE DU MODE A APRES RENORMALISATION = " << PortanceWNL(urA,utA,uzA,pA) << 
+	            " ; " << PortanceWNL(urAAdj,utAAdj,uzAAdj,pAAdj) << endl;
 	cout << "     ( = 1/2 avant ajout du complexe conjugue )" << endl; 	    
 	cout << "Valeurs en (x=1.2 ; y=0.2)" << endl;
 	cout << "Direct :" << endl;
@@ -369,36 +372,36 @@ problem PBUdelta([urD,utD,uzD,pD],[vr,vt,vz,q]) = // for the direct computation 
         cout << "TERME U delta : valeurs en (.2,.2) : " < endl << urD(.2,.2) << " ; " << utD(.2,.2) << " ; "
 		     << uzD(.2,.2) << " ; " << pD(.2,.2) << endl;
 
-real TraineeEpsilon;
+real TraineeWNLEpsilon;
 
 if(typegeom=="BLUFFBODYAXI")
 {
 	// Traînée due à cette correction
-	real TraineeDP     =      int1d(th,2,21,22,23)(pD*2*pi*y*N.x);
-	real TraineeDV1    =  -nu*int1d(th,2,21,22,23)( (2*dx(uzD)*N.x+(dx(urD)+dy(uzD))*N.y)*2*pi*y);
-	real TraineeDV2    =      int1d(th,2,21,22,23)( (2*dx(uzp)*N.x+(dx(urp)+dy(uzp))*N.y)*2*pi*y);
-        cout << "Trainee due a la correction en viscosite : " 
-	     << TraineeDP << " + " << TraineeDV1 << " + " << TraineeDV2 << endl;
-	TraineeEpsilon = TraineeDP+TraineeDV1+TraineeDV2;
-        cout << "Total : " << TraineeEpsilon << endl;
-	cout << " /Re^2 =  " << (TraineeDP+TraineeDV1+TraineeDV2)/Rec^2 << endl;
+	real TraineeWNLDP     =      int1d(th,2,21,22,23)(pD*2*pi*y*N.x);
+	real TraineeWNLDV1    =  -nu*int1d(th,2,21,22,23)( (2*dx(uzD)*N.x+(dx(urD)+dy(uzD))*N.y)*2*pi*y);
+	real TraineeWNLDV2    =      int1d(th,2,21,22,23)( (2*dx(uzp)*N.x+(dx(urp)+dy(uzp))*N.y)*2*pi*y);
+        cout << "TraineeWNL due a la correction en viscosite : " 
+	     << TraineeWNLDP << " + " << TraineeWNLDV1 << " + " << TraineeWNLDV2 << endl;
+	TraineeWNLEpsilon = TraineeWNLDP+TraineeWNLDV1+TraineeWNLDV2;
+        cout << "Total : " << TraineeWNLEpsilon << endl;
+	cout << " /Re^2 =  " << (TraineeWNLDP+TraineeWNLDV1+TraineeWNLDV2)/Rec^2 << endl;
 
-	cout << "AUTRE METHODE :" << Trainee(urD,uzD,pD)+TraineeDV2 << endl;
+	cout << "AUTRE METHODE :" << TraineeWNL(urD,uzD,pD)+TraineeWNLDV2 << endl;
 };
 
 if(typegeom=="JETAXI")
 {
 	// Traînée due à cette correction
-	real TraineeDP     =      int1d(th,2,21,22,23)(pD*2*pi*y*N.x);
-	real TraineeDV1    =  -nu*int1d(th,2,21,22,23)( (2*dx(uzD)*N.x+(dx(urD)+dy(uzD))*N.y)*2*pi*y);
-	real TraineeDV2    =      int1d(th,2,21,22,23)( (2*dx(uzp)*N.x+(dx(urp)+dy(uzp))*N.y)*2*pi*y);
-        cout << "Trainee due a la correction en viscosite : " 
-	     << TraineeDP << " + " << TraineeDV1 << " + " << TraineeDV2 << endl;
-	real TraineeEpsilon = TraineeDP+TraineeDV1+TraineeDV2;
-        cout << "Total : " << TraineeEpsilon << endl;
-	cout << " /Re^2 =  " << (TraineeDP+TraineeDV1+TraineeDV2)/Rec^2 << endl;
+	real TraineeWNLDP     =      int1d(th,2,21,22,23)(pD*2*pi*y*N.x);
+	real TraineeWNLDV1    =  -nu*int1d(th,2,21,22,23)( (2*dx(uzD)*N.x+(dx(urD)+dy(uzD))*N.y)*2*pi*y);
+	real TraineeWNLDV2    =      int1d(th,2,21,22,23)( (2*dx(uzp)*N.x+(dx(urp)+dy(uzp))*N.y)*2*pi*y);
+        cout << "TraineeWNL due a la correction en viscosite : " 
+	     << TraineeWNLDP << " + " << TraineeWNLDV1 << " + " << TraineeWNLDV2 << endl;
+	real TraineeWNLEpsilon = TraineeWNLDP+TraineeWNLDV1+TraineeWNLDV2;
+        cout << "Total : " << TraineeWNLEpsilon << endl;
+	cout << " /Re^2 =  " << (TraineeWNLDP+TraineeWNLDV1+TraineeWNLDV2)/Rec^2 << endl;
 
-	cout << "AUTRE METHODE :" << Trainee(urD,uzD,pD)+TraineeDV2 << endl;
+	cout << "AUTRE METHODE :" << TraineeWNL(urD,uzD,pD)+TraineeWNLDV2 << endl;
 };
 	
 	
@@ -465,8 +468,8 @@ p2xp2xp2xp1<complex> [urAAs,utAAs,uzAAs,pAAs],[urAA,utAA,uzAA,pAA]; // Terme U^2
 		cout << "Calcul du terme d'ordre 2 proportionnel a  (A As) . " << endl;
 		cout << "TERME U A A ETOILE : valeurs en (.2,.2) : " < endl << urAAs(.2,.2) << " ; " << utAAs(.2,.2) << " ; "
 		     << uzAAs(.2,.2) << " ; " << pAAs(.2,.2) << endl;
-		complex TraineeAAs = Trainee(urAAs,uzAAs,pAAs);
-		cout << "Contribution a la trainee proportionnelle a A As : " << TraineeAAs << endl;
+		complex TraineeWNLAAs = TraineeWNL(urAAs,uzAAs,pAAs);
+		cout << "Contribution a la TraineeWNL proportionnelle a A As : " << TraineeWNLAAs << endl;
 		
 		// Forcage pour le probleme a l'ordre 3 :	
 		[FrE,FtE,FzE,FpE]= CMN(1,urA,utA,uzA,0,urAAs,utAAs,uzAAs); //
@@ -486,7 +489,7 @@ p2xp2xp2xp1<complex> [urAAs,utAAs,uzAAs,pAAs],[urAA,utAA,uzAA,pAA]; // Terme U^2
 		cout << "Calcul du terme d'ordre 2 proportionnel a  (A A) . " << endl;
 		cout << "TERME U A A  : valeurs en (.2,.2) : " < endl << urAA(.2,.2) << " ; " << utAA(.2,.2) << " ; "
 		     << uzAA(.2,.2) << " ; " << pAA(.2,.2) << endl;
-		cout << "(pas de contribution a la trainee) " << endl;
+		cout << "(pas de contribution a la TraineeWNL) " << endl;
 		// Forcage pour le probleme a l'ordre 3 :	
 		[FrE,FtE,FzE,FpE]= CMN(-1,urAC,utAC,uzAC,2,urAA,utAA,uzAA); //
                 complex muA2 = int2d(th)(FrE*conj(urAAdj)+FtE*conj(utAAdj)+FzE*conj(uzAAdj))/denomA;
@@ -503,7 +506,7 @@ p2xp2xp2xp1<complex> [urAAs,utAAs,uzAAs,pAAs],[urAA,utAA,uzAA,pAA]; // Terme U^2
 
 cout << endl << "####" << endl << "#### BILAN SUR LES FORCES :"<< endl << "#####" <<  endl;
 		
-cout << "Portance = |A| = sqrt(lambdaA/muA)*sqrt(epsilon)" << endl;
+cout << "PortanceWNL = |A| = sqrt(lambdaA/muA)*sqrt(epsilon)" << endl;
 cout << "                 = " << sqrt(abs(lambdaA/muA)) << " *sqrt(epsilon) " << endl;
 cout << "                 = " << sqrt(abs(lambdaA/muA))/Rec << " *sqrt(Re-Rec) " << endl;
 //cout << "COUPLE : " << endl;
@@ -511,12 +514,12 @@ cout << "                 = " << sqrt(abs(lambdaA/muA))/Rec << " *sqrt(Re-Rec) "
 //cout << "                 = " << sqrt(abs(lambdaA/muA))/Rec*real(COUPLEA) << " *sqrt(Re-Rec) " << endl;
 
 		
-cout << "Trainee (avant seuil) = " << Trainee0 << " + " << TraineeEpsilon << " * epsilon" << endl;
-cout << "                      = " << Trainee0 << " + " << TraineeEpsilon/Rec^2 << " * (Re-Rec)" << endl;
-cout << "Trainee (apres seuil) = " << Trainee0 << " + " 
-                                   << TraineeEpsilon+real(TraineeAAs*lambdaA/muA) << " * epsilon" << endl;
-cout << "                      = " << Trainee0 << " + " 
-                                   << (TraineeEpsilon+real(TraineeAAs*lambdaA/muA))/Rec^2 << " * (Re-Rec)" << endl;
+cout << "TraineeWNL (avant seuil) = " << TraineeWNL0 << " + " << TraineeWNLEpsilon << " * epsilon" << endl;
+cout << "                      = " << TraineeWNL0 << " + " << TraineeWNLEpsilon/Rec^2 << " * (Re-Rec)" << endl;
+cout << "TraineeWNL (apres seuil) = " << TraineeWNL0 << " + " 
+                                   << TraineeWNLEpsilon+real(TraineeWNLAAs*lambdaA/muA) << " * epsilon" << endl;
+cout << "                      = " << TraineeWNL0 << " + " 
+                                   << (TraineeWNLEpsilon+real(TraineeWNLAAs*lambdaA/muA))/Rec^2 << " * (Re-Rec)" << endl;
                                    
 
 
@@ -569,6 +572,6 @@ avL = -nu*int1d(th,2,21,22,23)(y/2*
 				<< real(lambdaA) << " " << imag(lambdaA) << endl 
 			     << real(muA) << " " << imag(muA) <<  endl 
 			     << real(apL+avL) << " " << imag(apL+avL) << endl 
-			     << Trainee0 << " " << TraineeEpsilon << " " << real(TraineeAAs) << endl;
+			     << TraineeWNL0 << " " << TraineeWNLEpsilon << " " << real(TraineeWNLAAs) << endl;
 };
 

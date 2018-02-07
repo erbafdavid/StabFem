@@ -1,13 +1,18 @@
-function SF_Spectrum_Exploration(baseflow,Re_set,m_set,shift_set);
+function SF_Spectrum_Exploration(bf,Re_set,m_set,shift_set);
+
+%
+%  WARNING THIS IS OBSOLETE AND SHOULD BE REPLACED BY 
+% SF_Stability(bf, (...), 'PlotSpectrum','yes') 
+
 %
 %  Spectrum exporator tool.
 %  
 %  Two usage modes according to the number of parameters.
 % 
-%  FreeFem_Spectrum_Exploration(baseflow) 
+%  FreeFem_Spectrum_Exploration(bf) 
 %   -> interactive mode : parameters will be entered by keyboard
 %
-%  FreeFem_Spectrum_Exploration(baseflow,Re_set,m_set,shift_set)
+%  FreeFem_Spectrum_Exploration(bf,Re_set,m_set,shift_set)
 %   -> non interactive mode
 %  
 %  part of Stabfem FreeFem/Matlab interface, version 2.1
@@ -62,16 +67,16 @@ if(exist(['' ffdatadir '/BaseFlow_Re' num2str(Re) '.txt'])==2);
     system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt BaseFlow.txt']);
 else
     disp('computing base flow ');
-    baseflow=SF_BaseFlow(baseflow,'Re',Re);
+    bf=SF_BaseFlow(bf,'Re',Re);
 end
 
 disp('performing stability computation');
 
-    EV = SF_Stability(baseflow,'m',m,'shift',shift,'nev',10)
+    EV = SF_Stability(bf,'m',m,'shift',shift,'nev',10)
 
 system(['mkdir ' ffdatadir '/RUN' num2str(iRUN)]);
-system(['mv Eigenmode*.ff2m ' ffdatadir '/RUN' num2str(iRUN) '/']);
-system(['cp Eigenvalues.txt ' ffdatadir '/RUN' num2str(iRUN) '/']);
+system(['mv ' ffdatadir 'Eigenmode*.ff2m ' ffdatadir '/RUN' num2str(iRUN) '/']);
+system(['cp ' ffdatadir 'Eigenvalues.txt ' ffdatadir '/RUN' num2str(iRUN) '/']);
 
 EVr = real(EV);
 EVi = imag(EV);
@@ -88,10 +93,10 @@ for ind=1:length(EVr);
   xlabel('\sigma_i');ylabel('\sigma_r');
   title('Computed eigenvalues (click to see eigenmodes)')
   %%%%  plotting command for eigenmodes and callback function 
-  tt=['eigenmodeP= importFFdata(baseflow.mesh, ''' ffdatadir 'RUN' num2str(iRUN) '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
+  tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir 'RUN' num2str(iRUN) '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
       'eigenmodeP.xlim = [-1 , 3]; eigenmodeP.plottitle =''Eigenmode for Re = ',num2str(Re),' , m = ',num2str(m), ...
       ', sigma = ', num2str(EVr(ind)) ' + 1i * ' num2str(EVi(ind)) ' '' ; '... 
-      'plotFF(eigenmodeP,''ux1'',1); '  ];
+      'plotFF(eigenmodeP,''ux1''); '  ];
   set(h,'buttondownfcn',tt);
 end
    pause(0.1); % to allow refreshing of figures

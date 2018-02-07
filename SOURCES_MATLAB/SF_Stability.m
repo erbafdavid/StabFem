@@ -21,8 +21,8 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 
 global ff ffdir ffdatadir sfdir verbosity
 
-persistent sigmaPrev sigmaPrevPrev
-
+persistent sigmaPrev sigmaPrevPrev % for continuation on one branch
+persistent eigenvaluesPrev % for sort of type 'cont'
 
 %%% management of optionnal parameters
     p = inputParser;
@@ -63,6 +63,7 @@ persistent sigmaPrev sigmaPrevPrev
    
    parse(p,varargin{:});
    if(isempty(sigmaPrev))   sigmaPrev = p.Results.shift; sigmaPrevPrev = p.Results.shift; end;
+   if(isempty(eigenvaluesPrev)) eigenvaluesPrev = [p.Results.nev:-1:1]; end;
    
    if(strcmp(p.Results.shift,'prev')==1)
        shift = sigmaPrev;       
@@ -188,11 +189,20 @@ eigenvalues = EVr+1i*EVi;
         case('SI') % sort by increasing imaginary part of eigenvalue
             [t,o]=sort(imag(eigenvalues));
         case('SIA') % sort by increasing imaginary part (abs) of eigenvalue
-            [t,o]=sort(abs(imag(eigenvalues))+1e-4*imag(eigenvalues)+1e-4*real(eigenvalues));    
+            [t,o]=sort(abs(imag(eigenvalues))+1e-4*imag(eigenvalues)+1e-4*real(eigenvalues));
+        case('cont') % sort using continuation (to connect with previous branches)
+            eigenvaluesSORT = eigenvalues;
+            for i=1:length(eigenvalues)    
+                [c index] = min(abs(eigenvaluesSORT-eigenvaluesPrev(i)));
+                o(i) = index;
+                eigenvaluesSORT(index);
+                eigenvaluesSORT(index)=NaN;
+            end
         case('no')
             o = [1:length(eigenvalues)];
     end
-    eigenvalues=eigenvalues(o); 
+    eigenvalues=eigenvalues(o);     
+    eigenvaluesPrev = eigenvalues;
 
 % updating two previous iterations
 if(strcmp(p.Results.shift,'cont')==1)
@@ -250,7 +260,7 @@ end
         %%mycmp = [[0 0 0];[1 0 1] ;[0 1 1]; [1 1 0]; [1 0 0];[0 1 0];[0 0 1]]; %color codes for symbols
         h=plot(imag(shift),real(shift),'o');hold on;
         for ind = 1:length(eigenvalues)
-            h=plot(imag(eigenvalues(ind)),real(eigenvalues(ind)),'*');hold on;
+            h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
             %%%%  plotting command for eigenmodes and callback function
             tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
       'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
@@ -258,7 +268,7 @@ end
             set(h,'buttondownfcn',tt);
 
         end
-    xlabel('\sigma_i');ylabel('\sigma_r');
+    xlabel('\sigma_r');ylabel('\sigma_i');
     title('Spectrum (click on eigenvalue to display corresponding eigenmode)');
     end
     

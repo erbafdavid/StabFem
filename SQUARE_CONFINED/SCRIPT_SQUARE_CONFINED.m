@@ -2,122 +2,66 @@
 run('../SOURCES_MATLAB/SF_Start.m');
 figureformat='png'; AspectRatio = 0.56; % for figures
 
-
 BETA = 0.8;
-baseflow=SF_Init('Mesh_SquareConfined.edp',[BETA -5 20]);
-baseflow=SF_BaseFlow(baseflow,'Re',10);
-baseflow=SF_Adapt(baseflow,'Hmax',.25);
-baseflow=SF_BaseFlow(baseflow,'Re',50);
-baseflow=SF_BaseFlow(baseflow,'Re',70);
-baseflow=SF_Adapt(baseflow,'Hmax',.25);
-baseflow=SF_BaseFlow(baseflow,'Re',100);
-baseflow=SF_BaseFlow(baseflow,'Re',120);
-baseflow=SF_BaseFlow(baseflow,'Re',150);
-baseflow=SF_Adapt(baseflow,'Hmax',.25);
-baseflow=SF_BaseFlow(baseflow,'Re',170);
-baseflow=SF_BaseFlow(baseflow,'Re',200);
-baseflow=SF_Adapt(baseflow,'Hmax',.25);
-baseflow=SF_Adapt(baseflow,'Hmax',.25);
-disp(' ');
-% optional :
-%disp('mesh adaptation to SENSITIVITY : ')
-%[ev,em] = SF_Stability(baseflow,'shift',0.04+0.76i,'nev',1,'type','S');
-%[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10);
+Lmax = 20;
+bf=SF_Init('Mesh_SquareConfined.edp',[BETA -5 Lmax]);
+bf.mesh.xlim = [-2 , 4];% this range will be used for all plots 
+bf.mesh.ylim = [0  , 1];% idem
+for Re = [10 50 70 100 150]
+    bf=SF_BaseFlow(bf,'Re',Re);
+end
 
-% plot the base flow
-plotFF(baseflow,'ux');
-% or if you prefer tecplot:
-exportFF_tecplot(baseflow,'bf_08_200.plt')
+bf=SF_BaseFlow(bf,'Re',150);
+%[ev,em] = SF_Stability(bf,'nev',1,'shift',0.15+6.18i,'type','S'); bf = SF_Adapt(bf,em);
+[ev,em] = SF_Stability(bf,'nev',1,'shift',0.,'type','S'); 
+bf = SF_Adapt(bf,em);
 
-% compute and plot an eigenmode :
-[ev,em] = SF_Stability(baseflow,'shift',3.69i,'nev',1,'type','D');
-plotFF(em,'ux1');
-% or if you prefer tecplot:
-exportFF_tecplot(em,'ModeU_08_200.plt')
-
-% unsteady branch
-
-Re_LIN = [170 : 5: 250];
-baseflow=SF_BaseFlow(baseflow,'Re',170);
-[ev,em] = SF_Stability(baseflow,'shift',-.02+3.69i,'nev',1,'type','D');
-
-lambda_LIN=[];
-    for Re = Re_LIN
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
-        lambda_LIN = [lambda_LIN ev];
-    end    
-
-figure(20);subplot(2,1,1);hold on;
-plot(Re_LIN,real(lambda_LIN),'b+-');
-plot(Re_LIN,0*Re_LIN,'k:');
-
-figure(20);subplot(2,1,2);hold on;
-plot(Re_LIN,imag(lambda_LIN),'b+-');
+bf=SF_BaseFlow(bf,'Re',250);
+%[ev,em] = SF_Stability(bf,'nev',1,'shift',0.15+6.18i,'type','S'); bf = SF_Adapt(bf,em);
+[ev,em] = SF_Stability(bf,'nev',1,'shift',0.3,'type','S'); 
+bf = SF_Adapt(bf,em);
 
 
-    
 
-
-% branches in the vicinity of zero
-
-Re_LIN = [170 : 5: 250];
-baseflow=SF_BaseFlow(baseflow,'Re',170);
-[ev,em] = SF_Stability(baseflow,'shift',-.02+0i,'nev',1,'type','D');
-
-lambda_LIN=[];
-    for Re = Re_LIN
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev,em] = SF_Stability(baseflow,'nev',10,'shift',0);
-        lambda_LIN = [lambda_LIN ev];
-    end    
-
-figure(20);subplot(2,1,1);hold on;
-plot(Re_LIN,real(lambda_LIN(1,:)),'r+-');
-plot(Re_LIN,real(lambda_LIN(2,:)),'g+-');
-%plot(Re_LIN,real(lambda_LIN(3,:)),'m+-');
-
-figure(20);subplot(2,1,2);hold on;
-plot(Re_LIN,imag(lambda_LIN(1,:)),'r+-');
-plot(Re_LIN,imag(lambda_LIN(2,:)),'g+-');
-%plot(Re_LIN,imag(lambda_LIN(3,:)),'m+-');
+plotFF(bf,'mesh');
 pause(0.1);
 
 
-% steady branch for Re<170
+% Loop over Re for stability computations
+Re_TAB = [85:5:250];
+evS_TAB = [];
+shift = 0.5;
+for Re = Re_TAB
+    bf=SF_BaseFlow(bf,'Re',Re);
+    if(Re==Re_TAB(1)) sort ='LR' ; else sort = 'cont'; end   % for first computation sort by increasing real part ; for next ones sort by continuation
+    evS = SF_Stability(bf,'nev',10,'shift',shift,'sort',sort,'sym','A')
+    evS_TAB = [evS_TAB,evS];
+end  
 
-Re_LIN = [170 : -5: 100];
-baseflow=SF_BaseFlow(baseflow,'Re',170);
-[ev,em] = SF_Stability(baseflow,'shift',0.16+0i,'nev',1,'type','D');
+evI_TAB = [];
+shift = 0.5+6i;
+for Re = Re_TAB
+    bf=SF_BaseFlow(bf,'Re',Re);
+    if(Re==Re_TAB(1)) sort ='LR' ; else sort = 'cont'; end
+    evI = SF_Stability(bf,'nev',10,'shift',shift,'sort',sort,'sym','A')
+    evI_TAB = [evI_TAB,evI];
+end  
 
-lambda_LIN=[];
-    for Re = Re_LIN
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
-        lambda_LIN = [lambda_LIN ev];
-    end    
+figure(10);
+for j = 1:4
+    plot(Re_TAB,real(evS_TAB(j,:)),'-');hold on;
+    plot(Re_TAB,real(evI_TAB(j,:)),'--'); hold on;
+end
+plot(Re_TAB,0*Re_TAB,'k:')
+xlabel('Re' ); ylabel('\lambda_r')
+ylim([-.1,.35]);
 
-figure(20);subplot(2,1,1);hold on;
-plot(Re_LIN,real(lambda_LIN(1,:)),'r+-');
-plot(Re_LIN,0*Re_LIN,'k:');
+figure(11);
+plot(Re_TAB,imag(10*abs(evS_TAB(1,:))),'-');hold on;    
+plot(Re_TAB,imag(evI_TAB(1,:)),'--'); hold on;
 
-figure(20);subplot(2,1,2);hold on;
-plot(Re_LIN,imag(lambda_LIN(1,:)),'r+-');
-
-
-
-% Mise en forme finale de la figure
-
-figure(20);subplot(2,1,1);
-title(['Aspect ratio : ',num2str(BETA)]);
-xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
-box on; 
-set(gca,'FontSize', 16);
-figure(20);subplot(2,1,2);
-xlabel('Re');ylabel('$\omega$','Interpreter','latex');
-box on; 
-set(gca,'FontSize', 16);
+xlabel('Re' ); ylabel('\lambda_i ; 10 \lambda_i')
 pause(0.1);
-saveas(gca,'Square_08_stabbranches',figureformat);
+
 
 

@@ -12,37 +12,55 @@
 //	convention for boundary conditions :
 //  1 = inlet ; 2 (and 21,22,23) = wall ; 3 = outlet ; 6 = axis
 
-//  D. Fabre, June 2017
+//  D. Fabre, February 2018
 
-include "Macros_StabFem.edp";
+    include "Macros_StabFem.edp";
+    
+
+real SFGeomRdisk,SFGeomHdisk,SFGeomXmin,SFGeomXmax,SFGeomRmax; 
+real D;
+
+cout << " Generation of an initial mesh for a POROUS DISK" << endl;
+
+cout << " enter the DIAMETER and THICKNESS of the disk ?" << endl;
+
+cin >> D >> SFGeomHdisk ;
+SFGeomRdisk = D/2 ; 
+
+cout << " Enter the dimensions SFGeomXmin, SFGeomXmax, ymax ? " << endl; 
+cin >> SFGeomXmin >> SFGeomXmax >> SFGeomRmax ;
+
+cout << "Dimensions of the disk : Rdisk = " << SFGeomRdisk << " ; Hdisk = " << SFGeomHdisk << endl;
+cout << "Dimensions of the domain  : Xmin = " << SFGeomXmin << " ; Xmax = " << SFGeomXmax << " ; Rmax = " << SFGeomRmax << endl;  
+
 
 		
-		real xmin = -10;
-		real xmax = 20;
-		real rmax = 10;
+		//real SFGeomXmin = -10;
+		//real SFGeomXmax = 20;
+		//real SFGeomRmax = 10;
 		 
 		
 	
 		real x0=0.;	 	// centre en x de l'ellipse
 		real y0=0.;		// centre en y de l'ellipse
-		real rayon = 0.5;
-		real ep = 0.333333333;
+		real rayon =  SFGeomRdisk;
+		real ep =  SFGeomHdisk;
 
 		
-		cout << "dimensions reelles domaine : [" << xmin << "," << xmax << "] x [0," << rmax << "] " <<  endl;
+		cout << "dimensions reelles domaine : [" << SFGeomXmin << "," << SFGeomXmax << "] x [0," << SFGeomRmax << "] " <<  endl;
 		
 
-        border a1(t=xmin,-ep/2){ x=t; y=0;label=6;};
-        border a2(t=ep/2,xmax){ x=t; y=0;label=6;};
+        border a1(t=SFGeomXmin,-ep/2){ x=t; y=0;label=6;};
+        border a2(t=ep/2,SFGeomXmax){ x=t; y=0;label=6;};
         border aint(t=-ep/2,ep/2){x=t;y=0;label=6;};
 	
         border obs1(t=0.,rayon){x=-ep/2; y=t ;label=21;};
         border obs2(t=-ep/2,ep/2){x=t; y=rayon;label=22;};
         border obs3(t=rayon,0){x=+ep/2; y=t; label=23;};
 		
-		border out(t=0,rmax){ x=xmax; y=t; label=3; };
-		border lat(t=xmax,xmin){ x=t; y=rmax;label=3;};              
-		border in(t=rmax,0){ x=xmin; y=t;label=1;};
+		border out(t=0,SFGeomRmax){ x=SFGeomXmax; y=t; label=3; };
+		border lat(t=SFGeomXmax,SFGeomXmin){ x=t; y=SFGeomRmax;label=3;};              
+		border in(t=SFGeomRmax,0){ x=SFGeomXmin; y=t;label=1;};
 
 
 		int nd = 1;
@@ -52,8 +70,8 @@ include "Macros_StabFem.edp";
         mesh th;
                
                th=buildmesh(aint(nb*ep)+obs1(-rayon*nb)+obs2(-ep*nb)+obs3(-rayon*nb)
-             +  a1(nd*(-ep/2-xmin))+ a2(nd*(xmax-ep/2))
-             +out(rmax*nd)+in(rmax*nd)+lat((xmax-xmin)*nd));
+             +  a1(nd*(-ep/2-SFGeomXmin))+ a2(nd*(SFGeomXmax-ep/2))
+             +out(SFGeomRmax*nd)+in(SFGeomRmax*nd)+lat((SFGeomXmax-SFGeomXmin)*nd));
 	       
 		plot(th,wait=1);
 
@@ -68,12 +86,27 @@ include "Macros_StabFem.edp";
 			file << "AxiXRPOROUS" << endl;
 			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
 			file << "real Rdisk real Hdisk real Rmax real Xmin real Xmax" << endl;
-			file <<  rayon  << endl << ep << endl << rmax << endl << xmin << endl << xmax << endl;
+			file <<  rayon  << endl << ep << endl << SFGeomRmax << endl << SFGeomXmin << endl << SFGeomXmax << endl;
 }
 
 
 // SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
 	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
+            file2 << "real SFGeomRdisk = "  << SFGeomRdisk << " ;" << endl;
+			file2 << "real SFGeomHdisk = "  << SFGeomHdisk  << " ;" << endl;
+			file2 << "real SFGeomXmin = " << SFGeomXmin  << " ;" << endl;
+			file2 << "real SFGeomXmax = " << SFGeomXmax  << " ;" << endl;
+			file2 << "real SFGeomRmax = " << SFGeomRmax << " ;" << endl;
+}
+
 
 
 

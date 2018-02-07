@@ -36,8 +36,10 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 
 
 /// THIS IS FOR THE POROUS DISK CASE; SET TO ZERO IN CASE NOT NEEDED
-real thickness = 1/3.;
-macro IsInObject(x,y) (1*(y<.5)*(abs(x)<1/6.)) //EOM
+//real thickness = 1/3.;
+
+
+macro IsInObject(x,y) (1*(y<SFGeomRdisk)*(abs(x)<SFGeomHdisk/2)) //EOM
 
 
 

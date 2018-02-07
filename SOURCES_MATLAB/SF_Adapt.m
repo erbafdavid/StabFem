@@ -117,7 +117,7 @@ else % Adaptation to base flow + mode (or other specified field)
 %    discard this and correct soon
      
      disp(['      ### ADAPT mesh to base flow AND MODE ( type ',eigenmode.type,... ' )  for Re = ' num2str(baseflow.Re)... 
-            ' ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])     
+            ' ) ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])     
 %     disp([' ; Number of points np = ',num2str(meshinfo.np) ' ; Ndof = ' num2str(meshinfo.Ndof)]; ])
 if(verbosity>=1)    
 meshinfo = importFFdata(baseflow.mesh,'mesh_adapt.ff2m');

@@ -2,6 +2,10 @@
 
 /// JET SIFFLANT : CAS D'UN FORCAGE PULSE
 	load "UMFPACK64"
+		include "SF_Geom.edp";
+		include "Macros_StabFem.edp";
+
+	
 /// DECLARATIONS FORMELLES
 //	include "Params_David.edp";
 	int Nprof =6;

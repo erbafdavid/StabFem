@@ -35,7 +35,8 @@
 
 
 
-load "MUMPS_seq"        ////////  load sparsesolver    
+load "MUMPS_seq"        ////////  load sparsesolver 
+include "SF_Geom.edp";   
 include "Macros_StabFem.edp";
 
 //////////////////////////////////////////////////////////////////////////////

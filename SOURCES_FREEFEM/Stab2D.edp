@@ -36,6 +36,7 @@
 
 
 load "MUMPS_seq"        ////////  load sparsesolver    
+include "SF_Geom.edp";
 include "Macros_StabFem.edp";
 
 //////////////////////////////////////////////////////////////////////////////
@@ -96,14 +97,6 @@ XXMh [Ubx,Uby,Pb];          ///////  -> Base Flow
 
 
 
-/*macro div(ux,uy) (dx(ux)+dy(uy)) //
-macro grad(ux,uy) [dx(ux),dy(uy)] //
-macro ugrad(ux,uy,v) (ux*dx(v)+uy*dy(v)) //
-macro Ugrad(ux,uy,vx,vy) [ugrad(ux,uy,vx),ugrad(ux,uy,vy)] //
-macro Conv(ua1,ua2,Ubx,Uby,vx,vy) (Ugrad(ua1,ua2,Ubx,Uby)'*[vx,vy]+Ugrad(Ubx,Uby,ua1,ua2)'*[vx,vy]) // convection operator
-macro D(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] // 
-macro Diffusion(nu,ux,uy,vx,vy)  (-nu*( dx(ux)*dx(vx)+dy(ux)*dy(vx)+dx(uy)*dx(vy)+dy(uy)*dy(vy))) // integration by parts of nu (v.Delta u) 
-*/
 real eps = 1e-12; // desingularisation term for matrix B, useful with some solvers
 
 
@@ -113,6 +106,9 @@ macro Conv(ua,ub,v) (
             + ((ua#x*dx(ub#y)+ua#y*dy(ub#y))+(ub#x*dx(ua#y)+ub#y*dy(ua#y)))*v#y 
                     ) // macro for mutual convection operator
 macro D(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] // macro for rate-of-deformation tensor
+
+
+macro Diffusion(nu,ux,uy,vx,vy)  (-nu*( dx(ux)*dx(vx)+dy(ux)*dy(vx)+dx(uy)*dx(vy)+dy(uy)*dy(vy))) // integration by parts of nu (v.Delta u) 
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -132,7 +128,7 @@ cbin >> Ubx[];
 varf   LNSE ([ux,uy,up],[vx,vy,q]) =
    int2d(th)( 
    			-2*nu*(D(u):D(v))
-   			//Diffusion(nu,ux,uy,vx,vy)
+   			/* Diffusion(nu,ux,uy,vx,vy)*/
              + up*q*(eps) 
              + up*div(v)
              + div(u)*q

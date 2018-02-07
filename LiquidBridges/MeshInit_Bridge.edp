@@ -106,14 +106,24 @@ savemesh(th,ffdatadir+"mesh.msh");
 // SECOND AUXILIARY FILE mesh.ff2m
 { 
 mesh Shempty=emptymesh(th); 	
-
-
 include "Macros_Geometrie_Surface.edp";
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
 CalcGeomSurf;
-
 SFWriteMesh(ffdatadir+"mesh.ff2m",th)
 }
+
+
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomRbridge = 1 ;" << endl ;
+            file2 << " real SFGeomLbridge = " << LL <<  ;" << endl ;
+
+}
+
 
 
 exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_guess.ff2m");

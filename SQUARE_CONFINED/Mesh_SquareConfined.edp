@@ -100,13 +100,26 @@ savemesh(th,ffdatadir+"mesh.msh");
 			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
 			file << "2D" << endl;
 			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
-			file << "real R real Xmin real Xmax real Rmax" << endl;
-			file <<  RADIUS  << endl << xinlet << endl << xoutlet << endl << yside  << endl;
+			file << "real R real Xmin real Xmax real Rmax real Beta" << endl;
+			file <<  RADIUS  << endl << xinlet << endl << xoutlet << endl << yside  << " " << beta << endl;
 }
 
 
 // SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
 	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthScale = 1 ; // length scale for nondimensionalization" << endl;
+            file2 << " real SFGeomVelocityScale = 1 ; // velocity scale for nondimensionalization " << endl;
+			file2 << "real SFGeomD = "  << 2*yside << ";" << endl;
+			file2 << "real SFGeomBeta = "  << beta  << ";" << endl;
+			file2 << "real SFGeomXmin = " << xinlet  << ";" << endl;
+			file2 << "real SFGeomXmax = " << xoutlet  << ";" << endl;
+			file2 << "real SFGeomUmaxInlet = 1.5;" << endl;
+}
 
 
 
@@ -123,7 +136,8 @@ savemesh(th,ffdatadir+"mesh.msh");
 	    file <<  endl << 0 << endl;
       	}
       	
-// Save in ff2m format (for StabFem)	    
+// Save in ff2m format (for StabFem)	 
+		 real SFGeomBeta = beta;   
 	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
 	     
 

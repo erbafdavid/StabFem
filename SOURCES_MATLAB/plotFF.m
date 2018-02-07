@@ -56,12 +56,12 @@ mydisp(2,'PlotFF : Reconstructing seg array for contour plots');
 end
 
 if(any(cellfun(@(x) isequal(x, 'ColorMap'), varargin))==0)
-    varargin={varargin{:} ,'ColorMap','parula'}
+    varargin={varargin{:} ,'ColorMap','parula'};
 end
 
 
 pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
- 
+ axis equal;
 if(any(strcmp('plottitle',fieldnames(FFdata)))) 
     title(FFdata.plottitle) 
 end
@@ -82,7 +82,7 @@ if(length(FFdata.mesh.seg)==1) % to construct the 'seg' structure necessary for 
 end
 
  pdemesh(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri) ;
-
+axis equal;
 end
 
 

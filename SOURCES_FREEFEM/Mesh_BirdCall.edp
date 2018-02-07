@@ -2,6 +2,10 @@
 	verbosity = 0;
 	include "SOURCES_FREEFEM/Params_BirdCall.edp";
 	
+//	include "SF_Geom.edp";
+//		include "Macros_StabFem.edp";
+	
+	
 	mesh Th;
 
 	//revolution axis
