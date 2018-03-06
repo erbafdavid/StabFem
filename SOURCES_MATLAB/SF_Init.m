@@ -14,7 +14,7 @@ function baseflow = SF_Init(meshfile,parameters)
 
 global ff ffdir ffdatadir sfdir verbosity
 
-if(exist(ffdatadir)~=7)
+if(exist(ffdatadir)~=7&&exist(ffdatadir)~=5)
     mysystem(['mkdir ' ffdatadir ]); 
 else
     mysystem(['rm ' ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh '],'skip');

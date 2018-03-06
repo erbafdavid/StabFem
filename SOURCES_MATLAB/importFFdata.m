@@ -73,13 +73,20 @@ Ndata = 0;
 for ifield = 1:numfields
    typefield = description{1}{2*ifield-1};
    namefield = description{1}{2*ifield};
+   [dumb,typefield,suffix] = fileparts(typefield);
+   if(length(suffix)==0)
+       sizefield(ifield)=1;
+   else
+       sizefield(ifield)=str2num(suffix(2:end));
+   end
+   
    switch(typefield)
         case('real')  
-            Ndata = Ndata+1;
+            Ndata = Ndata+sizefield(ifield);
         case('int')  
-            Ndata = Ndata+1;
+            Ndata = Ndata+sizefield(ifield);
         case('complex') 
-            Ndata = Ndata+2;
+            Ndata = Ndata+2*sizefield(ifield);
         case('P1')  
             if(np==0) error('ERROR in importFFdata : to import P1 data a mesh must be specified as first argument to the function'); end 
             Ndata = Ndata+np;
@@ -100,23 +107,25 @@ end
 
 for ifield = 1:numfields
     typefield = description{1}{2*ifield-1};
+    [dumb,typefield,suffix] = fileparts(typefield);
     namefield = description{1}{2*ifield};
     switch(typefield)
         case('real')
-            value = data(indexdata);
-            indexdata = indexdata+1;
+            value = data(indexdata:indexdata+sizefield(ifield)-1);
+            indexdata = indexdata+sizefield(ifield);
             pdestruct=setfield(pdestruct,namefield,value);
-            mydisp(5,['Function importFFdata : reading real field : ',namefield,' = ',num2str(value)]);
+            mydisp(5,['Function importFFdata : reading real(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(value(1))]);
         case('int')
-            value = data(indexdata);
-            indexdata = indexdata+1;
+            value = data(indexdata:indexdata+sizefield(ifield)-1);
+            indexdata = indexdata+sizefield(ifield);
             pdestruct=setfield(pdestruct,namefield,value);
-            mydisp(5,['Function importFFdata : reading int field : ',namefield,' = ',num2str(value)]);
+            mydisp(5,['Function importFFdata : reading int(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(value(1))]);
         case('complex')
-            valueR = data(indexdata);valueI = data(indexdata+1);
-            indexdata = indexdata+2;
+            valueR = data(indexdata:2:indexdata+2*sizefield(ifield)-2);
+            valueI = data(indexdata+1:2:indexdata+2*sizefield(ifield)-1);
+            indexdata = indexdata+2*sizefield(ifield);
             pdestruct=setfield(pdestruct,namefield,valueR+1i*valueI);
-            mydisp(5,['Function importFFdata : reading complex field : ',namefield,' = ',num2str(valueR+1i*valueI)]);
+            mydisp(5,['Function importFFdata : reading complex(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(valueR(1)+1i*valueI(1))]);
         case('P1')
             value = data(indexdata:indexdata+np-1);
             indexdata = indexdata+np;

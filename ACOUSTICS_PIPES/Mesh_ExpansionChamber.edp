@@ -1,0 +1,45 @@
+verbosity=0;
+
+// maillage pour un tube contenant une chambre d'expansion
+
+
+// dimensions de la conduite
+real L1=10;
+real L2 = 10;
+real L3 = 10;
+real H = L1+L2+L3;
+
+real R1 = 1;
+real R2 = 4;
+real RR3 = 1;
+
+// LABELS :
+// 1 = axis
+// 2 = inlet (imposed normal velocity)
+// 21 = inlet (imposed pressure)
+// 22 = inlet (imposed incident wave)
+
+// 3 = wall (normal velocity = 0)
+// 5 = outlet condition (Spherical wave, Sommerfeld)
+// 6 = outlet condition (plane wave)
+
+border axe(t=0,-H){x=0;y=t;label=1;};
+border fond(t=0,R1){x=t;y=-H;label=2;};
+
+border mur1(t=-H,-(L2+L3)){x=R1;y=t;label=3;};
+border plat1(t=R1,R2){x=t; y=-(L2+L3); label=3;};
+border mur2(t=-(L2+L3),-L3){x=R2;y=t;label=3;};
+border plat2(t=R2,RR3){x=t; y=-L3; label=3;};
+border mur3(t=-L3,0){x=RR3;y=t;label=3;};
+
+border outlet(t=RR3,0){x=t;y=0;label=6;};
+
+
+real d = 12;
+mesh th = buildmesh(axe(d*H)+fond(d*R1)+mur1(d*L1)
++ plat1(d*abs(R2-R1))+mur2(d*L2)+plat2(d*abs(RR3-R2))+mur3(d*L3)+outlet(d*RR3) );
+
+
+savemesh(th,"mesh.msh");
+
+plot(th);

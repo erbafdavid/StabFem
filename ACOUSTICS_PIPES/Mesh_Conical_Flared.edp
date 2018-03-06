@@ -1,0 +1,43 @@
+verbosity=0;
+
+// cone tronqué
+
+real Rext=20;
+real L=10;
+real x2 = 12; // longueur théorique du cone
+real x1 = x2-L; // distance entre entrée et pointe du cone 
+real Rpipe = 1;// rayon en sortie
+real Rin = Rpipe*x1/x2;
+
+
+// LABELS :
+// 1 = axis
+// 2 = inlet (imposed normal velocity)
+// 21 = inlet (imposed pressure)
+// 22 = inlet (imposed incident wave)
+
+// 3 = wall (normal velocity = 0)
+// 5 = outlet condition (Spherical wave, Sommerfeld)
+// 6 = outlet condition (plane wave)
+// 7 = 
+
+border axe(t=Rext,-L){x=0;y=t;label=1;};
+border fond(t=0,Rin){x=t;y=-L;label=2;};
+border mur(t=x1,x2){y=t-x2;x=t*Rin/x1;label=3;};
+border plate(t=Rpipe,Rext){x=t;y=0;label=4;};
+border sphere(t=0,pi/2){x=Rext*cos(t);y=Rext*sin(t);label=5;};
+
+
+
+real d = 12;
+
+plot(axe(d*(L+Rext))+fond(d*Rpipe)+mur(d*L)
+                    +plate(d*(Rext-Rpipe))+sphere(pi/2*Rext*d/4));
+
+mesh th = buildmesh(axe(d*(L+Rext))+fond(d*Rpipe)+mur(d*L)
+                    +plate(d*(Rext-Rpipe))+sphere(pi/2*Rext*d/4) );
+
+plot(th);
+
+savemesh(th,"mesh.msh");
+

@@ -1,0 +1,65 @@
+verbosity=0;
+
+// maillage pour un pot d'echappement
+
+
+// dimensions de la conduite
+
+
+real R1 = 1;
+real L1=10;
+
+real L2 = 1;
+real R2int = 1.5;
+real R2ext = 4;
+real Lcav = 9;
+real Lc = (Lcav-L2)/2;
+
+real RR3 = 1;
+real L3 = 10;
+real H = L1+L2+L3;
+
+
+// LABELS :
+// 1 = axis
+// 2 = inlet (imposed normal velocity)
+// 21 = inlet (imposed pressure)
+// 22 = inlet (imposed incident wave)
+
+// 3 = wall (normal velocity = 0)
+// 5 = outlet condition (Spherical wave, Sommerfeld)
+// 6 = outlet condition (plane wave)
+
+border axe(t=0,-H){x=0;y=t;label=1;};
+border fond(t=0,R1){x=t;y=-H;label=2;};
+
+border mur1(t=-H,-(L2+L3)){x=R1;y=t;label=3;};
+border neck1(t=R1,R2int){x=t; y=-(L2+L3); label=3;};
+
+border murcav1(t=-(L2+L3),-(L2+L3)-Lc){x=R2int;y=t;label=3;};
+border murcav2(t=R2int,R2ext){x=t; y=-(L2+L3)-Lc; label=3;};
+border murcav3(t=-(L2+L3)-Lc,-L3+Lc){x=R2ext;y=t;label=3;};
+border murcav4(t=R2ext,R2int){x=t; y=-L3+Lc; label=3;};
+border murcav5(t=-L3+Lc,-L3){x=R2int;y=t;label=3;};
+
+border neck2(t=R2int,RR3){x=t; y=-L3; label=3;};
+border mur3(t=-L3,0){x=RR3;y=t;label=3;};
+
+border outlet(t=RR3,0){x=t;y=0;label=6;};
+
+
+real d = 6;
+
+//plot(axe(d*H)+fond(d*R1)+mur1(d*L1)+ neck1(d*abs(R2int-R1))
+//+murcav1(d*Lc)+murcav2(d*abs(R2ext-R2int))+murcav3(d*Lcav)+murcav4(d*abs(R2ext-R2int))+murcav5(d*Lc)
+//+neck2(d*abs(RR3-R2int))+mur3(d*L3)+outlet(d*RR3));
+
+mesh th = buildmesh(axe(d*H)+fond(d*R1)+mur1(d*L1)+ neck1(d*abs(R2int-R1))
++murcav1(d*Lc)+murcav2(d*abs(R2ext-R2int))+murcav3(d*Lcav)+murcav4(d*abs(R2ext-R2int))+murcav5(d*Lc)
++neck2(d*abs(RR3-R2int))+mur3(d*L3)+outlet(d*RR3) );
+
+
+savemesh(th,"mesh.msh");
+
+
+plot(th);
