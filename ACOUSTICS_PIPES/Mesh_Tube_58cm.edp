@@ -38,10 +38,10 @@ border sphere(t=-pi/2,pi/2){x=Rext*cos(t);y=Rext*sin(t);label=5;};
 border axe2(t=Rext^(1/a),0){x=0;y=t^a;label=9;};
 
 
-real d = 4;        // D?fini le nombre de mailles par unit? 
+real d = 3;        // D?fini le nombre de mailles par unit? 
 plot(axe(d*H)+fond(d*Rpipe)+mur(d*H)+epai(d*Ep+1)  //+mur2(d*(p-L/2))+trouh(d*Ep+1)+trouv(d*(p-L/2))+trouh2(d*Ep+1)
                     +mur3(d*(H+Ep))
-					+fond2(d*(Rpipe+Ep))+plate(d*(Rext-H-Ep))+sphere(pi*Rext/a*d/4)+axe2(d*Rext));
+					+fond2(d*(Rpipe+Ep))+plate(d*(Rext-H-Ep))+sphere(pi*Rext/a*d/10)+axe2(d*Rext));
 
 
 

@@ -1,5 +1,6 @@
 
 //http://www.phys.unsw.edu.au/jw/fluteacoustics.html
+// anciennement : Mesh_Tube_58cm_Trou.edp
 
 verbosity=0;
 include "Macros_StabFem.edp";
@@ -7,20 +8,20 @@ include "Macros_StabFem.edp";
 
 real cpu=clock();
 
-real Rext=40;		//Rayon du domaine
-real H=20;			//Longueur de la flute
+real Rext=60;		//Rayon du domaine
+real H=58;			//Longueur de la flute
 real Rpipe = 1;		//Rayon de la flute
 real Ep=0.2;		//Epaisseur de la flute
-real a=1.25;		//facteur agissant localement sur la densité
+real a=1.;		//facteur agissant localement sur la densit?
 real k; 			// nombre d'onde k=omega*c0
 
-//paramètres du trou
-real p=3.;			//position du trou
-real D=1;				//Diametre du trou
+//param?tres du trou
+real p=12.;			//position du trou
+real D=1.2;				//Diametre du trou
 real S=pi*(D/2)^2;		//Surface du trou
 real L=S/(2*pi*Rpipe);	//Largeur du trou
 
-//Création du domaine
+//Cr?ation du domaine
 
 border axe(t=0,-H){x=0;y=t;label=1;};
 border fond(t=0,Rpipe){x=t;y=-H;label=2;};
@@ -39,14 +40,13 @@ border axe2(t=Rext^(1/a),0){x=0;y=t^a;label=9;};
 
 
 
-real d = 4;        // Défini le nombre de mailles par unité 
+real d = 3;        // D?fini le nombre de mailles par unit? 
 
-//création du maillage sur le domaine
+//cr?ation du maillage sur le domaine
 mesh th = buildmesh(axe(d*H)+fond(d*Rpipe)+mur(d*(H-p-L/2))+epai(d*Ep+1)+mur2(d*(p-L/2))
                     +trouh(d*Ep+1)+trouv(d*(p-L/2))+trouh2(d*Ep+1)+mur3(d*(H-p+Ep-L/2))
-					+fond2(d*(Rpipe+Ep))+plate(d*(Rext-H-Ep))+sphere(pi*Rext/a*d)+axe2(d*Rext));
-
-
+					+fond2(d*(Rpipe+Ep))+plate(d*(Rext-H-Ep))+sphere(pi*Rext*d/10)+axe2(d*Rext));
+		    
 // SAVE THE MESH in mesh.msh file 
 savemesh(th,ffdatadir+"mesh.msh");
 
@@ -75,7 +75,7 @@ savemesh(th,ffdatadir+"mesh.msh");
             file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
             file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
 }
-
+;
 
 
 
@@ -95,6 +95,13 @@ savemesh(th,ffdatadir+"mesh.msh");
       	
 // Save in ff2m format (for StabFem)	    
 	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m");
-		    
+	     
+	     // SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+	     
 plot(th,ps="maillage.ps");
+
+
+
 

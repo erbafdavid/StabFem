@@ -5,7 +5,10 @@ close all
 SF_Start
 
 % construction d'un maillage
-bf = SF_Init('Mesh_Tube_58cm.edp');
+bf = SF_Init('Mesh_1.edp');
+
+% pour tracer le maillage decomenter la ligne suivante :
+% plotFF(bf,'mesh');
 
 % calcul d'un champ acoustique pour une valeur de k
 AC = SF_Acoustic(bf,'k',0.1)
@@ -16,7 +19,7 @@ plotFF(AC,'Phi');
 % pour tracer Phi*r on peut faire : 
 % AC.R = sqrt(AC.mesh.X.^2+AC.mesh.Y.^2);
 % AC.PhiR = AC.Phi*AC.R;
-% plotFF(AC,'Phi')
+% plotFF(AC,'PhiR')
 
 % Calcul de l'impedance pour plusieurs valeurs de k
 figure(2);
