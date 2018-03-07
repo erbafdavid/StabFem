@@ -11,7 +11,7 @@ global ff ffdir ffdatadir sfdir verbosity
    dk = p.Results.k(2)-p.Results.k(1)
    
     
-    solvercommand = ['echo ' num2str(kmin) ' ' num2str(dk) ' ' num2str(kmax)  ' | ' ff  ' Impedance_loop.edp'];
+    solvercommand = ['echo ' num2str(kmin) ' ' num2str(dk) ' ' num2str(kmax)  ' | ' ff  ' FF_Acoustic_Impedance.edp'];
         status = mysystem(solvercommand);
               
         

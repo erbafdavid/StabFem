@@ -7,7 +7,7 @@ global ff ffdir ffdatadir sfdir verbosity
     addParameter(p,'plotaxis','no');
     parse(p,varargin{:});
     
-    solvercommand = ['echo ' num2str(p.Results.k) ' | ' ff  ' Impedance_plot.edp'];
+    solvercommand = ['echo ' num2str(p.Results.k) ' | ' ff  ' FF_Acoustic.edp'];
         status = mysystem(solvercommand);
               
         
