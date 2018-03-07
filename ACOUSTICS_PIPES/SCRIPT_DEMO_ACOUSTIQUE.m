@@ -48,11 +48,12 @@ pause(0.1);
 % trace de |Z(k)| en semilog
 figure(4);
 semilogy(IMP.k,abs(IMP.Z));
-pause(0.1);
 title('Impedance : absolute value, semilog plot')
-xlabel('k'); ylabel('|Z|')
+xlabel('k'); ylabel('|Z|');
+pause(0.1);
 
 % trace de R(k)
+figure(5);
 semilogy(IMP.k,IMP.R);
 title('Reflexion coefficient')
 xlabel('k'); ylabel('R')
