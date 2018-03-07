@@ -2,10 +2,11 @@ global ff ffdir ffdatadir sfdir verbosity
 %ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++-nw'; % on IMFT network
 ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw'; % on DF's macbookpro 
 ffdatadir = './';
-sfdir = '/Users/dfabre/StabFem/SOURCES_MATLAB/'; % where to find the matlab drivers
+%sfdir = '/Users/dfabre/StabFem/SOURCES_MATLAB/'; % where to find the matlab drivers
+sfdir = './';
 ffdir = './'; % where to find the freefem scripts
-verbosity = 1;
-addpath(sfdir);
+verbosity = 5;
+%addpath(sfdir);
 %if(exist(ffdatadir)~=7)
 %    mysystem(['mkdir ' ffdatadir]);
 %end
