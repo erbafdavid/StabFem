@@ -50,7 +50,7 @@ disp('Appuyez sur entree pour la suite...')
 pause; 
 
 %###
-disp('Etape 2 : resolution d''un pb force pour une valeur de k');
+disp('Etape 3 : boucle sur k pour trace de l''impedance');
 %### 
  
 IMP = SF_Acoustic_Impedance(bf,'k',[0:.01:2])
