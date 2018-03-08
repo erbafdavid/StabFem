@@ -3,19 +3,29 @@ clear all
 close all
 
 SF_Start
+%####
+disp('Etape 1 : construction d''un maillage');
+%####
 
 % construction d'un maillage
 bf = SF_Init('Mesh_1.edp');
 
-% pour tracer le maillage decomenter la ligne suivante :
-% plotFF(bf,'mesh');
+% pour tracer le maillage : (peut prendre du temps...)
+plotFF(bf,'mesh');
 
+disp('Appuyez sur entree pour la suite...')
+pause; 
+ 
+%####
+disp('Etape 2 : resolution d''un pb force pour une valeur de k');
+%#### 
+ 
 % calcul d'un champ acoustique pour une valeur de k
 AC = SF_Acoustic(bf,'k',0.1)
 
 % trac? de la structure du champ acoustique
 plotFF(AC,'Phi');
-pause(0.1);
+
 
 % pour tracer Phi*r on peut faire : 
 % AC.R = sqrt(AC.mesh.X.^2+AC.mesh.Y.^2);
@@ -28,7 +38,7 @@ pause(0.1);
                AC.Xaxis,real(AC.Uaxis),'b-',AC.Xaxis,imag(AC.Uaxis),'b--');
            title('Pressure and velocity along the axis ')
            legend('Re(P)', 'Im(P)','Re(U)','Im(U)'); 
-  pause(0.1);
+  
 
 % Remarque : on peut directement faire le calcul et les trac?s avec 
 % la commande suivante :
@@ -36,6 +46,13 @@ pause(0.1);
 
 % Calcul de l'impedance pour plusieurs valeurs de k
 
+disp('Appuyez sur entree pour la suite...')
+pause; 
+
+%###
+disp('Etape 2 : resolution d''un pb force pour une valeur de k');
+%### 
+ 
 IMP = SF_Acoustic_Impedance(bf,'k',[0:.01:2])
 
 % trace de Z(k) parties reelles et imaginaires

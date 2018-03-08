@@ -17,7 +17,7 @@ real k; 			// nombre d'onde k=omega*c0
 
 //param?tres du trou
 real p=12.;			//position du trou
-real D=1.2;				//Diametre du trou
+real D=2;				//Diametre du trou
 real S=pi*(D/2)^2;		//Surface du trou
 real L=S/(2*pi*Rpipe);	//Largeur du trou
 
@@ -40,12 +40,13 @@ border axe2(t=Rext^(1/a),0){x=0;y=t^a;label=9;};
 
 
 
-real d = 3;        // D?fini le nombre de mailles par unit? 
+real d = 2;        // densite dans le tuyau
+real dext = 1; // densite a l'exterieur
 
 //cr?ation du maillage sur le domaine
-mesh th = buildmesh(axe(d*H)+fond(d*Rpipe)+mur(d*(H-p-L/2))+epai(d*Ep+1)+mur2(d*(p-L/2))
-                    +trouh(d*Ep+1)+trouv(d*(p-L/2))+trouh2(d*Ep+1)+mur3(d*(H-p+Ep-L/2))
-					+fond2(d*(Rpipe+Ep))+plate(d*(Rext-H-Ep))+sphere(pi*Rext*d/10)+axe2(d*Rext));
+mesh th = buildmesh(axe(d*H)+fond(d*Rpipe)+mur(d*(H-p-L/2))+epai(d*Ep+1)+mur2(dext*(p-L/2))
+                    +trouh(d*Ep+1)+trouv(d*(p-L/2))+trouh2(d*Ep+1)+mur3(dext*(H-p+Ep-L/2))
+					+fond2(d*(Rpipe+Ep))+plate(d*(Rext-H-Ep))+sphere(pi*Rext*d/10)+axe2(dext*Rext));
 		    
 // SAVE THE MESH in mesh.msh file 
 savemesh(th,ffdatadir+"mesh.msh");
