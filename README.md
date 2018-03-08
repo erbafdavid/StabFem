@@ -5,12 +5,12 @@
 StabFem is a set of programs to perform Global Stability calculations in Fluid Mechanics, which is developed 
 for both research and education purposes.
 
-The project is based on two softwares :
+The project is multi-system (linux, macOS, Windows), and based on two softwares :
 
 - The finite-element software FreeFem++ is used to generate the meshes, construct the operators
 and solve the various linear problems involved in the computation.
 
-- Matlab is used as a driver to monitor the computations in terminal or script mode and as a graphical interface to plot the results.
+- Matlab is used as a driver to monitor the computations in terminal or script mode and as a graphical interface to plot the results (note that some graphical functionalities require the toolbox pdetools).
 
 
 The kind of computation currently implemented comprises :
@@ -58,13 +58,22 @@ git clone https://github.com/erbafdavid/StabFem
 ### Instalation remarks :
 
 To run properly the software you should previously install matlab and FreeFem++ on you system.
+Then, the only system-dependent adaptation should be the definition of the variable ff in the file SOURCES_MATLAB/SF_Start.m.
 
-- On Mac OSX the instalation should not pose any problem 
+With most linux and mac systems this should be :
 
-- On Ubuntu 18 there is a little issue with the library libstdc++.so.6 which is not where Matlab looks for it
+```
+ff = '/usr/local/bin/FreeFem++';
+```
+
+With Windows systems this should be :
+```
+ff = 'launchff++';
+```
+
+
+Note that with Ubuntu 18 there is a little issue with the library libstdc++.so.6 which is not where Matlab looks for it
 (see Instalationnotes.md for a simple solution to this problem) 
-
-- On Windows, no one has tried yet. who wants to beta-test ???
 
 
 ## Motivation
