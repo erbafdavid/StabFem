@@ -19,3 +19,8 @@ Dans ce cas-ci on a créé un lien symbolique dans le répertoire Matlab vers la
 
 On aurait pu aussi surcharger la variable LD_PRELOAD, en l’incluant dans le wrapper /PRODCOM/bin/matlab
 
+
+concretement :
+
+sudo mv /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6 /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6ANS
+sudo ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6  /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6
