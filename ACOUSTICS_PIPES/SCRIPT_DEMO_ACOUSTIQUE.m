@@ -11,10 +11,10 @@ disp('Etape 1 : construction d''un maillage');
 bf = SF_Init('Mesh_1.edp');
 
 % pour tracer le maillage : (peut prendre du temps...)
-plotFF(bf,'mesh');
+%plotFF(bf,'mesh');
 
-disp('Appuyez sur entree pour la suite...')
-pause; 
+%disp('Appuyez sur entree pour la suite...')
+%pause; 
  
 %####
 disp('Etape 2 : resolution d''un pb force pour une valeur de k');
