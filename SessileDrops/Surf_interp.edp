@@ -1,0 +1,202 @@
+	alphaPointSurf=0;
+	K0aPointSurf=0;
+	K0bPointSurf=0;
+	int NormalVectEND=1;
+
+	int Ninterp = 0;
+	int Ns = Nsurface;
+
+	real Lb = S0PointSurf(Nsurface);
+	real s1,s2,s3,s4,s5,X1,X2,X3,X4,X5,Y1,Y2,Y3,Y4,Y5;
+
+	for (int k=0; k<=Nsurface; k++){
+ 
+			if (k==0)
+			{
+				s1 = -S0PointSurf(2);
+				s2 = -S0PointSurf(1);
+				s3 =  S0PointSurf(0);
+				s4 =  S0PointSurf(1);
+				s5 =  S0PointSurf(2);
+
+				X1 = -xPointSurf(2);		Y1 =  yPointSurf(2);
+				X2 = -xPointSurf(1);		Y2 =  yPointSurf(1);
+				X3 =  xPointSurf(0);		Y3 =  yPointSurf(0);
+				X4 =  xPointSurf(1);		Y4 =  yPointSurf(1);
+				X5 =  xPointSurf(2);		Y5 =  yPointSurf(2);
+			}
+			if (k==1)
+			{
+				s1 = -S0PointSurf(1);
+				s2 =  S0PointSurf(0);
+				s3 =  S0PointSurf(1);
+				s4 =  S0PointSurf(2);
+				s5 =  S0PointSurf(3);
+
+				X1 = -xPointSurf(1);		Y1 =  yPointSurf(1);
+				X2 =  xPointSurf(0);		Y2 =  yPointSurf(0);
+				X3 =  xPointSurf(1);		Y3 =  yPointSurf(1);
+				X4 =  xPointSurf(2);		Y4 =  yPointSurf(2);
+				X5 =  xPointSurf(3);		Y5 =  yPointSurf(3);
+			}
+
+			if (k==Ns-1 && NormalVectEND=="ey") 
+			{
+				s1 =  S0PointSurf(Ns-3);
+				s2 =  S0PointSurf(Ns-2);
+				s3 =  S0PointSurf(Ns-1);
+				s4 =  S0PointSurf(Ns);	
+				s5 =  Lb+Lb-S0PointSurf(Ns-1);
+
+				X1 =  xPointSurf(Ns-3);		Y1 =  yPointSurf(Ns-3);
+				X2 =  xPointSurf(Ns-2);		Y2 =  yPointSurf(Ns-2);
+				X3 =  xPointSurf(Ns-1);		Y3 =  yPointSurf(Ns-1);
+				X4 =  xPointSurf(Ns);		Y4 =  yPointSurf(Ns);
+				X5 = -xPointSurf(Ns-1);		Y5 =  yPointSurf(Ns-1);
+			}
+
+			if (k==Ns && NormalVectEND=="ey") 
+			{
+				s1 =  S0PointSurf(Ns-2);
+				s2 =  S0PointSurf(Ns-1);
+				s3 =  S0PointSurf(Ns);	
+				s4 =  Lb+Lb-S0PointSurf(Ns-1);
+				s5 =  Lb+Lb-S0PointSurf(Ns-2);
+
+				X1 =  xPointSurf(Ns-2);		Y1 =  yPointSurf(Ns-2);
+				X2 =  xPointSurf(Ns-1);		Y2 =  yPointSurf(Ns-1);
+				X3 =  xPointSurf(Ns);		Y3 =  yPointSurf(Ns);
+				X4 = -xPointSurf(Ns-1);		Y4 =  yPointSurf(Ns-1);
+				X5 = -xPointSurf(Ns-2);		Y5 =  yPointSurf(Ns-2);
+			}
+
+			if (k==Ns-1 && NormalVectEND=="ex") 
+			{
+				s1 =  S0PointSurf(Ns-3);
+				s2 =  S0PointSurf(Ns-2);
+				s3 =  S0PointSurf(Ns-1);
+				s4 =  S0PointSurf(Ns);	
+				s5 =  Lb+Lb-S0PointSurf(Ns-1);
+
+				X1 =  xPointSurf(Ns-3);		Y1 =  yPointSurf(Ns-3);
+				X2 =  xPointSurf(Ns-2);		Y2 =  yPointSurf(Ns-2);
+				X3 =  xPointSurf(Ns-1);		Y3 =  yPointSurf(Ns-1);
+				X4 =  xPointSurf(Ns);		Y4 =  yPointSurf(Ns);
+				X5 =  xPointSurf(Ns-1);		Y5 = -yPointSurf(Ns-1);
+			}
+
+			if (k==Ns && NormalVectEND=="ex") 
+			{
+				s1 =  S0PointSurf(Ns-2);
+				s2 =  S0PointSurf(Ns-1);
+				s3 =  S0PointSurf(Ns);	
+				s4 =  Lb+Lb-S0PointSurf(Ns-1);
+				s5 =  Lb+Lb-S0PointSurf(Ns-2);
+
+				X1 =  xPointSurf(Ns-2);		Y1 =  yPointSurf(Ns-2);
+				X2 =  xPointSurf(Ns-1);		Y2 =  yPointSurf(Ns-1);
+				X3 =  xPointSurf(Ns);		Y3 =  yPointSurf(Ns);
+				X4 =  xPointSurf(Ns-1);		Y4 = -yPointSurf(Ns-1);
+				X5 =  xPointSurf(Ns-2);		Y5 = -yPointSurf(Ns-2);
+			}
+
+			if (k>1 && k<Nsurface-1) 
+			{
+				s1 =  S0PointSurf(k-2);
+				s2 =  S0PointSurf(k-1);
+				s3 =  S0PointSurf(k);
+				s4 =  S0PointSurf(k+1);
+				s5 =  S0PointSurf(k+2);
+
+				X1 =  xPointSurf(k-2);		Y1 =  yPointSurf(k-2);
+				X2 =  xPointSurf(k-1);		Y2 =  yPointSurf(k-1);
+				X3 =  xPointSurf(k);		Y3 =  yPointSurf(k);
+				X4 =  xPointSurf(k+1);		Y4 =  yPointSurf(k+1);
+				X5 =  xPointSurf(k+2);		Y5 =  yPointSurf(k+2);
+			}
+
+			/* Building the matrix for the interpolations */
+			real[int] X  	= [X1,X2,X3,X4,X5];
+			real[int] Y  	= [Y1,Y2,Y3,Y4,Y5];
+
+			matrix SSS = [	[s1^4, s1^3, s1^2 , s1 , 1. ], 
+					[s2^4, s2^3, s2^2 , s2 , 1. ], 
+					[s3^4, s3^3, s3^2 , s3 , 1. ], 
+					[s4^4, s4^3, s4^2 , s4 , 1. ], 
+					[s5^4, s5^3, s5^2 , s5 , 1. ] 	];
+						  	
+			set(SSS,solver=UMFPACK);
+			
+			/* Coefficients of the polynomial interpolation */
+			real[int] px(5);
+			real[int] py(5);
+		
+			/* Resolution of the linear systems */
+			px=SSS^-1*X;		
+			py=SSS^-1*Y;
+
+			/* Normal vectors and alpha */
+
+			real dX = 4*px(0)*s3^3+3*px(1)*s3^2+2*px(2)*s3+px(3);
+			real dY = 4*py(0)*s3^3+3*py(1)*s3^2+2*py(2)*s3+py(3);
+			real ddX = 12*px(0)*s3^2+6*px(1)*s3+2*px(2);
+			real ddY = 12*py(0)*s3^2+6*py(1)*s3+2*py(2);
+			real dddX = 24*px(0)*s3+6*px(1);
+			real dddY = 24*py(0)*s3+6*py(1);
+
+
+			real Norm = (dX^2+dY^2)^0.5;
+			real tX=dX/Norm;
+			real tY=dY/Norm;
+			real nX =+tY;
+			real nY =-tX;
+			real alpha = atan2(nY,nX);
+
+			/* Courbature with x(s) and y(s) kxy = ( x'y'' -x''y' )/(x'^2+y'^2)^(3/2) */
+			real kxy = (ddX*dY-dX*ddY)/(dX^2+dY^2)^(3./2.);
+			K0aPointSurf(k)=kxy;
+			real dskxy = (dddX*dY-dddY*dX)/(dX^2+dY^2)^(3./2.) - 3./2.*(ddX*dY-dX*ddY)*(2*dX*ddX+2*dY*ddY)/(dX^2+dY^2)^(5./2.);
+			//dsK0aPointSurf(k)=dskxy;
+			
+			//n0x(k)=nX;
+			//n0y(k)=nY;
+
+			if (NormalVectEND=="ey")
+			{
+				if (k==0||k==Nsurface) 	{K0bPointSurf(k)=kxy;}
+				else			{K0bPointSurf(k)=-nX/X3;};
+			}
+			if (NormalVectEND=="ex")
+			{
+				if (k==0) 		{K0bPointSurf(k)=kxy;}
+				else			{K0bPointSurf(k)=-nX/X3;};
+			}
+
+			alphaPointSurf(k)=alpha;
+
+			
+/*			fout << s3     <<" "<< X3    <<" "<< Y3 <<" "<< alpha <<" ";		      /* 1  2  3 4      */
+/*			fout << kxy    <<" "<< dskxy <<" "<< K0bPointSurf(k) <<" ";		      /* 5  6  7        */
+/*			fout << px(0)  <<" "<< px(1) <<" "<< px(2) <<" "<< px(3) <<" "<< px(4) <<" "; /* 8  9  10 11 12 */   	
+/*			fout << py(0)  <<" "<< py(1) <<" "<< py(2) <<" "<< py(3) <<" "<< py(4) <<" "; /* 13 14 15 16 17 */	
+/*			fout << endl;											*/
+
+			Ninterp++;					
+	}
+
+	/*n0x(0)=0;
+	n0y(0)=-1;		
+
+	if(NormalVectEND=="ex")
+	{
+		n0x(Nsurface)=-1;
+		n0y(Nsurface)=0;
+	}
+
+	if(NormalVectEND=="ey")
+	{
+		n0x(Nsurface)=0;
+		n0y(Nsurface)=1;
+	}*/
+	
+	/*  END OF FILE */

@@ -1,0 +1,206 @@
+//verbosity = 0;
+real R = 1,Rbase=1;
+real Rpin,Lsurf,Rdrop;
+int d;
+int typegeom;
+
+//string typestart = "angle";//"pined";//
+//string typeend = "axis";
+// Definition des parametres necessaires au bon fonctionnement des macros
+string surfaceorder="direct"; /// possibilities : "direct", "reverse" (use reverse to fit with matlab "meniscus" program);
+string typestart = "pined"; // possibilites : "pined", "axis", "plane", "angle"
+string typeend = "axis";    // possibilites : "pined", "axis", "plane", "angle"
+int anglecut = 2; // position of the "cut" in the tan2 determination. 
+                  // 0 -> alpha in [-pi,pi]; 1-> [-pi/2,3pi/2]; 2 -> [0,pi] ; 3 -> [-3*pi/2,pi/2] 
+                  // for "sessile drop" geometry best option is 1.
+int labelsurf = 2;
+
+
+cout << "Construction du Maillage initial 'guess' " << endl << endl; 
+
+
+cout << " Type de geometrie : PORTION DE SPHERE" << endl;
+//cin >> typegeom;
+typegeom = 1;
+
+
+int Nsurf;
+ifstream file("meniscus.dat");
+file >> Nsurf;
+cout << "  Number of nodes = "<< Nsurf << endl;
+//
+//  Read the X and Y coordinates.
+//
+//real[int] Gxx(nn);
+//real[int] Gyy(nn);
+
+
+
+real[int] Rinit(Nsurf), Zinit(Nsurf);
+for ( int i = 0; i < Nsurf; i++ ) 
+{
+  file >> Rinit[i];
+}
+for ( int i = 0; i < Nsurf; i++ ) 
+{
+  file >> Zinit[i];
+}
+
+
+//file >> Rinit;
+//file >> Zinit;
+
+
+
+//cout << " ENTREZ Le rayon de courbure ?" << endl;
+Rdrop = Rinit(0);
+real Zdrop = Zinit(Nsurf-1);
+
+
+//real angle;
+//cout << " ENTREZ L'angle (en degres) ?" << endl;
+//cin  >> angle;
+//angle = angle*pi/180;
+
+
+real LL = 1;
+//real Rdrop = 1;
+
+Rbase = Rdrop;
+
+
+//cout << " ENTREZ La densite du maillage (nb de pts sur la surface) ?" << endl;
+//cin  >> d;
+
+d = Nsurf;
+
+//cout << "==> Longueur = " << LL << endl;
+//cout << "==> Densite = " << d << endl;
+
+
+
+
+border Wall(t=0,Rbase*(1-1./d)){y=0;x=t;label=5;};
+border Wallbis(t=Rbase*(1-1./d),Rbase){y=0;x=t;label=55;};
+//border Axe(t=Rdrop,0){y = t ; x = 0;label=1;};
+
+// tentative d'ameliorer en separant l'axe en deux
+border Axe(t=Zdrop*(1-1./d),0){y = t ; x = 0;label=1;};
+border Axebis(t=Zdrop,Zdrop*(1-1./d)){y = t ; x = 0;label=11;};
+
+//border Side2(t=R,0){y=LL ; x = t;label=5;};
+mesh MeshInt;
+
+
+
+
+//real Rc = sqrt((LL/2)^2+1);
+//real thetac = atan(LL/2);
+//Lsurf = 2*Rc*thetac;
+//cout << " Portion de sphere : Rc = " << Rc << " ; thetac = " << thetac << " ; Lsurf = " << Lsurf << endl;
+//border SurfBulle(t=-thetac,thetac){y=Rc*(sin(t)+sin(thetac));x=Rc*cos(t);label=2;
+//border SurfDrop(t=angle,0){y=Rdrop*(cos(t)-cos(angle));x=Rdrop*sin(t);label=2;};
+
+border SurfDrop ( t = 0, Nsurf - 1 ) 
+{
+  int i = min ( int ( t ), Rinit.n - 2 ); 
+  real t1 = t - i;
+  x = Rinit[i] * ( 1.0 - ( t - i ) ) + Rinit[i+1] * ( t - i ); 
+  y = Zinit[i] * ( 1.0 - ( t - i ) ) + Zinit[i+1] * ( t - i ); 
+  label = 2; 
+}
+
+
+
+plot(SurfDrop(2*R*d)+Wall(R*(d-1))+Wallbis(1)+Axe(LL*(d-1))+Axebis(1),wait=1);
+MeshInt = buildmesh(SurfDrop(d)+Wall(d-1)+Wallbis(1)+Axe(d-1)+Axebis(1)); // Attention modif sauvage
+
+
+
+savemesh(MeshInt,"Mesh_Translator_guess.msh");
+
+
+plot(MeshInt,wait=1);
+
+savemesh(MeshInt,"mesh_Translator_guess.msh");
+
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// POST-TRAITEMENT : fichiers Infos_Geom.txt et Geom_Surface.txt
+//
+////////////////////////////////////////////////////////////////
+
+
+// Construction de vecteurs contenant les points de la surface numerotes (cf. macro)  
+
+//mesh Shempty=emptymesh(MeshInt); 	
+
+/// TEST
+mesh Shempty=MeshInt; 	
+
+
+
+
+real K0, dpdz;
+include "MG.edp";
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+CalcGeomSurf;
+
+
+// Calcul de diverses quantites interessantes
+real Vol = 2*pi*int2d(MeshInt)(x); // Volume
+real Area = 2*pi*int1d(MeshInt,2)(x); // Surface
+real Rmax = xPointSurf(0:Nsurface).max;
+real Rmin = xPointSurf(0:Nsurface).min;
+real Zmax = yPointSurf(0:Nsurface).max;
+real Zmin = yPointSurf(0:Nsurface).min;
+real Z1 = yPointSurf(0);
+real Z2 = yPointSurf(Nsurface);
+real L = Z2-Z1;
+
+dpdz = 0;
+
+cout << " ####### STATISTIQUES sur la forme : " << endl << endl;
+cout << " ## Longueur                        : " << L << endl;
+cout << " ## gradient pression adim (Bo^-1)  : " << dpdz << endl;
+cout << " ## Volume                          : " << Vol << endl;
+cout << " ## Volume / Volume cyl             : " << Vol/(pi*L*Rbase^2) << endl;
+cout << " ## Courbure                        : " << K0 << endl;
+cout << " ## SURFACE                         : " << Area << endl;
+cout << " ## Rmax                            : " << Rmax << endl;
+cout << " ## Rmin                            : " << Rmin << endl;
+cout << " ## Zmax                            : " << Zmax << endl;
+cout << " ## Zmin                            : " << Zmin << endl;
+cout << endl;
+
+
+// fichier info geom
+{
+ofstream fileG("Infos_Geom.txt");
+fileG.scientific;
+fileG << L << " " ; 
+fileG << Vol/(pi*L*Rbase^2) << " " ;
+fileG << K0 << " " ; 
+fileG << dpdz << " " ;
+fileG << Area << " ";
+fileG << Zmin << " " ; 
+fileG << Zmax << " " ; 
+fileG << Rmin << " " ; 
+fileG << Rmax << " ";
+fileG <<  endl ; 
+fileG << "### Infos geometrie : L Vol' K0 dpdz Area Zmin Zmax Rmin Rmax" << endl;
+};
+
+
+
+// ##################  ECRITURE D'un fichier contenant la geometrie de la surface ############ 
+ofstream filegeom2("Geom_SurfaceINIT.txt") ;
+for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
+	{
+	filegeom2 << S0PointSurf(ksurf) << "   " << xPointSurf(ksurf) << "  "  << yPointSurf(ksurf) << "   " 
+	<< alphaPointSurf(ksurf) << "   " << K0aPointSurf(ksurf) << "  " << K0bPointSurf(ksurf)  
+	<< "  " << dS0PointSurf(ksurf)  	<< endl ;
+	};
