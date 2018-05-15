@@ -52,7 +52,14 @@ plotFF(em,’ux1.re’) % plots the real part of the axial velocity component of
 git clone https://github.com/erbafdavid/StabFem
 ```
 
-- If you want to participare to the project you should create a git account.
+- If you want to participare to the project the recommended procedure will be as follows :
+1/ Create a github account (e.g. github/tartempion)
+2/ Do a "fork" of the project on the github. This will create a copy of the full repository on the github site, (e.g. http://github.com/tartempion/StabFem)
+3/ in a terminal type "git clone http://github.com/tartempion/StabFem" .
+This will import the whole project on your computer in a directory synchronized with the github site.
+You will then be able to manage your own version of the project using git commands such as "git commit", "git push", etc...
+4/ when suitable you can merge your fork of the project with the main one using "pull request".
+
 
 
 ### Instalation remarks :
