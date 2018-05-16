@@ -21,15 +21,32 @@
 
 
 
-load "MUMPS_seq"
+//load "MUMPS_seq"
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
 
 /////////////////////////////////////////////////////////////////////////////////
 
 
+string normalisation;
+cout << " Normalisation choice ?  [none, L or E]" << endl;
+cin >> normalisation ;
+cout << " --> " << normalisation << endl;
+
+real Recheck;
+cout << " Give a value of Reynolds number to evaluate the predictions of the model and generate baseflow/selfconsistent files ? " 
+		<< endl << "       (type -1 if you don't want an evaluation)" << endl;
+cin >> Recheck;
+cout << " --> " << Recheck << endl;
+
+
+
 mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
 //int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -109,6 +126,7 @@ ifstream cbin(ffdatadir+"BaseFlow.txt");
 cbin >> ubx[] >> Re;
 cout << "Drag of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 }
+real epsilonTT = sqrt(1/Re-1/Recheck); // warning may fail if subcritical ! to be fixed in due time
 
 {
 cout << "Reading Eigenmode.txt" << endl;
@@ -125,35 +143,31 @@ cbin >> u1Ax[] ;
 u1ACx[] = conj(u1Ax[]);
 
 
-string normalisation;
-//cout << " Normalisation choice ?  [none, L or E]" << endl;
-//cin >> normalisation ;
-//cout << " --> " << normalisation << endl;
-normalisation = "E";
+
 
 if(normalisation=="none")
 	{ cout << " -> No normalization for the mode " << endl;}
 else if(normalisation=="L")
 	{
 		real Liftguess = 1;
-		cout << "  -> Cy = " << Liftguess  << endl;
+		cout << "  -> Fy = " << Liftguess  << endl;
 
-		cout << "Cy before renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
-		complex modenorm = 2*Lift(1/Re,u1x,u1y,u1p);
+		cout << "Fy before renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5
-			cout << "Cy after renarmalisation : " << 2*Lift(1/Re,u1x,u1y,u1p) << endl;	
+			cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
 	}	
 else if(normalisation=="E")
 		{
 		real Eguess = 1;
 		cout << "  -> Energy = " << Eguess << endl;
 
-		cout << "Energy before renarmalisation : " << 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
+		cout << "Energy before renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
 		modenorm = 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2));
 		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that || ums ||_L2 = 1/sqrt(2)
-		cout << "Energy after renarmalisation : " << 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
+		cout << "Energy after renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
 		};
 
 
@@ -185,10 +199,16 @@ solve varf22([u22x,u22y,u22p],[vCx,vCy,vCp]) =
     + Boundaryconditions(u22,vC,"S")			
 	;
 
+real Fx0 = Drag(nu,ubx,uby,ubp);
+real Fxeps2 = (Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0));
+real FxA20 = real(Drag(nu,u20x,u20y,u20p));
+complex FxA22 = Drag(nu,u22x,u22y,u22p);
+complex FyA1 = Lift(1/Re,u1x,u1y,u1p);
 
-cout << " Cx associated to order epsilon correction : " << 2*(Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0)) << endl;
-cout << " Cx associated to order |A|^2  : " << 2*Drag(nu,u20x,u20y,u20p) << endl;
-cout << " Cx associated to order A^2  : " << 2*Drag(nu,u22x,u22y,u22p) << endl;
+
+cout << " Fx associated to order epsilon correction : " << Fxeps2 << endl;
+cout << " Fx associated to order |A|^2  : " << FxA20 << endl;
+cout << " Fx associated to order A^2  : " << FxA22 << endl;
 
 /////////////////////////////////////////////////////////////////////////////////
 /////// ORDER 3
@@ -204,28 +224,123 @@ complex Lambda = -1/Cn*int2d(th)(Conv(ueps,u1,u1AC)-2*(D(u1):D(u1AC)));
 complex Nu0 = 1/Cn*int2d(th)(Conv(u20,u1,u1AC));
 
 complex Nu2 = 1/Cn*int2d(th)(Conv(u22,u1C,u1AC));
-
 	
 cout << "Lambda : "  << Lambda << " ; Nu0 = " << Nu0 << " ; Nu2 = " << Nu2 << endl;
- 	
+real AAA = sqrt(real(Lambda)/real(Nu0+Nu2)); /// amplitude/sqrt(eps) ; value depends on normalisation choice
+
+
+cout << endl << endl << "######### SUMMARY : ##############" << endl << endl;
+
+cout << endl << "  >>  Amplitude :  A = " << AAA << " * epsilon^(1/2) " << endl;
+cout << "  >>  In terms of Energy = " << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << " * eps " << endl;
+cout << "  >>  In terms of Lift force : Fy = [" << AAA*FyA1 << " exp(i omega0 t) + c.c. ] * eps" << endl;
+cout << "                             : Fy = " << real(AAA*FyA1*2) << " cos(omega0 t) + " 
+                                                     << -imag(AAA*FyA1*2) << " ] * eps" << endl;
+
+cout << " >> Drag force  = Fx0 + Fxeps2 * eps^2 + FxA20 *|A|^2 + |A^2| * [FxA22 exp(2 i omega0 t ) + c.c. ]"  << endl;
+cout << "                      = " << Fx0 << " + " << Fxeps2 << " * eps + << " << -FxA20 << " * |A|^2 + [" << FxA22 << " exp(2 i omega0 t) + c.c.] |A|^2 "  << endl << endl;
+cout << "                      = Fx0 + [ Fxeps2 + CxA20*(A^2/eps^2)] * eps^2 " 
+                            << " +  [ 2*Re(FxA22)*cos( 2 omega0 t ) - 2*Im(FxA22)*sin( 2 omega0 t ) ] * "  << endl;
+cout << "                      = " << Fx0 << " + " << (Fxeps2 + FxA20*AAA^2) << " * eps^2 + [ " << real(2*FxA22)*AAA^2 << " * cos(2 omega0 t ) + " 
+																					<< -imag(2*FxA22)*AAA^2 << " * sin(2 omega0 t ) ] * eps^2"   << endl;
+         
+         
+cout << endl << "  >> Frequency = omega0 + im(Lambda)*eps - im(nu0+nu2)*|A|^2 "  << endl;
+cout << endl << "               = " << omegaC <<  " + " << imag(Lambda) - imag(Nu0+Nu2)*AAA^2 << " * eps^2 "  << endl;
+        
+                                                  
+real omegaNL;
+if(Recheck>0)
+{
+
+cout << endl<< endl << " #####  CHECK FOR Re = " << Recheck << " ############" << endl;
+cout << "  >>  Amplitude :  A = " << AAA*epsilonTT  << endl;
+cout << "  >>  In terms of Energy = " << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2))*epsilonTT << endl;
+cout << "  >>  In terms of Lift force : Fy = [" << AAA*FyA1*epsilonTT << " exp(i omega0 t) + c.c. ]" << endl;
+cout << "                             : Fy = " << real(AAA*FyA1)*2*epsilonTT << " cos(omega0 t) + " 
+													 << -imag(AAA*FyA1)*2*epsilonTT << " sin(omega0 t) " << endl; 
+
+cout << endl << "  >> Drag force   = " << Fx0+(Fxeps2 + FxA20*AAA^2)*epsilonTT^2 << " + [ " 
+										 << real(FxA20*2)*epsilonTT^2 << " * cos(2 omega0 t ) + " 
+			                             << -imag(FxA22*2)*epsilonTT^2 << " * sin(2 omega0 t ) "   << endl;
+
+omegaNL = omegaC+(imag(Lambda) - imag(Nu0+Nu2)*AAA^2)*epsilonTT^2;
+			                             
+cout << endl << "  >> Frequency = " << omegaC <<  " + " << (imag(Lambda) - imag(Nu0+Nu2)*AAA^2)*epsilonTT^2  
+						<<  "  =  " << omegaNL << endl ;
+						
+cout << endl << "########################################################" << endl << endl;
+  	
+};
+
+
+//// GENERATE FILE WITH ALL COEFFS ; USEFUL FOR MATLAB DRIVER
+
 	
 	{
  		 ofstream file("WNL_results.ff2m");
  		 file << "### Data generated by Freefem++ ; " << endl;
     	 file << "Coefficients of the Amplitude Equation obtained by Weakly Non Linear analysis" << endl;
     	 file << "Format :" << endl;
-	     file << "real Rec complex eigenvalue complex Lambda complex nu0 complex nu2 " 
-	          << " real Cx0 real Cxeps real Cx20 complex Cx22" << endl << endl ; 
+	     file << "real Rec complex eigenvalue complex Lambda complex nu0 complex nu2 real Aeps complex Fyeps" 
+	          << " real Fx0 real Fxeps2 real FxA20 complex FxA22 real Fxeps20 complex Fxeps22" << endl << endl ; 
 	     file << ReC << endl 
 			  << 0 << " " << omegaC  << endl 
 			  << real(Lambda) << " " << imag(Lambda) << endl 
 			  << real(Nu0) << " " << imag(Nu0) << endl 
 			  << real(Nu2) << " " << imag(Nu2) <<  endl 
-			  << 2*Drag(nu,ubx,uby,ubp) << endl 
-			  << 2*(Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0)) << endl
-			  << " " << 2*real(Drag(nu,u20x,u20y,u20p)) << endl  
-			  << " " << 2*real(Drag(nu,u22x,u22y,u22p)) << " " << 2*real(Drag(nu,u22x,u22y,u20p)) << endl;
+			  << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl
+			  << real(AAA*FyA1) << " " << imag(AAA*FyA1) << endl
+			  << Fx0 << endl 
+			  << Fxeps2 << endl
+			  << FxA20 << endl  
+			  << " " << real(FxA22) << " " << imag(FxA22) << endl
+			  << real(FxA20*AAA^2) << endl  
+			  << " " << real(FxA22*AAA^2) << " " << imag(FxA22*AAA^2) << endl ;
+
 };
+
+
+
+//////// GENERATE "GUESS FILES" for Self-consistent computation"
+if(Recheck>0)
+{
+XXMh [umx,umy,ump]; // mean flow
+Re = Recheck;
+
+{
+	ofstream file(ffdatadir+"MeanFlow_guess.txt");
+		umx[] = ubx[]+epsilonTT^2*uepsx[];
+	[umx,umy,ump]=[umx,umy,ump]+AAA^2*epsilonTT^2*[real(u20x),real(u20y),real(u20p)];
+	file << umx[]; 
+	file << endl << endl << Re;
+}; 
+SFWriteBaseFlow(ffdatadir+"MeanFlow_guess.ff2m",um,"MeanFlow",1);
+
+
+
+    [u1x,u1y,u1p] = 2*AAA*epsilonTT*[u1x,u1y,u1p]; // factor 2 because (cos, sin) components instead of (re,im)
+{
+ 	ofstream file(ffdatadir+"SelfConsistentMode_guess.txt");
+   	file << u1x[] ;	
+   	file << endl << endl << Re << endl
+   	<< endl << 0 << "   " << omegaC  << endl;
+};
+SFWriteMode(ffdatadir+"SelfConsistentMode_guess.ff2m",u1,1i*omegaNL,1i*omegaC,"HarmonicMode",1);
+
+	cout << 2*AAA^2*epsilonTT^2 << endl;
+	u22x[] = 2*AAA^2*epsilonTT^2*u22x[]; // factor 2 because (cos, sin) components instead of (re,im)
+{
+ 	ofstream file(ffdatadir+"SecondHarmonicMode_guess.txt");
+   	file << u22x[] ;	
+   	file << endl << endl << Re << endl
+   	<< endl << 0 << "   " << 2*omegaC  << endl;
+};
+
+SFWriteMode(ffdatadir+"SecondHarmonicMode_guess.ff2m",u22,2i*omegaNL,2i*omegaC,"SecondHarmonicMode",1);
+
+};
+
 	
 	
 	

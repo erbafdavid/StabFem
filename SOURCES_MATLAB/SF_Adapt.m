@@ -3,7 +3,7 @@ function [baseflow,eigenmode] = SF_Adapt(varargin)
 % This is part of StabFem Project, version 2.1, D. Fabre, July 2017
 % Matlab driver for Adapting Mesh 
 %
-% usage : [baseflow,eigenmode] = SF_Adapt(baseflow,eigenmode)
+% usage : [baseflow] = SF_Adapt(baseflow,eigenmode)
 %
 % with only one input argument the adaptation will be done only on base
 % flow.
@@ -14,6 +14,9 @@ function [baseflow,eigenmode] = SF_Adapt(varargin)
 %
 % The base flow (and if specified the eigenmode) will be recomputed on
 % adapted mesh
+%
+% improved usage : [baseflow,eigenmode] = SF_Adapt(baseflow,eigenmode)
+% eigenmode will also be recomputed (works in 2D but nor recommended)
 %
 % Version 2.1 by D. Fabre, 2 july 2017
 
@@ -76,7 +79,7 @@ if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input : adapt to b
   disp(['      ### ADAPT mesh to base flow ' ...% for Re = ' num2str(baseflow.Re)... 
             ' ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])  
   if(verbosity>=1)
-  meshinfo = importFFdata(baseflow.mesh,'mesh_adapt.ff2m');
+  meshinfo = importFFdata(baseflow.mesh,'mesh.ff2m');
   disp(['      #   Number of points np = ',num2str(meshinfo.np), ...
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
   disp(['      #  h_min, h_max : ',num2str(meshinfo.deltamin), ' , ',...
@@ -97,7 +100,7 @@ else % Adaptation to base flow + mode (or other specified field)
             system(['cp ',ffdatadir,'Eigenmode.txt ',ffdatadir,'AdaptField.txt']);
         elseif(strcmp(eigenmode.type,'A')==1)
              command = ['echo UVP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
-            system(['cp ',ffdatadir,'Eigenmode.txt ',ffdatadir,'AdaptField.txt']);
+            system(['cp ',ffdatadir,'EigenmodeA.txt ',ffdatadir,'AdaptField.txt']);
         else %if(strcmp(eigenmode.type,'S')==1)
              command = ['echo Sensitivity | ',ff,' ',ffdir,'Adapt_Mode.edp'];
             system(['cp ',ffdatadir,'Sensitivity.txt ',ffdatadir,'AdaptField.txt']);
@@ -120,7 +123,7 @@ else % Adaptation to base flow + mode (or other specified field)
             ' ) ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])     
 %     disp([' ; Number of points np = ',num2str(meshinfo.np) ' ; Ndof = ' num2str(meshinfo.Ndof)]; ])
 if(verbosity>=1)    
-meshinfo = importFFdata(baseflow.mesh,'mesh_adapt.ff2m');
+meshinfo = importFFdata(baseflow.mesh,'mesh.ff2m');
   disp(['      #   Number of points np = ',num2str(meshinfo.np), ...
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
   disp(['      #  deltamin, deltapax : ',num2str(meshinfo.deltamin), ' , ',...
@@ -156,7 +159,7 @@ end
                 [ev,eigenmode]=SF_Stability(baseflow,'m',eigenmode.m,'shift',eigenmode.lambda,'nev',1,'type',eigenmode.type);
             elseif(strcmp(baseflow.mesh.problemtype,'2D')==1)
                 if(strcmp(eigenmode.type,'D')==1) 
-                      system(['cp ',ffdatadir,'Adaptfield_guess.txt ',ffdatadir,'Eigenmode_guess.txt']);
+                      system(['cp ',ffdatadir,'AdaptField_guess.txt ',ffdatadir,'Eigenmode_guess.txt']);
                 else
                     system(['rm ',ffdatadir,'Eigenmode_guess.txt']);
                 end

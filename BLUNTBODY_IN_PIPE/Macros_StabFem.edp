@@ -28,6 +28,11 @@ cout << " USING MUMPS_seq" << endl;
 ENDIFMACRO
 // END DEFINITION OF SOLVER
 
+IFMACRO(!FREEFEMPLOTS)
+macro FREEFEMPLOTS  YES//EOM
+ENDIFMACRO 
+// Set to "1" to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
+// set to "0" to disable all plots (recommended in Matlab/StabFem mode)
 
 
 IFMACRO(!problemtype)
@@ -38,31 +43,19 @@ IFMACRO(!ncomponentsBF)
 macro ncomponentsBF 2//EOM  // THIS PARAMETERS SHOULD BE 2 if BASE FLOW is (U,V,P) and 3 if it is (U,V,W,P) (case with rotation)
 ENDIFMACRO
 
-IFMACRO(!freefemsolverMUMPS)
-macro freefemsolverMUMPS 0 //EOM
-ENDIFMACRO 
 
-IFMACRO(freefemsolverMUMPS,1)
-include "MUMPS_seq"
-cout << " USING MUMPS_seq" << endl;
-ENDIFMACRO
 
-IFMACRO(!freefemsolverUMFPACK64)
-macro freefemsolverUMFPACK64 0 //EOM
-ENDIFMACRO 
+//IFMACRO(!freefemsolverUMFPACK64)
+//macro freefemsolverUMFPACK64 0 //EOM
+//ENDIFMACRO 
 
-IFMACRO(freefemsolverUMFPACK64,1)
-include "UMFPACK64"
-cout << " USING UMFPACK64" << endl;
-ENDIFMACRO
+//IFMACRO(freefemsolverUMFPACK64,1)
+//include "UMFPACK64"
+//cout << " USING UMFPACK64" << endl;
+//ENDIFMACRO
 
 // To select the solver ; available are "default", "UMFPACK64", "MUMPS_seq", and "PETSC"
 
-IFMACRO(!freefemplots)
-macro freefemplots  0  //EOM
-ENDIFMACRO 
-// Set to "1" to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
-// set to "0" to disable all plots (recommended in Matlab/StabFem mode)
 
 
 

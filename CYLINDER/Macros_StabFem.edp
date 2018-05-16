@@ -16,6 +16,21 @@
 /// 
 /// The following case is for the 2D cylinder and include the additional macros
 /// required to compute lift and drag forces : Trainee(ux,uy,p,symmetry) and Portance(ux,uy,p,symmetry)
+///
+/// The file must also contain 
+
+
+/// FIRST DEFINE THE SOLVER : IF AVAILABLE MUMPS WILL STRONGLY SPEED UP THE COMPUTATIONS.
+/// IF MUMPS_seg is not insalled 
+IFMACRO(!SOLVER)
+macro SOLVER MUMPS// POSSIBLE OPTIONS : DEFAULT, MUMPS, UMPFACK (to be avoided), SLEPC (not yet implemented)
+ENDIFMACRO
+
+IFMACRO(SOLVER,MUMPS)
+load "MUMPS_seq" 
+cout << " USING MUMPS_seq" << endl;
+ENDIFMACRO
+// END DEFINITION OF SOLVER
 
 
 IFMACRO(!problemtype)
@@ -27,9 +42,11 @@ string ffdatadir = "./WORK/";
 string symmetryBaseFlow = "S"; // symmetry propery of base flow :; set "S" if domain is hzalf domain and "N" if it is full domain
 int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
 
+macro Uinlet(y) 1.
+// inlet flow for constant flow
 
 macro BoundaryconditionsBaseFlow(du,u,v)
-	           on(bcinlet,du#x=1.0-upx,du#y=0.0)
+	           on(bcinlet,du#x=Uinlet(y)-u#x,du#y=0.0)
 	           /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
 	         + on(bclatNOP,du#x=0.0,du#y=0.0)  /* if you want to try no-penetration boundary (not optimal) */
              + on(bcwall,du#x=0.0,du#y=0.0)
@@ -129,7 +146,7 @@ macro SFWriteBaseFlow(filename,u,typeFlow,iter)
     file << typeFlow << endl;
     file << "Format : " << endl;	
 	file << "real Re P1 ux P1 uy P1 p P1 vort P1 psi real iter " ;
-	string PostProcessBaseFlowDescription = "real Cx real Lx"; /* customizable output */ 
+	string PostProcessBaseFlowDescription = "real Fx real Lx"; /* customizable output */ 
 	file << PostProcessBaseFlowDescription << endl << endl ; 
 	file << Re << endl;	
 			for (int j=0;j<ut[].n ; j++) file << ut[][j] << endl;
@@ -142,8 +159,8 @@ macro SFWriteBaseFlow(filename,u,typeFlow,iter)
 	cout << "#### customisable output for WAKE OF A 2D BLUFF BODY : " << endl; 
     /* Calcul de la trainee */
     real DragMode = Trainee(u,symmetryBaseFlow);
-	cout << "#    Cx =  " << 2*DragMode << endl; /* factor 2 because Fx = 1/2 Cx */
-    file << 2*DragMode << " " ; 
+	cout << "#    Fx =  " << DragMode << endl; 
+    file << DragMode << " " ; 
     real Lx, Uap, Uav;
     if(iter>0)
     {
@@ -196,9 +213,11 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
     	 file << "Format :" << endl;
     	 string descriptionFF;
     	 if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
-    	 	{  descriptionFF="real Re complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Cy"; }
-    	 else 
-    	    {  descriptionFF="real Re complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj complex CyAdj"; }
+    	 	{  descriptionFF="real Re complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Fy"; }
+    	 else if(typeFlow=="EigenModeA") 
+    	    {  descriptionFF="real Re complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj complex FyAdj"; }
+    	 else if(typeFlow=="SecondHarmonicMode") 
+    	    {  descriptionFF="real Re complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Fx"; }
 	     file << descriptionFF << endl << endl ; 
 		 file << Re  << endl << real(ev) << " " << imag(ev) << " " << real(shift) << " " << imag(shift) << " " << iter << endl << endl;
  		ux1=u#x;
@@ -211,16 +230,39 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 		for (int j=0;j<ux1[].n ; j++) file << real(pp1[][j]) << " " << imag(pp1[][j]) << endl;
 		for (int j=0;j<ux1[].n ; j++) file << real(vort1[][j]) << " " << imag(vort1[][j]) << endl;
 		
+		file << endl;
+		if(typeFlow=="EigenModeD"||typeFlow=="EigenModeA")
+		{
 		cout << "#### customisable output for a mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
-
-	
-		real AEnergyMode = sqrt(2*int2d(th)(abs(u#x)^2+abs(u#y)^2)); 
+		real AEnergyMode = sqrt(2*int2d(th)(abs(u#x)^2+abs(u#y)^2)); /* factor should be 4 because 2 half domains and time-average of (u1 e^iphi+cc) is 2 |u1|^2  */
 		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
 		file << AEnergyMode << endl;
-
 		complex LiftMode = Portance(u,"A"); 
-		cout << "#   Cy = " << 2*LiftMode << endl;
-		file << 2*real(LiftMode) << " " << 2*imag(LiftMode) << endl;
+		cout << "#   Fy = " << LiftMode << " exp( lambda t) + c.c. " << endl;
+		file << real(LiftMode) << " " << imag(LiftMode) << endl;
+		}
+		if(typeFlow=="HarmonicMode")
+		{
+		cout << "#### customisable output for a SC mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
+		real AEnergyMode = sqrt(int2d(th)(abs(u#x)^2+abs(u#y)^2));  /* here factor 1 because 2 half domaines and time-average of cos^2 and sin^2 = 1/2. */ 
+		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
+		file << AEnergyMode << endl;
+		complex LiftMode = Portance(u,"A"); 
+		cout << "#   Fy = " << real(LiftMode) << " * cos( omega t) + " << -imag(LiftMode) << " * sin( omega t) + "  << endl;
+		file << real(LiftMode) << " " << imag(LiftMode) << endl;
+		}
+		if(typeFlow=="SecondHarmonicMode")
+		{
+		cout << "#### customisable output for a HB-2 mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
+		real AEnergyMode = sqrt(int2d(th)(abs(u#x)^2+abs(u#y)^2));  /* here factor 1 because 2 half domaines and time-average of cos^2 and sin^2 = 1/2. */ 
+		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
+		file << AEnergyMode << endl;
+		complex DragMode = Trainee(u,"S"); 
+		cout << "#   Fx = " << real(DragMode) << " * cos( 2 omega t) + " << -imag(DragMode) << " * sin( 2 omega t) + "  << endl;
+		file << real(DragMode) << " " << imag(DragMode) << endl;
+		}
+		
+		
 		
 		};
 //EOM	

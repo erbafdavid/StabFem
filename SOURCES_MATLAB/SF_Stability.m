@@ -265,6 +265,7 @@ end
             tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
       'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
       ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
+%   tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
             set(h,'buttondownfcn',tt);
 
         end
