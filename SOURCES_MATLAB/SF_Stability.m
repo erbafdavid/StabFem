@@ -258,7 +258,7 @@ end
     if(strcmp(p.Results.PlotSpectrum,'yes')==1)
         figure(100);
         %%mycmp = [[0 0 0];[1 0 1] ;[0 1 1]; [1 1 0]; [1 0 0];[0 1 0];[0 0 1]]; %color codes for symbols
-        h=plot(imag(shift),real(shift),'o');hold on;
+        h=plot(real(shift),imag(shift),'o');hold on;
         for ind = 1:length(eigenvalues)
             h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
             %%%%  plotting command for eigenmodes and callback function
