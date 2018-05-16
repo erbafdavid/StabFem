@@ -28,8 +28,9 @@ global ff ffdir ffdatadir sfdir verbosity
 %    meshnp = importFFmesh('mesh_adapt.msh','nponly'); // old version to
 %    discard this and correct soon
      
+ meshinfo = importFFdata(baseflow.mesh,'mesh.ff2m');
      disp(['      ### SPLIT MESH : ']);
-    meshinfo = importFFdata(baseflow.mesh,'mesh_adapt.ff2m');
+  
     disp(['      #   Number of points np = ',num2str(meshinfo.np), ...
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
     disp(['      #  deltamin, deltamax : ',num2str(meshinfo.deltamin), ' , ',...
@@ -43,6 +44,8 @@ global ff ffdir ffdatadir sfdir verbosity
     baseflowNew.mesh=importFFmesh([ffdatadir 'mesh.msh']);
     
     baseflowNew = SF_BaseFlow(baseflowNew,'Re',baseflow.Re,'type','NEW');
+    
+     
     
     if(baseflowNew.iter>0)
 		%  Newton successful : store base flow

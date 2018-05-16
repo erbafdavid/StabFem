@@ -62,13 +62,13 @@ border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=bclat;}
                          /////// Just to check the borders
 /////////////////////////////////////////////////////////////////////////////////
 // Build a mesh 
-
-plot(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)+cylinder(-ns));
+//cout << "toto" << endl;
+//plot(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)+cylinder(-ns));
 
 mesh th=buildmesh(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)+cylinder(-ns));
 
-plot(th,wait=0);
-
+//plot(th,wait=0);
+//cout << "tata" << endl;
 
 // SAVE THE MESH in mesh.msh file 
 savemesh(th,ffdatadir+"mesh.msh");

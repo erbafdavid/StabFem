@@ -1,7 +1,7 @@
 //
 //  PROGRAM SelfConsistentDirect_2D.edp
 //	
-//	Solves directly the Self-Consistent equations to decribe the limit cycle with two time-Fourier modes
+//	Solves directly the Self-Consistent equations to decribe the limit cycle with a mean flow and a quasi-linear mode (Mantic-lugo et al)
 //   
 //  The flow is assumed as an expansion in the form : 	u = u_0 + [ u_{1,c} cos (omega t) + u_{1,s} sin (omega t) ] e^{lambda t}
 //  This expansion is equivalent to Mantic-Lugo et al : u = u_0 + A [U_1 e^{i omega t + i sigma t + cc] where u_1 is the complex self-consistent mode.
@@ -30,7 +30,6 @@
 
 
 //load "MUMPS_seq"
-
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
 string copyfile = "yes"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
@@ -96,18 +95,18 @@ macro Boundaryconditions(u1,u2,v1,v2,symmetry)
              + int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
 // 
 
-macro CLift(nu,u1,u2,p)   
+macro Lift(nu,u1,u2,p)   
 	(
-	int1d(th,2,21,22,23)(p*N.y)
-	+int1d(th,2,21,22,23)( -nu*(2*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x))
+	int1d(th,2,21,22,23)(2*p*N.y)
+	+int1d(th,2,21,22,23)( -nu*2*(2*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x))
 	)
-// Lift coefficient
-macro CDrag(nu,u1,u2,p)   
+// WARNING : HERE IT IS Lift FORCE
+macro Drag(nu,u1,u2,p)   
 	(
-	int1d(th,2,21,22,23)(p*N.x)
-	+int1d(th,2,21,22,23)( -nu*(2*dx(u1)*N.x+(dx(u2)+dy(u1))*N.y))
+	int1d(th,2,21,22,23)(2*p*N.x)
+	+int1d(th,2,21,22,23)( -nu*2*(2*dx(u1)*N.x+(dx(u2)+dy(u1))*N.y))
 	)
-// Drag coefficient
+// Drag FORCE
 
 macro EnergyNorm(u) sqrt( 2* int2d(th)(abs(u#x)^2+abs(u#y)^2) )
 // "Energy" norm for a real or complex field (factor 2 is because the whole domain is two halves)
@@ -133,7 +132,7 @@ cout << "starting  from mean flow in file MeanFlow_guess.txt" << endl;
 ifstream cbin(ffdatadir+"MeanFlow_guess.txt");
 cbin >> ubx[] >> Relu;
 if(Relu!=Re){ cout << "WARNING : Re not equal to that of the guess mean flow" << endl;};
-cout << "Drag coefficient of guess mean flow : " << CDrag(1/Re,ubx,uby,ubp) << endl;
+cout << "Drag force of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 }
 
 //int check=exec("head -1 "+ffdatadir+"SelfConsistentMode_guess.txt");
@@ -144,7 +143,7 @@ cout << "starting  from mode in file SelfConsistentMode_guess.txt" << endl;
 ifstream cbin(ffdatadir+"SelfConsistentMode_guess.txt");
 cbin >> u1x[] >> ReM >> sigmaM >> omegaM; 
 cout << " 			omega of the starting field = " << omegaM<< endl;
-cout << "           Cy of the starting field : " << CLift(1/Re,u1x,u1y,u1p) << endl;
+cout << "           Fy of the starting field : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 cout << "   		Energy-Norm (A) of starting field (complex macro) : " << EnergyNorm(u1)/sqrt(2) << endl;	
 [u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 
 [u1sx,u1sy,u1sp] = [-imag(u1x), -imag(u1y), -imag(u1p)];  
@@ -173,14 +172,14 @@ if(normalisation=="none")
 else if(normalisation=="L")
 	{
 		real Liftguess;
-		cout << "Value of Lift coefficient Cy for renormalisation ?"<< endl;
+		cout << "Value of Lift force Fy for renormalisation ?"<< endl;
 		cin >> Liftguess;
-		cout << "  -> Cy = " << Liftguess  << endl;
+		cout << "  -> Fy = " << Liftguess  << endl;
 
-		cout << "Cy before renormalisation : " << CLift(1/Re,u1x,u1y,u1p) << endl;
-		complex modenorm = CLift(1/Re,u1x,u1y,u1p);
+		cout << "Fy before renormalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5 and Cy 1
-			cout << "Cy after renarmalisation : " << CLift(1/Re,u1x,u1y,u1p) << endl;
+			cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 		    cout << "   ### Energy-norm A = " << EnergyNorm(u1)/sqrt(2) << endl << endl;	
 	
 	}	
@@ -192,12 +191,12 @@ else if(normalisation=="E")
 		cout << "  -> Energy = " << Eguess << endl;
 
 		cout << "Energy-norm before renormalisation : " << EnergyNorm(u1)/sqrt(2) << endl;
-		complex modenorm = CLift(1/Re,u1x,u1y,u1p);
+		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
 		modenorm = EnergyNorm(u1)/sqrt(2);
 		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that Energy-norm is specified value
 		cout << "Energy-norm after renarmalisation : " << EnergyNorm(u1)/sqrt(2) << endl;	
-		cout << "Cy after renarmalisation : " << CLift(1/Re,u1x,u1y,u1p) << endl;
+		cout << "Cy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 		};
 
 [u0x,u0y,u0p] = [ubx,uby,ubp]; 
@@ -320,18 +319,18 @@ varf LinOp34([du0x,du0y,du0p],[vx,vy,vp])
 
 // bloc 4-3 : to fix the phase by imposing Lift(u1s) = 0
 varf LinOp43([vx,vy,vp],[du1sx,du1sy,du1sp])	
-	= CLift(1/Re,du1sx,du1sy,du1sp);
+	= Lift(1/Re,du1sx,du1sy,du1sp);
 
 
 cout << " defining operators for linear term... done" << endl << endl;
 
 
-
+real tol = 1e-6;
 
 ///// BEGINING OF NEWTON LOOP
 real dXX = 1;
 int iter=1;
-while(abs(dXX)>1e-8&&abs(dXX)<1000&&iter<100)
+while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 	{ 
 	cout << endl << "Newton loop step " << iter << endl;
 
@@ -341,7 +340,7 @@ while(abs(dXX)>1e-8&&abs(dXX)<1000&&iter<100)
 	RHSF1 = NLOpF1(0,XXMh);
 	RHSF2 = NLOpF2(0,XXMh);
 	RHSF3 = NLOpF3(0,XXMh);	
-	real RHSF4 = CLift(1/Re,u1sx,u1sy,u1sp); 	
+	real RHSF4 = Lift(1/Re,u1sx,u1sy,u1sp); 	
 	
 	real[int] RHS = [RHSF1, RHSF2, RHSF3, RHSF4];		
 //	cout <<  " max RHS : " << RHSF1.l2 <<  ", " << RHSF2.l2 <<  ", " << RHSF3.l2 <<  ", " << RHSF4 << endl;
@@ -403,8 +402,8 @@ cout << " LU-ing matrix... done" << endl;
 
 	
 	cout <<  "   ### omega = " << omega << endl;
-	cout << "   ### Energy of perturbation A = " << EnergyNormCS(u1c,u1s)  << endl;	
-	cout << " 	### Cy = " << CLift(1/Re,u1cx,u1cy,u1cp) << endl ; 
+	cout << "   ### Energy-norm of perturbation A = " << EnergyNormCS(u1c,u1s)  << endl;	
+	cout << " 	### Fy = " << Lift(1/Re,u1cx,u1cy,u1cp) << endl ; 
 	//plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
 
 	iter++;
@@ -425,7 +424,7 @@ cout << " LU-ing matrix... done" << endl;
 	     << "HB MODEL : Newton Loop converged in " << iter << " iterations " << endl;
 	cout << " >>> Omegac = " << omega << endl;	
 	cout << " >>> Energy of perturbation A = " << EnergyNormCS(u1c,u1s)  << endl;	
-	cout << " >>> Cy = " << CLift(1/Re,u1cx,u1cy,u1cp) << endl ; 
+	cout << " >>> Fy = " << Lift(1/Re,u1cx,u1cy,u1cp) << endl ; 
 	
 /// GENERATES OUTPUT FILES
 
@@ -447,7 +446,7 @@ SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0,"MeanFlow",iter);
 };
 
 
-SFWriteMode(ffdatadir+".ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
+SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
 
 if(copyfile=="yes")
 {

@@ -15,7 +15,7 @@
 //load "BinaryIO"                //////// library to read/write binary files 
 // load "BinaryIO_64"
 //load "UMFPACK64"        ////////  load sparsesolver    
-load "MUMPS_seq"
+//load "MUMPS_seq"
 include "Macros_StabFem.edp";
 
 
@@ -410,8 +410,11 @@ XXMh [ubbx,ubby,ubbp] = [u1b,u2b,pb]; // ugly fix
 XXMh<complex> [umm1x,umm1y,umm1p] = [um1s,um2s,pms]; // ugly fix
 
  	 cout << "Writing eigenmode in file Eigenmode_threshold.ff2m" << endl;
-     SFWriteMode(ffdatadir+"Eigenmode_threshold.ff2m",um1s,um2s,pms,1i*omega,1i*omega,"EigenModeD",i)
- 		 
+//     SFWriteMode(ffdatadir+"Eigenmode_threshold.ff2m",um1s,um2s,pms,1i*omega,1i*omega,"EigenModeD",i)
+ 		string namefileFF=ffdatadir+"Eigenmode_threshold.ff2m";
+ 		string typeDA = "D";
+
+ 		SFWriteMode(namefileFF,umm1,1i*omega,1i*omegaM,"EigenMode"+typeDA,i); 
  		
 
 	};

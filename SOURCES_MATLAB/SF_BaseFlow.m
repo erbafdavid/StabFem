@@ -90,9 +90,9 @@ error = 'ERROR : SF_ base flow computation aborted';
     % recover base flow from previous adapted case 
     disp(['      ### FUNCTION SF_BaseFlow : recovering previous adapted mesh/baseflow for Re = ', num2str(Re)]);
     file = [ ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(Re) '.txt' ];
-         system(['cp ' file ' BaseFlow_guess.txt']);
+         system(['cp ' file ' ' ffdatadir 'BaseFlow_guess.txt']);
     file = [ ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(Re) '.msh' ];
-         system(['cp ' file ' mesh.msh']);
+         system(['cp ' file ' ' ffdatadir 'mesh.msh']);
     mysystem(solvercommand,error); %needed to generate .ff2m file
     mesh = importFFmesh('mesh.msh');
     mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
@@ -138,8 +138,8 @@ error = 'ERROR : SF_ base flow computation aborted';
  
 if(baseflow.iter>=1)
     message = ['      # Base flow converged in ',num2str(baseflow.iter),' iterations '];
-    if(isfield(baseflow,'Drag')==1) %% adding drag information for blunt-body wake
-        message = [message , '; Drag = ',num2str(baseflow.Drag)];
+    if(isfield(baseflow,'Fx')==1) %% adding drag information for blunt-body wake
+        message = [message , '; Fx = ',num2str(baseflow.Fx)];
     end    
     if(isfield(baseflow,'Lx')==1) %% adding drag information for blunt-body wake
         message = [message , '; Lx = ',num2str(baseflow.Lx)];

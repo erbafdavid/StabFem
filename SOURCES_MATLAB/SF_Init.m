@@ -36,7 +36,7 @@ else
     command = ['echo  '' ', stringparam, ' '' | ',ff,' ',meshfile];
 end
 
-error = 'ERROR : Freefem not working (path may be wrong, change variable ff in script)';
+error = 'ERROR : SF_Init not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
 mysystem(command,error);
 
    

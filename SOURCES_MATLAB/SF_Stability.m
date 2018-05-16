@@ -258,13 +258,14 @@ end
     if(strcmp(p.Results.PlotSpectrum,'yes')==1)
         figure(100);
         %%mycmp = [[0 0 0];[1 0 1] ;[0 1 1]; [1 1 0]; [1 0 0];[0 1 0];[0 0 1]]; %color codes for symbols
-        h=plot(imag(shift),real(shift),'o');hold on;
+        h=plot(real(shift),imag(shift),'o');hold on;
         for ind = 1:length(eigenvalues)
             h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
             %%%%  plotting command for eigenmodes and callback function
             tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
       'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
       ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
+%   tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
             set(h,'buttondownfcn',tt);
 
         end
