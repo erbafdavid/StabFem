@@ -1,0 +1,245 @@
+//////////////
+//load "UMFPACK64"
+load "iovtk"
+real[int] REYNOLDS=[1.0,10.0,20.0,40.0,70.0,100.0,120.0,130.0,140.0,150.0]; //Reynolds
+real [int] MM=[0.2]; //Mach
+include "Params.edp"; // info on labels and sponge
+// mach number
+real M=0.2;
+real Rey=REYNOLDS[0];
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+real gamma=1.4; 
+real Pr=0.7;
+load "MUMPS_FreeFem"
+load "scotch";
+load "./CPP_FUNCTIONS/BinaryIO_64";
+//load "../CPP_FUNCTIONS/BinaryIO_64";
+
+real ts;
+string ssparams = "nprow=1, npcol="+mpisize;
+//string ssparams="";//nprow="+npr+", npcol="+npc;
+bool fplot=false;
+int comp=0;
+
+//include "cyl_mesh.edp";
+mesh th;
+if(mpirank==0)
+  { 
+    th=readmesh(pht+namemesh);
+    int[int] nupart(th.nt);
+    nupart=0; 
+    if(mpisize>1)
+      scotch(nupart, th, mpisize);
+    th=change(th,fregion= nupart[nuTriangle]);
+    
+  }
+broadcast(processor(0),th); 
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//verbosity=10;
+//real Re=1.0;
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+real TOLLERANCENewton=1e-9;  /// tollerance of newton loop
+int NITERATIONNEWTLOOP=20;  //////////////  Max number of ITERATIONs --> Newton loop
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+bool InitSol=false;
+string nameoldsol="./Data/B_flow_Re150_M0.2.bin";
+string nameoldmesh=pht+"Mh.msh";
+if(mpirank==0)
+  {
+    cout << "------------------------------------------------------------------------"<< endl;
+    cout << "------------------------------------------------------------------------"<< endl;
+    cout << "----------------- Newton Solver -> Compressible NStokes ----------------"<< endl;
+    cout << "------------------------------------------------------------------------"<< endl;
+    cout << " Parameters : "<< endl;
+    cout << "    | Length of REYNOLDS ARRAY | Length of MACH array | gamma | Prandtl |     "<< endl;
+    cout << "    | " << REYNOLDS.n << "                        | " << MM.n << "            | " << gamma << "   | " << Pr <<"     | "<< endl;
+    cout << "------------------------------------------------------------------------"<< endl;
+    cout << "------------------------------------------------------------------------"<< endl;
+  }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+fespace XH2(th,P2);
+//fespace XH1(th,P1);
+//fespace XH0(th,P0);
+///////////////////////////////////////////////////////////////////////////////////////////////	
+fespace XXxxxH(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
+//fespace XXxH(th,[P2,P2,P1]);	     ///   vel P2 +press P1
+macro def(u,p,T,rho)[u#x,u#y,p,T,rho]//EOF
+  
+  XXxxxH def(du,dp,dT,drho);
+XXxxxH def(Ub,Pb,Tb,Rhob);
+XXxxxH def(Urif,Prif,Trif,Rhorif)=[1.0,0.0,1.0,1.0,1.0];
+
+XH2 AMPFORCE;
+//M=1.0;
+AMPFORCE=AmpSponge(M);
+
+if(InitSol)
+  {
+    mesh Tho=readmesh(nameoldmesh);
+    fespace Xho(Tho,[P2,P2,P1,P1,P1]);
+    Xho def(Uo,Po,To,Rhoo);
+    
+//    LoadVecPETSc(Uox[],nameoldsol,comp);
+    
+    def(Ub,Pb,Tb,Rhob)=def(Uo,Po,To,Rhoo);
+    if(mpirank==0)
+      cout<<"load initial solution"<<endl;
+    
+    if(fplot)
+      {
+	if(mpirank==0)
+	  plot(Ubx,value=1);
+      }
+    /*    
+    if(mpirank==0)
+    {
+    plot(pp,fill=1,value=1,cmm="load field p");
+    plot(uyp,fill=1,value=1,cmm="load field uy");
+    plot(uxp,fill=1,value=1,cmm="load field ux");
+    plot(Tp,fill=1,value=1,cmm="load field T");
+    }
+    */
+  }
+ else
+   Ubx[]=Urifx[];
+macro div(u) ((dx(u#x)+dy(u#y)))   //EOM
+  macro ugradf(u,f) ((u#x*dx(f)+u#y*dy(f)))    //
+//macro gradfgradf(f,f1) ((dx(f)*dx(f1)+dy(f)*dy(f1)))  //
+//macro strain(u1,u2,v1,v2) ((dx(u1)*dx(v1)+(1./2)*(dx(u2)+dy(u1))*(dx(v2)+dy(v1))+dy(u2)*dy(v2)))  //
+  macro termnonlinear(u,v,w) ((w#x*(u#x*dx(v#x)+u#y*dy(v#x))+w#y*(u#x*dx(v#y)+u#y*dy(v#y)))) //
+  macro Grad(u) [[dx(u#x),dx(u#y)],[dy(u#x),dy(u#y)]]//EOM
+  macro Strain(u)[[dx(u#x),0.5*(dx(u#y)+dy(u#x))],[0.5*(dx(u#y)+dy(u#x)),dy(u#y)]]//EOM
+  macro gradgrad(u,v)(dx(u)*dx(v)+dy(u)*dy(v))//EOM
+  
+  varf dirichlet(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=on(bcinlet,dux=1.0-Ubx,duy=0.0-Uby,dT=1.-Tb)
+  +on(bcoutlet,duy=0.0-Uby)
+  +on(bcnoslip,dux=0.0-Ubx,duy=0.0-Uby);
+
+
+varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank)(rhos*(drho*div(Ub)+Rhob*div(du)+ugradf(Ub,drho)+ugradf(du,Rhob)) 
+								       //mass equation
+								       -dp*div(us)+2.0/Rey*(Strain(du):Grad(us))-2.0/(3.0*Rey)*(div(du)*div(us))+Rhob*termnonlinear(du,Ub,us)+drho*termnonlinear(Ub,Ub,us)+Rhob*termnonlinear(Ub,du,us)
+								       //momentum
+								       +Ts*(drho*ugradf(Ub,Tb)+Rhob*ugradf(Ub,dT)+Rhob*ugradf(du,Tb)+(gamma-1)*(drho*Tb*div(Ub)+Rhob*dT*div(Ub)+Rhob*Tb*div(du))-gamma*(gamma-1.0)*M^2/Rey*(2.0*((Strain(du):Strain(Ub))+(Strain(Ub):Strain(du)))-2.0/3.0*(2.0*div(Ub)*div(du))))+gamma/(Pr*Rey)*gradgrad(dT,Ts)
+								       // energy
+								       +ps*(gamma*M^2*dp-(drho*Tb+Rhob*dT))
+								       )
+  +int2d(th,mpirank)(AMPFORCE*(usy*duy+usx*dux+Ts*dT+rhos*drho))
+  +dirichlet;
+
+
+varf vNs(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpirank)(rhos*(Rhob*div(Ub)+ugradf(Ub,Rhob))
+							   //mass equation
+							   -Pb*div(us)+2.0/Rey*(Strain(Ub):Grad(us))-2.0/(3.0*Rey)*(div(Ub)*div(us))+Rhob*termnonlinear(Ub,Ub,us)
+							   //momentum
+								   +Ts*(Rhob*ugradf(Ub,Tb)+(gamma-1.)*Rhob*Tb*div(Ub)-gamma*(gamma-1.0)*M^2/Rey*(2.0*((Strain(Ub):Strain(Ub)))-2.0/3.0*(div(Ub)*div(Ub))))+gamma/(Pr*Rey)*gradgrad(Tb,Ts)
+							   // energy
+							   +ps*(1.0+gamma*M^2*Pb-(Rhob*Tb))
+							   )
+  -int2d(th,mpirank)(AMPFORCE*(usy*(Uby-Urify)+usx*(Ubx-Urifx)+Ts*(Tb-Trif)+rhos*(Rhob-Rhorif)))
+  +dirichlet;
+
+
+
+
+
+
+
+real res,ener=1.;
+if(mpirank==0)
+  {
+    cout << " ................................................... "<< endl;	
+    cout << " ................................................... "<< endl;	
+  }
+int contout=0;
+for (int in=0;in<REYNOLDS.n;in++) 
+  {
+    ///////////////////////////////////////////////////////////////////////
+    Rey=REYNOLDS[in];
+    for (int iM=0;iM<MM.n;iM++)
+      {
+	M=MM[iM];
+	AMPFORCE=AmpSponge(M);
+	res=1.0;
+	ener=1.0;
+	contout++;
+	if(mpirank==0)
+	  {
+	    cout << " =============================================================== "<< endl;	
+	    cout << " Iteration "<<contout<<" of "<<REYNOLDS.n*MM.n<<endl;
+	    cout << " Rey: " << Rey << " M: "<<M   <<endl;        
+	    cout << " =============================================================== "<< endl;	
+	    cout << " =============================================================== "<< endl;	
+	  }
+	{ 
+	  int i=0;
+	  while((ener>TOLLERANCENewton)&(i<=NITERATIONNEWTLOOP))
+	    {
+	      ts=clock();
+	      
+	      matrix NewtLoc=jacobian(XXxxxH,XXxxxH);
+	      matrix Newt;
+	      mpiAllReduce(NewtLoc,Newt,mpiCommWorld,mpiSUM);
+	      if(mpirank==0)
+		cout<<"Matrix formed in "<<clock()-ts<<" s"<<endl;  
+	      real[int] rhsl= vNs(0,XXxxxH);
+	      real[int] rhs(Newt.n);
+	      mpiAllReduce(rhsl,rhs,mpiCommWorld,mpiSUM);
+	      set(Newt,solver=sparsesolver,sparams=ssparams);
+	      dux[] =  (Newt^-1*rhs);
+	      ener=sqrt(int2d(th)(duy^2+dux^2)); 
+	      if(mpirank==0)
+		{
+		  cout << "iter "<<i<<" | sqrt(int2d(th)(dux^2+duy^2)) = " << ener << endl;
+		}
+	      Ubx[]+=dux[];
+	      i++;
+	    }
+	  
+	  if(mpirank==0)
+	    {
+	      //cout << "p,T,rho,u,v at (5,0): " << pp(5,0) << " " << Tp(5,0) << " " << rhop(5,0) << " " << uxp(5,0) << " " << uyp(5,0) << endl;
+	      cout << " -------------------------------------------------------- "<< endl;	
+	      plot(Pb,fill=1,value=1,cmm="press");
+	      plot(Uby,fill=1,value=1,cmm="vel: y-component");
+	      plot(Ubx,fill=1,value=1,cmm="vel: x-component");
+	      plot(Tb,fill=1,value=1,cmm="Temp");
+	      plot(Rhob,fill=1,value=1,cmm="density");
+	      cout << " Newton iteration ok!"<< endl;
+	    }
+	  i++;
+	  {
+	    if(mpirank==0)
+	      {
+                int[int] forder=[1,1,1,1];
+		SaveVecPETSc(Ubx[],pht+"Bflow_Re"+Rey+"_M"+M+".bin",comp);
+savevtk(pht+"/Bflow_Re"+Rey+"_M"+M+".vtk",th,Pb,[Ubx,Uby,0],Tb,Rhob,order=forder,dataname="Pb vel temp rho");
+                    {
+                     if(mpirank==0)
+                                {
+		                         cout << "- writing "+pht+"B_flow_Re"+Rey+"_M"+M+".bin"<< endl;
+		                         ofstream file(pht+"B_flow_Re"+Rey+"_M"+M+".bin");
+                                 file << Ubx[];
+                                 cout << "all ok!" << endl;
+  }
+};
+
+	      }
+	  };
+	};
+      };
+  };
+
+
+
