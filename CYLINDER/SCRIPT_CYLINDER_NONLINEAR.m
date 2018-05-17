@@ -30,11 +30,8 @@ bf=SF_Adapt(bf,'Hmax',5);
 bf=SF_Adapt(bf,'Hmax',5);
 disp(' ');
 
-disp('mesh adaptation to MODE : ')
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D');
-[bf,em]=SF_Adapt(bf,em,'Hmax',10);
-mesh_completed = 1;
-end
+
+
 
 
 
