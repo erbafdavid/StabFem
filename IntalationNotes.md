@@ -1,4 +1,7 @@
 
+This page contains (in disorder) solutions for a few problems encountered by various users...
+
+
 ## Problem with Ubuntu and solution proposed by Romain Casta
 
 
@@ -24,3 +27,24 @@ concretement :
 
 sudo mv /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6 /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6ANS
 sudo ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6  /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6
+
+
+## Using Slepc on MAC
+
+Ussue not related with StabFem (Slepc not yet installed) but here are a few notes on how we eventually managed to run FreeFem with Slepc with Flavio !!!
+
+After installing PETSC and SLEPC 
+
+PETSC_DIR=/Users/fabred/petsc/           
+PETSC_ARCH=arch-darwin-c-debug
+SLEPC_DIR=/Users/fabred/slepc-3.9.0
+
+Then the examples can be launched in this way :
+
+FreeFem++-mpi -glut ffglut  laplace-2d-SLEPc.edp 
+
+An alternative syntax is :
+
+ff-mpirun -np 2  laplace-2d-SLEPc.edp -glut ffglut
+
+
