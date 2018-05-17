@@ -41,10 +41,15 @@ SLEPC_DIR=/Users/fabred/slepc-3.9.0
 
 Then the examples can be launched in this way :
 
-FreeFem++-mpi -glut ffglut  laplace-2d-SLEPc.edp 
+ff-mpirun -np 2  laplace-2d-SLEPc.edp -glut ffglut
+
+
 
 An alternative syntax is :
 
-ff-mpirun -np 2  laplace-2d-SLEPc.edp -glut ffglut
+FreeFem++-mpi -glut ffglut  laplace-2d-SLEPc.edp  (will actually run on only one processor)
+
+
+
 
 
