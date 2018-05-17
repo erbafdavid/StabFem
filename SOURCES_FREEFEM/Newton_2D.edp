@@ -105,7 +105,7 @@ problem NewtonIter([dux,duy,dup],[vx,vy,q]) =
 
 
 
-// sortie des résultats 
+// sortie des r?sultats 
 
 		if((ener>50)||(iter>Nitermax))
 		{
@@ -121,11 +121,10 @@ problem NewtonIter([dux,duy,dup],[vx,vy,q]) =
 		  file << endl << endl << Re;
 		  }; 
           exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt"); 
+         
+
           SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",iter); // file in .ff2ml format for StabFem driver
-          // plot 
-			//plot(ux,fill=1,wait=0,value=1,cmm="final U1");
-			//plot(uy,fill=1,wait=0,value=1,cmm="final U2");
-			//plot(p,fill=1,wait=0,value=1,cmm="final Pressure");
+
     
 		};
           

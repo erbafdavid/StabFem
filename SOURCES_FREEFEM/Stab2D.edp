@@ -91,7 +91,7 @@ fespace Xh(th,P2);             ////// f.e. space for vel.
 fespace Mh(th,P1);            ////// f.e. space for pressure
 fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
 XXMh<complex> [ux,uy,up];                 ///////  -> unknown for the Navier-Stokes problem
-XXMh [vx,vy,q];                 ///////  -> test for Navier-Stokes
+XXMh [vx,vy,q];                 ///////  -> test for Navier-Stokes (should be defined as complex ???)
 XXMh [Ubx,Uby,Pb];          ///////  -> Base Flow
 
 

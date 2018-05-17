@@ -8,17 +8,17 @@ if(exist('Rec')==1)
 else 
 %%% DETERMINATION OF THE INSTABILITY THRESHOLD
 disp('COMPUTING INSTABILITY THRESHOLD');
-baseflow=SF_BaseFlow(baseflow,'Re',50);
-[ev,em] = SF_Stability(baseflow,'shift',+.75i,'nev',1,'type','S');
-[baseflow,em]=SF_FindThreshold(baseflow,em);
-Rec = baseflow.Re;  Cxc = baseflow.Cx; 
-Lxc=baseflow.Lx;    Omegac=imag(em.lambda);
+bf=SF_BaseFlow(bf,'Re',50);
+[ev,em] = SF_Stability(bf,'shift',+.75i,'nev',1,'type','S');
+[bf,em]=SF_FindThreshold(bf,em);
+Rec = bf.Re;  Cxc = bf.Cx; 
+Lxc=bf.Lx;    Omegac=imag(em.lambda);
 
 end
 
-baseflow=SF_BaseFlow(baseflow,Rec);
-[ev,em] = SF_Stability(baseflow,'shift',em.lambda,'type','S','nev',1);
-wnl = SF_WNL(baseflow);
+bf=SF_BaseFlow(bf,Rec);
+[ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
+wnl = SF_WNL(bf);
 
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);

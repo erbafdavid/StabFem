@@ -916,6 +916,66 @@ $$
 %Figure 1 gives a retranscription of the sequence of commands (from {\em SCRIPT\_CYLINDER\_ADAPTMESH\_BASEFLOW}) 
 %and the output produced.
 
+\begin{table*}
+$$
+\begin{array}{|c||c|c|c|c|c|c|c|c|c|}
+\hline
+\mbox{Mesh} & N_v & N_{ddl} & \delta_{min} & \delta_{max} & \delta_A  & \delta_B  & \delta_C  & \delta_D  \\
+\hline
+\mathbf{M}_0 \mbox{(Adapt on base flow) } & 1429 & 		& 0.0131 & 14.33 		& 0.0259 	& 0.514 	& 0.819 	& 1.067 \\   
+\mathbf{M}_1 \mbox{(Adapt on sensitivity) } & 2038 & 		& 0.0155 & 14.17 		& 0.02826 & 0.2046 	& 0.3909 	& 1.2014 	\\
+\mathbf{M}_2 \mbox{(Adapt on sensitivity, split) } & 7974 &		& 0.0077 & 7.1  		& 0.014 	& 0.1 	&   0.2 	& 0.6   \\
+\mathbf{M}_3 \mbox{(Adapt on mode) } 	& 12080  &			&0.00825	& 124.61		& 0.0229	& 0.143	& 0.0993	& 0.0934 \\
+\mathbf{M}_4 \mbox{(Adapt on adjoint) } 	& 11564 	&		& 0.0091	& 14.14		& 0.0228	& 0.130	& 0.109	& 0.0796  \\
+\hline
+\end{array}
+$$
+\caption{Description of meshes used for validation of mesh adaptation strategy}
+\end{table*}
+
+
+\begin{table*}
+$$
+\begin{array}{|c||c|c||c||c|c||c|c|c|}
+\hline
+\mbox{Mesh} & L_x & F_x & \lambda & L_{x,SC} & F_{x,SC} & \omega_{SC}  & F_{Y,SC} & A_{E,SC} \\
+\hline
+\mathbf{M}_0 & 4.0733 & 0.6431 	& 0.047056 + 0.74416i 		& 2.6073  &0.69277 		&  0.84334 & 0.1298 & 1.8301  \\
+\mathbf{M}_1 & 4.075 &.  0.64348  	& 0.046719 + 0.74489i 		& 2.          & 0.69246 	& 0.84351 & 0.12789 & 1.7134 \\  
+\mathbf{M}_2 & 4.0772 & 0.64391 	& 0.04684. +  0.74511i 		& 2.6141  & 0.69338 	& 0.84383 & 0.12799 & 2.048   \\ 
+\mathbf{M}_3 & 4.0748 & 0.64402 	& 0.04676  + 0.74502i 		& 2.613 	& 0.690338 	& 0.84371 & 0.12809 & 2.5905 \\
+\mathbf{M}_4 & 4.0772 & 0.64384	& 0.046857+0.74511i 		& 2.6146 	& 0.6932		& 0.84333 & 0.1276	 & 2.5971 \\
+\hline
+\end{array}
+$$
+\caption{Results for mesh adaptation strategy ($Re = 60$)}
+\end{table*}
+
+
+
+
+
+\begin{table*}
+$$
+\begin{array}{|c|c||c|c||c||c|c||c|c|c|}
+\hline
+\mbox{Mesh} & N & L_x & F_x & \lambda & L_{x,SC} & F_{x,SC} & \omega_{SC}  & F_{Y,SC} & A_{E,SC} \\
+\hline
+\mathbf{M}_2 \mbox{(ref)} 	& 7974  	& 4.0772 & 0.64391 	& 0.04684. +  0.74511i 	& 2.6141  & 0.69338 	& 0.84383 & 0.12799 & 2.048   \\ 
+
+
+\mathbf{M}_5 [-20,40]x[0,20] 	& 7437	&  4.108 & 0.64987 	& 0.048368. +  0.74952i 	& 2  & 0.69957 	& 0.85015 & 0.13125 & 2.3638   \\ 
+\mathbf{M}_6 [-80,160]x[0,80] 	& 7480	& 4.0641 & 0.64129		& 0.046271 + 0.74341i 	& 2 	& 0.69069 	& 0.84159 & 0.12653 & 2.4453 \\
+\mathbf{M}_7 \mbox{(slip conditions)}	 & 7056	& 4.0467 &0.66295		& 0.049216+0.76553i 	& 2 	& 0.69241		& 0.8438  & 0.12716	 & 2.3202 \\
+\hline
+\end{array}
+$$
+\caption{Results for mesh adaptation strategy ($Re = 60$)}
+\end{table*}
+
+
+
+
 
 
 

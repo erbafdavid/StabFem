@@ -19,12 +19,12 @@ bf.mesh.xlim=[-3,H];bf.mesh.ylim=[0,4]; % these ranges will be used for all plot
 % computation of base flow with increasing Re
 for Re = [10 30 60 80 100 150 200 250 300]
     bf = SF_BaseFlow(bf,'Re',Re);
-    bf = SF_Adapt(bf);
+  %  bf = SF_Adapt(bf);
 end
 
 % Adaptation to the structure of an eigenmode 
-[ev,em] = SF_Stability(bf,'nev',1,'shift',0.005+0.i,'k',2,'type','S')
- bf = SF_Adapt(bf,em);
+[ev,em] = SF_Stability(bf,'nev',1,'shift',0.005+0.i,'k',2,'type','D')
+% bf = SF_Adapt(bf,em);
   
 end
 % a few plots
