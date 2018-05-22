@@ -1,23 +1,44 @@
-function [wnl,meanflow,selfconsistentmode,secondharmonicmode] = SF_WNL(baseflow,varargin);
+function [wnl,meanflow,selfconsistentmode,secondharmonicmode] = SF_WNL(baseflow,eigenmode,varargin);
 %
 % Matlab/FreeFem driver for computation of weakly nonlinear expansion
 % This is part of the StabFem project, version 2.1, july 2017, D. Fabre
 %
-% BASIC usage : wnl = SF_WNL(baseflow);
-%    return is a structure with fields wnl.lambda, wnl.mu, wnl.a, etc..
+% ONE-OUTPUT usage : wnl = SF_WNL(baseflow , eigenmode, {'param','value'} );
+%    output is a structure with fields wnl.lambda, wnl.mu, wnl.a, etc..
+%    'baseflow' should be a base-flow structure corresponding to the critical Reynolds
+%     number. 'eigenmode' should be the corresponding neutral mode. 
 %
-% Improved usage : [wnl,meanflow,selconsistentmode] = SF_WNL(baseflow,'Retest',Re)
+%  the optional parameters (couple of 'param' and 'value') may comprise :
+%   'Normalization'  -> can be 'L' (lift), 'E' (energy of perturbation), 
+%                       'V' (velocity a one point), or 'none' (no normalization). Default is 'L'.
+%   'AdjointType',   -> can be 'dA' for discrete adjoint or 'cA' for continuous adjoint (default 'dA')
+%   'Retest'         -> Value of Reynolds number to generate a "guess" for the
+%                     SC-HB methods (useful in three-output and four-output usage, see below)
+%
+% THREE-OUTPUT USAGE : [wnl,meanflow,selconsistentmode] = SF_WNL(baseflow,eigenmode,[option list])
 % this will create an estimation of the meanflow and quasilinear mode, for
 % instance to initiate the Self-Consistent model. Ideally the value of Retest
 % should be slightly above the threshold.
 %
-% other Improved usage : [wnl,meanflow,selconsistentmode,secondharmonicmode] = SF_WNL(baseflow,'Retest',Re)
+% FOUR-OUTPUT USAGE : [wnl,meanflow,selconsistentmode,secondharmonicmode] = SF_WNL(baseflow,eigenmode,[option list])
+%
+% IMPLEMENTATION : 
+% according to parameters this generic driver will launch one of the 
+% following FreeFem programs :
+%      WeaklyNonLinear_2D.edp
+%      WeaklyNonLinear_Axi.edp
+%      ( WeaklyNonLinear_BirdCall.edp : version to be abandonned)
+% 
+% TODO : 
+% 
+
 
 global ff ffdir ffdatadir sfdir 
 
  p = inputParser;
    addParameter(p,'Retest',-1,@isnumeric);
    addParameter(p,'Normalization','L');
+   addParameter(p,'AdjointType','dA');
    parse(p,varargin{:});
 
 
@@ -32,9 +53,7 @@ end
 end
 
 if(strcmp(baseflow.mesh.problemtype,'2D')==1)
-    
-    ['echo  '  p.Results.Normalization ' ' num2str(p.Results.Retest) ' | ' ff ' ' ffdir 'WeaklyNonLinear_2D.edp '  ]
-     [status]=system(['echo '  p.Results.Normalization ' ' num2str(p.Results.Retest) ' | ' ff ' ' ffdir 'WeaklyNonLinear_2D.edp '  ]);
+     [status]=system(['echo '  p.Results.Normalization ' '  p.Results.AdjointType ' ' num2str(p.Results.Retest) ' | ' ff ' ' ffdir 'WeaklyNonLinear_2D.edp '  ]);
 end
 
 

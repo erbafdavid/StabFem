@@ -12,11 +12,14 @@ bf = SF_Init('Mesh.edp',[]);
 bf.mesh.xlim=[-5,10];bf.mesh.ylim=[-8,8];
 plotFF(bf,'ux');
 
+bf = SF_BaseFlow(bf,'Re',1,'Mach',0.2);
 
 
-system('ff-mpirun -np 2 Newton_2D_Comp.edp'); 
-bf = importFFdata(bf.mesh,'BaseFlow.ff2m');
-plotFF(bf,'ux');
+
+
+%system('ff-mpirun -np 2 Newton_2D_Comp.edp'); 
+%bf = importFFdata(bf.mesh,'BaseFlow.ff2m');
+%plotFF(bf,'ux');
 % This first basic integration works, FANTASTICO !
 
 

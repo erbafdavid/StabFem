@@ -18,7 +18,7 @@ end
 
 bf=SF_BaseFlow(bf,Rec);
 [ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
-wnl = SF_WNL(bf);
+wnl = SF_WNL(bf,em);
 
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);

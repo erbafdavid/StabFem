@@ -156,11 +156,11 @@ switch tit
         disp('NB : at the moment this will work only for steady, m=1 bifurcation');
         disp(['Rec = ', num2str(Rec)]);
         bf=SF_BaseFlow(bf,'Re',Rec);
-        [evD,eigenmodeD]=SF_Stability(bf,'m',m,'shift',0,'nev',1);
-        eigenmodeD
-        [evA,eigenmodeA]=SF_Stability(bf,'m',m,'shift',0,'type','A','nev',1);
-        eigenmodeA
-        wnl = SF_WNL(bf)
+ %       [evD,eigenmodeD]=SF_Stability(bf,'m',m,'shift',0,'nev',1);
+ %       eigenmodeD
+        [ev,eigenmode]=SF_Stability(bf,'m',m,'shift',0,'type','S','nev',1);
+%        eigenmodeA
+        wnl = SF_WNL(bf,eigenmodeD)
         
     % plot 'linear' parts of the results on the drag/re and sigma/re curves
         

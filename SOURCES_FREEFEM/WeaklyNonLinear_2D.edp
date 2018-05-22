@@ -29,13 +29,19 @@ include "Macros_StabFem.edp";
 
 
 string normalisation;
-cout << " Normalisation choice ?  [none, L or E]" << endl;
+cout << " Normalisation choice ?  [none, L, E or V] " << endl << "         ( V = Velocity at on point (S&L) ; E = Energy (Mantic-lugo), L = lift force )" << endl;
 cin >> normalisation ;
 cout << " --> " << normalisation << endl;
 
+string AdjointType;
+cout << " What kind of adjoint ?  [dA or cA] " << endl 
+<< "           ( dA for discrete adjoint ; cA for continuous adjoint )" << endl;
+cin >> AdjointType ;
+cout << " --> "  << AdjointType << endl;
+
 real Recheck;
-cout << " Give a value of Reynolds number to evaluate the predictions of the model and generate baseflow/selfconsistent files ? " 
-		<< endl << "       (type -1 if you don't want an evaluation)" << endl;
+cout << " Give a value of Reynolds number to generate 'guess'  fields for selfconsistent/HarmonicBalance  ? " 
+		<< endl << "       (type -1 if you don't want this)" << endl;
 cin >> Recheck;
 cout << " --> " << Recheck << endl;
 
@@ -149,16 +155,19 @@ if(normalisation=="none")
 	{ cout << " -> No normalization for the mode " << endl;}
 else if(normalisation=="L")
 	{
-		real Liftguess = 1;
+		cout << " -> Normalisation of mode based on LIFT  " << endl;
+		real Liftguess = 0.5; // normalize so that lift is 0.5 ; total lift (including cc) is 1 ; lift coef. is .5
+		
 		cout << "  -> Fy = " << Liftguess  << endl;
 
 		cout << "Fy before renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
-		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5
+		u1x[] = Liftguess/modenorm*u1x[]; 
 			cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
 	}	
 else if(normalisation=="E")
 		{
+		cout << " -> Normalisation of mode based on ENERGY OF PERTURBATION (Mantic-lugo convention)  " << endl;
 		real Eguess = 1;
 		cout << "  -> Energy = " << Eguess << endl;
 
@@ -167,6 +176,15 @@ else if(normalisation=="E")
 		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
 		modenorm = 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2));
 		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that || ums ||_L2 = 1/sqrt(2)
+		cout << "Energy after renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
+		}
+else if(normalisation=="V")
+		{
+			cout << " -> Normalisation of mode based on velocity at one point (Sipp & lebedev convention)  " << endl;
+		complex Vpoint = u1y(1,0); // convention of Sipp & Lebedev
+		cout << "Energy before renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
+		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
+		u1x[] = 0.4612/Vpoint*u1x[];  // convention of Sipp & Lebedev
 		cout << "Energy after renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
 		};
 
@@ -214,7 +232,33 @@ cout << " Fx associated to order A^2  : " << FxA22 << endl;
 /////// ORDER 3
 cout << " Computing coeffs at order 3 :" << endl;
 
-complex Cn = int2d(th)(u1ACx*u1x+u1ACy*u1y);
+
+
+complex Cn;
+
+if(AdjointType=="cA") // continuous adjoint
+{
+Cn = int2d(th)(u1ACx*u1x+u1ACy*u1y);
+}
+else if(AdjointType=="dA") 
+{
+//Cn = u1ACx[]'*u1x[];  //// FLAVIO IS THAT REALLY WHAT YOU MEAN ???? I HAVE A DOUBT because this way of doing the product also involves the pressure components ...
+
+// FOR ME THE BEST WAY WOULD BE :
+
+// 
+//     varf b([ux,uy,up],[vx,vy,q]) = int2d(th)( (ux*vx+uy*vy) );
+//		matrix<complex> B= b(XXMh,XXMh,solver=CG);  //////// see freefem++doc.pdf for the solver
+//      Cn = u1ACx[]'*(B*u1x[]);     
+//      which is at the end equivalent to the continous product. Hence I keep
+Cn = int2d(th)(u1ACx*u1x+u1ACy*u1y);
+// FLAVIO WHAT DO YOU THINK ???
+
+}
+;
+
+
+
 
 cout << " Cn : " << Cn << endl;
 
@@ -235,7 +279,7 @@ cout << endl << "  >>  Amplitude :  A = " << AAA << " * epsilon^(1/2) " << endl;
 cout << "  >>  In terms of Energy = " << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << " * eps " << endl;
 cout << "  >>  In terms of Lift force : Fy = [" << AAA*FyA1 << " exp(i omega0 t) + c.c. ] * eps" << endl;
 cout << "                             : Fy = " << real(AAA*FyA1*2) << " cos(omega0 t) + " 
-                                                     << -imag(AAA*FyA1*2) << " ] * eps" << endl;
+                                                     << -imag(AAA*FyA1*2) << " sin(omega0 t) ] * eps" << endl;
 
 cout << " >> Drag force  = Fx0 + Fxeps2 * eps^2 + FxA20 *|A|^2 + |A^2| * [FxA22 exp(2 i omega0 t ) + c.c. ]"  << endl;
 cout << "                      = " << Fx0 << " + " << Fxeps2 << " * eps + << " << -FxA20 << " * |A|^2 + [" << FxA22 << " exp(2 i omega0 t) + c.c.] |A|^2 "  << endl << endl;
@@ -253,7 +297,7 @@ real omegaNL;
 if(Recheck>0)
 {
 
-cout << endl<< endl << " #####  CHECK FOR Re = " << Recheck << " ############" << endl;
+cout << endl<< endl << " #####  EVALUATION FOR Re = " << Recheck << " AND GENERATION OF guesses for nonlinear approaches ############" << endl;
 cout << "  >>  Amplitude :  A = " << AAA*epsilonTT  << endl;
 cout << "  >>  In terms of Energy = " << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2))*epsilonTT << endl;
 cout << "  >>  In terms of Lift force : Fy = [" << AAA*FyA1*epsilonTT << " exp(i omega0 t) + c.c. ]" << endl;

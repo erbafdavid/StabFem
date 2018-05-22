@@ -29,11 +29,11 @@ bf=SF_BaseFlow(bf,'Re',60);
 bf=SF_Adapt(bf,'Hmax',5);
 bf=SF_Adapt(bf,'Hmax',5);
 disp(' ');
-
-
-
-
-
+disp('mesh adaptation to SENSITIVITY : ')
+[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
+[bf,em]=SF_Adapt(bf,em,'Hmax',10);
+mesh_completed = 1;
+end
 
 
 %%% CHAPTER 2 : determining instability threshold
@@ -59,7 +59,7 @@ end
 %%% CHAPTER 3 : computation of weakly nonlinear expansion
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
-[wnl,meanflow,mode] = SF_WNL(bf,'Retest',47.); % Here to generate a starting point for the next chapter
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.); % Here to generate a starting point for the next chapter
 
 %%% PLOTS of WNL predictions
 

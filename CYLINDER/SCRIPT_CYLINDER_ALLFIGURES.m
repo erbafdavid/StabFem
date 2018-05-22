@@ -206,7 +206,7 @@ end
 
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
-[wnl,meanflow,mode] = SF_WNL(bf,'Retest',47.); % Here to generate a starting point for the next chapter
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.); % Here to generate a starting point for the next chapter
 
 %%% PLOTS of WNL predictions
 

@@ -57,7 +57,7 @@ include "Macros_StabFem.edp";
 	cout << " Symmetry properties ?? (A, S or N)" << endl;
 	cin >> symmetry;
 	string iadjoint; // 0 for direct ; 1 for adjoint
-	cout << " Direct (D), Adjoint (A), or both+sensitivity (S) ?" << endl;
+	cout << " Direct (D), Adjoint (A), continusous adjoint (cA), D&A+sensitivity (S), D&A(c)+sentitivity (cS) ?" << endl;
 	cin >> iadjoint;	
 
 	int nev;
@@ -69,14 +69,19 @@ include "Macros_StabFem.edp";
 	cout << " ### PARAMETERS SELECTED : " << endl;
 	cout << " Re = " << Re<< endl;
 	cout << " shift = " << shift << endl;
-	if (symmetry =="S") {cout << " Symmetric modes" << endl;}
-		else if (symmetry =="A") {cout << " Antiymmetric modes" << endl;}	
-		else if (symmetry =="N") {cout << " No symmetry axis" << endl;};	
 	
-	if (iadjoint =="D") {cout << " DIRECT PROBLEM" << endl;}
-		else if (iadjoint =="A") {cout << " ADJOINT PROBLEM" << endl;}
-		else if (iadjoint =="S") {cout << " DIRECT+ADJOINT PROBLEM INCLUDING SENSITIVITY" << endl;}
-		else {cout << " ERROR WHEN SELECTING PROBLEM TYPE" << endl;};
+		if (symmetry =="S") {cout << " Symmetric modes" << endl;}
+		else if (symmetry =="A") {cout << " Antiymmetric modes" << endl;}	
+		else if (symmetry =="N") {cout << " No symmetry axis" << endl;}
+		;	
+	
+		if (iadjoint =="D") {cout << " DIRECT PROBLEM" << endl;}
+		else if (iadjoint =="A") {cout << " ADJOINT PROBLEM (discrete)" << endl;}
+		else if (iadjoint =="cA") {cout << " ADJOINT PROBLEM (continuous)" << endl;}
+		else if (iadjoint =="S") {cout << " DIRECT+ADJOINT (discrete) PROBLEM INCLUDING SENSITIVITY" << endl;}
+		else if (iadjoint =="cS") {cout << " DIRECT+ADJOINT (continuous) PROBLEM INCLUDING SENSITIVITY" << endl;}
+		else {cout << " ERROR WHEN SELECTING PROBLEM TYPE" << endl;}
+		;
 	
 	cout << " nev = " << nev << endl;
 	
@@ -128,7 +133,6 @@ cbin >> Ubx[];
 varf   LNSE ([ux,uy,up],[vx,vy,q]) =
    int2d(th)( 
    			-2*nu*(D(u):D(v))
-   			/* Diffusion(nu,ux,uy,vx,vy)*/
              + up*q*(eps) 
              + up*div(v)
              + div(u)*q
@@ -136,11 +140,13 @@ varf   LNSE ([ux,uy,up],[vx,vy,q]) =
              )
  + int2d(th)( -shift*(ux*vx+uy*vy) )
  + BoundaryconditionsStability(u,v,symmetry);
+
+
+//// FLAVIO please check the following definitions and give the right form for the discrete and continuous adjoint problems 
  
-varf   LNSEadjoint ([ux,uy,up],[vx,vy,q]) =
+varf   LNSEadjointDiscrete ([ux,uy,up],[vx,vy,q]) =
    int2d(th)( 
    			-2*nu*(D(u):D(v))
-            //Diffusion(nu,ux,uy,vx,vy)
              + up*q*(eps) 
              + up*div(v)
              + div(u)*q
@@ -149,6 +155,20 @@ varf   LNSEadjoint ([ux,uy,up],[vx,vy,q]) =
  + int2d(th)( -conj(shift)*(ux*vx+uy*vy) ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
  + BoundaryconditionsStability(u,v,symmetry); 
 
+
+
+varf   LNSEadjointContinuous ([ux,uy,up],[vx,vy,q]) = // duplication of the previous one, flavio please act here !
+   int2d(th)( 
+   			-2*nu*(D(u):D(v))
+             + up*q*(eps) 
+             + up*div(v)
+             + div(u)*q
+             - Conv(v,Ub,u)
+             )
+ + int2d(th)( -conj(shift)*(ux*vx+uy*vy) ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
+ + BoundaryconditionsStability(u,v,symmetry); 
+
+// FLAVIO : PLEASE
 
 
 
@@ -163,22 +183,8 @@ complex shiftOP,shiftOPA;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if(nev>1)
-/// SOLUTION AND POSTPROCESSING FOR NEV>1 (built-in eigenvalue solver)
+/// SOLUTION AND POSTPROCESSING FOR NEV>1 (Arnoldi eigenvalue solver)
 
 {
 
@@ -186,8 +192,11 @@ if(nev>1)
 if(iadjoint=="D")
 { OP=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = shift; }
 else if(iadjoint=="A")
-{ OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
-else if(iadjoint=="S") { cout << " WARNING : in this program option S will work only for nev=1" << endl; };
+{ OP=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
+else if(iadjoint=="cA")
+{ OP=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
+else if(iadjoint=="S"||iadjoint=="cS") { cout << " WARNING : in this program option S will work only for nev=1" << endl; }
+;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -282,11 +291,22 @@ else if(iadjoint=="A")
 	directadjointA = 2; directadjointB=2;
 	cout << "Shift-invert algorithm for ADJOINT problem" << endl;
 	}
+else if(iadjoint=="cA")
+	{
+	directadjointA = 0; directadjointB=0;
+	cout << "Shift-invert algorithm for ADJOINT problem (continuous)" << endl;	
+	}
 else if(iadjoint=="S")
 	{
 	directadjointA = 1; directadjointB=2;
-	cout << "Shift-invert algorithm for BOTH DIRECT AND ADJOINT problem" << endl;
-	};
+	cout << "Shift-invert algorithm for BOTH DIRECT AND ADJOINT(discrete) problem" << endl;
+	}
+else if(iadjoint=="cS")
+	{
+	directadjointA = 0; directadjointB=1;
+	cout << "Shift-invert algorithm for BOTH DIRECT AND ADJOINT(continuous) problem" << endl;
+	};	
+	
 	
 
 // LOOP TO SELECT WHICH COMPUTATION WILL BE DONE 
@@ -302,8 +322,15 @@ else if(iadjoint=="S")
 	}
 	else if(directadjoint==2)
 	{
-		cout << " Constructing operator for ADJOINT problem ..." << endl;
-		OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver);
+		cout << " Constructing operator for ADJOINT(discrete) problem ..." << endl;
+		OP=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver);
+		shiftOP = conj(shift);
+		cout << "solving ADJOINT problem ..." << endl;
+	}
+	else if(directadjoint==0)
+	{
+		cout << " Constructing operator for ADJOINT(continuous) problem ..." << endl;
+		OP=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver);
 		shiftOP = conj(shift);
 		cout << "solving ADJOINT problem ..." << endl;
 	};
@@ -343,8 +370,8 @@ else if(iadjoint=="S")
 		lambda0 = lambda;
 	};
 	/// END ITERATION LOOP	
-	
-	if(directadjoint==2){lambda=conj(lambda);};
+//	cout << "ttoto" << endl ;
+	if(directadjoint==2||directadjoint==0){lambda=conj(lambda);};
  	// renormalization by MAXIMUM
  	Xh NormU = sqrt(abs(ux)^2+abs(uy)^2);
 	ux[] = 1/NormU[].max*ux[];
@@ -366,7 +393,7 @@ else if(iadjoint=="S")
     		uxdirect[]=ux[];
     	};
     	
-    	if(directadjoint==2)
+    	if(directadjoint==2||directadjoint==0)
     	{
     		ofstream fileVP(ffdatadir+"Spectrum.txt");
            	fileVP << lambdar << " " << lambdai << " " << Re << " " << real(shift) << " " << imag(shift) << endl;
@@ -403,7 +430,7 @@ if (testCB==0)
 
 }; //end of loop for direct/adjoint/selection
 
-if(iadjoint=="S")
+if(iadjoint=="S"||iadjoint=="cS")
 //
 {
 cout << "Computation of sensitivity after direct and adjoint" << endl;
@@ -411,10 +438,32 @@ cout << "Computation of sensitivity after direct and adjoint" << endl;
 //	cout << "STAT" << uxdirect(2.5,.5) << " " << uxadjoint(2.5,.5) << " " << uydirect(2.5,.5) << " " << uyadjoint(2.5,.5) << endl ;
 
 	fespace p2(th,P2);fespace p1(th,P1);
-	p2 sensitivity = sqrt(abs(uxadjoint)^2+abs(uyadjoint)^2) * sqrt(abs(uxdirect)^2+abs(uydirect)^2);
+	p2 sensitivity;
+	
+	
+	/// FLAVIO PLEASE CHECK THIS !!!
+	
+	if(iadjoint=="S") // sensitivity based on DISCERETE ADJOINT 
+	{
+	sensitivity = sqrt(abs(uxadjoint)^2+abs(uyadjoint)^2) * sqrt(abs(uxdirect)^2+abs(uydirect)^2);
 	// at this stage [ux,uy,p] is the last computed, namely the adjoint eigenmode
 	real norm = sensitivity[].max;
 	sensitivity=1/norm*sensitivity;
+	// Flavio is that correct ???
+	}
+	
+	else if(iadjoint=="cS") // sensitivity based on CONTINUOUS ADJOINT 
+	{
+	sensitivity = sqrt(abs(uxadjoint)^2+abs(uyadjoint)^2) * sqrt(abs(uxdirect)^2+abs(uydirect)^2);
+	// at this stage [ux,uy,p] is the last computed, namely the adjoint eigenmode
+	real norm = sensitivity[].max;
+	sensitivity=1/norm*sensitivity;
+	// Flavio is that correct ???
+	};
+
+
+
+
 		
 	string namefile,namefileFF;
     namefile=ffdatadir+"Sensitivity.txt";

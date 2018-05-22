@@ -2,25 +2,26 @@
 //  PROGRAM SelfConsistentDirect_2D.edp
 //	
 //	Solves directly the Self-Consistent equations to decribe the limit cycle with two time-Fourier modes
+//
+//. In development, not yet fully validated
 //   
-//  The flow is assumed as an expansion in the form : 	u = u_0 + [ u_{1,c} cos (omega t) + u_{1,s} sin (omega t) ] e^{lambda t}
-//  This expansion is equivalent to Mantic-Lugo et al : u = u_0 + A [U_1 e^{i omega t + i sigma t + cc] where u_1 is the complex self-consistent mode.
-// 	The connection between both parametrizations is u_{1,c} - i u_{1,s} = 2 A u_1 where u_1 is normalised with ||u_1|| = 1/sqrt(2). 
+//  The flow is assumed as an expansion in the form : 	u = u_0 + [ u_{1,c} cos (omega t) + u_{1,s} sin (omega t) ] + [ u_{2,c} cos ( 2 omega t) + u_{2,s} sin ( 2 omega t) ]
 //
 //  INPUT PARAMETERS (from keyboard or pipe) :
-//   	Re , omega_guess, sigma, typenormalization [,norm] 
-//
-//       the "sigma" parameter is the amplification rate in the SC model of Mantic-Lugo ; if zero it reduces to a simple truncated fourier expansion	
+//   	Re 
 //
 //	INPUT FILES :
 //		MeanFlow_guess.txt				-> starting field for mean-flow (real) 
 //      SelfConsistentMode_guess.txt 	-> starting field for self-consistent mode (stored as COMPLEX ; real and imaginary parts are u1,c and -u1,s)
+//.     SecondHarmonicMode_guess.txt	-> starting field for second harmonic (stored as COMPLEX ; real and imaginary parts are u2,c and -u2,s)
 // 		mesh.msh 						->  mesh in Freefem format
 //  OUTPUT FILES :
 //		MeanFlow.txt					-> Converged mean flow (real)
 //		MeanFlow.ff2m					
 //      SelfConsistentMode.txt			-> Converged self-consistent mode (stored as COMPLEX with same convention) 
 //      SelfConsistentMode.ff2m 
+//      SecondHarmonicMode.txt
+//      SecondHarmonicMode.ff2m
 //
 // 	ERROR MANAGEMENT : 
 //      if Newton iteration diverges, SelfConsistentMode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.

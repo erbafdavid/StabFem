@@ -51,6 +51,7 @@ end
 %%% check which parameters are transmitted to varargin (Mode 1) 
     p = inputParser;
    addParameter(p,'Re',baseflow.Re,@isnumeric); % Reynolds
+   addParameter(p,'Mach',0,@isnumeric); % Reynolds
    addParameter(p,'Omegax',Omegax,@isnumeric); % rotation rate (for swirling body)
    addParameter(p,'Porosity',Porosity,@isnumeric); % For porous body
    addParameter(p,'type','Normal',@ischar); % mode 
@@ -78,7 +79,13 @@ switch(baseflow.mesh.problemtype)
     case('2D')
             if(verbosity>1)  disp('## solving base flow (2D CASE)'); end
             solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_2D.edp'];
-                      
+            
+   case('2DComp')
+            if(verbosity>1)  disp('## solving base flow (2D CASE COMPRESSIBLE)'); end
+            solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Mach) ' | ',ff,' ','Newton_2D_Comp_Seq.edp'];         
+              %NB at the moment the script is in the local folder, it is to be joined in ffdir in due time 
+              % REMARK : 'Newton_2D_Comp.edp' (mpi parallel version) works best but we have to find how to pass the parameters ! 
+              
    % case (other cases...)
         
 end %switch

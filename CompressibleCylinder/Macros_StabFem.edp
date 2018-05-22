@@ -34,12 +34,12 @@ ENDIFMACRO
 
 
 IFMACRO(!problemtype)
-macro problemtype "2D"//EOM
+macro problemtype "2DComp"//EOM
 ENDIFMACRO
 
 string ffdatadir = "./WORK/";
 
-string symmetryBaseFlow = "S"; // symmetry propery of base flow :; set "S" if domain is hzalf domain and "N" if it is full domain
+string symmetryBaseFlow = "N"; // symmetry propery of base flow :; set "S" if domain is hzalf domain and "N" if it is full domain
 int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
 
 macro Uinlet(y) 1.
