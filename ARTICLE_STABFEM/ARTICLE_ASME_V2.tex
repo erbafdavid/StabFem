@@ -761,15 +761,25 @@ classical linear stability theory (Linear) and the base flow (BF) $C_x$.
 
 TO BE SHORTENED
 
+%\begin{figure}
+%\begin{center}
+%\includegraphics[width=.9 \linewidth]{Cylinder_SC100_EnergySigma.png}
+%\includegraphics[width=.9 \linewidth]{Cylinder_SC100_CySigma.png}
+%\end{center}
+%\caption{Self-consistent approach for the wake of a cyrcular cilinder: results at $Re =  100$.}
+%\label{fig:SC100}
+%\end{figure}
+
 \begin{figure}
 \begin{center}
-\includegraphics[width=.9 \linewidth]{Cylinder_SC100_EnergySigma.png}
-\includegraphics[width=.9 \linewidth]{Cylinder_SC100_CySigma.png}
+\includegraphics[width=.9 \linewidth]{toto.png}
 \end{center}
-\caption{Self-consistent approach for the wake of a cyrcular cilinder: results at $Re = 
+\caption{Self-consistent approach for the wake of a circular cilinder:  description of the MEAN FLOW for  $Re = 
 100$.}
-\label{fig:SC100}
+\label{fig:MF60}
 \end{figure}
+
+
 We now briefly review the self-consistent approach as introduced by Manti\v{c}-Lugo et 
 al \cite{MLugo2014}. The authors adopted a pseudo-eigenmode expansion of the flow 
 as follows: 
@@ -870,6 +880,9 @@ $$
 $$
 
 Injecting and developing up to linear order leads to the following 
+
+TO BE CORRECTED !
+
 \begin{equation}
 \begin{array}{ll}
 \displaystyle
@@ -922,74 +935,9 @@ in this paper by just running the Matlab code available in the StabFem repositor
 bla bla
 
 \section*{Appendix A : details on mesh convergence}
-\begin{figure}
-\includegraphics[width=.9 \linewidth]{Cylinder_Sigma_Re_TESTMESHES.png}
-\includegraphics[width=.9 \linewidth]{Cylinder_Strouhal_Re_TESTMESHES.png}
-\caption{Growth rate $\sigma$ $(a)$  and Strouhal number $St = (a \omega)/(2\pi U_0)$ ($b$) as function of Reynolds number FOR 8 DIFFERENT MESHES}
-\label{fig:MeshConvergence}
-\end{figure}
 
-\begin{figure*}
-\small
-\begin{lstlisting}
-> baseflow=SF_Init('Mesh_Cylinder_Large.edp');
-      ### INITIAL MESH CREATED WITH np = 2207 points
-> baseflow=SF_BaseFlow(baseflow,'Re',1);
-      ### FUNCTION SF_BaseFlow : computing base flow for Re = 1
-      # Base flow converged in 6 iterations ; Drag = 5.9876; Lx = 0.501
-> baseflow=SF_BaseFlow(baseflow,'Re',10);
-      ### FUNCTION SF_BaseFlow : computing base flow for Re = 10
-      # Base flow f converged in 5 iterations ; Drag = 1.4519; Lx = 0.73191
-> baseflow=SF_BaseFlow(baseflow,'Re',60);
-      ### FUNCTION SF_BaseFlow : computing base flow for Re = 60
-      # Base flow converged in 6 iterations ; Drag = 0.66348; Lx = 3.6989
 
-> baseflow=SF_Adapt(baseflow,'Hmax',10,'InterpError',0.01);
-     ### ADAPT mesh to base flow ; InterpError = 0.01  ; Hmax = 10
-      #   Number of points np = 1352 ; Ndof = 11862
-      #  h_min, h_max : 0.018824 , 10.2895
-      #  h_(A,B,C,D) : 0.027467 , 0.28644 , 0.45948 , 0.89245
-      ### FUNCTION SF_BaseFlow : computing base flow for Re = 60
-      # Base flow converged in 5 iterations ; Drag = 0.65805; Lx = 4.0737
-
-> plotFF(baseflow,'mesh');
-\end{lstlisting}
-\normalsize
-\caption{Illustration of the procedure to compute a base flow and an adapted mesh using StabFem (from script {\em SCRIPT\_CYLINDER.m}. }
-\label{ill_bsflow}
-\end{figure*}
-
-\begin{figure*}
-\small
-\begin{lstlisting}
-> [ev,em] = SF_Stability(baseflow,'shift',0.04+0.76i,'nev',1,'type','D');
-> [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);  
-      ### ADAPT mesh to base flow AND MODE   ; InterpError = 0.005  ; Hmax = 10
-      #   Number of points np = 13458 ; Ndof = 120030
-      #  deltamin, deltapax : 0.0089891 , 13.367
-      #  delta_(A,B,C,D) : 0.020536 , 0.082852 , 0.07316 , 0.11914
-      ### FUNCTION SF_BaseFlow : computing base flow for Re = 60
-      # Base flow converged in 4 iterations ; Drag = 0.64695; Lx = 4.0715
-      ### FUNCTION SF_Stability : computation of 1 eigenvalues/modes (DIRECT) with FF solver
-      # Stability calculation converged in 4 iterations, lambda = 0.047152+0.74808i.
-
-> [ev,em] = SF_Stability(baseflow,'shift',0.04+0.76i,'nev',1,'type','S');
-> [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
-      ### ADAPT mesh to base flow AND SENSITIVITY ; InterpError = 0.005  ; Hmax = 10
-      #   Number of points np = 4355 ; Ndof = 38559
-      #  deltamin, deltapax : 0.0058536 , 13.1164
-      #  delta_(A,B,C,D) : 0.01049 , 0.091861 , 0.13319 , 0.89372
-      ### FUNCTION SF_BaseFlow : computing base flow for Re = 60
-      # Base flow converged in 3 iterations ; Drag = 0.64758; Lx = 4.0725
-      ### FUNCTION SF_Stability : computation of 1 eigenvalues/modes (DIRECT) with FF solver
-      # Stability calculation converged in 3 iterations (D+A+S), lambda = 0.047165+0.74823i.
-
-\end{lstlisting}
-\normalsize
-
-\caption{Illustration of the procedure to adapt the mesh for stability calculations with StabFem (from script {\em SCRIPT\_CYLINDER.m}. }
-\label{stabmesh}
-\end{figure*}
+TO BE FINISHED
 
 In this appendix we compare the results obtained with 8 different meshes, to demonstrate the efficency of the mesh adaptation process. The whole results can be obtained using the script {\em SCRIPT\_CYLINDER\_MESHCONVERGENCE.m} available in the StabFem repository.
 
