@@ -168,7 +168,7 @@ varf   LNSEadjointContinuous ([ux,uy,up],[vx,vy,q]) = // duplication of the prev
  + int2d(th)( -conj(shift)*(ux*vx+uy*vy) ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
  + BoundaryconditionsStability(u,v,symmetry); 
 
-// FLAVIO : PLEASE
+// FLAVIO : PLEASE CHECK !
 
 
 
