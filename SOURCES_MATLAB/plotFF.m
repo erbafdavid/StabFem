@@ -25,7 +25,11 @@ handle = figure();
 % single-input mode (to plot mesh)
 if(nargin==1)
     field1 = 'mesh';
+    mesh = FFdata;
+%else
+%     mesh = FFdata.mesh;
 end
+
 
 % two-input mode (to plot a field, real or complex)
 if(strcmp(field1,'mesh')==0)
@@ -77,7 +81,7 @@ else
     title(FFdata.plottitle) 
  end
 
-if(length(FFdata.mesh.seg)==1) % to construct the 'seg' structure necessary for ploting mesh
+if(length(mesh.seg)==1) % to construct the 'seg' structure necessary for ploting mesh
     FFdata.mesh=importFFmesh('mesh.msh','seg');
 end
 
