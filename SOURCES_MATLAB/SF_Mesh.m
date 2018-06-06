@@ -19,17 +19,14 @@ parse(p,varargin{:})
  global ff ffdir ffdatadir sfdir verbosity
 
 if(exist(ffdatadir)~=7&&exist(ffdatadir)~=5)
-%     mysystem(['mkdir ' ffdatadir ]); 
     mymake([ffdatadir]);
 else
-%     mysystem(['rm ' ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh '],'skip');
     myrm([ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh ']);
 end
 
 % if(exist([ffdatadir 'BASEFLOWS'])~=7)
 %    mysystem(['mkdir ' ffdatadir 'BASEFLOWS']); 
 % end
-% mysystem(['rm ' ffdatadir 'BASEFLOWS/*'],'skip');
 myrm([ffdatadir 'BASEFLOWS/*']);
 
 if((p.Results.Params)==NaN)

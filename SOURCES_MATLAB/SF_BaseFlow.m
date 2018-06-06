@@ -97,9 +97,9 @@ error = 'ERROR : SF_ base flow computation aborted';
     % recover base flow from previous adapted case 
     disp(['      ### FUNCTION SF_BaseFlow : recovering previous adapted mesh/baseflow for Re = ', num2str(Re)]);
     file = [ ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(Re) '.txt' ];
-         system(['cp ' file ' ' ffdatadir 'BaseFlow_guess.txt']);
+         mycp(file,[ffdatadir 'BaseFlow_guess.txt']);
     file = [ ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(Re) '.msh' ];
-         system(['cp ' file ' ' ffdatadir 'mesh.msh']);
+         mycp(file,[ffdatadir 'mesh.msh']);
     mysystem(solvercommand,error); %needed to generate .ff2m file
     mesh = importFFmesh('mesh.msh');
     mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
@@ -110,9 +110,9 @@ error = 'ERROR : SF_ base flow computation aborted';
     
  elseif(exist([ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'])==2&&strcmp(p.Results.type,'NEW')~=1)   
         disp(['FUNCTION SF_BaseFlow : base flow already computed for Re = ', num2str(Re)]);
-        system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt  ' ffdatadir 'BaseFlow.txt']);
-        system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt  ' ffdatadir 'BaseFlow_guess.txt']);
-        system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m ' ffdatadir 'BaseFlow.ff2m']);
+        mycp([ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'],[ffdatadir 'BaseFlow.txt']);
+        mycp([ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'],[ffdatadir 'BaseFlow_guess.txt']);
+        mycp([ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m'],[ffdatadir 'BaseFlow.ff2m']);
         baseflow = importFFdata(baseflow.mesh,[ffdatadir 'BaseFlow.ff2m']); 
         baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
         baseflow.iter=0;
@@ -120,7 +120,7 @@ error = 'ERROR : SF_ base flow computation aborted';
  else
    %      
         if(verbosity>0)disp(['      ### FUNCTION SF__BaseFlow : computing base flow for Re = ', num2str(Re)]);end
-%        system(['cp ' baseflow.namefile ' BaseFlow_guess.txt']);
+%         mycp(baseflow.namefile,'BaseFlow_guess.txt');
         
 
         %%%
@@ -131,12 +131,12 @@ error = 'ERROR : SF_ base flow computation aborted';
           error('ERROR : SF_ base flow computation did not converge');
         end
         
-        system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt']);
-        system(['cp ' ffdatadir 'BaseFlow.ff2m ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m']);
+        mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt']);
+        mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m']);
          baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
          baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
         
-%        system(['cp BaseFlow.txt BaseFlow_guess.txt']);    
+%         mycp('BaseFlow.txt','BaseFlow_guess.txt');
  end
 
  
