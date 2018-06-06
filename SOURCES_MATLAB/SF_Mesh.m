@@ -17,18 +17,18 @@ addParameter(p,'Params',NaN);
 parse(p,varargin{:})
 
  global ff ffdir ffdatadir sfdir verbosity
-% 
-% if(exist(ffdatadir)~=7&&exist(ffdatadir)~=5)
-%     mysystem(['mkdir ' ffdatadir ]); 
-% else
-%     mysystem(['rm ' ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh '],'skip');
-% end
-% 
-% %if(exist([ffdatadir 'BASEFLOWS'])~=7)
-% %    mysystem(['mkdir ' ffdatadir 'BASEFLOWS']); 
-% %end
-% mysystem(['rm ' ffdatadir 'BASEFLOWS/*'],'skip'); 
-% 
+
+if(exist(ffdatadir)~=7&&exist(ffdatadir)~=5)
+    mysystem(['mkdir ' ffdatadir ]); 
+else
+    mysystem(['rm ' ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh '],'skip');
+end
+
+%if(exist([ffdatadir 'BASEFLOWS'])~=7)
+%    mysystem(['mkdir ' ffdatadir 'BASEFLOWS']); 
+%end
+mysystem(['rm ' ffdatadir 'BASEFLOWS/*'],'skip'); 
+
 
 if((p.Results.Params)==NaN)
     command = [ff,' ',meshfile];
