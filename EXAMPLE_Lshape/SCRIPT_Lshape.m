@@ -3,10 +3,9 @@ close all;
 run('../SOURCES_MATLAB/SF_Start.m');
 
 % importation of a mesh and data field 'base flow' 
-Ndensity =40;
+Ndensity = 40;
 % here Ndensity is the only parameter, but we can pass several 
 ffmesh=SF_Mesh('Lshape_Mesh.edp','Params',Ndensity);
-
 
 % plot the mesh and the associated data
 ffmesh.plottitle = 'Mesh for L-shape body';
@@ -36,5 +35,3 @@ hand = plotFF(heatU,'Tc.im');%plot the imag part of a complex
     
 heatU.plottitle = ['Solution of the unsteady heat equation for omega = ' num2str(heatU.omega) ' : |grad(Uc)| ' ];
 hand = plotFF(heatU,'normTc');
-    
-
