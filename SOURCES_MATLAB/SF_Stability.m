@@ -2,7 +2,11 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 
 % Matlab/FreeFem driver for Base flow calculation (Newton iteration)
 %
-% usage : [eigenvectors] = SF_Stability(baseflow [,param1,value1] [,param2,value2] [...])
+% usage : [eigenvectors] = SF_Stability(bf, [,param1,value1] [,param2,value2] [...])
+%
+% baseflow is either a "baseflow" structure (with mesh as a field) or a
+% mesh structure.
+%
 % Parameters include :
 % Re : Reynolds number (specify only if it differs from the base flow, which is not usual)
 % m : azimuthal wavenumer (for axisymmetric problem)
@@ -23,6 +27,15 @@ global ff ffdir ffdatadir sfdir verbosity
 
 persistent sigmaPrev sigmaPrevPrev % for continuation on one branch
 persistent eigenvaluesPrev % for sort of type 'cont'
+
+   if(isfield(baseflow,'np')==1)
+       % first argument is a simple mesh
+       ffmesh = baseflow; 
+   else
+       % first argument is a base flow
+       ffmesh = baseflow.mesh;
+   end
+   
 
 %%% management of optionnal parameters
     p = inputParser;
@@ -62,6 +75,8 @@ persistent eigenvaluesPrev % for sort of type 'cont'
     addParameter(p,'nu',nuDefault);
    
    parse(p,varargin{:});
+   
+   % parameters for continuation mode
    if(isempty(sigmaPrev))   sigmaPrev = p.Results.shift; sigmaPrevPrev = p.Results.shift; end;
    if(isempty(eigenvaluesPrev)) eigenvaluesPrev = [p.Results.nev:-1:1]; end;
    
@@ -80,7 +95,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
  
 % run the relevant freefem script
 
-switch baseflow.mesh.problemtype
+switch ffmesh.problemtype
 
     case('AxiXR')
      
@@ -151,7 +166,7 @@ switch baseflow.mesh.problemtype
     % adapt to your case !
     
     case default
-        error(['Error in SF_Stability : "problemtype =',baseflow.mesh.problemtype,'  not possible or not yet implemented !'])
+        error(['Error in SF_Stability : "problemtype =',ffmesh.problemtype,'  not possible or not yet implemented !'])
 end
     
 
@@ -216,15 +231,15 @@ end
     if(nargout>1) %% process output of eigenmodes
     if(p.Results.nev==1)
         if (p.Results.type=='D')
-        eigenvectors=importFFdata(baseflow.mesh,'Eigenmode.ff2m');
+        eigenvectors=importFFdata(ffmesh,'Eigenmode.ff2m');
         eigenvectors.type=p.Results.type;
          disp(['      # Stability calculation completed, eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         elseif(p.Results.type=='A')
-        eigenvectors=importFFdata(baseflow.mesh,'EigenmodeA.ff2m');
+        eigenvectors=importFFdata(ffmesh,'EigenmodeA.ff2m');
         eigenvectors.type=p.Results.type;
          disp(['      # Stability calculation completed (ADJOINT), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         elseif(p.Results.type=='S')
-        eigenvectors=importFFdata(baseflow.mesh,'Eigenmode.ff2m','EigenmodeA.ff2m','Sensitivity.ff2m');
+        eigenvectors=importFFdata(ffmesh,'Eigenmode.ff2m','EigenmodeA.ff2m','Sensitivity.ff2m');
         eigenvectors.type=p.Results.type;
          disp(['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         end
@@ -234,7 +249,7 @@ end
     elseif(p.Results.nev>1&&p.Results.type=='D')
     eigenvectors=[];
         for iev = 1:p.Results.nev
-        egv=importFFdata(baseflow.mesh,['Eigenmode' num2str(iev) '.ff2m']);
+        egv=importFFdata(ffmesh,['Eigenmode' num2str(iev) '.ff2m']);
         egv.type=p.Results.type;
         eigenvectors = [eigenvectors egv];
         end
@@ -242,7 +257,7 @@ end
     elseif(p.Results.nev>1&&p.Results.type=='A')
     eigenvectors=[];
     for iev = 1:p.Results.nev
-        egv=importFFdata(baseflow.mesh,['EigenmodeA' num2str(iev) '.ff2m']);
+        egv=importFFdata(ffmesh,['EigenmodeA' num2str(iev) '.ff2m']);
         egv.type=p.Results.type;
         eigenvectors = [eigenvectors egv];
     end

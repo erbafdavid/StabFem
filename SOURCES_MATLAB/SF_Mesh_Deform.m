@@ -1,7 +1,7 @@
-function baseflow = SF_BaseFlow_FreeSurface(baseflow,varargin) 
+function ffmesh = SF_Mesh_Deform(ffmesh,varargin) 
 % Matlab/SF_ driver for Base flow calculation (Newton iteration)
 %
-% usage : baseflow = SF_BaseFlow_MoveMesh(baseflow1,'Volume',Volume,[...])
+% usage : ffmesh = SF_Mesh_Deform(ffmesh,'Volume',Volume,[...])
 %
 % this driver will lanch the "NewtonMesh" program of the coresponding
 % case. 
@@ -23,7 +23,7 @@ global ff ffdir ffdatadir sfdir verbosity
    
     parse(p,varargin{:});
     
-    switch(baseflow.mesh.problemtype)
+    switch(ffmesh.problemtype)
         
           case('3DFreeSurfaceStatic')
         
@@ -48,14 +48,17 @@ global ff ffdir ffdatadir sfdir verbosity
     
     
     
-    meshNEW = importFFmesh('mesh.msh');
-    baseflowNEW=importFFdata(meshNEW,'BaseFlow.ff2m');
-
-    baseflow=baseflowNEW;
+    ffmeshNew = importFFmesh('mesh.msh');
     
-    mydisp(1,'#### SF_BaseFlow_FreeSurface : NEW MESH CREATED');
-    mydisp(1,['Volume = ',num2str(baseflow.mesh.Vol)]);
-    mydisp(1,['P0 = ',num2str(baseflow.mesh.P0)]);
+    ffmesh = ffmeshNew; %% here add converbence tests
+    
+%    baseflowNEW=importFFdata(meshNEW,'BaseFlow.ff2m');
+
+%    baseflow=baseflowNEW;
+    
+    mydisp(1,'#### SF_Mesh_Deform : NEW MESH CREATED');
+    mydisp(1,['Volume = ',num2str(ffmesh.Vol)]);
+    mydisp(1,['P0 = ',num2str(ffmesh.P0)]);
     
     
 end
