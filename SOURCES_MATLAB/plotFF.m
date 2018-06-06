@@ -50,6 +50,12 @@ hold(axes1,'all');
 if(any(strcmp('plottitle',fieldnames(FFdata)))) 
     title(FFdata.plottitle) 
 end
+if(any(strcmp('xlabel',fieldnames(FFdata)))) 
+    xlabel(FFdata.xlabel) 
+end
+if(any(strcmp('ylabel',fieldnames(FFdata)))) 
+    ylabel(FFdata.ylabel) 
+end
 %pdemesh(mesh.points,mesh.seg,mesh.tri) ;
 
 

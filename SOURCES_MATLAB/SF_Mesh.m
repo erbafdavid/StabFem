@@ -19,16 +19,18 @@ parse(p,varargin{:})
  global ff ffdir ffdatadir sfdir verbosity
 
 if(exist(ffdatadir)~=7&&exist(ffdatadir)~=5)
-    mysystem(['mkdir ' ffdatadir ]); 
+%     mysystem(['mkdir ' ffdatadir ]); 
+    mymake([ffdatadir]);
 else
-    mysystem(['rm ' ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh '],'skip');
+%     mysystem(['rm ' ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh '],'skip');
+    myrm([ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh ']);
 end
 
-%if(exist([ffdatadir 'BASEFLOWS'])~=7)
+% if(exist([ffdatadir 'BASEFLOWS'])~=7)
 %    mysystem(['mkdir ' ffdatadir 'BASEFLOWS']); 
-%end
-mysystem(['rm ' ffdatadir 'BASEFLOWS/*'],'skip'); 
-
+% end
+% mysystem(['rm ' ffdatadir 'BASEFLOWS/*'],'skip');
+myrm([ffdatadir 'BASEFLOWS/*']);
 
 if((p.Results.Params)==NaN)
     command = [ff,' ',meshfile];
@@ -37,23 +39,18 @@ else
     for pp = p.Results.Params;
         stringparam = [stringparam, num2str(pp), '  ' ]; 
     end
-    command = ['echo   ', stringparam, '  | ',ff,' ',meshfile];
+    command = ['echo ', stringparam, '  | ',ff,' ',meshfile];
 end
 
 error = 'ERROR : SF_Mesh not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
 mysystem(command,error);
 
-   
 % copy the mesh in directory ffdatadir
 mesh.filename=[ ffdatadir 'mesh.msh'];
 mycp('mesh.msh', mesh.filename);
 mycp('mesh.ff2m', [ffdatadir 'mesh.ff2m']); 
 mycp('SF_Init.ff2m', [ffdatadir 'SF_Init.ff2m']); 
 
-
 mesh = importFFmesh('mesh.msh');
-
-   
-
 
 mydisp(1,['      ### INITIAL MESH CREATED WITH np = ',num2str(mesh.np),' points']);

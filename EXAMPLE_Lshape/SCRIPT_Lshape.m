@@ -1,10 +1,10 @@
 clear all;
 close all;
+clc;
 run('../SOURCES_MATLAB/SF_Start.m');
 
 % importation of a mesh and data field 'base flow' 
-Ndensity = 40;
-% here Ndensity is the only parameter, but we can pass several 
+Ndensity = 50;         % here Ndensity is the only parameter, but we can pass several 
 ffmesh=SF_Mesh('Lshape_Mesh.edp','Params',Ndensity);
 
 % plot the mesh and the associated data
@@ -26,8 +26,8 @@ title('Temperature along a line : T(x,y=0.25)')
 heatU=SF_Launch('Lshape_Unsteady.edp','Params',10,'Mesh',ffmesh,'DataFile','Heat_Unsteady.ff2m')
 
 heatU.plottitle = ['Solution of the unsteady heat equation for omega = ' num2str(heatU.omega) ' : Re(Uc) ' ];
-heatU.xlim = [-.5,1.5]; % note the way to specify plot ranges xlim, ylim 
-heatU.ylim = [-.5,1.5];
+% heatU.xlim = [-.5,1.5]; % note the way to specify plot ranges xlim, ylim 
+% heatU.ylim = [-.5,1.5];
 hand = plotFF(heatU,'Tc.re');%plot the real part of a complex
 
 heatU.plottitle = ['Solution of the unsteady heat equation for omega = ' num2str(heatU.omega) ' : Im(Uc) ' ];
