@@ -19,12 +19,11 @@ ff = '/usr/local/bin/FreeFem++ -nw';
 %ff = '/usr/local/ff++/bin/FreeFem++ -nw'; for Flavio
 end
 if(ispc)
-    ff = 'launchff++'; % for windows systems
+    ff = 'FreeFem++'; % for windows systems
 end
 
-
-sfdir = '~/StabFem/SOURCES_MATLAB/'; 
-ffdir = '~/StabFem/SOURCES_FREEFEM/';
+sfdir = '../SOURCES_MATLAB/'; 
+ffdir = '../SOURCES_FREEFEM/';
 
 % This is the recommended implementation on most systems. 
 % In case StabFem is not in your root directory you may adapt. Bellow a few
@@ -36,7 +35,7 @@ ffdir = '~/StabFem/SOURCES_FREEFEM/';
 %sfdir = '/Users/fabred/StabFem/SOURCES_MATLAB/'; % where to find the matlab drivers
 %ffdir = '/Users/fabred/StabFem/SOURCES_FREEFEM/'; % where to find the freefem scripts
 
-ffdatadir = './WORK/';
+ffdatadir = '.\WORK\';
 
 verbosity = 1;
 addpath(sfdir);
