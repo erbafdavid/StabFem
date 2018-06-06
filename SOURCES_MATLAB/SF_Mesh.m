@@ -37,7 +37,7 @@ else
     for pp = p.Results.Params;
         stringparam = [stringparam, num2str(pp), '  ' ]; 
     end
-    command = ['echo  '' ', stringparam, ' '' | ',ff,' ',meshfile];
+    command = ['echo   ', stringparam, '  | ',ff,' ',meshfile];
 end
 
 error = 'ERROR : SF_Mesh not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
