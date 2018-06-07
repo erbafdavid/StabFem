@@ -101,8 +101,8 @@ switch ffmesh.problemtype
      
      mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
      mydisp(1,['      ### USING Axisymmetric Solver']);
-     argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ...
-                          ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+     argumentstring = [ num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ...
+                          ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ];
      solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi.edp'];
         status = mysystem(solvercommand);
         
@@ -111,8 +111,8 @@ switch ffmesh.problemtype
     
      mydisp(1,['      ### FUNCTION SF_Stability POROUS : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
      mydisp(1,['      ### USING Axisymmetric Solver WITH POROSITY AND SWIRL']);
-     argumentstring = [ ' " ' num2str(p.Results.Re) ' ' num2str(baseflow.Porosity) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
-                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ' ];
+     argumentstring = [ num2str(p.Results.Re) ' ' num2str(baseflow.Porosity) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ];
      solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi_Porous.edp'];
         status = mysystem(solvercommand);        
     
@@ -124,8 +124,8 @@ switch ffmesh.problemtype
             % 2D Baseflow / 2D modes
         mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### USING 2D Solver']);
-        argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
-                             ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+        argumentstring = [ num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D.edp'];
         status = mysystem(solvercommand);
         
@@ -134,8 +134,8 @@ switch ffmesh.problemtype
              % 2D BaseFlow / 3D modes
                  mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### 3D Stability of 2D Base-Flow with k = ',num2str(p.Results.k)]);
-        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.k) ' '  num2str(real(shift)) ....
-            ' ' num2str(imag(shift)) ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+        argumentstring = [num2str(p.Results.Re) ' ' num2str(p.Results.k) ' '  num2str(real(shift)) ....
+            ' ' num2str(imag(shift)) ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ];
                          
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D_Modes3D.edp'];
         status = mysystem(solvercommand);
@@ -149,16 +149,16 @@ switch ffmesh.problemtype
              
         mydisp(1,['      ### FUNCTION SF_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### USING 2D Solver FOR MOBILE OBJECT (e.g. spring-mounted)']);
-        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '... 
+        argumentstring = [ num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '... 
                             num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
-                            ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ']; 
+                            ' ' p.Results.type ' ' num2str(p.Results.nev) ]; 
         solvercommand = ['echo ' argumenstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
         status = mysystem(solvercommand);
         
      case('3DFreeSurfaceStatic')
         % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE POTENTIAL : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
-        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(10) ' " '];
+        argumentstring = [ num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(10) ];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
         status = mysystem(solvercommand);     
             

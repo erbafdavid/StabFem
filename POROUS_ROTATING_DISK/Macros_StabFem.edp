@@ -29,6 +29,9 @@ IFMACRO(!ncomponentsBF)
 macro ncomponentsBF 3//EOM  // THIS PARAMETERS SHOULD BE 2 if BASE FLOW is (U,V,P) and 3 if it is (U,V,W,P) (case with rotation)
 ENDIFMACRO
 
+IFMACRO(!FREEFEMPLOTS)
+macro FREEFEMPLOTS YES //EOM
+ENDIFMACRO
 
 string ffdatadir = "WORK/";
 

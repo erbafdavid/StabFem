@@ -6,8 +6,12 @@
 %
 % Version 2.0 by D. Fabre , june 2017
 
-run('../SOURCES_MATLAB/SF_Start.m');
+clear all;
 close all;
+clc;
+
+run('../SOURCES_MATLAB/SF_Start.m');
+
 %ffdatadir = './WORK/'; %% to be fixed : this should be "./WORK" but some of the solvers are not yet operational
 
 

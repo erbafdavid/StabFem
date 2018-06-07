@@ -187,9 +187,13 @@ problem NewtonIter([dux,dur,duphi,dup],[vx,vr,vphi,vp]) =
 		  }; 
           exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt"); 
           SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",iter,Porosity,Omegax); // file in .ff2ml format for StabFem driver
-          // plot 
+          
+		  // plot 
+		  IFMACRO(FREEFEMPLOTS,YES)
 		  plot(ux,fill=1,wait=0,value=1,cmm="final U1");
 		  plot(uphi,fill=1,wait=0,value=1,cmm="final U2");
+		  ENDIFMACRO
+		  
 		  Mh uphiphi = uphi;
 		  cout << "Uphi max : " << uphi[].max;
 			//plot(p,fill=1,wait=0,value=1,cmm="final Pressure");
