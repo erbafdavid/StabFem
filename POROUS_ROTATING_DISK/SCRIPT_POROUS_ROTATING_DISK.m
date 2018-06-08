@@ -11,7 +11,7 @@ clc
 
 %% 0 - Préchauffage
 
-tic;run('../SOURCES_MATLAB/SF_Start.m');
+run('../SOURCES_MATLAB/SF_Start.m');
 
 ffdatadir = 'WORK\'; %% to be fixed : this should be "./WORK" but some of the solvers are not yet operational
 figureformat = 'png';
@@ -138,4 +138,3 @@ hold on;plot(boxx, boxy, 'w-');hold off;
 % % set(gca,'FontSize', 18);
 % saveas(gca,'PorousDisk_omega_Re',figureformat);    
 %     
-toc
