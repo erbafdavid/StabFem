@@ -25,6 +25,8 @@ end
 sfdir = '../SOURCES_MATLAB/'; 
 ffdir = '../SOURCES_FREEFEM/';
 
+addpath(sfdir);
+
 % This is the recommended implementation on most systems. 
 % In case StabFem is not in your root directory you may adapt. Bellow a few
 % examples from various contributors.
@@ -38,8 +40,8 @@ ffdir = '../SOURCES_FREEFEM/';
 ffdatadir = '.\WORK\';
 
 verbosity = 1;
-addpath(sfdir);
-if(exist(ffdatadir)~=7)
-    mysystem(['mkdir ' ffdatadir]);
-end
-mysystem(['echo "// File automatically created by StabFem" > SF_Geom.edp']); % a file SF_Geom should be present, even if blank 
+
+% if(exist(ffdatadir)~=7)
+%     mysystem(['mkdir ' ffdatadir]);
+% end
+% mysystem(['echo "// File automatically created by StabFem" > SF_Geom.edp']); % a file SF_Geom should be present, even if blank 

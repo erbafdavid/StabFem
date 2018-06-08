@@ -1,37 +1,51 @@
-/// 
-/// file Macros_StabFem.edp
-///
-///  CUSTOMIZED CASE FOR POROUS SWIRLING JET
-///
-///
-/// This file contains the case-dependent Macros for boundary conditions and postprocessing output.
-///
-/// This file can be customized according to requirements but it must contain the following macros :
-///
-/// boundary conditions : 
-/// macro BoundaryconditionsBaseFlow(du,u,v) 
-/// macro BoundaryconditionsStability(u,v,symmetry)
-///
-///
-/// For post-processsing purposes :
-/// macro SFWriteBaseFlow(filename,u,type,iter)
-/// macro SFWriteMode(namefile,u,ev,shift,type,iter)
-/// 
-/// The following case is for the AXISYMMETRIC DISK and includes the additional macros
-/// required to compute lift and drag forces : Trainee(u,symmetry) and Portance(u,symmetry)
+/* ======================================
 
-IFMACRO(!problemtype)
-macro problemtype "AxiXR"//EOM
-ENDIFMACRO
+				Macros STABFEM
+		-- Disque poreux tournant --
+	
+   ======================================
 
+   PROGRAM Macros_StabFem.edp
+   
+	CUSTOMIZED CASE FOR POROUS SWIRLING JET
 
-IFMACRO(!ncomponentsBF)
-macro ncomponentsBF 3//EOM  // THIS PARAMETERS SHOULD BE 2 if BASE FLOW is (U,V,P) and 3 if it is (U,V,W,P) (case with rotation)
-ENDIFMACRO
+	This file contains the case-dependent Macros for boundary conditions and postprocessing output.
+	
+	This file can be customized according to requirements but it must contain the following macros :
+		Boundary conditions : 
+			macro BoundaryconditionsBaseFlow(du,u,v) 
+			macro BoundaryconditionsStability(u,v,symmetry)
+		For post-processsing purposes :
+			macro SFWriteBaseFlow(filename,u,type,iter)
+			macro SFWriteMode(namefile,u,ev,shift,type,iter)
 
-IFMACRO(!FREEFEMPLOTS)
-macro FREEFEMPLOTS YES //EOM
-ENDIFMACRO
+	The following case is for the AXISYMMETRIC DISK and includes the additional macros
+	required to compute lift and drag forces : Trainee(u,symmetry) and Portance(u,symmetry)
+...................................................... */
+
+ /* -------------------
+		problemtype 
+    ------------------- */
+
+	IFMACRO(!problemtype)
+		macro problemtype "AxiXR"//EOM
+	ENDIFMACRO
+
+ /* ---------------------
+		ncomponentsBF 
+    --------------------- */
+
+	IFMACRO(!ncomponentsBF)
+		macro ncomponentsBF 3//EOM  	// THIS PARAMETERS SHOULD BE 2 if BASE FLOW is (U,V,P) and 3 if it is (U,V,W,P) (case with rotation)
+	ENDIFMACRO
+
+ /* -------------------
+		FreeFemPlot 
+    ------------------- */
+	
+	IFMACRO(!FreeFemPlot)
+		macro FreeFemPlot No//EOM
+	ENDIFMACRO
 
 string ffdatadir = "WORK/";
 

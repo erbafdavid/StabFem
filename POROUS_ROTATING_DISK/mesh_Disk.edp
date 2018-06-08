@@ -1,137 +1,170 @@
-//
-//  PROGRAM mesh.edp
-//
-//  Example of mesh generator for GlobalFem 
-//
-//  OUTPUT FILES :
-// 		mesh.msh 			->  mesh in Freefem format
-//		mesh.ff2m 		->  descriptor 
-//      BaseFlow_guess.txt 	->  base flow used to start first newton iteration
-//      BaseFlow.ff2m 	->  (ff2m format)
-//
-//	convention for boundary conditions :
-//  1 = inlet ; 2 (and 21,22,23) = wall ; 3 = outlet ; 6 = axis
+/* ==========================================
 
-//  D. Fabre, February 2018
+	Creation de la geometrie et du maillage
+		-- Disque poreux tournant --
+	
+   ========================================== 
 
+   PROGRAM mesh_Disk.edp
+   
+   Example of mesh generator for GlobalFem
+   
+   OUTPUT FILES :
+		mesh.msh			->  mesh in Freefem format
+		mesh.ff2m 			->  descriptor 
+		BaseFlow_guess.txt	->  base flow used to start first newton iteration
+		BaseFlow.ff2m		->  (ff2m format)
+
+	convention for boundary conditions :
+		1 = inlet ; 2 (and 21,22,23) = wall ; 3 = outlet ; 6 = axis
+
+	D. Fabre, February 2018
+...................................................... */
+	
+ /* ---------------------
+		Import Macros 
+    --------------------- */
+	
     include "Macros_StabFem.edp";
-    
 
-real SFGeomRdisk,SFGeomHdisk,SFGeomXmin,SFGeomXmax,SFGeomRmax; 
-real D;
+ /* -----------------
+		Geometrie 
+    ----------------- */
 
-cout << " Generation of an initial mesh for a POROUS DISK" << endl;
+	cout << " Generation of an initial mesh for a POROUS DISK" << endl;
 
-cout << " enter the DIAMETER and THICKNESS of the disk ?" << endl;
+/* Dimensions du disque */
 
-cin >> D >> SFGeomHdisk ;
-SFGeomRdisk = D/2 ; 
+	real D;
+	real SFGeomRdisk;
+	real SFGeomHdisk;
 
-cout << " Enter the dimensions SFGeomXmin, SFGeomXmax, ymax ? " << endl; 
-cin >> SFGeomXmin >> SFGeomXmax >> SFGeomRmax ;
-
-cout << "Dimensions of the disk : Rdisk = " << SFGeomRdisk << " ; Hdisk = " << SFGeomHdisk << endl;
-cout << "Dimensions of the domain  : Xmin = " << SFGeomXmin << " ; Xmax = " << SFGeomXmax << " ; Rmax = " << SFGeomRmax << endl;  
-
-
-		
-		//real SFGeomXmin = -10;
-		//real SFGeomXmax = 20;
-		//real SFGeomRmax = 10;
-		 
-		
+	cout << " enter the DIAMETER and THICKNESS of the disk ?" << endl;
+	cin >> D >> SFGeomHdisk ;
+	SFGeomRdisk = D/2 ;								// Rayon disque
 	
-		real x0=0.;	 	// centre en x de l'ellipse
-		real y0=0.;		// centre en y de l'ellipse
-		real rayon =  SFGeomRdisk;
-		real ep =  SFGeomHdisk;
+	real x0 = 0.;	 								// centre en x de l'ellipse
+	real y0 = 0.;									// centre en y de l'ellipse
+	real rayon = SFGeomRdisk;
+	real ep = SFGeomHdisk;
 
-		
-		cout << "dimensions reelles domaine : [" << SFGeomXmin << "," << SFGeomXmax << "] x [0," << SFGeomRmax << "] " <<  endl;
-		
+/* Dimensions du domaine */
 
-        border a1(t=SFGeomXmin,-ep/2){ x=t; y=0;label=6;};
-        border a2(t=ep/2,SFGeomXmax){ x=t; y=0;label=6;};
-        border aint(t=-ep/2,ep/2){x=t;y=0;label=6;};
+	real SFGeomXmin;
+	real SFGeomXmax;
+	real SFGeomRmax;
+
+	cout << " Enter the dimensions SFGeomXmin, SFGeomXmax, ymax ? " << endl; 
+	cin >> SFGeomXmin >> SFGeomXmax >> SFGeomRmax ;
+
+	cout << "Dimensions of the disk : Rdisk = " << SFGeomRdisk << " ; Hdisk = " << SFGeomHdisk << endl;
+	cout << "Dimensions of the domain  : Xmin = " << SFGeomXmin << " ; Xmax = " << SFGeomXmax << " ; Rmax = " << SFGeomRmax << endl;  
+	cout << "Dimensions reelles du domaine de calcul : [" << SFGeomXmin << "," << SFGeomXmax << "] x [0," << SFGeomRmax << "] " <<  endl;
+
+ /* ---------------
+		Domaine 
+    --------------- */
+
+/* Axe de symetrie */
+	border a1(t=SFGeomXmin,-ep/2){x=t; y=0;label=6;};
+	border a2(t=ep/2,SFGeomXmax){x=t; y=0;label=6;};
+	border aint(t=-ep/2,ep/2){x=t;y=0;label=6;};
+
+/* Cylindre (sans axe symétrie) */
+	border obs1(t=0.,rayon){x=-ep/2; y=t ;label=21;};
+	border obs2(t=-ep/2,ep/2){x=t; y=rayon;label=22;};
+	border obs3(t=rayon,0){x=+ep/2; y=t; label=23;};
+
+/* Axe de symetrie */	
+	border out(t=0,SFGeomRmax){x=SFGeomXmax; y=t; label=3; };
+	border lat(t=SFGeomXmax,SFGeomXmin){x=t; y=SFGeomRmax;label=3;};              
+	border in(t=SFGeomRmax,0){x=SFGeomXmin; y=t;label=1;};
+
+/* -----------------
+		MAILLAGE 
+    ----------------- */
+
+/* Densité de maillage */	
+	int nd = 1;
+	int nb = 40;            
+
+/* Construction domaine */
+	mesh th = buildmesh(aint(nb*ep)
+						+ obs1(-rayon*nb)
+						+ obs2(-ep*nb)
+						+ obs3(-rayon*nb)
+						+ a1(nd*(-ep/2-SFGeomXmin))
+						+ a2(nd*(SFGeomXmax-ep/2))
+						+ out(SFGeomRmax*nd)
+						+ in(SFGeomRmax*nd)
+						+ lat((SFGeomXmax-SFGeomXmin)*nd));
 	
-        border obs1(t=0.,rayon){x=-ep/2; y=t ;label=21;};
-        border obs2(t=-ep/2,ep/2){x=t; y=rayon;label=22;};
-        border obs3(t=rayon,0){x=+ep/2; y=t; label=23;};
-		
-		border out(t=0,SFGeomRmax){ x=SFGeomXmax; y=t; label=3; };
-		border lat(t=SFGeomXmax,SFGeomXmin){ x=t; y=SFGeomRmax;label=3;};              
-		border in(t=SFGeomRmax,0){ x=SFGeomXmin; y=t;label=1;};
-
-
-		int nd = 1;
-		int nb = 40;            
-            
-
-        mesh th;
-               
-               th=buildmesh(aint(nb*ep)+obs1(-rayon*nb)+obs2(-ep*nb)+obs3(-rayon*nb)
-             +  a1(nd*(-ep/2-SFGeomXmin))+ a2(nd*(SFGeomXmax-ep/2))
-             +out(SFGeomRmax*nd)+in(SFGeomRmax*nd)+lat((SFGeomXmax-SFGeomXmin)*nd));
-	    
-		// IFMACRO(FREEFEMPLOTS,YES)
+	IFMACRO(FreeFemPlot,Yes)
 		plot(th,wait=1);
-		// ENDIFMACRO
+	ENDIFMACRO
 
-	
-
-        savemesh(th,ffdatadir+"mesh.msh");
+	savemesh(th,ffdatadir+"mesh.msh");
        
-// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+/* ----------------------------
+		EXPORT SF_Init.ff2m
+   ---------------------------- */
 {
-            ofstream file(ffdatadir+"SF_Init.ff2m"); 
-			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
-			file << "AxiXRPOROUS" << endl;
-			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
-			file << "real Rdisk real Hdisk real Rmax real Xmin real Xmax" << endl;
-			file <<  rayon  << endl << ep << endl << SFGeomRmax << endl << SFGeomXmin << endl << SFGeomXmax << endl;
+	ofstream file(ffdatadir+"SF_Init.ff2m"); 
+		file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+		file << "AxiXRPOROUS" << endl;
+		file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+		file << "real Rdisk real Hdisk real Rmax real Xmin real Xmax" << endl;
+		file <<  rayon  << endl << ep << endl << SFGeomRmax << endl << SFGeomXmin << endl << SFGeomXmax << endl;
 }
 
+/* -------------------------
+		EXPORT mesh.ff2m
+   ------------------------- */
 
-// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
-	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+   SFWriteMesh(ffdatadir+"mesh.ff2m",th)
 
-
-// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+/* ---------------------------
+		EXPORT SF_Geom.edp
+   --------------------------- */
 {
-			ofstream file2("SF_Geom.edp"); 
-			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
-            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
-            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
-            file2 << "real SFGeomRdisk = "  << SFGeomRdisk << " ;" << endl;
-			file2 << "real SFGeomHdisk = "  << SFGeomHdisk  << " ;" << endl;
-			file2 << "real SFGeomXmin = " << SFGeomXmin  << " ;" << endl;
-			file2 << "real SFGeomXmax = " << SFGeomXmax  << " ;" << endl;
-			file2 << "real SFGeomRmax = " << SFGeomRmax << " ;" << endl;
+	ofstream file2("SF_Geom.edp"); 
+		file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+		file2 << "	real SFGeomLengthscale = 1 ; 		// length scale for nondimensionalization" << endl ;
+		file2 << "	real SFGeomVelocityscale = 1 ;		// velocity scale for nondimensionalization " << endl ;
+		file2 << "	real SFGeomRdisk = "  << SFGeomRdisk << " ;" << endl;
+		file2 << "	real SFGeomHdisk = "  << SFGeomHdisk  << " ;" << endl;
+		file2 << "	real SFGeomXmin = " << SFGeomXmin  << " ;" << endl;
+		file2 << "	real SFGeomXmax = " << SFGeomXmax  << " ;" << endl;
+		file2 << "	real SFGeomRmax = " << SFGeomRmax << " ;" << endl;
 }
 
-
-
-
-// CREATE A guess for the base flow (here starting from zero works very well)
- 		fespace femp1(th,P1);
-        fespace femp2xfemp2xfemp2xfemp1(th,[P2,P2,P2,P1]);
-        femp2xfemp2xfemp2xfemp1 [ux,ur,uphi,up]=[0,0,0,0];
-        real Re = 0;real nu=1; // these two are useless at this stage but required in the macros 
+/* -----------------
+		BASEFLOW
+   ----------------- */
+   
+/* Create a guess for the base flow (here starting from zero works very well) */
+	fespace femp1(th,P1);
+	fespace femp2xfemp2xfemp2xfemp1(th,[P2,P2,P2,P1]);
+	
+	femp2xfemp2xfemp2xfemp1 [ux,ur,uphi,up]=[0,0,0,0];
+	
+	real Re = 0;
+	real nu = 1; // these two are useless at this stage but required in the macros 
         
-// Save in txt format (for FreeFem)        
-      	{
-      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
-	    file << ur[] << endl;
-	    file <<  endl << 0 << endl;
-      	}
+/* Save in txt format (for FreeFem) */
+{
+	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+		file << ur[] << endl;
+		file <<  endl << 0 << endl;
+}
       	
-// Save in ff2m format (for StabFem)	    
-IFMACRO(!Porosity)
-macro Porosity 0//EOM
-ENDIFMACRO
-IFMACRO(!Omegax)
-macro Omegax 0//EOM
-ENDIFMACRO
+/* Save in ff2m format (for StabFem) */
+	IFMACRO(!Porosity)
+		macro Porosity 0//EOM
+	ENDIFMACRO
 
-SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0,Porosity,Omegax);
-	     
+	IFMACRO(!Omegax)
+		macro Omegax 0//EOM
+	ENDIFMACRO
+
+	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0,Porosity,Omegax);

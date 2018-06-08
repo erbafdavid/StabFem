@@ -16,9 +16,8 @@ global ff ffdir ffdatadir sfdir verbosity
 
 % Check for the mesh file which should be in the ffdatadir directory
 if(exist([ffdatadir,fileToRead1])==2) 
-    fileToRead1 = [ffdatadir,fileToRead1]; % normally the file should be in "ffdatadir" directory
+    fileToRead1 = [ffdatadir,fileToRead1];
 end
-
 
 %First, read auxiliary files "mesh.ff2m" and "SF_Init.ff2m"
 [filepath,name,ext] = fileparts(fileToRead1);
