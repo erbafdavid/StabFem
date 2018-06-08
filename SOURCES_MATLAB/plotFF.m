@@ -26,8 +26,8 @@ handle = figure();
 if(nargin==1)
     field1 = 'mesh';
     mesh = FFdata;
-%else
-%     mesh = FFdata.mesh;
+else
+    mesh = FFdata.mesh;
 end
 
 

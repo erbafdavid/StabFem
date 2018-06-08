@@ -159,7 +159,7 @@ problem NewtonIter([dux,dur,duphi,dup],[vx,vr,vphi,vp]) =
         NewtonIter ;           //// update of current solution u1=u1-w
         
         
-        plot(dux,fill=1,wait=0,value=1,cmm="dux");
+        plot(dux,wait=0,value=false,nbiso=50,fill=1,cmm="dux");
         
         ux[] = ux[]+dux[];
 		real enerl2=dux[].l2;

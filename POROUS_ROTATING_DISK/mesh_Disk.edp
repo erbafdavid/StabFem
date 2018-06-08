@@ -72,8 +72,10 @@ cout << "Dimensions of the domain  : Xmin = " << SFGeomXmin << " ; Xmax = " << S
                th=buildmesh(aint(nb*ep)+obs1(-rayon*nb)+obs2(-ep*nb)+obs3(-rayon*nb)
              +  a1(nd*(-ep/2-SFGeomXmin))+ a2(nd*(SFGeomXmax-ep/2))
              +out(SFGeomRmax*nd)+in(SFGeomRmax*nd)+lat((SFGeomXmax-SFGeomXmin)*nd));
-	       
+	    
+		// IFMACRO(FREEFEMPLOTS,YES)
 		plot(th,wait=1);
+		// ENDIFMACRO
 
 	
 
