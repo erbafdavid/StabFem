@@ -38,20 +38,21 @@ global ff ffdir ffdatadir sfdir verbosity
 
 % check if fields previously exist (Mode 2) or assign default value (mode 3)
 if(isfield(baseflow,'Porosity')) 
-    Porosity=baseflow.Porosity; 
+    Porosity = baseflow.Porosity; 
 else
-    Porosity=0; 
+    Porosity = 0; 
 end
+
 if(isfield(baseflow,'Omegax')) 
-    Omegax=baseflow.Omegax; 
+    Omegax = baseflow.Omegax; 
 else
     Omegax = 0; 
 end
 
 %%% check which parameters are transmitted to varargin (Mode 1) 
-    p = inputParser;
+   p = inputParser;
    addParameter(p,'Re',baseflow.Re,@isnumeric); % Reynolds
-   addParameter(p,'Mach',0,@isnumeric); % Reynolds
+   addParameter(p,'Mach',0,@isnumeric); % Mach
    addParameter(p,'Omegax',Omegax,@isnumeric); % rotation rate (for swirling body)
    addParameter(p,'Porosity',Porosity,@isnumeric); % For porous body
    addParameter(p,'type','Normal',@ischar); % mode 
@@ -62,7 +63,7 @@ end
    Omegax = p.Results.Omegax;
    Porosity=p.Results.Porosity;
 
-
+   
 %%% SELECTION OF THE SOLVER TO BE USED DEPENDING ON THE CASE
 
 switch(baseflow.mesh.problemtype)
@@ -83,7 +84,7 @@ switch(baseflow.mesh.problemtype)
    case('2DComp')
             if(verbosity>1)  disp('## solving base flow (2D CASE COMPRESSIBLE)'); end
             solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Mach) ' | ',ff,' ','Newton_2D_Comp_Seq.edp'];         
-              %NB at the moment the script is in the local folder, it is to be joined in ffdir in due time 
+              % NB at the moment the script is in the local folder, it is to be joined in ffdir in due time 
               % REMARK : 'Newton_2D_Comp.edp' (mpi parallel version) works best but we have to find how to pass the parameters ! 
               
    % case (other cases...)

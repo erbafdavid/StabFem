@@ -2,7 +2,7 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 
 % Matlab/FreeFem driver for Base flow calculation (Newton iteration)
 %
-% usage : [eigenvectors] = SF_Stability(bf, [,param1,value1] [,param2,value2] [...])
+% usage : [eigenvectors] = SF_Stability(baseflow, [,param1,value1] [,param2,value2] [...])
 %
 % baseflow is either a "baseflow" structure (with mesh as a field) or a
 % mesh structure.
@@ -12,7 +12,7 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 % m : azimuthal wavenumer (for axisymmetric problem)
 % k : transverse wavenumber (for 3D stability of 2D flow, to be implemented)
 % sym : symmetry condition for a 2D problem (set to 'S' for symmetric, 'A' for antisymmetric, or 'N' if no symmetry plane is present)
-% shift : for shift-invert (complex), 
+% shift : for shift-invert (complex),
 % nev : number of eigenvalues
 % type : 'D' for direct problem ; 'A' for ajoint problem ; 'DA' for discrete adjoint 
 %
@@ -277,11 +277,14 @@ end
         for ind = 1:length(eigenvalues)
             h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
             %%%%  plotting command for eigenmodes and callback function
-            tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
+            tt=['eigenmodeP= importFFdata(baseflow.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
       'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
       ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
-%   tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
+%   tt=['eigenmodeP= importFFdata(baseflow.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
             set(h,'buttondownfcn',tt);
+            ax = gca;
+            ax.XAxisLocation = 'origin';
+            ax.YAxisLocation = 'origin';
 
         end
     xlabel('\sigma_r');ylabel('\sigma_i');
