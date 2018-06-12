@@ -1,5 +1,5 @@
 function ffmesh = SF_Mesh_Deform(ffmesh,varargin) 
-% Matlab/SF_ driver for mesh deformation  (Newton iteration)
+% Matlab/SF_ driver for Base flow calculation (Newton iteration)
 %
 % usage : ffmesh = SF_Mesh_Deform(ffmesh,'Volume',Volume,[...])
 %
@@ -15,6 +15,7 @@ global ff ffdir ffdatadir sfdir verbosity
 
 %%% check which parameters are transmitted to varargin (Mode 1) 
     p = inputParser;
+  
    addParameter(p,'gamma',1,@isnumeric); % Surface tension
    addParameter(p,'rhog',0,@isnumeric); % gravity parameter
    addParameter(p,'V',-1,@isnumeric); % Volume (for liquid bridge)
@@ -22,16 +23,16 @@ global ff ffdir ffdatadir sfdir verbosity
    
     parse(p,varargin{:});
     
-    switch(ffmesh.problemtype)
+    switch(baseflow.mesh.problemtype)
         
           case('3DFreeSurfaceStatic')
         
         if(p.Results.V~=-1)% V-controled mode
-            mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (V-controled)'); 
+            mydisp(1,'## solving base flow (ACTUALLY ONLY MESH) For STATIC FREE SURFACE PROBLEM (V-controled)'); 
             parameterstring = [' " V ',num2str(p.Results.V),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' " '];
             solvercommand = ['echo ',parameterstring, ' | ',ff,' ',ffdir,'Newton_Axi_FreeSurface_Static.edp'];
         elseif(p.Results.P~=-1)% P-controled mode
-            mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (P-controled)'); 
+            mydisp(1,'## solving base flow (ACTUALLY ONLY MESH) For STATIC FREE SURFACE PROBLEM (P-controled)'); 
             parameterstring = [' " P ',num2str(p.Results.P),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' " '];
             solvercommand = ['echo ',parameterstring, ' | ',ff,' ',ffdir,'Newton_Axi_FreeSurface_Static.edp'];
         end
@@ -47,15 +48,14 @@ global ff ffdir ffdatadir sfdir verbosity
     
     
     
-    ffmeshNew = importFFmesh('mesh.msh');
-    
-    ffmesh = ffmeshNew; %% here one should add convergence tests
-    
+    meshNEW = importFFmesh('mesh.msh');
+    baseflowNEW=importFFdata(meshNEW,'BaseFlow.ff2m');
 
+    baseflow=baseflowNEW;
     
-    mydisp(1,'#### SF_Mesh_Deform : NEW MESH CREATED');
-    mydisp(1,['Volume = ',num2str(ffmesh.Vol)]);
-    mydisp(1,['P0 = ',num2str(ffmesh.P0)]);
+    mydisp(1,'#### SF_BaseFlow_FreeSurface : NEW MESH CREATED');
+    mydisp(1,['Volume = ',num2str(baseflow.mesh.Vol)]);
+    mydisp(1,['P0 = ',num2str(baseflow.mesh.P0)]);
     
     
 end

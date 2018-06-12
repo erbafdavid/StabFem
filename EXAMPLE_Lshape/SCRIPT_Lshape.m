@@ -1,3 +1,8 @@
+
+% This script is a basic example which illustrates the main functionalities
+% of the StabFem Software
+
+
 clear all;
 close all;
 run('../SOURCES_MATLAB/SF_Start.m');

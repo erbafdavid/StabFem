@@ -2,10 +2,10 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 
 % Matlab/FreeFem driver for Base flow calculation (Newton iteration)
 %
-% usage : [eigenvectors] = SF_Stability(bf, [,param1,value1] [,param2,value2] [...])
+% usage : [eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
 %
-% baseflow is either a "baseflow" structure (with mesh as a field) or a
-% mesh structure.
+% field is either a "baseflow" structure (with "mesh" structure as a subfield) 
+% or directly a "mesh" structure (for instance in problems such as sloshing where baseflow is not relevant).
 %
 % Parameters include :
 % Re : Reynolds number (specify only if it differs from the base flow, which is not usual)

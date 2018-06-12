@@ -221,7 +221,7 @@ real Fx0 = Drag(nu,ubx,uby,ubp);
 real Fxeps2 = (Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0));
 real FxA20 = real(Drag(nu,u20x,u20y,u20p));
 complex FxA22 = Drag(nu,u22x,u22y,u22p);
-complex FyA1 = Lift(1/Re,u1x,u1y,u1p);
+complex FyA1 = Lift(1/Re,u1x,u1y,u1p)*2;
 
 
 cout << " Fx associated to order epsilon correction : " << Fxeps2 << endl;

@@ -145,13 +145,13 @@ end
 		%  Newton successful : store base flow
 		baseflow=baseflowNew;
 		baseflow.mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
-    	system(['cp BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
+    	system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
     	baseflow.namefile = [ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
-    	system(['cp mesh.msh ' ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
+    	system(['cp ' ffdatadir 'mesh.msh ' ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
     	 % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
-    	 system(['rm ' ffdatadir '/BASEFLOWS/BaseFlow_Re*']); 
-         system(['cp BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);%except last one...`
-         system(['cp BaseFlow.ff2m ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);%except last one...
+    	 system(['rm ' ffdatadir 'BASEFLOWS/BaseFlow_Re*']); 
+         system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);%except last one...`
+         system(['cp ' ffdatadir 'BaseFlow.ff2m ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);%except last one...
     	 
          % in case requested, recompute the eigenmode as well
          if(nargout==2&&isnumeric(eigenmode)==0)

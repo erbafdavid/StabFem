@@ -1,7 +1,8 @@
 function handle = plotFF(FFdata,field1,varargin);
 %  function plotFF
-%  plots a data field imported from freefem using pdeplot command from
-%  toolbox pdetools
+%  plots a data field imported from freefem.
+%  This function is part of the StabFem project by D. Fabre & coworkers.
+%
 %  Usage : 
 %  1/ handle=plotFF(mesh); (if mesh is a mesh object)
 %  2/ handle=plotFF(ffdata,'field'); to plot isocontours of a P1 field
@@ -13,8 +14,19 @@ function handle = plotFF(FFdata,field1,varargin);
 %
 %  FFdata is the structure containing the data to plot
 %  field is the field to plot (the data may comprise multiple fields)
-%  normalisation (optional) is used to plot real(field/normalisation)
 %  (may be useful, for instance, to plot re/im parts of a complex field)
+%
+%  Note that this command is based on the "pdeplot" command and thus
+%  requires the presence of the "pdetools"  toolbox.   
+%  If you do not have the pdetools toolbox, there are several other options
+%  which you may consider for plotting : 
+%  1/ using "native" Freefem plots (by setting the macro FREEFEMPLOTS to YES)
+%  2/ exporting your data for Tecplot using exportFF_tecplot
+%  3/ exporting your data to Paraview format (Javier has written a driver
+%  which is to be incorporated in the project)
+%  4/ implementing the solution of chloros2 based on "patch" 
+%   (https://github.com/samplemaker/freefem_matlab_octave_plot)
+
 
 
 global ff ffdir ffdatadir sfdir verbosity
@@ -26,10 +38,18 @@ handle = figure();
 if(nargin==1)
     field1 = 'mesh';
     mesh = FFdata;
-%else
-%     mesh = FFdata.mesh;
+else
+    mesh = FFdata.mesh;
 end
 
+% check if 'colorrange' is a parameter.
+narg = length(varargin);colorrange = 0;
+if(narg>0)
+if(strcmp(lower(varargin{narg-1}),'colorrange')==1)
+    colorrange = varargin{narg};
+    varargin = {varargin{1:narg-2}};
+end
+end
 
 % two-input mode (to plot a field, real or complex)
 if(strcmp(field1,'mesh')==0)
@@ -53,16 +73,24 @@ end
 %pdemesh(mesh.points,mesh.seg,mesh.tri) ;
 
 
-if(any(cellfun(@(x) isequal(x, 'Contour'), varargin))&&(length(FFdata.mesh.seg)==1))
-mydisp(2,'PlotFF : Reconstructing seg array for contour plots');
-    meshS=importFFmesh([ ffdatadir , 'mesh.msh'],'seg');
-    FFdata.mesh.seg=meshS.seg;
+if( (any(cellfun(@(x) isequal(lower(x), 'contour'), varargin))) ...
+     &&(length(FFdata.mesh.seg)==1) ) 
+         mydisp(2,'PlotFF : Reconstructing seg array is neccessary for contour plots');
+         meshS=importFFmesh([ ffdatadir , 'mesh.msh'],'seg');
+         FFdata.mesh.seg=meshS.seg;
 end
 
-if(any(cellfun(@(x) isequal(x, 'ColorMap'), varargin))==0)
-    varargin={varargin{:} ,'ColorMap','parula'};
+if( (any(cellfun(@(x) isequal(lower(x), 'colormap'), varargin))==0) )
+    varargin={varargin{:} ,'ColorMap','parula'}; % default colormap set to parula
 end
 
+if( any(cellfun(@(x) isequal(lower(x), 'mesh'), varargin))==0) 
+    varargin={varargin{:} ,'Mesh','off'};
+end
+
+if(length(colorrange)==2)
+    data = min(max(data,colorrange(1)),colorrange(2)); % ecretage des donnees
+end
 
 pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
  axis equal;
