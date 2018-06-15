@@ -35,9 +35,10 @@ handle = figure();
 %handle = gcf;
 
 % single-input mode (to plot mesh)
-if(nargin==1)
+if(mod(nargin,2)==1)
     field1 = 'mesh';
     mesh = FFdata;
+    varargin = { field1, varargin };
 else
     mesh = FFdata.mesh;
 end
@@ -104,7 +105,7 @@ else
  axes1 = axes('Parent',handle);
  box(axes1,'off');
  hold(axes1,'all');
- xlabel('x');ylabel('r');
+ %xlabel('x');ylabel('r');
  if(any(strcmp('plottitle',fieldnames(FFdata)))) 
     title(FFdata.plottitle) 
  end

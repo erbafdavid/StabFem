@@ -46,19 +46,19 @@ macro Uinlet(y) 1.
 // inlet flow for constant flow
 
 macro BoundaryconditionsBaseFlow(du,u,v)
-	           on(bcinlet,du#x=Uinlet(y)-u#x,du#y=0.0)
+	           on(1,du#x=Uinlet(y)-u#x,du#y=0.0)
 	           /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
-	         + on(bclatNOP,du#x=0.0,du#y=0.0)  /* if you want to try no-penetration boundary (not optimal) */
-             + on(bcwall,du#x=0.0,du#y=0.0)
-             + int1d(th,bcaxis)(du#x*v#x*1e30*(symmetryBaseFlow=="A")+du#y*v#y*1e30*(symmetryBaseFlow=="S"))       
+	         + on(4,du#y=0.0)  /* if you want to try no-penetration boundary (not optimal) */
+             + on(2,du#x=0.0,du#y=0.0)
+             + int1d(th,6)(du#x*v#x*1e30*(symmetryBaseFlow=="A")+du#y*v#y*1e30*(symmetryBaseFlow=="S"))       
 //EOM
 
 macro BoundaryconditionsStability(u,v,symmetry)
-	           on(bcinlet,ux#=0,u#y=0.0)
+	           on(1,ux#=0,u#y=0.0)
 	            /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
-	         + on(bclatNOP,u#y=0.0)  /* if you want to try no-penetration boundary (not optimal) */
-             + on(bcwall,u#x=0.0,u#y=0.0)
-             + int1d(th,bcaxis)(u#x*v#x*1e30*(symmetry=="A")+u#y*v#y*1e30*(symmetry=="S"))       
+	         + on(4,u#y=0.0)  /* if you want to try no-penetration boundary (not optimal) */
+             + on(2,u#x=0.0,u#y=0.0)
+             + int1d(th,6)(u#x*v#x*1e30*(symmetry=="A")+u#y*v#y*1e30*(symmetry=="S"))       
 //EOM
 
 

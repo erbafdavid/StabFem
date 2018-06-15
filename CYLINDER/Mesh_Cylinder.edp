@@ -46,14 +46,14 @@ cout << "Xmin = " << xinlet << " ; Xmax = " << xoutlet << " ; ymax = " << yside 
 /////////////////////////////////////////////////////////////////////////////////
 // cylinder center is in (0,0)
 
-border cylinder(t=0,pi){ x=RADIUS*cos(t);y=RADIUS*sin(t);label=bcwall;}
+border cylinder(t=0,pi){ x=RADIUS*cos(t);y=RADIUS*sin(t);label=2;}
 //border cylref(t=0,2*pi){ x=(RADIUS+RR)*cos(t);y=(RADIUS+RR)*sin(t);label=999;}
 
-border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=bcinlet;}
-border axis1(t=0,1){ x=xinlet+(-RADIUS-xinlet)*t;y=0;label=bcaxis;}
-border axis2(t=0,1){ x=RADIUS+(xoutlet-RADIUS)*t;y=0;label=bcaxis;}
-border outlet(t=0,1){ x=xoutlet;y=yside*t;label=bcoutflow;}
-border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=bclat;}
+border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=1;}
+border axis1(t=0,1){ x=xinlet+(-RADIUS-xinlet)*t;y=0;label=6;}
+border axis2(t=0,1){ x=RADIUS+(xoutlet-RADIUS)*t;y=0;label=6;}
+border outlet(t=0,1){ x=xoutlet;y=yside*t;label=3;}
+border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=3;} // label 3 : same conditions as at outlet
 
 
 

@@ -90,9 +90,10 @@ macro NSL(nu,U,u,v)
 //EOM
         
 macro Boundaryconditions(u1,u2,v1,v2,symmetry)
-	           on(bcinlet,u1=0.0,u2=0.0) 
-             + on(bcwall,u1=0.0,u2=0.0)
-             + int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
+	           on(1,u1=0.0,u2=0.0) 
+             + on(2,u1=0.0,u2=0.0)
+             + on(4,u2=0.0)
+             + int1d(th,6)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
 // 
 
 macro Lift(nu,u1,u2,p)   
