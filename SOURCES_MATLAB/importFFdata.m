@@ -57,7 +57,7 @@ if(np>0&&i==istart)
     % file contains mesh-related data and is likely associated to a .txt
     % file containing plain freefem data
     [filepath,name,ext] = fileparts(fileToRead);
-    pdestruct.filename=[filepath,name,'.txt'];
+    pdestruct.filename=[filepath,'/',name,'.txt'];
 end
 %interpret headers
 datatype = rawData1.textdata{2};

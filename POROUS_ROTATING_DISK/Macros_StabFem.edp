@@ -23,8 +23,16 @@
 	required to compute lift and drag forces : Trainee(u,symmetry) and Portance(u,symmetry)
 ...................................................... */
 
-string ffdatadir = "WORK/";
+string ffdatadir = "WORK\\";
 int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+
+ /* -------------------
+		FreeFemPlot 
+    ------------------- */
+	
+	IFMACRO(!FreeFemPlot)
+		macro FreeFemPlot Yes//EOM
+	ENDIFMACRO
 
  /* -------------------
 		problemtype 
@@ -41,14 +49,6 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 	IFMACRO(!ncomponentsBF)
 		macro ncomponentsBF 3//EOM  	// THIS PARAMETERS SHOULD BE 2 if BASE FLOW is (U,V,P) and 3 if it is (U,V,W,P) (case with rotation)
 	ENDIFMACRO
-
- /* -------------------
-		FreeFemPlot 
-    ------------------- */
-	
-	IFMACRO(!FreeFemPlot)
-		macro FreeFemPlot No//EOM
-	ENDIFMACRO
 	
  /* ------------------
 		IsInObject 
@@ -61,7 +61,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
     ---------------------------------- */
 	
 	macro BoundaryconditionsBaseFlow(du,up,v)
-			on(bcinlet,du#x=1.0-up#x,du#r=0.0)
+			on(bcinlet,du#x=1.0-up#x,du#r=-up#r)
 			+ int1d(th,bcaxis)(du#r*v#r*1e30+du#phi*v#phi*1e30) 
 			+ int1d(th,7)(du#r*v#r*1e30)
 	//EOM
@@ -150,20 +150,21 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 	macro SFWriteBaseFlow(filename,u,typeFlow,iter,Porosity,Omegax)
 		if(iter>=0)
 			{
-			fespace p1forff2m(th,P1);  
+			fespace p1forff2m(th,P1);
 			p1forff2m xx,yy;
-			xx = x;
-			yy = y;
+				xx = x;
+				yy = y;
 			p1forff2m ut,vt,pt,vort;
-			ut = u#x;
-			vt = u#r;
+				ut = u#x;
+				vt = u#r;
+				pt = u#p;
 			IFMACRO(ncomponentsBF,3) 
 				p1forff2m wt ; 
-				wt = u#phi; 
+					wt = u#phi; 
 			ENDIFMACRO
-			pt = u#p;
-			vort = dy(u#x)-dx(u#r); /* vorticity */
-			p1forff2m psi,phi;
+			vort = (dy(u#x)-dx(u#r)); /* vorticity */
+			p1forff2m psi;
+				psi = u#psi;
 			/* solve Laplace(psi,phi, solver = CG) =
 				int2d(th)(dx(psi)*dx(phi)+dy(psi)*dy(phi))
 				- int2d(th)(-vort*phi)

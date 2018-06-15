@@ -114,12 +114,12 @@ error = 'ERROR : SF_ base flow computation aborted';
         mycp([ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'],[ffdatadir 'BaseFlow.txt']);
         mycp([ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         mycp([ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m'],[ffdatadir 'BaseFlow.ff2m']);
+%         mysystem(solvercommand,error) %%%%%%%%%%%%%%%%%%%%%%%%%
         baseflow = importFFdata(baseflow.mesh,[ffdatadir 'BaseFlow.ff2m']); 
         baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
         baseflow.iter=0;
         
  else
-   %      
         if(verbosity>0)disp(['      ### FUNCTION SF__BaseFlow : computing base flow for Re = ', num2str(Re)]);end
 %         mycp(baseflow.namefile,'BaseFlow_guess.txt');
         
@@ -133,11 +133,11 @@ error = 'ERROR : SF_ base flow computation aborted';
         end
         
         mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt']);
+        mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m']);
          baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
          baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
         
-%         mycp('BaseFlow.txt','BaseFlow_guess.txt');
  end
 
  

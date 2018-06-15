@@ -18,7 +18,7 @@ function handle = plotFF(FFdata,field1,varargin);
 
 
 global ff ffdir ffdatadir sfdir verbosity
-
+  
 handle = figure();
 %handle = gcf;
 

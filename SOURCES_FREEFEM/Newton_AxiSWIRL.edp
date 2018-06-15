@@ -176,7 +176,7 @@
 /* Paramètres de l'algorithme de Newton  */          
 	real tolerance = 2e-12;
 	real ener = 10;
-	int Nitermax = 20;
+	int Nitermax = 30;
 	int iter = 0;
 	
 /* Algorithme de Newton  */
@@ -199,6 +199,22 @@
 			iter++;
 		} ;
 
+ /* ---------------------------
+		Fonction de courant 
+    --------------------------- */		
+	
+	Mh rot;
+	Xh upsi,vpsi;
+	
+	//rot = dx(ub2)-dy(ub1);
+		
+	solve Courant(upsi,vpsi) =
+		int2d(th)(1/y*(dx(upsi)*dx(vpsi)+dy(upsi)*dy(vpsi)))
+		//+ on(12,upsi=0)
+		+ on(1,upsi=-Uinfx*(y^2/2))
+		+ on(3,upsi=-Uinfx*(y^2/2))
+		+ on(21,21,23,6,upsi=0);
+
 /*  ----------------------------
 		Sortie des résultats 
     ---------------------------- */
@@ -217,19 +233,21 @@
 			file << ux[]; 
 			file << endl << endl << Re;
 		}; 
-		exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt"); 
+		exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt");
+		
 		SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",iter,Porosity,Omegax); // file in .ff2ml format for StabFem driver
 		
 		IFMACRO(FreeFemPlot,Yes)
-			plot(ux,wait=0,value=false,nbiso=50,fill=1,cmm="final Ux");
-			plot(ur,wait=0,value=false,nbiso=50,fill=1,cmm="final Ur");
-			plot(uphi,wait=0,value=false,nbiso=50,fill=1,cmm="final Uphi");
+			plot(upsi,wait=1,value=false,nbiso=50,fill=0,cmm="Lignes courant");
+			plot(ux,wait=1,value=false,nbiso=50,fill=1,cmm="final Ux");
+			plot(ur,wait=1,value=false,nbiso=50,fill=1,cmm="final Ur");
+			plot(uphi,wait=1,value=false,nbiso=50,fill=1,cmm="final Uphi");
 		ENDIFMACRO
 		  
 		Mh uphiphi = uphi;
 		cout << "Uphi max : " << uphi[].max;
 		
 		IFMACRO(FreeFemPlot,Yes)
-			plot(up,wait=0,value=false,nbiso=50,fill=1,cmm="final P");
+			plot(up,wait=1,value=false,nbiso=50,fill=1,cmm="final P");
 		ENDIFMACRO
 		};

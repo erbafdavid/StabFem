@@ -37,14 +37,14 @@ end
 error = 'ERROR : SF_Init not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
 mysystem(command,error);
 
-% 
+% Traitement des infos
 if(nargout==1)
     mesh = importFFmesh('mesh.msh');
-    mycp('mesh.msh',[ffdatadir '/mesh_init.msh']);
-    mycp('BaseFlow_guess.txt',[ffdatadir 'BASEFLOWS/BaseFlow_init.txt']);
-    mesh.namefile=[ ffdatadir 'BASEFLOWS/mesh_init.msh'];
+    mycp([ffdatadir 'mesh.msh'],[ffdatadir '/mesh_init.msh']);
+    mycp([ffdatadir 'BaseFlow_guess.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_init.txt']);
+    mesh.namefile=[ffdatadir 'BASEFLOWS/mesh_init.msh'];
     baseflow=importFFdata(mesh,'BaseFlow.ff2m');
-    baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_init.txt'];
+    baseflow.namefile = [ffdatadir 'BASEFLOWS/BaseFlow_init.txt'];
     disp(['      ### INITIAL MESH CREATED WITH np = ',num2str(mesh.np),' points']);
 end
 

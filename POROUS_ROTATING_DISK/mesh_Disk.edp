@@ -75,7 +75,7 @@
 	border obs2(t=-ep/2,ep/2){x=t; y=rayon;label=22;};
 	border obs3(t=rayon,0){x=+ep/2; y=t; label=23;};
 
-/* Axe de symetrie */	
+/* Bords du domaine */	
 	border out(t=0,SFGeomRmax){x=SFGeomXmax; y=t; label=3; };
 	border lat(t=SFGeomXmax,SFGeomXmin){x=t; y=SFGeomRmax;label=3;};              
 	border in(t=SFGeomRmax,0){x=SFGeomXmin; y=t;label=1;};
@@ -86,7 +86,7 @@
 
 /* Densité de maillage */	
 	int nd = 1;
-	int nb = 40;            
+	int nb = 100;            
 
 /* Construction domaine */
 	mesh th = buildmesh(aint(nb*ep)
@@ -144,9 +144,11 @@
    
 /* Create a guess for the base flow (here starting from zero works very well) */
 	fespace femp1(th,P1);
+	fespace femp2(th,P2);
 	fespace femp2xfemp2xfemp2xfemp1(th,[P2,P2,P2,P1]);
 	
 	femp2xfemp2xfemp2xfemp1 [ux,ur,uphi,up]=[0,0,0,0];
+	femp2 upsi=0;
 	
 	real Re = 0;
 	real nu = 1; // these two are useless at this stage but required in the macros 

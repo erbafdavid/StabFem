@@ -19,7 +19,7 @@ ff = '/usr/local/bin/FreeFem++ -nw';
 %ff = '/usr/local/ff++/bin/FreeFem++ -nw'; for Flavio
 end
 if(ispc)
-    ff = 'FreeFem++'; % for windows systems
+    ff = 'FreeFem++ -v 0'; % for windows systems
 end
 
 sfdir = '../SOURCES_MATLAB/'; 

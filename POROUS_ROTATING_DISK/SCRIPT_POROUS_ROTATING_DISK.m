@@ -20,126 +20,146 @@ verbosity = 100;
 
 %% 1 - Génération MAILLAGE et BASEFLOW
 
+Rx = 3;
+
 % Géométrie
-Diametre = 1;
-    DIAMETER = num2str(Diametre);
-Epaisseur = 0.333;
+Rayon = 1;
+    DIAMETER = num2str(2*Rayon);
+Epaisseur = 1/(2*Rx);
     THICKNESS = num2str(Epaisseur);
-Xmin = -5;
+Xmin = -20*Rayon;
     XMIN = num2str(Xmin);
-Xmax = 40;
+Xmax = 150*Rayon;
     XMAX = num2str(Xmax);
-Ymax = 5;
+Ymax = 20*Rayon;
     YMAX = num2str(Ymax);
 
 boxx = [-Epaisseur/2, Epaisseur/2, Epaisseur/2, -Epaisseur/2, -Epaisseur/2];
-boxy = [0, 0, Diametre/2, Diametre/2, 0];
+boxy = [0, 0, Rayon, Rayon, 0];
 
+it=0;
 baseflow=SF_Init('mesh_Disk.edp',[DIAMETER ' ' THICKNESS ' ' XMIN ' ' XMAX ' ' YMAX]);
 
-% Plot mesh
-baseflow.xlim = [Xmin Xmax]; baseflow.ylim=[0,Ymax];
+% Plot mesh initial
+% baseflow.xlim = [Xmin Xmax]; baseflow.ylim=[0,Ymax];
 baseflow.xlabel=('x');baseflow.ylabel=('r');
-baseflow.plottitle = ['Maillage du domaine de calcul'];
+baseflow.plottitle = ['Maillage initial du domaine de calcul'];
 plotFF(baseflow,'mesh');
 hold on;fill(boxx,boxy,'y','FaceAlpha', 0.3);hold off;
 
 %% 2 - Génération du BASEFLOW pour un certain Re
 
-baseflow = SF_BaseFlow(baseflow,'Re',10,'Porosity',1e-3,'Omegax',0.);
-baseflow = SF_Adapt(baseflow,'Hmax',2);
-baseflow = SF_BaseFlow(baseflow,'Re',30);
-baseflow = SF_BaseFlow(baseflow,'Re',60);
-baseflow = SF_Adapt(baseflow,'Hmax',2);
-baseflow = SF_BaseFlow(baseflow,'Re',100);
-baseflow = SF_BaseFlow(baseflow,'Re',150);
-baseflow = SF_Adapt(baseflow,'Hmax',2);
-baseflow = SF_BaseFlow(baseflow,'Re',200);
-baseflow = SF_BaseFlow(baseflow,'Re',215);
-baseflow = SF_BaseFlow(baseflow,'Re',230);
-baseflow = SF_BaseFlow(baseflow,'Re',260);
-baseflow = SF_BaseFlow(baseflow,'Re',280);
-baseflow = SF_BaseFlow(baseflow,'Re',300);
+% Paramètres de calcul
+Re_start = [10];
+Porosite = [0.];
+Omega = [0.];
+
+    it=it;
+    for Re = Re_start
+        baseflow = SF_BaseFlow(baseflow,'Re',Re,'Porosity',0.,'Omegax',Omega);
+        it = it+1;
+        if (it==1) || (mod(it,1) == 0)% && (Re<150)
+            baseflow = SF_Adapt(baseflow);
+            %--- Plot mesh intermediaire
+            baseflow.xlabel=('x');baseflow.ylabel=('r');
+            baseflow.plottitle = ['Maillage intermediaire it = ' num2str(it) ' du domaine de calcul'];
+            plotFF(baseflow,'mesh');
+            hold on;fill(boxx,boxy,'y','FaceAlpha', 0.3);hold off;
+        end
+    end
+
+% Plot mesh final
+% baseflow.xlim = [Xmin Xmax]; baseflow.ylim=[0,Ymax];
+% baseflow.xlabel=('x');baseflow.ylabel=('r');
+% baseflow.plottitle = ['Maillage final du domaine de calcul'];
+% plotFF(baseflow,'mesh');
+% hold on;fill(boxx,boxy,'y','FaceAlpha', 0.3);hold off;
 
 % Plot ux
-baseflow.xlim = [Xmin Xmax]; baseflow.ylim=[0,Ymax];
+% baseflow.xlim = [-2*Rayon 5*Rayon]; baseflow.ylim=[0,2*Rayon];
 baseflow.xlabel=('x');baseflow.ylabel=('r');
 baseflow.plottitle = ['Champ de vitesse u_x pour Re = ' num2str(baseflow.Re)];
-plotFF(baseflow,'ux','Contour','on');
+plotFF(baseflow,'ux','Contour','on','Levels',[0,1e-50]);
 hold on;plot(boxx, boxy, 'w-');hold off;
 
 % Plot ur
 baseflow.plottitle = ['Champ de vitesse u_r pour Re = ' num2str(baseflow.Re)];
-plotFF(baseflow,'ur','Contour','on');
+plotFF(baseflow,'ur','Contour','on','Levels',[0,1e-50]);
 hold on;plot(boxx, boxy, 'w-');hold off;
 
 % Plot uphi
 baseflow.plottitle = ['Champ de vitesse u_\phi pour Re = ' num2str(baseflow.Re)];
-plotFF(baseflow,'uphi','Contour','on');
+plotFF(baseflow,'uphi','Contour','on','Levels',[0,1e-50]);
 hold on;plot(boxx, boxy, 'w-');hold off;
 
 % Plot P
 baseflow.plottitle = ['Champ de pression P pour Re = ' num2str(baseflow.Re)];
-plotFF(baseflow,'p','Contour','on');
+plotFF(baseflow,'p','Contour','on','Levels',[0,1e-50]);
 hold on;plot(boxx, boxy, 'w-');hold off;
 
-% Plot vorticité
+% Plot Vorticité
 baseflow.plottitle = ['Champ de vorticité \omega pour Re = ' num2str(baseflow.Re)];
-plotFF(baseflow,'vort','Contour','on');
+plotFF(baseflow,'vort','Contour','on','Levels',[0,1e-50]);
 hold on;plot(boxx, boxy, 'w-');hold off;
 
-%% Chapter 2 : Spectrum exploration
+% Plot Lignes de courant
+baseflow.plottitle = ['Lignes de courant pour Re = ' num2str(baseflow.Re)];
+plotFF(baseflow,'psi','Contour','on','Levels');
+hold on;plot(boxx, boxy, 'w-');hold off;
 
-% first exploration for m=1
-[ev1,em1] = SF_Stability(baseflow,'m',1,'shift',0-.6i,'nev',10,'PlotSpectrum','yes');
-[ev2,em2] = SF_Stability(baseflow,'m',1,'shift',0,'nev',10,'PlotSpectrum','yes');
-[ev3,em3] = SF_Stability(baseflow,'m',1,'shift',0+.6i,'nev',10,'PlotSpectrum','yes');
 
-figure;
-plot(real(ev1),imag(ev1),'+',real(ev2),imag(ev2),'+',real(ev3),imag(ev3),'+');
-title(['spectrum for m=1, Re= ' num2str(baseflow.Re) ', Omega=0.1, Porosity=0.001'])
+% %% Chapter 2 : Spectrum exploration
+% 
+% % first exploration for m=1
+% [ev1,em1] = SF_Stability(baseflow,'m',1,'shift',0-.6i,'nev',10,'PlotSpectrum','yes');
+% [ev2,em2] = SF_Stability(baseflow,'m',1,'shift',0,'nev',10,'PlotSpectrum','yes');
+% [ev3,em3] = SF_Stability(baseflow,'m',1,'shift',0+.6i,'nev',10,'PlotSpectrum','yes');
+% 
+% figure;
+% plot(real(ev1),imag(ev1),'+',real(ev2),imag(ev2),'+',real(ev3),imag(ev3),'+');
+% title(['spectrum for m=1, Re=' num2str(baseflow.Re) ', Omega=' num2str(Omega) ', Porosity=' num2str(Porosite)])
 
 %% Chapter 3 : stability curves
 
-Re_LIN = [200 : 2.5: 220];
-
-baseflow=SF_BaseFlow(baseflow,'Re',200);
-[ev,em] = SF_Stability(baseflow,'m',1,'shift',ev1(1),'nev',1);
-lambda1_LIN=[];
-    for Re = Re_LIN
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
-        lambda1_LIN = [lambda1_LIN ev];
-    end    
-
-baseflow=SF_BaseFlow(baseflow,'Re',200);
-[ev,em]=SF_Stability(baseflow,'m',1,'shift',ev2(1),'nev',1);
-lambda2_LIN=[];
-    for Re = Re_LIN
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
-        lambda2_LIN = [lambda2_LIN ev];
-    end   
-    
-baseflow=SF_BaseFlow(baseflow,'Re',200);
-[ev,em]=SF_Stability(baseflow,'m',1,'shift',ev3(1),'nev',1);
-lambda3_LIN=[];
-    for Re = Re_LIN
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
-        lambda3_LIN = [lambda3_LIN ev];
-    end   
-
-figure(20);
-plot(Re_LIN,real(lambda1_LIN),'b+-',Re_LIN,real(lambda1_LIN),'r+-',Re_LIN,real(lambda3_LIN),'b+-');
-xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
-% box on; pos = get(gcf,'Position'); pos(4)=pos(3);set(gcf,'Position',pos); % resize aspect ratio
-% set(gca,'FontSize', 18);
-saveas(gca,'PorousDisk_sigma_Re',figureformat);
-
-figure(21);hold off;
-plot(Re_LIN,imag(lambda1_LIN),'b+-',Re_LIN,imag(lambda1_LIN),'r+-',Re_LIN,imag(lambda3_LIN),'b+-');
-xlabel('Re');ylabel('$\omega$','Interpreter','latex');
-% box on; pos = get(gcf,'Position'); pos(4)=pos(3);set(gcf,'Position',pos); % resize aspect ratio
-% set(gca,'FontSize', 18);
-saveas(gca,'PorousDisk_omega_Re',figureformat);    
+% Re_LIN = [200 : 2.5: 220];
+% 
+% baseflow=SF_BaseFlow(baseflow,'Re',200);
+% [ev,em] = SF_Stability(baseflow,'m',1,'shift',ev1(1),'nev',1);
+% lambda1_LIN=[];
+%     for Re = Re_LIN
+%         baseflow = SF_BaseFlow(baseflow,'Re',Re);
+%         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
+%         lambda1_LIN = [lambda1_LIN ev];
+%     end    
+% 
+% baseflow=SF_BaseFlow(baseflow,'Re',200);
+% [ev,em]=SF_Stability(baseflow,'m',1,'shift',ev2(1),'nev',1);
+% lambda2_LIN=[];
+%     for Re = Re_LIN
+%         baseflow = SF_BaseFlow(baseflow,'Re',Re);
+%         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
+%         lambda2_LIN = [lambda2_LIN ev];
+%     end   
+%     
+% baseflow=SF_BaseFlow(baseflow,'Re',200);
+% [ev,em]=SF_Stability(baseflow,'m',1,'shift',ev3(1),'nev',1);
+% lambda3_LIN=[];
+%     for Re = Re_LIN
+%         baseflow = SF_BaseFlow(baseflow,'Re',Re);
+%         [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
+%         lambda3_LIN = [lambda3_LIN ev];
+%     end   
+% 
+% figure(20);
+% plot(Re_LIN,real(lambda1_LIN),'b+-',Re_LIN,real(lambda1_LIN),'r+-',Re_LIN,real(lambda3_LIN),'b+-');
+% xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
+% % box on; pos = get(gcf,'Position'); pos(4)=pos(3);set(gcf,'Position',pos); % resize aspect ratio
+% % set(gca,'FontSize', 18);
+% saveas(gca,'PorousDisk_sigma_Re',figureformat);
+% 
+% figure(21);hold off;
+% plot(Re_LIN,imag(lambda1_LIN),'b+-',Re_LIN,imag(lambda1_LIN),'r+-',Re_LIN,imag(lambda3_LIN),'b+-');
+% xlabel('Re');ylabel('$\omega$','Interpreter','latex');
+% % box on; pos = get(gcf,'Position'); pos(4)=pos(3);set(gcf,'Position',pos); % resize aspect ratio
+% % set(gca,'FontSize', 18);
+% saveas(gca,'PorousDisk_omega_Re',figureformat);    

@@ -133,8 +133,8 @@ end
    
    
     % recomputing base flow after adapt
-%     mycp('mesh_adapt.msh','mesh.msh');
-%     mycp('BaseFlow_adaptguess.txt','BaseFlow_guess.txt');
+%      mycp('mesh_adapt.msh','mesh.msh');
+%      mycp('BaseFlow_adaptguess.txt','BaseFlow_guess.txt');
     baseflowNew = baseflow; % initialise structure
     baseflowNew.mesh=importFFmesh([ffdatadir 'mesh.msh']);
     
@@ -142,14 +142,14 @@ end
     if(baseflowNew.iter>0)
 		%  Newton successful : store base flow
 		baseflow=baseflowNew;
-		baseflow.mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
-    	mycp('BaseFlow.txt',[ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
-        baseflow.namefile = [ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
-        mycp('mesh.msh',[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
+		baseflow.mesh.namefile=[ffdatadir 'BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
+    	mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
+        baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
+        mycp([ffdatadir 'mesh.msh'],[ffdatadir 'BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
     	 % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
-         myrm([ffdatadir '/BASEFLOWS/BaseFlow_Re*']);
-         mycp('BaseFlow.txt',[ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);
-    	 mycp('BaseFlow.ff2m',[ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);
+         myrm([ffdatadir 'BASEFLOWS/BaseFlow_Re*']);
+         mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);
+    	 mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);
          
          % in case requested, recompute the eigenmode as well
          if(nargout==2&&isnumeric(eigenmode)==0)
@@ -169,5 +169,5 @@ end
         mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         error(' ERROR in SF_Adapt : recomputing base flow failed, going back to baseflow/mesh') 
     end
-%         myrm([ffdatadir 'mesh_ans.msh'],[ffdatadir 'BaseFlow_ans.txt']);
+        myrm([ffdatadir '*_ans.* ']);
 end
