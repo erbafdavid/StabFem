@@ -1,0 +1,33 @@
+>> ffmesh=SF_Mesh('Lshape_Mesh.edp','Params',Ndensity)
+      ### INITIAL MESH CREATED WITH np = 1426 points
+
+ffmesh = 
+
+                np: 1426
+                nt: 2690
+           density: 40
+                 R: 1
+       problemtype: 'EXAMPLE'
+    meshgeneration: 0
+            points: [2x1426 double]
+               tri: [4x2690 double]
+               seg: 0
+          filename: './mesh.msh'
+
+>> heatS=SF_Launch('Lshape_Steady.edp','Mesh',ffmesh)
+
+heatS = 
+
+        mesh: [1x1 struct]
+    filename: 'Data.txt'
+    datatype: 'Temperature'
+           T: [1426x1 double]
+           
+>> heatCut = importFFdata('Heat_1Dcut.ff2m')
+
+heatCut = 
+
+    datatype: 'Temperature'
+        Xcut: [101x1 double]
+        Tcut: [101x1 double]
+         
