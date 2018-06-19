@@ -1,0 +1,67 @@
+
+
+// README :
+// This little program is used to stretch the mesh in both X and Y directions
+
+
+verbosity = 0;
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+include "SF_Geom.edp";
+include "Macros_StabFem.edp";
+
+mesh th=readmesh(ffdatadir+"mesh_guess.msh");
+//mesh Shempty=emptymesh(th); 	// Maillage 'surface'
+mesh Shempty=th;
+real K0 = 1; // guess
+real K1;
+real dpdz;
+include "Macros_Geometrie_Surface.edp";
+
+cout << "Stretching mesh :" << endl;
+real Xfactor, Yfactor;
+
+real OldVolume = int2d(th)(x);
+cout << "Reading mesh : Initial Volume = " << OldVolume << endl << endl; 
+
+cout << " Enter Stretching ratio in X direction" << endl;
+cin >> Xfactor;
+cout << " Enter Stretching ratio in Y direction" << endl;
+cin >> Yfactor;
+
+cout << "==> Strecting factors : " << Xfactor << " ; " << Yfactor << endl << endl;
+
+// Deplacement du maillage
+th = movemesh(th,[x*Xfactor,y*Yfactor]);
+Shempty=th;
+
+IFMACRO(FREEFEMPLOTS,YES)
+plot(th,Shempty,cmm="Deformation maillage iteration "+i,wait=1);
+ENDIFMACRO
+
+real NewVolume = int2d(th)(x);
+cout << "NewVolume = " << NewVolume << endl; 
+Shempty = emptymesh(th);
+
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+CalcGeomSurf;
+
+real Zmin = yPointSurf(0);
+real Zmax = yPointSurf(Nsurface);
+real L = Zmax-Zmin;
+real Rl = max(xPointSurf(0),xPointSurf(Nsurface));
+cout << "Geometry After MeshStretch : L = " << L << " ; R = " << Rl << endl << endl;
+
+savemesh(th,ffdatadir+"mesh_guess.msh");
+SFWriteMesh(ffdatadir+"mesh_guess.ff2m",th);
+
+
+cout << endl << "The end..." << endl << endl;
