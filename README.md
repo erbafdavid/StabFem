@@ -9,7 +9,7 @@
 - The graphical interface has been modified to replace pdetools/pdeplots by the alternative (and freeware) pdeplot2dff, 
 - Full compatibility with Octave is under work and should be released soon.
 - Compatibility with windows 10 has been solved and will be integrated very soon.
-*
+- DNS will soon be possible with StabFem*
 
 ## General description of the project
 
@@ -23,7 +23,14 @@ and solve the various linear problems involved in the computation.
 
 - Matlab/Octave is used as a driver to monitor the computations in terminal or script mode and as a graphical interface to plot the results.
 
-The kind of computation currently implemented comprises :
+The classes of problems currently integrated are as follows:
+- Incompressible flows around fixed objets and/or through conduits,
+- Incompressible flows around bodies in solid-body motion (spring-mounted of in free motion),
+- Linear acoustics,
+- Compressible flows around fixed bodies
+- Free surface problems (oscillation of bubbles and liquid bridges, bathtub vortices, etc..)
+
+The kind of computations currently implemented comprises :
 - Computation of a base flow (steady solution of Navier-Stokes equations) in a given geometry.
 - Simple computation of eigenvalue/eigenmodes
 - Interactive exploration of the spectrum
@@ -31,14 +38,7 @@ The kind of computation currently implemented comprises :
 - Harmonic balance approach to describe oscillation cycles in the nonlinear regime. 
 - Direct numerical simulation (to be integrated soon...)
 
-The geometries have to be 2D or axisymmetric (in current stage of integration).
-The kind of flows handled currently comprises :
-- Incompressible flows around fixed objets and/or through conduits,
-- Incompressible flows around bodies in solid-body motion (spring-mounted of in free motion),
-- Linear acoustics,
-- Compressible flows around fixed bodies
-- Free surface problems (oscillation of bubbles and liquid bridges, bathtub vortices, etc..)
-
+The geometries have to be 2D or axisymmetric.
 
 
 ## Example
@@ -78,37 +78,23 @@ You will then be able to manage your own version of the project using git comman
 
 ### Instalation remarks :
 
-To run properly the software you should previously install matlab and FreeFem++ on you system.
+To run properly the software you should previously install matlab (or Octave) and FreeFem++ on you system.
 Then, the only system-dependent adaptation should be the definition of the variable ff in the file SOURCES_MATLAB/SF_Start.m.
 
 With most linux and mac systems this should be :
 
 ```
-ff = '/usr/local/bin/FreeFem++';
+ff = '/usr/local/bin/FreeFem++ -v 0';
 ```
 
-With Windows systems this should be :
+With Windows 10 systems this should be :
 ```
-ff = 'launchff++';
+ff = 'FreeFem++';
 ```
 
 
 Note that with Ubuntu 18 there is a little issue with the library libstdc++.so.6 which is not where Matlab looks for it
 (see Instalationnotes.md for a simple solution to this problem) 
-
-
-## Motivation
-
-As a growing number of teams in different countries, I’ve been using FreeFem++ for several years
-to perform global stability calculations in fluid mechanics. This means in a first step computing a 
-« base flow » by solving the Steady Navier-Stokes equations (by Netwon iteration) in a given geometry, 
-and in a second step looking for eigenvalues/eigenmodes by solving the linearised unsteady NS equations. 
-After these two main steps may come a number of variants (adjoint, structural sensititity, weakly nonlinear developments…)
-
-After experimenting several ways to monitor the calculations and post-process the results 
-(all in a single FreeFem script, modular programs, bash scripts, etc…)  I ended up designing a matlab interface 
-to do all from a script or from a console in interactive mode. 
-
 
 
 
