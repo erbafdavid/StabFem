@@ -171,12 +171,9 @@ Equilibrium shape and oscillation modes of a bubble within a uniaxial straining 
 
 The Matlab part of the software is by D. Fabre (2017).
 
-The FreeFem part incorporates a number of sources from J. Tchoufag, P. Bonnefis, J. Mougel, V. Citro 
-and many other students and collegues.
+The FreeFem part incorporates a number of sources from J. Tchoufag, P. Bonnefis, J. Mougel, V. Citro, F. Giannetti, O. Marquet, and many other students and collegues.
 
-Note that the plotting part of the interface is based on a previous package FreeFem2Matlab
-written by Julien Dambrine and deposited on mathworks. This latter uses the pdeplot 
-command from pdetools library, and I don’t know an alternative with octave/scilab.
+The plotting part of the interface uses the function pdeplot2dff (alternative to pdeplot and fully compatible with Octave) developped by [Chloros](https://github.com/samplemaker/freefem_matlab_octave_plot). 
 
 At longer term, a translation of the Software in python is under reflection.
 
