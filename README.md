@@ -1,5 +1,16 @@
 # StabFem
 
+## *Latest news (20/06/2018)*
+
+*The project is currently in rapid progress. Here are the latest novelties :
+
+- A research paper advertising the software was just submitted to Rev. Appl. Mech. [See here:](https://github.com/erbafdavid/StabFem/blob/master/ARTICLE_STABFEM/ARTICLE_ASME_Submitted.pdf)
+- Writing a documentation is in progress. [See here:](https://github.com/erbafdavid/StabFem/blob/master/99_Documentation/main.pdf)
+- The graphical interface has been modified to replace pdetools/pdeplots by the alternative (and freeware) pdeplot2dff, 
+- Full compatibility with Octave is under work and should be released soon.
+- Compatibility with windows 10 has been solved and will be integrated very soon.
+*
+
 ## General description of the project
 
 StabFem is a set of programs to perform Global Stability calculations in Fluid Mechanics, which is developed 
@@ -10,21 +21,24 @@ The project is multi-system (linux, macOS, Windows), and based on two softwares 
 - The finite-element software FreeFem++ is used to generate the meshes, construct the operators
 and solve the various linear problems involved in the computation.
 
-- Matlab is used as a driver to monitor the computations in terminal or script mode and as a graphical interface to plot the results (note that some graphical functionalities require the toolbox pdetools).
-
+- Matlab/Octave is used as a driver to monitor the computations in terminal or script mode and as a graphical interface to plot the results.
 
 The kind of computation currently implemented comprises :
 - Computation of a base flow (steady solution of Navier-Stokes equations) in a given geometry.
 - Simple computation of eigenvalue/eigenmodes
 - Interactive exploration of the spectrum
 - Adjoint eigenmodes and structural sensitivity
-- Computation of amplitude equations through weakly nonlinear development 
-- (...)
+- Harmonic balance approach to describe oscillation cycles in the nonlinear regime. 
+- Direct numerical simulation (to be integrated soon...)
 
-The kind of geometry handled comprises :
-- 2D geometry (flow around a cylinder, etc...)
-- axisymmetric geometry (bluff body, jet through a hole, etc..)
-- Free surface problems (oscillation of bubbles and liquid bridges, etc..)
+The geometries have to be 2D or axisymmetric (in current stage of integration).
+The kind of flows handled currently comprises :
+- Incompressible flows around fixed objets and/or through conduits,
+- Incompressible flows around bodies in solid-body motion (spring-mounted of in free motion),
+- Linear acoustics,
+- Compressible flows around fixed bodies
+- Free surface problems (oscillation of bubbles and liquid bridges, bathtub vortices, etc..)
+
 
 
 ## Example
