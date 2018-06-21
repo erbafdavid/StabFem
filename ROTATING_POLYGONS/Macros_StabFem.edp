@@ -93,7 +93,7 @@ macro SFWriteModePotential(namefile,MODE,ev)
 	file << endl;
 	for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
 	     { file << real(ModeEtaforfile(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl ;
-	       file << imag(ModeEtaforfile(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl; 
+	       file << imag(ModeEtaforfile(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl;
    	     };
 	file << endl;
    };

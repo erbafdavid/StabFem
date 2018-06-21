@@ -42,7 +42,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
   
    %parameters for the eigenvalue solver
    addParameter(p,'shift',1+1i);
-   addParameter(p,'nev',1,@isnumeric);
+   addParameter(p,'nev',10,@isnumeric);
    addParameter(p,'type','D',@ischar); 
   
    % parameters for the post-processing options
@@ -157,11 +157,19 @@ switch ffmesh.problemtype
         
      case('3DFreeSurfaceStatic')
         % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
+        if(p.Results.nu==0)
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE POTENTIAL : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
-        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(10) ' " '];
+        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(p.Results.nev)  ' ' num2str(imag(p.Results.shift)) ' " '];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
         status = mysystem(solvercommand);     
-            
+        else
+        mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE VISCOUS : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.nu) ...
+            ' ' num2str(p.Results.m) ' ' num2str(real(p.Results.shift)) ' ' num2str(imag(p.Results.shift)) ' ' num2str(p.Results.nev) ' " '];
+        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Viscous.edp'];
+        status = mysystem(solvercommand);  
+        end
+        
     %case(...)    
     % adapt to your case !
     
@@ -199,18 +207,19 @@ eigenvalues = EVr+1i*EVi;
             [t,o]=sort(real(eigenvalues)+1e-4*abs(imag(eigenvalues)));
         case('SM') % sort by increasing magnitude of eigenvalue
             [t,o]=sort(abs(eigenvalues)+1e-4*abs(imag(eigenvalues)));
-        case('LM') % sort by increasing magnitude of eigenvalue
+        case('LM') % sort by decreasing magnitude of eigenvalue
             [t,o]=sort(-abs(eigenvalues)+1e-4*abs(imag(eigenvalues)));
         case('SI') % sort by increasing imaginary part of eigenvalue
-            [t,o]=sort(imag(eigenvalues));
+            [t,o]=sort(imag(eigenvalues));  
         case('SIA') % sort by increasing imaginary part (abs) of eigenvalue
             [t,o]=sort(abs(imag(eigenvalues))+1e-4*imag(eigenvalues)+1e-4*real(eigenvalues));
+        case('DIST') % sort by increasing distance to the shift
+            [t,o]=sort(abs(eigenvalues-shift));  
         case('cont') % sort using continuation (to connect with previous branches)
             eigenvaluesSORT = eigenvalues;
             for i=1:length(eigenvalues)    
                 [c index] = min(abs(eigenvaluesSORT-eigenvaluesPrev(i)));
                 o(i) = index;
-                eigenvaluesSORT(index);
                 eigenvaluesSORT(index)=NaN;
             end
         case('no')

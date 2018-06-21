@@ -241,24 +241,39 @@ problem CalcDef([uzdef,urdef],[vzdef,vrdef])=
 
 
 
+/// WARNING ON A CHANGE L ORDRE DE NUMEROTATION !!!
 macro SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface)
 {
 int ksurf = 0;
-for(int k=0;k<nbboundaryelements;k++)
+for(int k=nbboundaryelements-1;k>-1;k--)
+{
+	if(Shempty.be(k).label==2) 
+	{
+	if (ksurf==0){IndexPointSurf(ksurf) = Shempty.be(k)[1];}
+	else{if(IndexPointSurf(ksurf) !=Shempty.be(k)[1]){cout << "" ;}}
+	IndexPointSurf(ksurf+1) = Shempty.be(k)[0];	
+	ksurf++;
+	};
+};
+if(ksurf>0)
+{
+cout << " Successful surface numbering REVERSE order ; Nsurf = " << ksurf << endl;
+}
+else
+{
+for(int k=0;k<nbboundaryelements-1;k++)
 {
 	if(Shempty.be(k).label==2) 
 	{
 	if (ksurf==0){IndexPointSurf(ksurf) = Shempty.be(k)[0];}
-	else{if(IndexPointSurf(ksurf) !=Shempty.be(k)[0]){cout << "WARNING probleme numeration de la surface !" << endl;}}
+	else{if(IndexPointSurf(ksurf) !=Shempty.be(k)[0]){cout << "";}}
 	IndexPointSurf(ksurf+1) = Shempty.be(k)[1];	
 	ksurf++;
 	/*cout <<  "Boundary point k  = "<< k << " belongs to surface ; number " << ksurf << endl; */
-	}
-	else
-	{
-	;	/*cout <<  "Boundary point k  = "<< k << " DOES NOT belong to surface" << endl; */
 	};
-}
+	cout << " Successful surface numbering DIRECT order ; Nsurf = " << ksurf << endl;
+};
+};
 Nsurface = ksurf; 
 for(ksurf=0;ksurf<Nsurface+1;ksurf++)
   {
