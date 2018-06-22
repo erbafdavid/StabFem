@@ -23,7 +23,7 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 % Version 2.0 by D. Fabre , june 2017
 %
 
-global ff ffdir ffdatadir sfdir verbosity
+global ff ffMPI ffdir ffdatadir sfdir verbosity
 
 persistent sigmaPrev sigmaPrevPrev % for continuation on one branch
 persistent eigenvaluesPrev % for sort of type 'cont'
@@ -52,6 +52,9 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    
    % parameter for most cases
     if(isfield(baseflow,'Re')) ReDefault = baseflow.Re ; else ReDefault = 0; end;
+    if(isfield(baseflow,'Ma')) MaDefault = baseflow.Ma ; else MaDefault = 0.01; end;
+
+   addParameter(p,'Ma',MaDefault,@isnumeric); % Reynolds
    addParameter(p,'Re',ReDefault,@isnumeric);
    
    %paramaters for axisymmetric case
@@ -65,6 +68,9 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    addParameter(p,'STIFFNESS',0);
    addParameter(p,'MASS',0);
    addParameter(p,'DAMPING',0);
+   
+   %parameters for mpirun
+   addParameter(p,'ncores',1,@isnumeric);
    
    % parameters for free-surface problems
     if(isfield(baseflow,'gamma')) gammaDefault = baseflow.gamma ;else gammaDefault = 0; end;
@@ -128,8 +134,7 @@ switch ffmesh.problemtype
                              ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D.edp'];
         status = mysystem(solvercommand);
-        
-         else 
+        else 
              
              % 2D BaseFlow / 3D modes
                  mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
@@ -139,9 +144,40 @@ switch ffmesh.problemtype
                          
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D_Modes3D.edp'];
         status = mysystem(solvercommand);
+        end
+     case('2DComp')
+         % 2D flow (cylinder, etc...)
+
+            % 2D Baseflow / 2D modes
+        mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        mydisp(1,['      ### USING 2D compressible Solver']);
+        if(p.Results.sym == 'A')
+            symmetry = 0;
+        elseif(p.Results.sym == 'S')
+            symmetry = 1;
+        elseif(p.Results.sym == 'N')
+            symmetry = 2;
+        end
+        
+        if(p.Results.type == 'D')
+            typeEig = 0;
+        elseif(p.Results.type == 'A')
+            typeEig = 1;
+        elseif(p.Results.type == 'S')
+            typeEig = 2;
+        else
+            typeEig = 0;
+        end
+        ncores = p.Results.ncores;
+        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.Ma) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' num2str(symmetry) ' ' num2str(typeEig) ' ' num2str(p.Results.nev) ' " '];
+        solvercommand = ['echo ' argumentstring ' | ',ffMPI,' -np ',num2str(ncores),' ', 'Stab2DComp.edp'];
+        status = mysystem(solvercommand);
+        
+         
              
              
-         end
+         
          
    
     case('2DMobile')

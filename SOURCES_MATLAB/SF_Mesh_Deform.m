@@ -8,28 +8,24 @@ function ffmesh = SF_Mesh_Deform(ffmesh,varargin)
 %
 % Version 2.0 by D. Fabre , september 2017
 % 
-%
 
 global ff ffdir ffdatadir sfdir verbosity
 
 %%% MANAGEMENT OF PARAMETERS (Re, Mach, Omegax, Porosity...)
 
-%%% check which parameters are transmitted to varargin 
-   p = inputParser;
+%%% check which parameters are transmitted to varargin (Mode 1) 
+    p = inputParser;
    addParameter(p,'gamma',1,@isnumeric); % Surface tension
    addParameter(p,'rhog',0,@isnumeric); % gravity parameter
    addParameter(p,'V',-1,@isnumeric); % Volume (for liquid bridge)
    addParameter(p,'P',-1,@isnumeric); % Pressure (for liquid bridge)
-   parse(p,varargin{:});
+   
+    parse(p,varargin{:});
     
-%%% position the input "guess" file for the solver    
-    mycp(ffmesh.filename,[ffdatadir 'mesh_guess.msh']);  % position mesh file         
-
-%%% Selects the right solver    
     switch(ffmesh.problemtype)
         
-        case('3DFreeSurfaceStatic')
-            
+          case('3DFreeSurfaceStatic')
+        
         if(p.Results.V~=-1)% V-controled mode
             mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (V-controled)'); 
             parameterstring = [' " V ',num2str(p.Results.V),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' " '];
@@ -41,12 +37,21 @@ global ff ffdir ffdatadir sfdir verbosity
         end
     end
     
-%%% calls the FreeFem solver    
+    
      error = 'ERROR : SF_BaseFlow_MoveMesh computation aborted';
      mysystem(solvercommand,error); %needed to generate .ff2m file
-      
-    ffmeshNew = importFFmesh([ffdatadir 'mesh.msh'])
+    
+    if(exist([ffdatadir,'BaseFlow.txt'])~=2)
+    error('ERROR in SF_BaseFlow_MoveMesh : Newton did not converge');
+    end
+    
+    
+    
+    ffmeshNew = importFFmesh('mesh.msh');
+    
     ffmesh = ffmeshNew; %% here one should add convergence tests
+    
+
     
     mydisp(1,'#### SF_Mesh_Deform : NEW MESH CREATED');
     mydisp(1,['Volume = ',num2str(ffmesh.Vol)]);
