@@ -153,7 +153,7 @@ if(InitSol)
 
 func complex Hx(real L, real c, real g)
 {
-if(x>x2v)
+if(x>0)
 {
 	complex Gx = (1i*g*tanh(x^2/(4*c^2))+1)/(1-x^2/L^2)^2+(4*x^2*(1i*g*tanh(x^2/(4*c^2))+1))/(L^2*(1-x^2/L^2)^3)+(1i*g*x^2*(1/cosh(x^2/(4*c^2)))^2)/(2*c^2*(1-x^2/L^2)^2);
 	return 1.0/Gx;
@@ -164,27 +164,26 @@ else
 
 func complex Hy(real Rm, real Ra)
 {
-	if(x > x2v && y > y2){
-		real Gy = 1.0/(1.0-(y-Rm)^2/(Ra-Rm)^2)^2+(4.0*(y-Rm)^2)/((Ra-Rm)^2*(1.0-(y-Rm)^2/(Ra-Rm)^2)^3);
+	if(x > 0 && y > Rm){
+		real Gy = 1.0/(1-(y-Rm)^2/(Ra-Rm)^2)^2+(4*(y-Rm)^2)/((Ra-Rm)^2*(1-(y-Rm)^2/(Ra-Rm)^2)^3);
 		return 1.0/Gy;
 	}
-	else if(x > x2v && y < -y2){
+	else if(x > 0 && y < -Rm){
 
-		real Gy = 1.0/(1.0-(y+Rm)^2/(-Ra+Rm)^2)^2+(4.0*(y+Rm)^2)/((-Ra+Rm)^2*(1.0-(y+Rm)^2/(-Ra+Rm)^2)^3);
+		real Gy = 1.0/(1.0-(y+Rm)^2/(Rm-Ra)^2)^2+(4.0*(y+Rm)^2)/((Rm-Ra)^2*(1-(y+Rm)^2/(Rm-Ra)^2)^3);
 		return 1.0/Gy;
 	}
 	else
 		return 1.0;
 }
-
-	x2v=100.;
-	y2=120.;
+  real xlim = 400;
+  real ylim = 360;
   XH2<complex> HX,HY;
-  real La = 10.0*x2v;
+  real La = xlim*1.4;
   real Lc = 200.0;
   real gc = 0.5;
-  real Lm = 200.0;
-  real Lay = 600.0;
+  real Lm = 340.0;
+  real Lay = ylim*1.7;
   HX=Hx(La,Lc,gc);
   HY=Hy(Lm,Lay);
   macro Dx(a) (dx(a)*HX) //
@@ -320,6 +319,7 @@ XXxxxH [ux,uy,up,utemp,uro] = [real(Ubx),real(Uby),real(Pb),real(Tb),real(Rhob)]
 	    
 	    
 	  
+
 
 
 
