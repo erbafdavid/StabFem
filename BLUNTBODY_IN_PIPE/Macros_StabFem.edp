@@ -31,8 +31,8 @@ ENDIFMACRO
 IFMACRO(!FREEFEMPLOTS)
 macro FREEFEMPLOTS  YES//EOM
 ENDIFMACRO 
-// Set to "1" to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
-// set to "0" to disable all plots (recommended in Matlab/StabFem mode)
+// Set to YES to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
+// set to NO to disable all plots (recommended in Matlab/StabFem mode)
 
 
 IFMACRO(!problemtype)

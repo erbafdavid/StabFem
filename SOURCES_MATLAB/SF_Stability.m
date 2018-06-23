@@ -42,7 +42,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
   
    %parameters for the eigenvalue solver
    addParameter(p,'shift',1+1i);
-   addParameter(p,'nev',10,@isnumeric);
+   addParameter(p,'nev',1,@isnumeric);
    addParameter(p,'type','D',@ischar); 
   
    % parameters for the post-processing options

@@ -136,7 +136,7 @@ for num=1:8
 end
 title('\omega_i(\xi) for H/R = .3 and m=3');
 xlabel('\xi');ylabel('\omega_r');
-ylim([0 : .1]);
+ylim([0  .1]);
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*1;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 14);
 saveas(gca,'FIGURES/POLYGONS_sigma',figureformat);
