@@ -87,8 +87,8 @@ XXxxxH [vx,vy,vp,vT,vrho]; // test functions
   macro gradgrad(u,v)(dx(u)*dx(v)+dy(u)*dy(v))//EOM
 
   macro NonLinearOmega(ua,ub,v) (
-				ua#rho*realInnerProd(ub,v) - ub#rho*realInnerProd(ua,v) + 
-				ua#rho*ub#T*v#T - ub#rho*ua#T*v#T
+				ub#rho*realInnerProd(ua,v)- ua#rho*realInnerProd(ub,v)-
+				ua#rho*ub#T*v#T + ub#rho*ua#T*v#T
 			) // EOM macro fro the term involving the term i*omega
   macro NonLinearRho(ua,ub,v) (
 				(ua#rho*div(ub) + ub#rho*div(ua))*v#rho +
@@ -111,7 +111,7 @@ XXxxxH [vx,vy,vp,vT,vrho]; // test functions
 			) //EOM macro for NonLinearT
 
   macro NonLinearP(ua,ub,v) (
-				v#p*(ua#rho*ub#T + ub#rho*ua#T)
+				v#p*(-ua#rho*ub#T - ub#rho*ua#T)
 			) //EOM macro for NonLinearP
 
   macro NonLinear(ua,ub,v) ( NonLinearRho(ua,ub,v) + NonLinearU(ua,ub,v) + NonLinearT(ua,ub,v) + NonLinearP(ua,ub,v) ) // EOM
