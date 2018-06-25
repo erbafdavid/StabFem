@@ -26,6 +26,7 @@ fileToRead3 = [filepath,'/SF_Init.ff2m'];
 
 mydisp(2,['FUNCTION  importFFmesh.m : reading complementary files']);
     
+
 meshstruct = importFFdata(fileToRead2,fileToRead3);
 
 % change the field "datatype" to "problemtype"

@@ -177,7 +177,8 @@ FreeFem++ is used to generate and adapt the meshes and to solve the various line
 In the present paper the concepts are introduced and the software is demonstrated for the reference case of the incompressible, two-dimensional flow around a cylinder, but the software is easily customizable to a variety of other situations (compressible, three-dimensional, etc..).
 
 Although we don't claim to invent any radically new method, our exposition and implementation contains a number of originalities making the computation particularly efficient in terms of computational time and memory (all the figures of the paper can be produced in only a few minutes on a standard laptop)
-\footnote{All the figures contained in the present paper can be processed by launching a single Matlab script SCRIPT\_CYLINDER\_ALLFIGURES.m . On a MacbookPro (2018,  2.5Ghz, 16Go Ram),  the execution time is 19.76 seconds for the results of the linear analysis (section 3) and 15. seconds for the results of the nonlinear analysis (section 4).
+\footnote{All the figures contained in the present paper can be processed by launching a single Matlab script SCRIPT\_CYLINDER\_ALLFIGURES.m . On a MacbookPro (2018,  2.5Ghz, 16Go Ram),  the execution time is 203 seconds for the results of the linear analysis (section 3).  The results of the nonlinear analysis requires 1868 seconds using mesh ${\mathbf M}_4$, a time which can be 
+reduced to only 413 seconds using mesh ${\mathbf M}_2$ if one is not interested in a precise description of the perturbation in the far-wake region.
 }. 
 The most notable originalities are the systematic use of mesh adaptation (\S 2 and 3), the use of simple shift-invert instead of Arnoldi (\S 3), and a reformulation and simplification of the nonlinear self-consistent approach of Mantic-Lugo et al  (\S 4).
  
