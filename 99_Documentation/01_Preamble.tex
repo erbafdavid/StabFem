@@ -1,0 +1,51 @@
+\usepackage{amsmath} % AMS Math Package
+\usepackage{amsthm} % Theorem Formatting
+\usepackage{amssymb} % Math symbols such as \mathbb
+\usepackage{graphicx} % Allows for eps images
+\usepackage{multicol} % Allows for multiple columns
+\usepackage[dvips,letterpaper,margin=1in,bottom=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{mathrsfs}
+\usepackage{amsmath,amscd}
+\usepackage[all,cmtip]{xy}
+\usepackage{bbm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%COLOR PACKEGE
+\usepackage{color}
+	\definecolor{red}{RGB}{255,0,0}
+	\definecolor{blue}{RGB}{30, 144, 255}
+	\definecolor{black}{RGB}{0, 0, 0}	
+	\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+	\definecolor{mylilas}{RGB}{170,55,241}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{menukeys}
+\usepackage{framed}
+\renewmenumacro{\directory}{pathswithfolder} % default: paths
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%MATLAB
+
+\usepackage{listings}
+\lstset{language=Matlab,%
+    %basicstyle=\color{red},
+	%basicstyle=\ttfamily,frame=single,xleftmargin=3em,xrightmargin=3em  
+	frame=single,xleftmargin=2em,%xrightmargin=2em,    
+    breaklines=true,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style}, 
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\lstinputlisting{*.m} for using
+%\usepackage[framed,numbered,autolinebreaks,useliterate]{mcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%MACROS
+\newcommand{\ti}[1]{\textit{#1}}

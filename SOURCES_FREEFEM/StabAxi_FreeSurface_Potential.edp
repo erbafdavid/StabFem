@@ -17,8 +17,9 @@
 
 // Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
 
-
+include "SF_Geom.edp";
 include "Macros_StabFem.edp"
+
 
 verbosity=0;
 
@@ -27,21 +28,20 @@ verbosity=0;
 real gamma=1;	  // Surface Tension
 real R=1;
 real dpdz;
+real GAMMA;
 
-
-cout << "ENTREZ LA TENSION DE SURFACE GAMMA : "<< endl;
+cout << "ENTREZ LA TENSION DE SURFACE gamma : "<< endl;
 cin >> gamma;
-if(gamma != 1){ 
-	// TO BE MODIFIED !
-	cout << "WARNING : PROGRAM HAS TO BE ADAPTED FOR GAMMA ~= 1"<< endl; 
-	exit(-1);
-	} ;
+
 
 
 cout << "ENTREZ LE PARAMETRE DE GRAVITE dp/dz = rho g : "<< endl;
 cin >> dpdz;
 
-
+//cout << "ENTREZ LA CIRCULATION GAMMA : "<< endl;
+//cin >> GAMMA;
+GAMMA = SFGeomGAMMA; // PARAMETER PICKED FROM "SF_Geom.edp"
+cout << "GAMMA = " << GAMMA << endl;
 
 // Parametres du calcul
 int m;  // Nombre d'onde
@@ -53,8 +53,13 @@ cout << "==> Calcul des valeurs propres pour m = " << m << endl;
 int nev;
 cout << " ENTREZ le nombre de modes a calculer " << endl;
 cin >> nev;
-int Nval = min(nev,10);  // nb. de valeurs propres à calculer
+int Nval = nev;  // nb. de valeurs propres à calculer
 int Nmodes = nev; // nb. de vecteurs propres à post-traiter
+
+
+real shift;
+cout << " ENTREZ le shift (here only imaginary part) : " << endl;
+cin >> shift;
 
 
 
@@ -81,14 +86,18 @@ CalcGeomSurf;
 
 
 
+
 fespace VhxVh(th,[P1,P1]);
 
 VhxVh [phi,eta],[q,v];
 
 
-real shift = 1e-12;  // value of the shift
 real RegEta = 1e-8;
 
+
+// MACROS
+
+macro DPDR(r) (GAMMA/2/pi)^2*(1/r^3) //EOM
 
 // CONSTRUCTION DES MATRICES
 
@@ -97,15 +106,18 @@ varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v]
 	  int2d(th)(  (dx(phi)*dx(v) + dy(phi)*dy(v)+(m^2+1e-8)*phi*v/(x^2+1e-30))*x  ) 
 	  		// desingularisation term necessary if m=0 ; don't know why
 // Curvature	  
-	+ int1d(th,2)(((Ds(eta))*(Ds(q))  -(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*abs(x))
-// gravity
-	+int1d(th,2)(dpdz*eta*q*N0z*x)
+	+ int1d(th,2)(gamma*((Ds(eta))*(Ds(q))  -(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*x)
+// gravity and centrifugal force
+	+int1d(th,2)(q*eta*(dpdz*N.y-DPDR(x)*N.x)*x)
+// convective terms if rotation is present
+ 	+ int1d(th,2)(m*GAMMA/(2*pi*x^2)*(eta*v+q*phi)*x)
 // shift 
 	- int1d(th,2)(shift*(eta*v+q*phi)*x)
 // Pour regulariser eta dans le volume	
-		+ int2d(th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*abs(x)) //  deuxieme idee : laplacien 
+		+ int2d(th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*x) //  deuxieme idee : laplacien 
 // Conditions limites par penalisation
-+ int1d(th,1,5)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
++ int1d(th,1)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
++ int1d(th,5)(1e30*eta*q*abs(x)*gamma) // pour ligne de contact fixee si gamma ne 0.
 + int1d(th,1)(m*phi*v*1e30) // CL axe pour m different de 0
 ;
 
@@ -159,21 +171,21 @@ if(evi[i] == 0)
 	lambda = 1i*evr[i];
 	[Modephi,Modeeta] = [1i*eVphi[i],(1.+0i)*eVeta[i]];
 	}
-else if(i>0&&evi[i]==evi[abs(i-1)]) // abs is to prevent a bug 
+else if(i>0&&abs(evi[i])==abs(evi[abs(i-1)])) // abs is to prevent a bug 
 	{// pair of complex eigenvalues with previous one
-	lambda = 1i*evr[i]-evi[i-1];
+	lambda = 1i*evr[i]+evi[i-1];
 	[Modephi,Modeeta] = [1i*eVphi[i]+eVphi[i-1],eVeta[i]-1i*eVeta[i-1]];
 	}
-else if(i<Nval&&evi[i]==evi[i+1]) 
+else if(i<Nval&&abs(evi[i])==abs(evi[i+1])) 
 	{// pair of complex eigenvalues with next one
 	lambda = 1i*evr[i]+evi[i+1];
-	[Modephi,Modeeta] = [1i*eVphi[i]-eVphi[i-1],eVeta[i]-1i*eVeta[i-1]];
+	[Modephi,Modeeta] = [1i*eVphi[i]-eVphi[i+1],eVeta[i]-1i*eVeta[i+1]];
 	};
 
 
 {
   cout << " VP numero " <<  i<< " : " << real(lambda) << "+i"<<imag(lambda) <<  endl;
-  EV << evi[i] << "  "<< -evr[i] << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
+  EV << -evi[i] << "  "<< evr[i] << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
 }; 
   
     
@@ -185,9 +197,8 @@ if (i<Nmodes)
    	FileTXT << eVphi[i][];
    	FileTXT << endl << endl << lambda << endl;
    	}
-   
-    SFWriteMode(ffdatadir+"Eigenmode"+(i+1)+".ff2m",Modephi,Modeeta,lambda);
-       	
+   SFWriteModePotential(ffdatadir+"Eigenmode"+(i+1)+".ff2m",Mode,lambda);
+   plot(eVphi[i],cmm="Mode "+i+" ; omega = "+evi[i]+" ; sigma = "+evr[i],wait=1,fill=1);    	
    };
 }	
 	

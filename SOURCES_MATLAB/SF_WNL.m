@@ -45,17 +45,19 @@ global ff ffdir ffdatadir sfdir
 if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
 
 if(strcmp(ffdatadir,'./DATA_FREEFEM_BIRDCALL_ERCOFTAC')==0) % in future we should manage this in a better way
-    [status]=system([ff ' ' ffdir 'WeaklyNonLinear_Axi.edp']);
+    solvercommand = [ff ' ' ffdir 'WeaklyNonLinear_Axi.edp'];
 else 
-    [status]=system([ff ' ' ffdir 'WeaklyNonLinear_BirdCall.edp']);
+    solvercommand = [ff ' ' ffdir 'WeaklyNonLinear_BirdCall.edp'];
 end
 
 end
 
 if(strcmp(baseflow.mesh.problemtype,'2D')==1)
-     [status]=system(['echo '  p.Results.Normalization ' '  p.Results.AdjointType ' ' num2str(p.Results.Retest) ' | ' ff ' ' ffdir 'WeaklyNonLinear_2D.edp '  ]);
+     solvercommand = ['echo '  p.Results.Normalization ' '  p.Results.AdjointType ' ' num2str(p.Results.Retest) ' | ' ff ' ' ffdir 'WeaklyNonLinear_2D.edp '  ];
 end
 
+errormessage = 'Error in SF_WNL.m';
+mysystem(solvercommand,errormessage);
 
 wnl = importFFdata(baseflow.mesh,'WNL_results.ff2m');
 

@@ -221,7 +221,7 @@ real Fx0 = Drag(nu,ubx,uby,ubp);
 real Fxeps2 = (Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0));
 real FxA20 = real(Drag(nu,u20x,u20y,u20p));
 complex FxA22 = Drag(nu,u22x,u22y,u22p);
-complex FyA1 = Lift(1/Re,u1x,u1y,u1p);
+complex FyA1 = Lift(1/Re,u1x,u1y,u1p); // Mind that the "real" lift is actually twice this value because of the complex conjugate. 
 
 
 cout << " Fx associated to order epsilon correction : " << Fxeps2 << endl;
@@ -276,7 +276,7 @@ real AAA = sqrt(real(Lambda)/real(Nu0+Nu2)); /// amplitude/sqrt(eps) ; value dep
 cout << endl << endl << "######### SUMMARY : ##############" << endl << endl;
 
 cout << endl << "  >>  Amplitude :  A = " << AAA << " * epsilon^(1/2) " << endl;
-cout << "  >>  In terms of Energy = " << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << " * eps " << endl;
+cout << "  >>  Energy-Amplitude A_E = " << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << " * eps " << endl;
 cout << "  >>  In terms of Lift force : Fy = [" << AAA*FyA1 << " exp(i omega0 t) + c.c. ] * eps" << endl;
 cout << "                             : Fy = " << real(AAA*FyA1*2) << " cos(omega0 t) + " 
                                                      << -imag(AAA*FyA1*2) << " sin(omega0 t) ] * eps" << endl;

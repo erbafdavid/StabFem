@@ -34,7 +34,7 @@ real RADIUS=0.5;         /////// Cylinder Radius
 real n=.5;                 
 int ns=50; 
 
-cout << " Generation of an initial mesh for a 2D cylinder" << endl;
+cout << " Generation of an initial mesh for a 2D cylinder (with NOSLIP conditions at lateral wall)" << endl;
 cout << " Enter the dimensions xmin, xmax, ymax ? " << endl; 
 
 //real xinlet=-20.;     
@@ -51,14 +51,14 @@ cout << "Xmin = " << xinlet << " ; Xmax = " << xoutlet << " ; ymax = " << yside 
 /////////////////////////////////////////////////////////////////////////////////
 // cylinder center is in (0,0)
 
-border cylinder(t=0,pi){ x=RADIUS*cos(t);y=RADIUS*sin(t);label=bcwall;}
+border cylinder(t=0,pi){ x=RADIUS*cos(t);y=RADIUS*sin(t);label=2;}
 //border cylref(t=0,2*pi){ x=(RADIUS+RR)*cos(t);y=(RADIUS+RR)*sin(t);label=999;}
 
-border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=bcinlet;}
-border axis1(t=0,1){ x=xinlet+(-RADIUS-xinlet)*t;y=0;label=bcaxis;}
-border axis2(t=0,1){ x=RADIUS+(xoutlet-RADIUS)*t;y=0;label=bcaxis;}
-border outlet(t=0,1){ x=xoutlet;y=yside*t;label=bcoutflow;}
-border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=41;} // THIS IS HERE !!!!!
+border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=1;}
+border axis1(t=0,1){ x=xinlet+(-RADIUS-xinlet)*t;y=0;label=6;}
+border axis2(t=0,1){ x=RADIUS+(xoutlet-RADIUS)*t;y=0;label=6;}
+border outlet(t=0,1){ x=xoutlet;y=yside*t;label=3;}
+border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=4;} // THIS IS HERE !!!!!
 
 
 
