@@ -488,7 +488,6 @@ else if(iadjoint==2)
     		udirectx[]=ux[];
 		real NormUDirect = sqrt(int2d(th)((Rhob*abs(udirectx)^2 + Rhob*abs(udirecty)^2 + Rhob*abs(Tdirect)^2 + abs(rhodirect)^2 )));
 		udirectx[] = udirectx[]/NormUDirect;
-		ux[] = udirectx[];
 		NormUDirect = sqrt(int2d(th)((Rhob*abs(udirectx)^2 + Rhob*abs(udirecty)^2 + Rhob*abs(Tdirect)^2 + abs(rhodirect)^2 )));
 		cout << "Norm of UDirect" << NormUDirect << endl;
     	};
@@ -505,7 +504,6 @@ else if(iadjoint==2)
 		//complex BiNorm = sqrt(int2d(th)((uadjointx*udirectx)  );
 		//uadjointx[] = 1i*uadjointx[];
 		uadjointx[] = uadjointx[]/conj(BiNorm);
-		ux[] = uadjointx[];
 		BiNorm=(int2d(th)((Rhob*conj(uadjointx)*udirectx + Rhob*conj(uadjointy)*udirecty + Rhob*conj(Tadjoint)*Tdirect + conj(rhoadjoint)*rhodirect)));
 		cout << "Norm of the direct/adjoint " << BiNorm << endl;
     	};
