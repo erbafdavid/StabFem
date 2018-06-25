@@ -71,9 +71,9 @@
 	border aint(t=-ep/2,ep/2){x=t;y=0;label=6;};
 
 /* Cylindre (sans axe symétrie) */
-	border obs1(t=0.,rayon){x=-ep/2; y=t ;label=21;};
-	border obs2(t=-ep/2,ep/2){x=t; y=rayon;label=22;};
-	border obs3(t=rayon,0){x=+ep/2; y=t; label=23;};
+	border obs1(t=0.,rayon){x=-ep/2; y=t ;label=91;};
+	border obs2(t=-ep/2,ep/2){x=t; y=rayon;label=92;};
+	border obs3(t=rayon,0){x=+ep/2; y=t; label=93;};
 
 /* Bords du domaine */	
 	border out(t=0,SFGeomRmax){x=SFGeomXmax; y=t; label=3; };
@@ -151,6 +151,7 @@
 	femp2 upsi=0;
 	
 	real Re = 0;
+	real Da = 0;
 	real nu = 1; // these two are useless at this stage but required in the macros 
         
 /* Save in txt format (for FreeFem) */
@@ -161,12 +162,16 @@
 }
       	
 /* Save in ff2m format (for StabFem) */
+	IFMACRO(!Da)
+		macro Da 0//EOM
+	ENDIFMACRO
+	
 	IFMACRO(!Porosity)
-		macro Porosity 0//EOM
+		macro Porosity 1//EOM
 	ENDIFMACRO
 
 	IFMACRO(!Omegax)
 		macro Omegax 0//EOM
 	ENDIFMACRO
 
-	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0,Porosity,Omegax);
+	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0,Da,Porosity,Omegax);

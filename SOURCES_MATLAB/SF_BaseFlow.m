@@ -37,6 +37,12 @@ global ff ffdir ffdatadir sfdir verbosity
 
 
 % check if fields previously exist (Mode 2) or assign default value (mode 3)
+if(isfield(baseflow,'Darcy')) 
+    Darcy = baseflow.Darcy; 
+else
+    Darcy = 0; 
+end
+
 if(isfield(baseflow,'Porosity')) 
     Porosity = baseflow.Porosity; 
 else
@@ -54,13 +60,15 @@ end
    addParameter(p,'Re',baseflow.Re,@isnumeric); % Reynolds
    addParameter(p,'Mach',0,@isnumeric); % Mach
    addParameter(p,'Omegax',Omegax,@isnumeric); % rotation rate (for swirling body)
-   addParameter(p,'Porosity',Porosity,@isnumeric); % For porous body
+   addParameter(p,'Darcy',Darcy,@isnumeric); % For porous body
+   addParameter(p,'Porosity',Porosity,@isnumeric); % For porous body 2
    addParameter(p,'type','Normal',@ischar); % mode 
    parse(p,varargin{:});
    
 % Now the right parameters are in p.Results   
    Re = p.Results.Re;
    Omegax = p.Results.Omegax;
+   Darcy = p.Results.Darcy;
    Porosity=p.Results.Porosity;
 
    
@@ -75,7 +83,7 @@ switch(baseflow.mesh.problemtype)
  
     case('AxiXRPOROUS') % axisymmetric WITH SWIRL
                if(verbosity>1)  disp('## solving base flow (axisymmetric case WITH SWIRL)'); end
-                    solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Omegax) ' ' num2str(p.Results.Porosity) ' | ',ff,' ',ffdir,'Newton_AxiSWIRL.edp']   
+                    solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Omegax) ' ' num2str(p.Results.Darcy) ' ' num2str(p.Results.Porosity) ' | ',ff,' ',ffdir,'Newton_AxiSWIRL.edp']   
           
     case('2D')
             if(verbosity>1)  disp('## solving base flow (2D CASE)'); end

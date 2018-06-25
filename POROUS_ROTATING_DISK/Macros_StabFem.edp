@@ -54,8 +54,18 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 		IsInObject 
     ------------------ */
 	
+	// macro S1f(x,y) (1*(y>SFGeomRdisk)*(abs(x)>SFGeomHdisk/2))//EOM
+	// macro S1p(x,y) ((1/(Porosity^2))*(y<=SFGeomRdisk)*(abs(x)<=SFGeomHdisk/2))//EOM
+	
+	// macro S2f(x,y) (1*(y>SFGeomRdisk)*(abs(x)>SFGeomHdisk/2))//EOM
+	// macro S2p(x,y) ((1/Porosity)*(y<=SFGeomRdisk)*(abs(x)<=SFGeomHdisk/2))//EOM
+	
 	macro IsInObject(x,y) (1*(y<SFGeomRdisk)*(abs(x)<SFGeomHdisk/2))//EOM
 
+	macro S1(x,y) (1+((1/Porosity^2-1)*IsInObject(x,y)))//EOM
+	macro S2(x,y) (1+((1/Porosity-1)*IsInObject(x,y))) //EOM
+	
+	
  /* ----------------------------------
 		BoundaryconditionsBaseFlow 
     ---------------------------------- */
@@ -63,7 +73,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 	macro BoundaryconditionsBaseFlow(du,up,v)
 			on(bcinlet,du#x=1.0-up#x,du#r=-up#r)
 			+ int1d(th,bcaxis)(du#r*v#r*1e30+du#phi*v#phi*1e30) 
-			+ int1d(th,7)(du#r*v#r*1e30)
+			/*+ int1d(th,7)(du#r*v#r*1e30)*/
 	//EOM
 
  /* -----------------------------------
@@ -86,18 +96,18 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 
 	macro Trainee(u)   
 		(
-			int1d(th,2,21,22,23)(u#p*N.x*2*pi*y)
-			-nu*int1d(th,2,21,22,23)( (2*dx(u#x)*N.x+(dx(u#r)+dy(u#x))*N.y)*2*pi*y)
+			int1d(th,2,91,92,93)(u#p*N.x*2*pi*y)
+			-nu*int1d(th,2,91,92,93)( (2*dx(u#x)*N.x+(dx(u#r)+dy(u#x))*N.y)*2*pi*y)
 		)
 	//EOM
 
  /* ---------------
 		CoupleX 
     --------------- */
-
+// WARNING : momentum flux ???
 	macro CoupleX(u)   
 		(
-			-nu*int1d(th,2,21,22,23)( 
+			-nu*int1d(th,2,91,92,93)( 
 			(dx(u#phi)*N.x+(-u#phi/y+dy(u#phi))*N.y)*y*2*pi*y)
 		)
 	//EOM
@@ -108,9 +118,9 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 
 	macro Portance(im,u)   
 		(
-			int1d(th,2,21,22,23)(u#p*N.y*y)
-			-nu*int1d(th,2,21,22,23)( (2*dy(u#r)*N.y+(dx(u#r)+dy(u#x))*N.x)*2*pi*y)
-			+im*nu*int1d(th,2,21,22,23)( ( (dy(u#phi)-u#phi/y)*N.y + (dx(u#phi))*N.x ) *pi*y)
+			int1d(th,2,91,92,93)(u#p*N.y*y)
+			-nu*int1d(th,2,91,92,93)( (2*dy(u#r)*N.y+(dx(u#r)+dy(u#x))*N.x)*2*pi*y)
+			+im*nu*int1d(th,2,91,92,93)( ( (dy(u#phi)-u#phi/y)*N.y + (dx(u#phi))*N.x ) *pi*y)
 		)
 	//EOM
 
@@ -147,7 +157,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 		SFWriteBaseFlow 
     ----------------------- */
 
-	macro SFWriteBaseFlow(filename,u,typeFlow,iter,Porosity,Omegax)
+	macro SFWriteBaseFlow(filename,u,typeFlow,iter,Da,Porosity,Omegax)
 		if(iter>=0)
 			{
 			fespace p1forff2m(th,P1);
@@ -180,7 +190,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 				IFMACRO(ncomponentsBF,3)
 					file << "real Re P1 ux P1 ur P1 uphi P1 p P1 vort P1 psi real iter " ;
 				ENDIFMACRO
-				string PostProcessBaseFlowDescription = "real Cx real Cmx real Porosity real Omegax real Flux1 real Flux2 real Flux3"; /* customizable output */ 
+				string PostProcessBaseFlowDescription = "real Cx real Cmx real Darcy real Porosity real Omegax real Flux1 real Flux2 real Flux3"; /* customizable output */ 
 				file << PostProcessBaseFlowDescription << endl << endl ; 
 				file << Re << endl;	
 					for (int j=0;j<ut[].n ; j++) file << ut[][j] << endl;
@@ -222,11 +232,12 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 				IFMACRO(ncomponentsBF,2)
 					file << 0 << endl;
 				ENDIFMACRO
+				file << Da << endl;
 				file << Porosity << endl;
 				file << Omegax << endl;
-				real Flux1 = int1d(th,21)(u#x*2*pi*y);
-				real Flux2 = int1d(th,22)(u#r*2*pi*y);
-				real Flux3 = int1d(th,23)(u#x*2*pi*y);
+				real Flux1 = int1d(th,91)((u#x*N.x+u#r*N.y)*2*pi*y); /* ancienne version  int1d(th,91)(u#x*2*pi*y); */
+				real Flux2 = int1d(th,92)((u#x*N.x+u#r*N.y)*2*pi*y);
+				real Flux3 = int1d(th,93)((u#x*N.x+u#r*N.y)*2*pi*y);
 				cout << "### Porous disk : Flow across disk surfaces " << endl;
 				cout << " Flux1 = "  << Flux1 << " ; Flux2 = " << Flux2 << " ; Flux3 = " << Flux3 << endl;
 				file << Flux1 << " " << Flux2 << " " << Flux3 << endl;

@@ -40,7 +40,7 @@
 		} 
 
 /*  -----------------------
-		Données maillage
+		DonnÃ©es maillage
     ----------------------- */
 	
 	verbosity = 0;
@@ -63,7 +63,7 @@
 	XXMh [uaxix,uaxir,uaxip];			// -> unknown for the Navier-Stokes problem
 
 /*  ------------------
-		Paramètres 
+		ParamÃ¨tres 
     ------------------ */
 	
 	real Re;
@@ -155,10 +155,10 @@
 	// macro Diffusion(nu,u1,u2,v1,v2)  (-nu*( dx(u1)*dx(v1)+dy(u1)*dy(v1)+dx(u2)*dx(v2)+dy(u2)*dy(v2)))
 
 /*  -----------------------------------
-		Résolution de Navier-Stokes 
+		RÃ©solution de Navier-Stokes 
     ----------------------------------- */
 
-/* Système linéarisé 1 
+/* SystÃ¨me linÃ©arisÃ© 1 
 	problem NewtonIter([dux,dur,duphi,dup],[vx,vr,vphi,vp]) =
 		int2d(th)(
 				(	-2*nu*(D(0,du):D(0,v))
@@ -176,36 +176,28 @@
 				)*y)
 		+ BoundaryconditionsBaseFlow(du,up,v); */
 
-/* Système linéarisé 2 */
+/* SystÃ¨me linÃ©arisÃ© 2 */
 	problem NewtonIter([dux,dur,duphi,dup],[vx,vr,vphi,vp]) =
 		int2d(th)(
 				(	vp*div(0,du)
-					- S1(x,y)*Conv(0,up,0,du,v) // Fluide
-					// - S1p(x,y)*Conv(0,up,0,du,v) // Poreux
-					// - Conv(0,up,0,du,v)
+					- S1(x,y)*Conv(0,up,0,du,v)
 					+ dup*div(0,v)
-					- 2*nu*S2(x,y)*(D(0,du):D(0,v)) // Fluide
-					// - 2*nu*S2p(x,y)*(D(0,du):D(0,v)) // Poreux
-					// - 2*nu*(D(0,du):D(0,v))
-					-IsInObject(x,y)*nu*(1/Da)*(dux*vx+dur*vr+duphi*vphi) //Da
+					- 2*nu*S2(x,y)*(D(0,du):D(0,v))
+					-IsInObject(x,y)*nu*(1/Da)*(dux*vx+dur*vr+duphi*vphi)
 				)*y)
 		- int1d(th,91,92,93)((D(0,du)*[N.x,N.y,0])'*[vx,vr,vphi])
 		+ int2d(th)(
 				(	vp*div(0,up)
-					- .5*S1(x,y)*Conv(0,up,0,up,v) // Fluide
-					// - .5*S1p(x,y)*Conv(0,up,0,up,v) // Poreux
-					// - .5*Conv(0,up,0,up,v)
+					- .5*S1(x,y)*Conv(0,up,0,up,v)
 					+ upp*div(0,v)
-					- 2*nu*S2(x,y)*(D(0,up):D(0,v)) // Fluide
-					// - 2*nu*S2p(x,y)*(D(0,up):D(0,v)) // Poreux
-					// - 2*nu*(D(0,up):D(0,v))
+					- 2*nu*S2(x,y)*(D(0,up):D(0,v))
 					- IsInObject(x,y)*nu*(1/Da)*(upx*vx+upr*vr+(upphi-Omegax*y)*vphi)
 				)*y)
 		- int1d(th,91,92,93)((D(0,u)*[N.x,N.y,0])'*[vx,vr,vphi])
 		+ BoundaryconditionsBaseFlow(du,up,v);
     
     
-/* Paramètres de l'algorithme de Newton  */          
+/* ParamÃ¨tres de l'algorithme de Newton  */          
 	real tolerance = 2e-12;
 	real ener = 10;
 	int Nitermax = 30;
@@ -248,7 +240,7 @@
 		+ on(21,21,23,6,upsi=0);
 
 /*  ----------------------------
-		Sortie des résultats 
+		Sortie des rÃ©sultats 
     ---------------------------- */
 
 /* Si non convergence */
