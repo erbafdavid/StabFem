@@ -19,12 +19,13 @@ ff = '/usr/local/bin/FreeFem++ -nw';
 %ff = '/usr/local/ff++/bin/FreeFem++ -nw'; for Flavio
 end
 if(ispc)
-    ff = 'launchff++'; % for windows systems
+    ff = 'FreeFem++ -nw -v 0'; % for windows systems
 end
 
+sfdir = '../SOURCES_MATLAB/'; 
+ffdir = '../SOURCES_FREEFEM/';
 
-sfdir = '~/StabFem/SOURCES_MATLAB/'; 
-ffdir = '~/StabFem/SOURCES_FREEFEM/';
+addpath(sfdir);
 
 % This is the recommended implementation on most systems. 
 % In case StabFem is not in your root directory you may adapt. Bellow a few
@@ -36,11 +37,11 @@ ffdir = '~/StabFem/SOURCES_FREEFEM/';
 %sfdir = '/Users/fabred/StabFem/SOURCES_MATLAB/'; % where to find the matlab drivers
 %ffdir = '/Users/fabred/StabFem/SOURCES_FREEFEM/'; % where to find the freefem scripts
 
-ffdatadir = './WORK/';
+ffdatadir = '.\WORK\';
 
 verbosity = 1;
-addpath(sfdir);
-if(exist(ffdatadir)~=7)
-    mysystem(['mkdir ' ffdatadir]);
-end
-mysystem(['echo "// File automatically created by StabFem" > SF_Geom.edp']); % a file SF_Geom should be present, even if blank 
+
+% if(exist(ffdatadir)~=7)
+%     mysystem(['mkdir ' ffdatadir]);
+% end
+% mysystem(['echo "// File automatically created by StabFem" > SF_Geom.edp']); % a file SF_Geom should be present, even if blank 

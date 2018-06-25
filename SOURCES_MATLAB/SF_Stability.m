@@ -12,7 +12,7 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 % m : azimuthal wavenumer (for axisymmetric problem)
 % k : transverse wavenumber (for 3D stability of 2D flow, to be implemented)
 % sym : symmetry condition for a 2D problem (set to 'S' for symmetric, 'A' for antisymmetric, or 'N' if no symmetry plane is present)
-% shift : for shift-invert (complex), 
+% shift : for shift-invert (complex),
 % nev : number of eigenvalues
 % type : 'D' for direct problem ; 'A' for ajoint problem ; 'DA' for discrete adjoint 
 %
@@ -101,8 +101,8 @@ switch ffmesh.problemtype
      
      mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
      mydisp(1,['      ### USING Axisymmetric Solver']);
-     argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ...
-                          ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+     argumentstring = [ num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ...
+                          ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ];
      solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi.edp'];
         status = mysystem(solvercommand);
         
@@ -111,8 +111,8 @@ switch ffmesh.problemtype
     
      mydisp(1,['      ### FUNCTION SF_Stability POROUS : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
      mydisp(1,['      ### USING Axisymmetric Solver WITH POROSITY AND SWIRL']);
-     argumentstring = [ ' " ' num2str(p.Results.Re) ' ' num2str(baseflow.Porosity) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
-                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ' ];
+     argumentstring = [ num2str(p.Results.Re) ' ' num2str(baseflow.Porosity) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ];
      solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi_Porous.edp'];
         status = mysystem(solvercommand);        
     
@@ -124,8 +124,8 @@ switch ffmesh.problemtype
             % 2D Baseflow / 2D modes
         mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### USING 2D Solver']);
-        argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
-                             ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+        argumentstring = [ num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D.edp'];
         status = mysystem(solvercommand);
         
@@ -134,8 +134,8 @@ switch ffmesh.problemtype
              % 2D BaseFlow / 3D modes
                  mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### 3D Stability of 2D Base-Flow with k = ',num2str(p.Results.k)]);
-        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.k) ' '  num2str(real(shift)) ....
-            ' ' num2str(imag(shift)) ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
+        argumentstring = [num2str(p.Results.Re) ' ' num2str(p.Results.k) ' '  num2str(real(shift)) ....
+            ' ' num2str(imag(shift)) ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ];
                          
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D_Modes3D.edp'];
         status = mysystem(solvercommand);
@@ -149,9 +149,9 @@ switch ffmesh.problemtype
              
         mydisp(1,['      ### FUNCTION SF_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### USING 2D Solver FOR MOBILE OBJECT (e.g. spring-mounted)']);
-        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '... 
+        argumentstring = [ num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '... 
                             num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
-                            ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ']; 
+                            ' ' p.Results.type ' ' num2str(p.Results.nev) ]; 
         solvercommand = ['echo ' argumenstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
         status = mysystem(solvercommand);
         
@@ -286,11 +286,14 @@ end
         for ind = 1:length(eigenvalues)
             h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
             %%%%  plotting command for eigenmodes and callback function
-            tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
+            tt=['eigenmodeP= importFFdata(baseflow.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
       'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
       ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
-%   tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
+%   tt=['eigenmodeP= importFFdata(baseflow.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
             set(h,'buttondownfcn',tt);
+            ax = gca;
+            ax.XAxisLocation = 'origin';
+            ax.YAxisLocation = 'origin';
 
         end
     xlabel('\sigma_r');ylabel('\sigma_i');

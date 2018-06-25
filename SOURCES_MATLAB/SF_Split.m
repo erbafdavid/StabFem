@@ -13,16 +13,16 @@ function baseflow = SF_Split(baseflow)
 global ff ffdir ffdatadir sfdir verbosity
 
 
-        system(['cp ',ffdatadir,'Eigenmode.txt ',ffdatadir,'AdaptField.txt']);
+        mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'AdaptField.txt']);
         command = [ff,' ',ffdir,'SplitMesh.edp'];
         error = 'ERROR : FreeFem adaptmesh aborted';
         status=mysystem(command,'skip');
     
     
     if(status~=0)
-        system(['mv ',ffdatadir,'mesh_ans.msh ',ffdatadir,'mesh.msh']);
- 		system(['mv ',ffdatadir,'BaseFlow_ans.txt ',ffdatadir,'BaseFlow.txt']);
-        system(['mv ',ffdatadir,'BaseFlow_ans.txt ',ffdatadir,'BaseFlow_guess.txt']);
+        mymv([ffdatadir 'mesh_ans.msh'],[ffdatadir 'mesh.msh']);
+        mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow.txt']);
+        mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         error(' ERROR in SF_Split : recomputing base flow failed, going back to baseflow/mesh')
     end
 %    meshnp = importFFmesh('mesh_adapt.msh','nponly'); // old version to
@@ -51,19 +51,18 @@ global ff ffdir ffdatadir sfdir verbosity
 		%  Newton successful : store base flow
 		baseflow=baseflowNew;
 		baseflow.mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
-    	system(['cp BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
-    	baseflow.namefile = [ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
-    	system(['cp mesh.msh ' ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
-    	 % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
-    	 system(['rm ' ffdatadir '/BASEFLOWS/BaseFlow_Re*']); 
-         system(['cp BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);%except last one...`
-         system(['cp BaseFlow.ff2m ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);%except last one...
-    	 
+    	mycp(['BaseFlow.txt'],[ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
+        baseflow.namefile = [ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
+    	mycp(['mesh.msh'],[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
+        % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
+         myrm([ffdatadir '/BASEFLOWS/BaseFlow_Re*']);
+         mycp(['BaseFlow.txt'],[ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);
+    	 mycp(['BaseFlow.ff2m'],[ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);
        
    	else % Newton has probably diverged : revert to previous mesh/baseflow
- 		system(['mv ',ffdatadir,'mesh_ans.msh ',ffdatadir,'mesh.msh']);
- 		system(['mv ',ffdatadir,'BaseFlow_ans.txt ',ffdatadir,'BaseFlow_guess.txt']);
+        mymv([ffdatadir 'mesh_ans.msh'],[ffdatadir 'mesh.msh']);
+        mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         error(' ERROR in SF_Adapt : recomputing base flow failed, going back to baseflow/mesh') 
     end
-        %system(['rm ',ffdatadir,'mesh_ans.msh ',ffdatadir,'BaseFlow_ans.txt']);
+        %myrm([ffdatadir 'mesh_ans.msh ',ffdatadir 'BaseFlow_ans.txt']);
 end

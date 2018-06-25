@@ -142,6 +142,7 @@ end
     if(baseflowNew.iter>0)
 		%  Newton successful : store base flow
 		baseflow=baseflowNew;
+<<<<<<< HEAD
 		baseflow.mesh.namefile=[ffdatadir 'BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
     	mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
         baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
@@ -151,6 +152,17 @@ end
          mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);
     	 mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);
          
+=======
+		baseflow.mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
+    	system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
+    	baseflow.namefile = [ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
+    	system(['cp ' ffdatadir 'mesh.msh ' ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
+    	 % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
+    	 system(['rm ' ffdatadir 'BASEFLOWS/BaseFlow_Re*']); 
+         system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);%except last one...`
+         system(['cp ' ffdatadir 'BaseFlow.ff2m ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);%except last one...
+    	 
+>>>>>>> StabFemOriginal/master
          % in case requested, recompute the eigenmode as well
          if(nargout==2&&isnumeric(eigenmode)==0)
             if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1) 
@@ -169,5 +181,10 @@ end
         mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         error(' ERROR in SF_Adapt : recomputing base flow failed, going back to baseflow/mesh') 
     end
+<<<<<<< HEAD
         myrm([ffdatadir '*_ans.* ']);
 end
+=======
+        %system(['rm ',ffdatadir,'mesh_ans.msh ',ffdatadir,'BaseFlow_ans.txt']);
+end
+>>>>>>> StabFemOriginal/master

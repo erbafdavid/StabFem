@@ -1,14 +1,16 @@
-function mycp(file1,file2)
+function myrm(file)
 % This is a platform-independent tool to copy a file on a different name
 
 if(isunix||ismac)
-    command = [ 'cp ' file1 ' ' file2 ];
+    command = [ 'rm ' file ];
     system(command);
 end
 
 if(ispc)
-    command = [ 'copy ' file1 ' ' file2 ];
-    command = strrep(command,'/','\');
+    c1 = [ 'del /q ' ];
+    c2 = [ file ];
+    c2 = strrep(c2,'/','\');
+    command = [c1 c2];
     system(command);
 end
 
