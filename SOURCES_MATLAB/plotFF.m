@@ -16,7 +16,7 @@ function handle = plotFF(FFdata,varargin);
 %  field is the field to plot (the data may comprise multiple fields)
 %  (may be useful, for instance, to plot re/im parts of a complex field)
 %
-%   This version of plotFF is based on pdeplot2d developed by chloros2
+%   This version of plotFF is based on pdeplot2dff developed by chloros2
 %   as an Octave-compatible alternative to pdeplot from toolbox pdetools 
 %   (https://github.com/samplemaker/freefem_matlab_octave_plot)
 
@@ -31,6 +31,7 @@ if(mod(nargin,2)==1) % plot mesh in single-entry mode
     mesh = FFdata;
     varargin={ varargin{:}, 'mesh', 'on'}; 
     pdeplot2dff(mesh.points,mesh.seg,mesh.tri,varargin{:});
+    axis equal;
 else
     mesh = FFdata.mesh;
     field1 = varargin{1};
@@ -38,6 +39,7 @@ else
     if(strcmp(field1,'mesh')) % plot mesh ins double-entry mde
         varargin={ varargin{:}, 'mesh', 'on'};
         pdeplot2dff(mesh.points,mesh.seg,mesh.tri,varargin{:});
+        axis equal;
     else
     % plot data 
     
@@ -54,19 +56,19 @@ else
     end
 
     % same check for the data to plot using contours
-    if(any(cellfun(@(x) isequal(lower(x), 'contour'), varargin)))
-        iii = find(strcmp(varargin,'contour'));
-        field1 = varargin{iii+1};
-        if(~isnumeric(field1))
-            [dumb,field,suffix] = fileparts(field1); % to extract the suffix
-            if(strcmp(suffix,'.im')==1)
-                dataL = imag(getfield(FFdata,field));
-            else
-                dataL = real(getfield(FFdata,field));
-            end
-        varargin{iii+1} = dataL;
-        end  
-    end
+%    if(any(cellfun(@(x) isequal(lower(x), 'contour'), varargin)))
+%        iii = find(strcmp(varargin,'contour'));
+%        field1 = varargin{iii+1};
+%        if(~isnumeric(field1))
+%            [dumb,field,suffix] = fileparts(field1); % to extract the suffix
+%            if(strcmp(suffix,'.im')==1)
+%                dataL = imag(getfield(FFdata,field));
+%            else
+%                dataL = real(getfield(FFdata,field));
+%            end
+%        varargin{iii+1} = dataL;
+%        end  
+%    end
     
 %if( (any(cellfun(@(x) isequal(lower(x), 'colormap'), varargin))==0) )
 %    varargin={varargin{:} ,'ColorMap','parula'}; % default colormap set to parula
@@ -81,7 +83,7 @@ else
 %end
 pdeplot2dff(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
 %pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
-% axis equal;
+ axis equal;
 %if(any(strcmp('plottitle',fieldnames(FFdata)))) 
 %    title(FFdata.plottitle) 
 %end

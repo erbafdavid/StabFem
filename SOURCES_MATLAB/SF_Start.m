@@ -20,7 +20,7 @@ ff = '/usr/local/bin/FreeFem++ -v 0';
 end
 if(ispc)
     ff = 'FreeFem++ -nw -v 0'; % for windows systems
-    ff = 'launchff++'; % for older windows systems (?)
+%   ff = 'launchff++'; % for older windows systems (?)
 end
 
 sfdir = '../SOURCES_MATLAB/'; 

@@ -14,32 +14,40 @@ function baseflow = SF_Init(meshfile,parameters)
 
 global ff ffdir ffdatadir sfdir verbosity
 
-% Création et vidange du WORK/
+% Cr?ation et vidange du WORK/
 if(exist(ffdatadir)~=7&&exist(ffdatadir)~=5)
     mymake(ffdatadir);
 else
 	myrm([ffdatadir '*.txt ' ffdatadir '*.ff2m ' ffdatadir '*.msh ']);
 end
 
-% Création et vidange de BASEFLOWS/
+% Cr?ation et vidange de BASEFLOWS/
 if(exist([ffdatadir 'BASEFLOWS'])~=7)
     mymake([ffdatadir 'BASEFLOWS/']);
 else
     myrm([ffdatadir 'BASEFLOWS/*']);
 end
 
-% Exécution du maillage
+% Ex?cution du maillage
 if(nargin==1)
     command = [ff ' ' meshfile];
 else
-    command = ['echo  ' parameters ' | ',ff,' ',meshfile];
+     stringparam = []; 
+    for p = parameters;
+        stringparam = [stringparam, num2str(p), '  ' ]; 
+    end
+    command = ['echo   ', stringparam, '  | ',ff,' ',meshfile];
+
+    %   Warning : does not work with windows (Adrien)     
+%    command = ['echo  ', parameters, ' | ',ff,' ',meshfile] 
+
 end
 error = 'ERROR : SF_Init not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
 mysystem(command,error);
 
 % Traitement des infos
 if(nargout==1)
-    mesh = importFFmesh('mesh.msh');
+    mesh = importFFmesh([ffdatadir 'mesh.msh']);
     mycp([ffdatadir 'mesh.msh'],[ffdatadir '/mesh_init.msh']);
     mycp([ffdatadir 'BaseFlow_guess.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_init.txt']);
     mesh.namefile=[ffdatadir 'BASEFLOWS/mesh_init.msh'];
