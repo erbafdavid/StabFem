@@ -87,34 +87,47 @@ XXxxxH [vx,vy,vp,vT,vrho]; // test functions
   macro gradgrad(u,v)(dx(u)*dx(v)+dy(u)*dy(v))//EOM
 
   macro NonLinearOmega(ua,ub,v) (
-				ub#rho*realInnerProd(ua,v)- ua#rho*realInnerProd(ub,v)-
-				ua#rho*ub#T*v#T + ub#rho*ua#T*v#T
+				ub#rho*realInnerProd(ua,v) - ua#rho*realInnerProd(ub,v) 
+				+ ub#rho*ua#T*v#T - ua#rho*ub#T*v#T
 			) // EOM macro fro the term involving the term i*omega
-  macro NonLinearRho(ua,ub,v) (
+  macro NonLinearRho(ua,ub,u0,v) (
 				(ua#rho*div(ub) + ub#rho*div(ua))*v#rho +
 				(ugradf(ua,ub#rho) + ugradf(ub,ua#rho))*v#rho
 			) //EOM macro for NonLinearRho
 
-  macro NonLinearU(ua,ub,v) (
+  macro NonLinearU(ua,ub,u0,v) (
 			 	  ua#rho*termnonlinear(ub,u0,v) +  ub#rho*termnonlinear(ua,u0,v)
-				+ u0rho*termnonlinear(ua,ub,v) + u0rho*termnonlinear(ub,ua,v)
+				+ u0#rho*termnonlinear(ua,ub,v) + u0#rho*termnonlinear(ub,ua,v)
 				+ ua#rho*termnonlinear(u0,ub,v) + ub#rho*termnonlinear(u0,ua,v)
 			) //EOM macro for NonLinearU
 
-  macro NonLinearT(ua,ub,v) (
-				  v#T*(u0rho*ugradf(ua,ub#T) + u0rho*ugradf(ub,ua#T))
+  macro NonLineardU(ua,ub,u0,v) (
+			 	  ua#rho*termnonlinear(ub,u0,v) +  ub#rho*termnonlinear(ua,u0,v)
+				+ u0#rho*termnonlinear(ua,ub,v) + u0#rho*termnonlinear(ub,ua,v)
+				+ ua#rho*termnonlinear(u0,ub,v) + ub#rho*termnonlinear(u0,ua,v)
+			) //EOM macro for NonLinearU
+
+  macro NonLinearT(ua,ub,u0,v) (
+				  v#T*(u0#rho*ugradf(ua,ub#T) + u0#rho*ugradf(ub,ua#T))
 				+ v#T*(ua#rho*ugradf(u0,ub#T) + ub#rho*ugradf(u0,ua#T))
-				+ v#T*(ua#rho*ugradf(ub,u0T) + ub#rho*ugradf(ua,u0T))
+				+ v#T*(ua#rho*ugradf(ub,u0#T) + ub#rho*ugradf(ua,u0#T))
 				+ v#T*(gamma-1.0)*(ua#p*div(ub) + ub#p*div(ua))
 				- v#T*gamma*(gamma-1.0)*Ma^2/Re*(2.0*((Strain(ua):Strain(ub)))-2.0/3.0*(div(ua)*div(ub)))
 				- v#T*gamma*(gamma-1.0)*Ma^2/Re*(2.0*((Strain(ub):Strain(ua)))-2.0/3.0*(div(ub)*div(ua)))
 			) //EOM macro for NonLinearT
 
-  macro NonLinearP(ua,ub,v) (
-				v#p*(-ua#rho*ub#T - ub#rho*ua#T)
+  macro NonLineardT(ua,ub,u0,v) (
+				  v#T*(u0#rho*ugradf(ua,ub#T) + u0#rho*ugradf(ub,ua#T))
+				+ v#T*(ua#rho*ugradf(u0,ub#T) + ub#rho*ugradf(u0,ua#T))
+				+ v#T*(ua#rho*ugradf(ub,u0#T) + ub#rho*ugradf(ua,u0#T))
+			) //EOM macro for NonLinearT
+
+  macro NonLinearP(ua,ub,u0,v) (
+				-v#p*(ua#rho*ub#T + ub#rho*ua#T)
 			) //EOM macro for NonLinearP
 
-  macro NonLinear(ua,ub,v) ( NonLinearRho(ua,ub,v) + NonLinearU(ua,ub,v) + NonLinearT(ua,ub,v) + NonLinearP(ua,ub,v) ) // EOM
+  macro NonLinear(ua,ub,u0,v) ( NonLinearRho(ua,ub,u0,v) + NonLinearU(ua,ub,u0,v) + NonLinearT(ua,ub,u0,v) + NonLinearP(ua,ub,u0,v) ) // EOM
+  macro NonLineardq(ua,ub,u0,v) ( NonLineardU(ua,ub,u0,v) + NonLineardT(ua,ub,u0,v)) // EOM
 
 
   macro NS(u,v)(
@@ -142,6 +155,7 @@ XXxxxH [vx,vy,vp,vT,vrho]; // test functions
 	) // EOM macro for linear NS operator
 
   macro BNorm(U,u,v) (   U#rho*(u#x*v#x + u#y*v#y + u#T*v#T) + u#rho*v#rho)   //
+  macro BNormdq(U,u,v) (   U#rho*(u#x*v#x + u#y*v#y + u#T*v#T))   //
   macro Boundaryconditions(du,us,dp,dT,drho,symmetry)
 	           on(bcinlet,du#x=0,du#y=0.0,dT=0.0,drho=0.0)
 	            /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
@@ -285,19 +299,23 @@ cout << " defining operators for nonlinear term..." << endl;
 varf NLOpF1([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
 // block 1 : NS for base flow
    int2d(th)( NS(u0,v) )
-	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,2)			
-    +int2d(th)( .25*NonLinear(u1c,u1c,v) + .25*NonLinear(u1s,u1s,v) + .5*omega*NonLinearOmega(u1c,u1s,v) );
+	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,2)
+	+int2d(th,mpirank)(AMPFORCE*(vy*du0y+vx*du0x+vT*du0T+vrho*du0rho))
+    +int2d(th)( .25*NonLinear(u1c,u1c,u0,v) + .25*NonLinear(u1s,u1s,u0,v) + .5*omega*NonLinearOmega(u1c,u1s,v) );
  			
 // block 2 : base-flow effect on real part of eigenmode			
 varf NLOpF2([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
 	 int2d(th)( NSL(u0,u1c,v) )
 	- int2d(th) ( sigma1 * BNorm(u0,u1c,v) )
 	+ int2d(th) ( -omega * BNorm(u0,u1s,v) ) 
+	+int2d(th,mpirank)(AMPFORCE*(vy*du1cy+vx*du1cx+vT*du1cT+vrho*du1crho))
     + Boundaryconditions(du1c,v,du1cp,du1cT,du1crho,2);
 	
 // block 3 : base-flow effect on imag part of eigenmode			
 varf NLOpF3([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
-	 int2d(th)( NSL(u0,u1s,v)  )              
+	 int2d(th)( NSL(u0,u1s,v)  )
+	+int2d(th,mpirank)(AMPFORCE*(vy*du1sy+vx*du1sx+vT*du1sT+vrho*du1srho))
+              
     + Boundaryconditions(du1s,v,du1sp,du1sT,du1srho,2)			
 	- int2d(th) ( sigma1 * BNorm(u0,u1s,v) )
 	+ int2d(th) ( omega * BNorm(u0,u1c,v) );
@@ -319,27 +337,31 @@ cout << " defining operators for linear term..." << endl;
 
 // block 1-1 : NS for base flow
 varf LinOp11([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
-   	int2d(th)( NSL(u0,du0,v) )        
+   	int2d(th)( NSL(u0,du0,v) + .25*NonLineardq(u1c,u1c,du0,v) + .25*NonLineardq(u1s,u1s,du0,v) ) 
+ 	+int2d(th,mpirank)(AMPFORCE*(vy*du0y+vx*du0x+vT*du0T+vrho*du0rho))       
  	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,2);
 
 // block 1-2 : nonlinear term (real parts)
 varf LinOp12([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
-      int2d(th)( .5*NonLinear(u1c,du1c,v)  + .5*omega*NonLinearOmega(du1c,u1s,v) );
+      int2d(th)( .5*NonLinear(u1c,du1c,u0,v)  + .5*omega*NonLinearOmega(du1c,u1s,v) );
 
 // block 1-3 : nonlinear term (real parts)
 varf LinOp13([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
-      int2d(th)( .5*NonLinear(u1s,du1s,v) + .5*omega*NonLinearOmega(u1c,du1s,v));
+      int2d(th)( .5*NonLinear(u1s,du1s,u0,v) + .5*omega*NonLinearOmega(u1c,du1s,v));
  			
-
+// block 1-4 : effect of domega on the base flow
+varf LinOp14([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho])
+	= int2d(th)(.5*NonLinearOmega(u1c,u1s,v));
  			
 // block 2-1 : base-flow effect on real part of eigenmode			
 varf LinOp21([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
-	 int2d(th)(  NonLinear(du0,u1c,v) );
+	 int2d(th)(  NonLinear(du0,u1c,u0,v) -omega*BNormdq(du0,u1s,v) -sigma1*BNormdq(du0,u1c,v) );
              
 // block 2-2 : Stokes operator on real part of eigenmode             
 varf LinOp22([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
              int2d(th)( NSL(u0,du1c,v) )
             - int2d(th)( sigma1*BNorm(u0,du1c,v)  )
+			+int2d(th,mpirank)(AMPFORCE*(vy*du1cy+vx*du1cx+vT*du1cT+vrho*du1crho))
  			+ Boundaryconditions(du1c,v,du1cp,du1cT,du1crho,2);	
  			
 // block 2-3 : effect of omega on real part of equation for eigenmode
@@ -354,7 +376,7 @@ varf LinOp24([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho])
 
 // block 3-1 : base-flow effect on imag part of eigenmode			
 varf LinOp31([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
-	 int2d(th)( NonLinear(du0,u1s,v)  );  
+	 int2d(th)( NonLinear(du0,u1s,u0,v) + omega*BNormdq(du0,u1c,v) - sigma1*BNormdq(du0,u1s,v)  );  
 	             
 // block 3-2 : effect of omega on imag part of equation for eigenmode
 varf LinOp32([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
@@ -364,6 +386,7 @@ varf LinOp32([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
 varf LinOp33([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
              int2d(th)( NSL(u0,du1s,v) )
            - int2d(th) ( sigma1*BNorm(u0,du1s,v)  )
+     	   + int2d(th,mpirank)(AMPFORCE*(vx*du1sy+vy*du1sx+vT*du1sT+vrho*du1srho))
  		   + Boundaryconditions(du1s,v,du1sp,du1sT,du1srho,2)	
  			;
 
@@ -407,6 +430,7 @@ while(abs(dXX)>tol&&abs(dXX)<1e6&&iter<100)
 matrix matLinOp11 = LinOp11(XXxxxH,XXxxxH);
 matrix matLinOp12 = LinOp12(XXxxxH,XXxxxH);
 matrix matLinOp13 = LinOp13(XXxxxH,XXxxxH);
+real[int] matLinOp14 = LinOp14(0,XXxxxH);
 
 matrix matLinOp21 = LinOp21(XXxxxH,XXxxxH);
 matrix matLinOp22 = LinOp22(XXxxxH,XXxxxH);
@@ -421,7 +445,7 @@ real[int] matLinOp34 = LinOp34(0,XXxxxH);
 
 real[int] matLinOp43 = LinOp43(0,XXxxxH);
 
-matrix LinOp = [	[matLinOp11, matLinOp12, matLinOp13, 	0 ],
+matrix LinOp = [	[matLinOp11, matLinOp12, matLinOp13, 	matLinOp14],
 					[matLinOp21,matLinOp22,  matLinOp23,	matLinOp24 ],
 					[matLinOp31,matLinOp32, matLinOp33,		matLinOp34 ],
 					[	0	   ,0 	, 		matLinOp43',	0 		 ]
