@@ -59,9 +59,9 @@ Porosite = [1];
     for Re = Re_start
         tic;
         baseflow = SF_BaseFlow(baseflow,'Re',Re,'Omegax',Omega,'Darcy',Darcy,'Porosity',Porosite);
-        if (it==1) %|| (mod(it,5) == 0)% && (Re<150)
-            baseflow=SF_Split(baseflow);
-%             baseflow = SF_Adapt(baseflow,'Hmin',1e-6);
+        if (it==1) || (mod(it,5) == 0)% && (Re<150)
+%             baseflow=SF_Split(baseflow);
+            baseflow = SF_Adapt(baseflow,'Hmin',1e-6);
 %             %--- Plot mesh intermediaire
 %             baseflow.xlabel=('x');baseflow.ylabel=('r');
 %             baseflow.plottitle = ['Maillage intermediaire it = ' num2str(it) ' du domaine de calcul'];
