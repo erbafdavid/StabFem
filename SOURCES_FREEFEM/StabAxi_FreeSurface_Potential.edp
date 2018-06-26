@@ -198,7 +198,9 @@ if (i<Nmodes)
    	FileTXT << endl << endl << lambda << endl;
    	}
    SFWriteModePotential(ffdatadir+"Eigenmode"+(i+1)+".ff2m",Mode,lambda);
-   plot(eVphi[i],cmm="Mode "+i+" ; omega = "+evi[i]+" ; sigma = "+evr[i],wait=1,fill=1);    	
+   IFMACRO(FREEFEM,YES)
+   plot(eVphi[i],cmm="Mode "+i+" ; omega = "+evi[i]+" ; sigma = "+evr[i],wait=1,fill=1);
+   ENDIFMACRO    	
    };
 }	
 	
@@ -209,5 +211,6 @@ if (i<Nmodes)
 		};
 
 
+cout << " ### StabAxi_FreeSurface_Potenital.edp correctly ended." << endl;
 
 

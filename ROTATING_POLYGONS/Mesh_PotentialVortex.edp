@@ -44,8 +44,10 @@ border fond(t=xi,R){ x=t ; y=0 ; label=5;}
 border bord(t=0,Gamma^2/(2*g)*((1/xi)^2-(1/R)^2)){x=R ; y=t ; label=5;}
 ////////////////////////////////////////////////////////////////////
 mesh th = buildmesh(interface1(-n)+interface2(-n*H)+fond(n*(1-xi))+bord(Hmax*n));
-plot(th,wait=1);
 
+IFMACRO(FREEFEMPLOTS,YES)
+plot(th,wait=1);
+ENDIFMACRO
 
 
 
@@ -93,6 +95,7 @@ SFWriteMesh(ffdatadir+"mesh_guess.ff2m",th)
 }
 
 
+cout << "  ===>  Mesh_PotentialVortex : successfully created " << endl << endl;
 
 //exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_guess.ff2m");
 

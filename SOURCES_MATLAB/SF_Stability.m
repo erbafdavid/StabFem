@@ -178,7 +178,7 @@ switch ffmesh.problemtype
 end
     
 
-if(status~=0) 
+if(status~=0&&status~=141) 
      %result 
      error('ERROR : FreeFem stability computation aborted');
  else

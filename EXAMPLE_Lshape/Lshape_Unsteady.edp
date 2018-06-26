@@ -28,7 +28,7 @@ Vh normUC = abs(uC);
 	file << "real omega P1c Tc P1 normTc" << endl << endl ; 
     file << omega << endl ;
 	for (int j=0;j<uC[].n ; j++)
-		file << real(uC[][j]) << " " << imag(uC[][j]) << endl;
+		file << real(uC[][j]) << endl << imag(uC[][j]) << endl;
     file << endl;
     for (int j=0;j<uC[].n ; j++)
 		file << normUC[][j]  << endl;

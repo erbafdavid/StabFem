@@ -45,7 +45,7 @@ else
     for pp = Params;
         stringparam = [stringparam, num2str(pp), '  ' ]; 
     end
-    command = ['echo ', stringparam, '  | ',ff,' ',meshfile];
+    command = ['echo   ', stringparam, '  | ',ff,' ',meshfile];
 end
 
 error = 'ERROR : SF_Mesh not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
@@ -57,6 +57,6 @@ mesh.filename=[ ffdatadir 'mesh.msh'];
 %mycp('mesh.ff2m', [ffdatadir 'mesh.ff2m']); 
 %mycp('SF_Init.ff2m', [ffdatadir 'SF_Init.ff2m']); 
 
-mesh = importFFmesh('mesh.msh');
+mesh = importFFmesh([ffdatadir 'mesh.msh']);
 
 mydisp(1,['      ### INITIAL MESH CREATED WITH np = ',num2str(mesh.np),' points']);

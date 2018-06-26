@@ -136,19 +136,19 @@ varf a([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) =
              )*x
              )   	
 	+ int1d(th,2)(gamma*uk1*(vz*N.y+vr*N.x)*x)  // dynamic BC
-	+ int1d(th,2)(ueta*(vz*N.y+vr*N.x)*x) // kinematic BC
+	+ int1d(th,2)(veta*(uz*N.y+ur*N.x)*x) // kinematic BC
 	+ int1d(th,2)((-uk1*vk1-(Ds(ueta))*(Ds(vk1))  -(K0a^2+K0b^2)*ueta*vk1+m^2/(x^2+1e-30)*vk1*ueta)*x) // def of k1
 	+ int1d(th,2)(vz*dpdz*ueta*N.y*x)// gravity
 	+ int2d(th)( -shift*(uz*vz+ur*vr+uphi*vphi)*x ) // shift volume
 	+ int1d(th,2)(-shift*ueta*veta*x) // shift surface
-	+ int2d(th)(1e-30*(ueta*veta+uk1*vk1)*x )
+	+ int2d(th)(1e-12*(ueta*veta+uk1*vk1)*x )
 	+ on(5,ueta=0) // pinned contact lines
 	+ on(5,ur=0,uz=0,uphi=0) // plates
-	+ int1d(th,1)(uz*vz*1e30*(abs(m)>0)+(ur*vr+uphi*vphi)*1e30*(abs(m)!=1)) //axis 
+	+ int1d(th,1)(uz*vz*1e30*(abs(m)>0)+(ur*vr+uphi*vphi)*1e30*(abs(m)!=1)+uk1*vk1*1e30) //axis 
 ;
 
 varf b([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) =
-      int2d(th)((uz*vz+ur*vr+uphi*vphi)*x+1e-30*(ueta*veta+uk1*vk1) )
+      int2d(th)((uz*vz+ur*vr+uphi*vphi)*x+0*(ueta*veta)+0*(uk1*vk1) )
     + int1d(th,2)(ueta*veta*x)
 ;
 
@@ -201,7 +201,9 @@ for (int i=0;i<k;i++)
    	  MODEz[] = eVuz[i][];
      SFWriteMode(ffdatadir+"Eigenmode"+(i+1)+".ff2m",MODE,ev[i]);   
      
-     plot(eVuz[i],cmm="mode numero"+i, wait=1); 	
+     plot(eVuz[i],cmm="mode numero"+i+" : uz", wait=1); 	
+      plot(eVeta[i],cmm="mode numero"+i+" : eta", wait=1); 	
+       plot(eVK1[i],cmm="mode numero"+i+" : k1", wait=1); 	
      };
   };	
 	

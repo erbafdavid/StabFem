@@ -108,7 +108,7 @@ else % Adaptation to base flow + mode (or other specified field)
     end
    error = 'ERROR : FreeFem adaptmesh aborted';
     status=mysystem(command,'skip');
-    if(status~=0)
+    if(status~=0&&status~=141)
         mymv([ffdatadir 'mesh_ans.msh'],[ffdatadir 'mesh.msh']);
         mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow.txt']);
         mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);

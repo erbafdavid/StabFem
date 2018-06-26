@@ -184,9 +184,10 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	}
 
 
-		
+	IFMACRO(FREEFEMPLOTS,YES)		
 	plot(thold,wait=1);
 	plot(thnew,wait=1);
+	ENDIFMACRO
 	
 	savemesh(thnew,ffdatadir+"mesh.msh");
 	SFWriteMesh(ffdatadir+"mesh.ff2m",thnew);

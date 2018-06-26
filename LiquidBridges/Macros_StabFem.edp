@@ -19,7 +19,9 @@
 
 string ffdatadir = "./WORK/";
 
-
+IFMACRO(!FREEFEMPLOTS)
+macro FREEFEMPLOTS  NO //EOM
+ENDIFMACRO 
 
 macro SFWriteMesh(filename,th)
 {

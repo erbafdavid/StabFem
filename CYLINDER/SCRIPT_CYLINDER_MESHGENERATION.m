@@ -7,7 +7,8 @@
 
 % CHAPTER 0 : set the global variables needed by the drivers
 
-run('../SOURCES_MATLAB/SF_Start.m');
+run('../SOURCES_MATLAB/SF_Start.m');verbosity = 10;
+
 figureformat='png'; AspectRatio = 0.56; % for figures
 
 % Chapter 1 : generation of an adapted mesh
@@ -23,6 +24,8 @@ disp('mesh adaptation to SENSITIVITY : ')
 [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
 [bf,em]=SF_Adapt(bf,em,'Hmax',10);
 bf.xlim = [-2 4]; bf.ylim=[0,3];
-plotFF(bf,'ux');
+figure();plotFF(bf,'ux','xlim',[-2 4],'ylim',[0 3]);
+figure();plotFF(bf,'mesh','xlim',[-2 4],'ylim',[0 3]);
+
 
 

@@ -31,7 +31,7 @@ if(mod(nargin,2)==1) % plot mesh in single-entry mode
     mesh = FFdata;
     varargin={ varargin{:}, 'mesh', 'on'}; 
     pdeplot2dff(mesh.points,mesh.seg,mesh.tri,varargin{:});
-    axis equal;
+    %axis equal;
 else
     mesh = FFdata.mesh;
     field1 = varargin{1};
@@ -39,7 +39,7 @@ else
     if(strcmp(field1,'mesh')) % plot mesh ins double-entry mde
         varargin={ varargin{:}, 'mesh', 'on'};
         pdeplot2dff(mesh.points,mesh.seg,mesh.tri,varargin{:});
-        axis equal;
+        %axis equal;
     else
     % plot data 
     
@@ -83,7 +83,7 @@ else
 %end
 pdeplot2dff(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
 %pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
- axis equal;
+% axis equal;
 %if(any(strcmp('plottitle',fieldnames(FFdata)))) 
 %    title(FFdata.plottitle) 
 %end

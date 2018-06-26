@@ -47,9 +47,9 @@ for i=istart:nargin
 fileToRead = varargin{i};
 
 if(exist([ffdatadir,fileToRead])==2) 
-    fileToRead = [ffdatadir,fileToRead];
+    fileToRead = [ffdatadir,fileToRead]
 end
-
+mydisp(2,[' function importFFdata : reading file ',fileToRead]);
 rawData1 = importdata(fileToRead);
 mydisp(2,['FUNCTION  importFFdata.m : reading file ' fileToRead ]); 
 data = rawData1.data;

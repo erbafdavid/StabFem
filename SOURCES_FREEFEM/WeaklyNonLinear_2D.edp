@@ -329,18 +329,18 @@ cout << endl << "########################################################" << en
 	     file << "real Rec complex eigenvalue complex Lambda complex nu0 complex nu2 real Aeps complex Fyeps" 
 	          << " real Fx0 real Fxeps2 real FxA20 complex FxA22 real Fxeps20 complex Fxeps22" << endl << endl ; 
 	     file << ReC << endl 
-			  << 0 << " " << omegaC  << endl 
-			  << real(Lambda) << " " << imag(Lambda) << endl 
-			  << real(Nu0) << " " << imag(Nu0) << endl 
-			  << real(Nu2) << " " << imag(Nu2) <<  endl 
+			  << 0 << endl << omegaC  << endl 
+			  << real(Lambda) << endl << imag(Lambda) << endl 
+			  << real(Nu0) << endl << imag(Nu0) << endl 
+			  << real(Nu2) << endl << imag(Nu2) <<  endl 
 			  << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl
-			  << real(AAA*FyA1) << " " << imag(AAA*FyA1) << endl
+			  << real(AAA*FyA1) << endl << imag(AAA*FyA1) << endl
 			  << Fx0 << endl 
 			  << Fxeps2 << endl
 			  << FxA20 << endl  
-			  << " " << real(FxA22) << " " << imag(FxA22) << endl
+			  << endl << real(FxA22) << endl << imag(FxA22) << endl
 			  << real(FxA20*AAA^2) << endl  
-			  << " " << real(FxA22*AAA^2) << " " << imag(FxA22*AAA^2) << endl ;
+			  << endl << real(FxA22*AAA^2) << endl << imag(FxA22*AAA^2) << endl ;
 
 };
 
@@ -368,7 +368,7 @@ SFWriteBaseFlow(ffdatadir+"MeanFlow_guess.ff2m",um,"MeanFlow",1);
  	ofstream file(ffdatadir+"SelfConsistentMode_guess.txt");
    	file << u1x[] ;	
    	file << endl << endl << Re << endl
-   	<< endl << 0 << "   " << omegaC  << endl;
+   	<< endl << 0 << endl << omegaC  << endl;
 };
 SFWriteMode(ffdatadir+"SelfConsistentMode_guess.ff2m",u1,1i*omegaNL,1i*omegaC,"HarmonicMode",1);
 
@@ -378,7 +378,7 @@ SFWriteMode(ffdatadir+"SelfConsistentMode_guess.ff2m",u1,1i*omegaNL,1i*omegaC,"H
  	ofstream file(ffdatadir+"SecondHarmonicMode_guess.txt");
    	file << u22x[] ;	
    	file << endl << endl << Re << endl
-   	<< endl << 0 << "   " << 2*omegaC  << endl;
+   	<< endl << 0 << endl << 2*omegaC  << endl;
 };
 
 SFWriteMode(ffdatadir+"SecondHarmonicMode_guess.ff2m",u22,2i*omegaNL,2i*omegaC,"SecondHarmonicMode",1);
