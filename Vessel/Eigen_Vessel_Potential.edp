@@ -276,6 +276,8 @@ for (int i=0;i<Nmodes;i++)
 	
 	plot(ModePhi,cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : phi"  ,wait=1,value=1);
         plot([ux,uy],cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : [u,v]"  ,wait=1,value=1);
+	Vh normU = sqrt(ux^2+uy^2);
+	plot(normU,cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : mean velocity"  ,wait=1,value=1,fill=1);
         plot(ModePhi,cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : eta"  ,wait=1,value=1);
 	
 	FilePhi << ModePhi[] << ModeEta[] << endl << endl << ev[i]  << " " <<  evi[i] <<  endl;
