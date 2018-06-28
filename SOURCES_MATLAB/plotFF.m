@@ -16,15 +16,9 @@ function handle = plotFF(FFdata,field1,varargin);
 %  field is the field to plot (the data may comprise multiple fields)
 %  (may be useful, for instance, to plot re/im parts of a complex field)
 %
-%  Note that this command is based on the "pdeplot" command and thus
-%  requires the presence of the "pdetools"  toolbox.   
-%  If you do not have the pdetools toolbox, there are several other options
-%  which you may consider for plotting : 
-%  1/ using "native" Freefem plots (by setting the macro FREEFEMPLOTS to YES)
-%  2/ exporting your data for Tecplot using exportFF_tecplot
-%  3/ exporting your data to Paraview format (Javier has written a driver
-%  which is to be incorporated in the project)
-%  4/ implementing the solution of chloros2 based on "patch" 
+
+%   This version of plotFF is based on pdeplot2dff developed by chloros2
+%   as an Octave-compatible alternative to pdeplot from toolbox pdetools 
 %   (https://github.com/samplemaker/freefem_matlab_octave_plot)
 
 
@@ -38,9 +32,66 @@ handle = figure();
 if(nargin==1)
     field1 = 'mesh';
     mesh = FFdata;
+
+    varargin={ varargin{:}, 'mesh', 'on'}; 
+    pdeplot2dff(mesh.points,mesh.seg,mesh.tri,varargin{:});
+    %axis equal;
 else
     mesh = FFdata.mesh;
-end
+    field1 = varargin{1};
+    varargin = { varargin{2:end} };
+    if(strcmp(field1,'mesh')) % plot mesh ins double-entry mde
+        varargin={ varargin{:}, 'mesh', 'on'};
+        pdeplot2dff(mesh.points,mesh.seg,mesh.tri,varargin{:});
+        %axis equal;
+    else
+    % plot data 
+    
+    % check if data to plot is a the name of a field or a numerical dataset
+    if(~isnumeric(field1))
+        [dumb,field,suffix] = fileparts(field1); % to extract the suffix
+        if(strcmp(suffix,'.im')==1)
+            data = imag(getfield(FFdata,field));
+        else
+            data = real(getfield(FFdata,field));
+        end
+    else
+       data = field1;
+    end
+
+    % same check for the data to plot using contours
+%    if(any(cellfun(@(x) isequal(lower(x), 'contour'), varargin)))
+%        iii = find(strcmp(varargin,'contour'));
+%        field1 = varargin{iii+1};
+%        if(~isnumeric(field1))
+%            [dumb,field,suffix] = fileparts(field1); % to extract the suffix
+%            if(strcmp(suffix,'.im')==1)
+%                dataL = imag(getfield(FFdata,field));
+%            else
+%                dataL = real(getfield(FFdata,field));
+%            end
+%        varargin{iii+1} = dataL;
+%        end  
+%    end
+    
+%if( (any(cellfun(@(x) isequal(lower(x), 'colormap'), varargin))==0) )
+%    varargin={varargin{:} ,'ColorMap','parula'}; % default colormap set to parula
+%end
+
+%if( any(cellfun(@(x) isequal(lower(x), 'mesh'), varargin))==0) 
+%    varargin={varargin{:} ,'Mesh','off'};
+%end
+
+%if(length(colorrange)==2)
+%    data = min(max(data,colorrange(1)),colorrange(2)); % ecretage des donnees
+%end
+pdeplot2dff(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
+%pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
+% axis equal;
+%if(any(strcmp('plottitle',fieldnames(FFdata)))) 
+%    title(FFdata.plottitle) 
+%end
+
 
 % check if 'colorrange' is a parameter.
 narg = length(varargin);colorrange = 0;
@@ -131,4 +182,3 @@ elseif ( any(strcmp('mesh',fieldnames(FFdata))) && any(strcmp('ylim',fieldnames(
 end
 
 end
-

@@ -346,8 +346,11 @@ cout << " Preconditioning matrix... done" << endl;
 	omega -= domega;
 
 	cout << "dRe ; domega : " << -dRe << " " << -domega << endl;
+	
+	IFMACRO(FREEFEMPLOTS,YES)
 	plot(du1b,value=1,wait=1);
-
+	ENDIFMACRO
+	
 	i++;
 	};
 	
@@ -399,7 +402,7 @@ XXMh [ubbx,ubby,ubbp] = [u1b,u2b,pb]; // ugly fix
     [um1s,um2s,pms] = [u1mr+1i*u1mi,u2mr+1i*u2mi,pmr+1i*pmi]; 
   	file << um1s[] ;	
    	file << endl << endl << Re << endl
-   	<< endl << 0 << "   " << omega  << endl;
+   	<< endl << 0 << endl << omega  << endl;
     }
 	fespace p1(th,P1); 
 	p1 xx,yy;
@@ -418,7 +421,7 @@ XXMh<complex> [umm1x,umm1y,umm1p] = [um1s,um2s,pms]; // ugly fix
  		
 
 	};
-
+	cout << "	===> FindThreshold2D.edp correctly ended" << endl << endl;
 
 
 

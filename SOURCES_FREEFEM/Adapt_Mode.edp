@@ -56,6 +56,7 @@
 	exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_ans.txt");
 	exec("cp "+ffdatadir+"BaseFlow.ff2m "+ffdatadir+"BaseFlow_ans.ff2m");
 
+
 	 
 	mesh th=readmesh(ffdatadir+"mesh.msh");
 	mesh thold = th;
@@ -99,9 +100,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	    {
           ifstream file(ffdatadir+"BaseFlow.txt");
           file >> NdimBaseFlow ;
-          file >> Reans;
     	}
-		Re = Reans;
 		
 	if(NdimBaseFlow == NdimUVP) 
 	{
@@ -129,11 +128,9 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
         {
         cout << " Error : Wrong dimension For BaseFlow_guess.txt file" << endl;
         };
+    cout << " lecture of Base flow : Reynolds number = " << Reans << endl;
 
-	
-	
-    cout << " lecture of Base flow : Reynolds number = " << Re << endl;
-
+	Re = Reans;
 
 	mesh thnew;	
 	
@@ -218,9 +215,10 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	}
 
 
-		
+	IFMACRO(FREEFEMPLOTS,YES)		
 	plot(thold,wait=1);
 	plot(thnew,wait=1);
+	ENDIFMACRO
 	
 	savemesh(thnew,ffdatadir+"mesh.msh");
 	SFWriteMesh(ffdatadir+"mesh.ff2m",thnew);

@@ -4,10 +4,12 @@ system('mkdir FIGURES');
 figureformat = 'png';
 %%%%%% CHAPTER 0 : creation of initial mesh for cylindrical bridge, L=4
 
-L = 3.5;
+L = 4;
 density=20;
- %creation of an initial mesh (cylindrical liquid bridge)
+ %creation of an initial mesh (with volume corresponding to coalescence of two spherical caps) 
 ffmesh = SF_Mesh('MeshInit_Bridge.edp','Params',[0 L density]);
+V = pi*L/2*(1+L^2/12);
+ffmesh = SF_Mesh_Deform(ffmesh,'V',V);
 
 Vol0 = ffmesh.Vol; 
 figure(1);hold off;
@@ -36,12 +38,22 @@ legend('m=0,a','m=0,s','m=1,s','m=1,a');
 
 figure(4);
 subplot(1,4,1);plotFF(emm0(3),'phi.im','title','Mode m=0,a');
+hold on;E=0.15/max(abs(emm0(3).eta));
+plot(ffmesh.xsurf+E*emm0(3).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm0(3).eta.*ffmesh.N0z,'r');hold off;
 subplot(1,4,2);plotFF(emm0(5),'phi.im','title','Mode m=0,s');
+hold on;E=0.15/max(abs(emm0(5).eta));
+plot(ffmesh.xsurf+E*emm0(5).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm0(5).eta.*ffmesh.N0z,'r');hold off;
 subplot(1,4,3);plotFF(emm1(1),'phi.im','title','Mode m=1,s');
+E=0.15/max(abs(emm1(1).eta));
+hold on;plot(ffmesh.xsurf+E*emm1(1).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm1(1).eta.*ffmesh.N0z,'r');
 subplot(1,4,4);plotFF(emm1(3),'phi.im','title','Mode m=1,a');
+E=0.15/max(abs(emm1(3).eta));
+hold on;plot(ffmesh.xsurf+E*emm1(3).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm1(3).eta.*ffmesh.N0z,'r');
 pos = get(gcf,'Position'); pos(3)=pos(4)*2.6;set(gcf,'Position',pos); % resize aspect ratio
-set(gca,'FontSize', 14);
+%set(gca,'FontSize', 14);
 saveas(gcf,'FIGURES/Bridges_NV_Eigenmodes_phi_cyl_L3_5',figureformat);
+pause;
+
 
 figure(5); hold on;
 E=0.15/max(abs(emm0(3).eta));
@@ -275,7 +287,7 @@ saveas(gca,'FIGURES/Bridges_NV_coal_omega',figureformat);
 
 figure(33);hold on;
 for num=1:10
-    plot(tabL,imag(tabEVm0(num,3:end)).*tabL.^1.5,'ro-',tabL,imag(tabEVm1(num,:)).*tabL.^1.5,'bo-');
+    plot(tabL,imag(tabEVm0(num,:)).*tabL.^1.5,'ro-',tabL,imag(tabEVm1(num,:)).*tabL.^1.5,'bo-');
 end
 title('rescaled frequencies of m=0 (red) and m=1 (blue) modes vs. P');
 xlabel('L');ylabel('\omega_r/\omega_L');

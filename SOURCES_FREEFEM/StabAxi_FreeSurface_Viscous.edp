@@ -1,0 +1,219 @@
+///
+// THIS PROGRAM IS ADAPTED FROM Eigen_Bridge_Potential.edp from LiquidBridges++_V1.3
+// imported in STABFEM project by D. Fabre on december 2017.
+// STILL TO BE RATIONALIZED A LOT !!!
+
+
+//  Computation of the eigenvalues and eigenvectors for oscillations of a liquid bridge
+//  (inviscid theory)
+// ----------------------------------------
+// the problem is potential : u = i grad (phi) (mind the "i" factor !) 
+// PROBLEM : find $\omega$ and $[phi,eta]$  such that
+// 	$$ \Delta \phi = 0 $$ inside the domain
+// 	$$ \omega \phi = \gamma (-(K0a^2+K0b^2) \eta - \partial^2 \eta / \partial s^2 + m^2/r^2 \eta $$ on the free surface
+// 	$$ \omega \eta = grad \phi \dot n $$ on the free surface 
+// 
+//-----------------------------------------
+
+// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
+
+
+include "Macros_StabFem.edp"
+
+verbosity=0;
+
+// constantes physiques 
+//real g=0;                 // Gravity field
+real gamma=1;	  // Surface Tension
+real R=1;
+real dpdz;
+real nu;
+
+cout << "ENTREZ LA TENSION DE SURFACE GAMMA : "<< endl;
+cin >> gamma;
+if(gamma != 1){ 
+	// TO BE MODIFIED !
+	cout << "WARNING : PROGRAM HAS TO BE ADAPTED FOR GAMMA ~= 1"<< endl; 
+	exit(-1);
+	} ;
+
+
+cout << "ENTREZ LE PARAMETRE DE GRAVITE dp/dz = rho g : "<< endl;
+cin >> dpdz;
+
+cout << "ENTREZ LA VISCOSITE NU : "<< endl;
+cin >> nu;
+
+int m;  // Nombre d'onde
+cout << " ENTREZ Le nombre d'onde m ?" << endl;
+cin >> m;
+
+cout << " Enter SHIFT (re,im) :   " << endl; 
+	real shiftr,shifti;
+	cin  >> shiftr >> shifti;
+	complex shift = 1i*shifti+shiftr;
+
+int nev;
+cout << " Enter nev ? (will use simple shift-invert if nev = 1)" << endl;
+cin >> nev ;
+	
+
+
+// Parametres du calcul
+
+cout << "==> Calcul des valeurs propres pour m = " << m << endl;
+
+
+int Nval = min(nev,10);  // nb. de valeurs propres à calculer
+int Nmodes = nev; // nb. de vecteurs propres à post-traiter
+int ncv = 4*nev;   ///// Krylov Basis
+
+
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+
+mesh th=readmesh(ffdatadir+"mesh.msh");
+//mesh th=th; // autre nom possible...
+mesh Shempty=emptymesh(th); 	// Maillage 'surface'
+real L, K0, Vol, Area;
+
+include "Macros_Geometrie_Surface.edp"
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
+// Calcul des normales et des courbures
+CalcGeomSurf;
+
+
+
+fespace P2P2P2P1P1P1(th,[P2,P2,P2,P1,P1,P1]);
+
+P2P2P2P1P1P1<complex> [uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1];
+
+
+//real shift = 1e-12;  // value of the shift
+real RegEta = 1e-8;
+
+
+macro div(im,u) (dy(u#z)+dx(u#r)+u#r/x+im/x*u#phi)// macro for divergence 
+//macro Grad(im,u) [
+//			[dy(u#z), dx(u#z),  im/x*u#z ], 
+//			[dy(u#r), dx(u#r),  im/x*u#r-u#phi/x],
+//			[dy(u#phi),dx(u#phi), im/x*u#phi+u#r/x ]
+//			] // macro for vecocity gradient tensor
+macro D(im,u) [	
+				[dy(u#z), 				.5*(dx(u#z)+dy(u#r)),  .5*(im/x*u#z+dy(u#phi)) ], 
+				[.5*(dx(u#z)+dy(u#r)), 	dx(u#r),				.5*(im/x*u#r-u#phi/x+dx(u#phi))],
+				[.5*(im/x*u#z+dy(u#phi)),  .5*(im/x*u#r-u#phi/x+dx(u#phi)), im/x*u#phi+u#r/x]
+			   ] // macro for rate-of-deformation tensor
+
+//macro Conv(ima,ua,imb,ub,v) ( 
+//              (Grad(ima,ua)*[ub#x,ub#r,ub#phi] + Grad(imb,ub)*[ua#x,ua#r,ua#phi])'*[v#x,v#r,v#phi]
+//              			) // macro for mutual convection operator
+
+
+
+// Warning boundary labelling :
+// 2 surface, 1 axis, 5 plates.
+// should be changed to 8, 6, 2.
+
+// CONSTRUCTION DES MATRICES
+
+
+
+varf a([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) = 
+ 	int2d(th)(
+ 	         ( 
+   			 - 2*nu*(D(1i*m,u):D(-1i*m,v))
+             + up*div(-1i*m,v)
+             + div(1i*m,u)*vp
+             )*x
+             )   	
+	+ int1d(th,2)(gamma*uk1*(vz*N.y+vr*N.x)*x)  // dynamic BC
+	+ int1d(th,2)(veta*(uz*N.y+ur*N.x)*x) // kinematic BC
+	+ int1d(th,2)((-uk1*vk1-(Ds(ueta))*(Ds(vk1))  -(K0a^2+K0b^2)*ueta*vk1+m^2/(x^2+1e-30)*vk1*ueta)*x) // def of k1
+	+ int1d(th,2)(vz*dpdz*ueta*N.y*x)// gravity
+	+ int2d(th)( -shift*(uz*vz+ur*vr+uphi*vphi)*x ) // shift volume
+	+ int1d(th,2)(-shift*ueta*veta*x) // shift surface
+	+ int2d(th)(1e-12*(ueta*veta+uk1*vk1)*x )
+	+ on(5,ueta=0) // pinned contact lines
+	+ on(5,ur=0,uz=0,uphi=0) // plates
+	+ int1d(th,1)(uz*vz*1e30*(abs(m)>0)+(ur*vr+uphi*vphi)*1e30*(abs(m)!=1)+uk1*vk1*1e30) //axis 
+;
+
+varf b([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) =
+      int2d(th)((uz*vz+ur*vr+uphi*vphi)*x+0*(ueta*veta)+0*(uk1*vk1) )
+    + int1d(th,2)(ueta*veta*x)
+;
+
+
+////////////////////////////////////////////////////
+//
+//  RESOLUTION DU PB AUX VALEURS PROPRES
+//
+//  Important warning : here the computed eigenvalues correspond to omega = lambda/i !
+//  
+/////////////////////////////////////////////////////
+
+
+matrix<complex> OP= a(P2P2P2P1P1P1,P2P2P2P1P1P1,solver=sparsesolver); 
+matrix<complex> B= b(P2P2P2P1P1P1,P2P2P2P1P1P1,solver=CG); 
+
+//int nev=Nval;  // number of computed eigen valeu close to sigma
+complex[int] ev(Nval); // to store nev eigein values
+P2P2P2P1P1P1<complex>[int] [eVuz,uVur,eVuphi,eVp,eVeta,eVK1](Nval);   // to store nev eigen vectors
+
+int k=EigenValue(OP,B,sigma=shift,value=ev,vector=eVuz,tol=1e-8,maxit=0,ncv=ncv);  
+
+
+////////////////////////////////////////////////////
+//
+//    POST TRAITEMENT
+//
+///////////////////////////////////////////////////
+
+
+
+
+cout << " ### VP Calculees :" << endl;
+
+//real[int]  eev(Nval);
+ofstream EV(ffdatadir+"Spectrum.txt");
+EV.scientific;
+P2P2P2P1P1P1<complex> [MODEz,MODEr,MODEphi,MODEp,MODEeta,MODEk1];
+for (int i=0;i<k;i++)
+  {
+    cout << " VP numero " <<  i << " : " << real(ev[i]) << "+i" << imag(ev[i]) <<  endl;
+    EV << real(ev[i]) << "  " << imag(ev[i]) << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl; 
+  
+// Post-traitement MODES
+  if (i<k)
+     {	
+   	  ofstream FileTXT(ffdatadir+"Eigenmode"+(i+1)+".txt");
+   	  FileTXT << eVuz[i][];
+   	  FileTXT << endl << endl << endl;
+   	  MODEz[] = eVuz[i][];
+     SFWriteMode(ffdatadir+"Eigenmode"+(i+1)+".ff2m",MODE,ev[i]);   
+     
+     plot(eVuz[i],cmm="mode numero"+i+" : uz", wait=1); 	
+      plot(eVeta[i],cmm="mode numero"+i+" : eta", wait=1); 	
+       plot(eVK1[i],cmm="mode numero"+i+" : k1", wait=1); 	
+     };
+  };	
+	
+// HACK for compatibility
+if(nev==1)
+{ 
+  exec("cp "+ffdatadir+"Eigenmode0.txt "+ffdatadir+"Eigenmode.txt");
+  exec("cp "+ffdatadir+"Eigenmode0.ff2m "+ffdatadir+"Eigenmode.ff2m");
+};
+
+
+
+

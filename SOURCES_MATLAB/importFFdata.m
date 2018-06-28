@@ -46,9 +46,9 @@ for i=istart:nargin
 fileToRead = varargin{i};
 
 if(exist([ffdatadir,fileToRead])==2) 
-    fileToRead = [ffdatadir,fileToRead];
+    fileToRead = [ffdatadir,fileToRead]
 end
-
+mydisp(2,[' function importFFdata : reading file ',fileToRead]);
 rawData1 = importdata(fileToRead);
 mydisp(2,['FUNCTION  importFFdata.m : reading file ' fileToRead ]); 
 data = rawData1.data;
@@ -57,7 +57,7 @@ if(np>0&&i==istart)
     % file contains mesh-related data and is likely associated to a .txt
     % file containing plain freefem data
     [filepath,name,ext] = fileparts(fileToRead);
-    pdestruct.filename=[filepath,name,'.txt'];
+    pdestruct.filename=[filepath,'/',name,'.txt'];
 end
 %interpret headers
 datatype = rawData1.textdata{2};

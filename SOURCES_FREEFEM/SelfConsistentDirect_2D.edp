@@ -404,7 +404,9 @@ cout << " LU-ing matrix... done" << endl;
 	cout <<  "   ### omega = " << omega << endl;
 	cout << "   ### Energy-norm of perturbation A = " << EnergyNormCS(u1c,u1s)  << endl;	
 	cout << " 	### Fy = " << Lift(1/Re,u1cx,u1cy,u1cp) << endl ; 
-	//plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
+	IFMACRO(FREEFEMPLOTS,YES)
+	plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
+	ENDIFMACRO
 
 	iter++;
 	if(u1cx[].l2<1e-6){dXX = 1e30; };
@@ -442,7 +444,7 @@ SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0,"MeanFlow",iter);
  	ofstream file(ffdatadir+"SelfConsistentMode.txt");
    	file << u1x[] ;	
    	file << endl << endl << Re << endl
-   	<< endl << sigma1 << "   " << omega  << endl;
+   	<< endl << sigma1 << endl << omega  << endl;
 };
 
 
@@ -460,7 +462,7 @@ cout << " COPYING Output into guess for next calculation..." << endl;
  	ofstream file(ffdatadir+"SelfConsistentMode_guess.txt");
    	file << u1x[] ;	
    	file << endl << endl << Re << endl
-   	<< endl << sigma1 << "   " << omega  << endl;
+   	<< endl << sigma1 << endl << omega  << endl;
 };
 };
 

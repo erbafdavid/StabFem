@@ -64,7 +64,8 @@ while(iRUN>0)
     
 if(exist(['' ffdatadir '/BaseFlow_Re' num2str(Re) '.txt'])==2);
     disp('base flow already computed');
-    system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt BaseFlow.txt']);
+%     system(['cp ' ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt BaseFlow.txt']);
+    mycp([ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'],'BaseFlow.txt');
 else
     disp('computing base flow ');
     bf=SF_BaseFlow(bf,'Re',Re);
@@ -74,9 +75,12 @@ disp('performing stability computation');
 
     EV = SF_Stability(bf,'m',m,'shift',shift,'nev',10)
 
-system(['mkdir ' ffdatadir '/RUN' num2str(iRUN)]);
-system(['mv ' ffdatadir 'Eigenmode*.ff2m ' ffdatadir '/RUN' num2str(iRUN) '/']);
-system(['cp ' ffdatadir 'Eigenvalues.txt ' ffdatadir '/RUN' num2str(iRUN) '/']);
+% system(['mkdir ' ffdatadir '/RUN' num2str(iRUN)]);
+mymake([ffdatadir '/RUN' num2str(iRUN)]);
+% system(['mv ' ffdatadir 'Eigenmode*.ff2m ' ffdatadir '/RUN' num2str(iRUN) '/']);
+mymv([ffdatadir 'Eigenmode*.ff2m'],[ffdatadir '/RUN' num2str(iRUN) '/']);
+% system(['cp ' ffdatadir 'Eigenvalues.txt ' ffdatadir '/RUN' num2str(iRUN) '/']);
+mycp([ffdatadir 'Eigenvalues.txt'],[ffdatadir '/RUN' num2str(iRUN) '/']);
 
 EVr = real(EV);
 EVi = imag(EV);

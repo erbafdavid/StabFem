@@ -220,11 +220,11 @@ problem ExtendEta(etaext,dK0ext) =
 
 // Calcul du champ lagrangien pour deformation de maillage
 fespace Vh11(th,[P1,P1]);
-Vh11 [uz,ur], [vz,vr];
-problem CalcDef([uz,ur],[vz,vr])=
-    int2d(th)( (dx(uz)*dx(vz)+dy(uz)*dy(vz)) + (dx(ur)*dx(vr)+dy(ur)*dy(vr)) )
-+on(2,ur=etaNewton*N0r,uz=etaNewton*N0z)
-+on(1,5,6,ur=0,uz=0);
+Vh11 [uzdef,urdef], [vzdef,vrdef];
+problem CalcDef([uzdef,urdef],[vzdef,vrdef])=
+    int2d(th)( (dx(uzdef)*dx(vzdef)+dy(uzdef)*dy(vzdef)) + (dx(urdef)*dx(vrdef)+dy(urdef)*dy(vrdef)) )
++on(2,urdef=etaNewton*N0r,uzdef=etaNewton*N0z)
++on(1,5,6,urdef=0,uzdef=0);
 
 
 

@@ -22,13 +22,14 @@ end
 
 if(verbosity<10) % quiet mode
 [status,result]=system(command);
-    if(status~=0)&&(strcmp(errormessage,'skip')==0)  
+    if(status~=0)&&(status~=141)&&(status~=13)&&(strcmp(errormessage,'skip')==0)   
+    % NB if successful matlab retunrs 0, Octave returns 141, sometimes 13
         result
         error(errormessage);
     end
 else % verbose mode
  [status]=system(command)
-    if(status~=0)&&(strcmp(errormessage,'skip')==0)
+    if(status~=0)&&(status~=141)&&(status~=13)&&(strcmp(errormessage,'skip')==0)
         error(errormessage);
     end   
 end

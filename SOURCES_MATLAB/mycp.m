@@ -4,7 +4,6 @@ function mycp(file1,file2)
 if(isunix||ismac)
     command = [ 'cp ' file1 ' ' file2 ];
     system(command);
-    
 end
 
 if(ispc)
@@ -14,5 +13,3 @@ if(ispc)
 end
 
 end
-
-    

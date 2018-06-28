@@ -50,52 +50,16 @@ bf=SF_BaseFlow(bf,'Re',50);
 [bf,em]=SF_FindThreshold(bf,em);
 Rec = bf.Re;  Fxc = bf.Fx; 
 Lxc=bf.Lx;    Omegac=imag(em.lambda);
-%[ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
 end
 
 
+%%% CHAPTER 5 : SELF CONSISTENT, INITIATED BY LINEAR RESULTS WITH A GUESS
+%%%             (alternative to the method using the WNL as a guess)
+%%%
+%%% HERE the initial guess is for Re=47 (slightly above the instability threshold)
+%%% The initialisation is done with the linear eigmode
+%%% with a "small" amplitude (measured by lift force), namely Fy=0.006 .
 
-
-%%% CHAPTER 3 : computation of weakly nonlinear expansion
-
-[ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
-[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.); % Here to generate a starting point for the next chapter
-
-%%% PLOTS of WNL predictions
-
-epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
-Re_WNL = 1./(1/Rec-epsilon2_WNL);
-A_WNL = wnl.Aeps*real(sqrt(epsilon2_WNL));
-Fy_WNL = wnl.Fyeps*2*real(sqrt(epsilon2_WNL));
-omega_WNL =Omegac + epsilon2_WNL*imag(wnl.Lambda) ...
-                  - epsilon2_WNL.*(epsilon2_WNL>0)*real(wnl.Lambda)*imag(wnl.nu0+wnl.nu2)/real(wnl.nu0+wnl.nu2)  ;
-Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  ...
-                 + real(wnl.Lambda)/real(wnl.nu0+wnl.nu2)*epsilon2_WNL*(epsilon2_WNL>0) ;
-
-figure(20);hold on;
-plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,'g--','LineWidth',2);hold on;
-
-figure(21);hold on;
-plot(Re_WNL,omega_WNL/(2*pi),'g--','LineWidth',2);hold on;
-xlabel('Re');ylabel('St');
-
-figure(22);hold on;
-plot(Re_WNL,Fx_WNL,'g--','LineWidth',2);hold on;
-xlabel('Re');ylabel('Cx');
-
-figure(24); hold on;
-plot(Re_WNL,Fy_WNL,'g--','LineWidth',2);
-xlabel('Re');ylabel('Cy')
-
-figure(25);hold on;
-plot(Re_WNL,A_WNL,'g--','LineWidth',2);
-xlabel('Re');ylabel('AE')
-
-pause;
-
-
-
-%%% CHAPTER 5 : SELF CONSISTENT
 
 if(exist('HB_completed')==1)
     disp('SC quasilinear model on the range [Rec , 100] already computed');
@@ -104,16 +68,13 @@ else
 Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
 
 
-
-%%% THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL
-%%% ANALYSIS
 Res = 47. ; 
+Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
 
- Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
-%bf=SF_BaseFlow(bf,'Re',Res);
-%[ev,em] = SF_Stability(bf,'shift',Omegac*i);
+bf=SF_BaseFlow(bf,'Re',Res);
+[ev,em] = SF_Stability(bf,'shift',Omegac*i,'nev',1);
+[meanflow,mode] = SF_SelfConsistentDirect(bf,em,'sigma',0.,'Re',47.,'Fyguess',0.006); 
 
-[meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'sigma',0.,'Re',47.5); 
 
 for Re = Re_HB(2:end)
     [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'Re',Re);
@@ -189,6 +150,11 @@ pause(0.1);
 
 
 %%% CHAPTER 6 : SELFCONSISTENT APPROACH WITH RE = 100
+%%% (Reproducing the figure of Mantic-Lugo)
+%%%
+%%% HERE the initial guess is for sigma = 0.12 (slightly less than the
+%%% linear growth rate, the initialisation is done with the linear eigmode
+%%% with a "small" amplitude (measured by lift force), namely Fy=0.00728 .
 
 if(exist('SC_completed')==1)
     disp(' SC model for Re=100 : calculation already done');

@@ -183,6 +183,7 @@ function [hh] = pdeplot2dff(points,boundary,triangles,varargin) %%DD : switch bo
         title(plottitle);
     end
     if(~strcmp(plotxlim,'minmax')) 
+        axis equal;
         xlim(plotxlim);
     end
     if(~strcmp(plotylim,'minmax')) 

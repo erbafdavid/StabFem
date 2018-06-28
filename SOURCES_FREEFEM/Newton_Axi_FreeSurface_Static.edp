@@ -139,10 +139,10 @@ ExtendEta; plot(etaext,fill=1,value=1,wait=0,cmm="eta ext"); //(pour visualisati
 
 // Calcul d'un champ de deplacement du maillage 
 CalcDef;
-plot([ur,uz],fill=1,value=1,wait=0,cmm="champ de deformation calcule iteration "+i);
+plot([urdef,uzdef],fill=1,value=1,cmm="champ de deformation calcule iteration "+i,wait=1);
 
 // Deplacement du maillage
-th = movemesh(th,[x+ur,y+uz]);
+th = movemesh(th,[x+urdef,y+uzdef]);
 plot(th,Shempty,cmm="Deformation maillage iteration "+i,wait=1);
 real NewVolume = int2d(th)(x);
 cout << "NewVolume = " << NewVolume << endl; 
