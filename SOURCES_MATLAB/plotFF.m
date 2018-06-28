@@ -100,10 +100,11 @@ end
 %    title(FFdata.plottitle) 
 % end
 
+
+
 %if(length(mesh.seg)==1) % to construct the 'seg' structure necessary for ploting mesh
 %    FFdata.mesh=importFFmesh('mesh.msh','seg');
 %end
-
 
 %pdemesh(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri) ;
 %axis equal;
@@ -127,3 +128,10 @@ end
 % end
 
 end
+
+%pdemesh(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri) ;
+%axis equal;
+%end
+
+
+
