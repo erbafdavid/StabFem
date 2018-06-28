@@ -149,7 +149,7 @@ error = 'ERROR : SF_ base flow computation aborted';
         end
         
 
-if(strcmp(baseflow.mesh.problemtype,'2DComp')
+if(strcmp(baseflow.mesh.problemtype,'2DComp'))
 %% to be rationalised
         system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.txt']);
         system(['cp ' ffdatadir 'BaseFlow.ff2m ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.ff2m']);
