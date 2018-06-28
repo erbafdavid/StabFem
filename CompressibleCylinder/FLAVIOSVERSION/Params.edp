@@ -23,7 +23,7 @@ real ls=300;
 // densità di vertici nelle sottozone 
 real n=1.3;
 //real n=2.5;
-real ncil=100 , n1=15, n2=5,ns=0.2;
+real ncil=50 , n1=10, n2=3,ns=0.2;
 real nsponge=0.05;
 // sponge
 
@@ -31,8 +31,8 @@ real nsponge=0.05;
 
 // Path dove salvare
 
-string pht="./Fields/";
-string namemesh="Mh.msh"; 
+string pht="./WORK/";
+string namemesh="mesh.msh"; 
 
 //if(mpirank==0)
   exec("mkdir -p "+pht+" ");

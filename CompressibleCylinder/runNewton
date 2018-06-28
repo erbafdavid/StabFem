@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ff-mpirun -np $1 Newton_Bflow.edp
+

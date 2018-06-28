@@ -37,6 +37,7 @@ if(mpirank==0)
   }
 broadcast(processor(0),th); 
 
+cout << "MPISIZE " << mpisize << endl;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -240,6 +241,7 @@ savevtk(pht+"/Bflow_Re"+Rey+"_M"+M+".vtk",th,Pb,[Ubx,Uby,0],Tb,Rhob,order=forder
 	};
       };
   };
+
 
 
 

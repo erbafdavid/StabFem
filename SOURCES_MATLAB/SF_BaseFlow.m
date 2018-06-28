@@ -17,7 +17,7 @@ function baseflow = SF_BaseFlow(baseflow,varargin)
 % Version 2.0 by D. Fabre , september 2017
 % 
 
-global ff ffdir ffdatadir sfdir verbosity
+global ff ffMPI ffdir ffdatadir sfdir verbosity
 
 %%% MANAGEMENT OF PARAMETERS (Re, Mach, Omegax, Porosity...)
 % Explanation
@@ -58,20 +58,26 @@ end
 %%% check which parameters are transmitted to varargin (Mode 1) 
    p = inputParser;
    addParameter(p,'Re',baseflow.Re,@isnumeric); % Reynolds
-   addParameter(p,'Mach',0,@isnumeric); % Mach
+
+   if(isfield(baseflow,'Ma')) MaDefault = baseflow.Ma ; else MaDefault = 0.01; end;
+   addParameter(p,'Mach',MaDefault,@isnumeric); % Reynolds
+   
    addParameter(p,'Omegax',Omegax,@isnumeric); % rotation rate (for swirling body)
    addParameter(p,'Darcy',Darcy,@isnumeric); % For porous body
    addParameter(p,'Porosity',Porosity,@isnumeric); % For porous body 2
    addParameter(p,'type','Normal',@ischar); % mode 
+   addParameter(p,'ncores',1,@isnumeric); % number of cores to launch the sim
    parse(p,varargin{:});
    
 % Now the right parameters are in p.Results   
    Re = p.Results.Re;
+   Ma = p.Results.Mach
    Omegax = p.Results.Omegax;
    Darcy = p.Results.Darcy;
    Porosity=p.Results.Porosity;
+   ncores = p.Results.ncores % By now only for the 2D compressible
 
-   
+
 %%% SELECTION OF THE SOLVER TO BE USED DEPENDING ON THE CASE
 
 switch(baseflow.mesh.problemtype)
@@ -89,10 +95,12 @@ switch(baseflow.mesh.problemtype)
             if(verbosity>1)  disp('## solving base flow (2D CASE)'); end
             solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_2D.edp'];
             
-   case('2DComp')
+    case('2DComp')
             if(verbosity>1)  disp('## solving base flow (2D CASE COMPRESSIBLE)'); end
-            solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Mach) ' | ',ff,' ','Newton_2D_Comp_Seq.edp'];         
-              % NB at the moment the script is in the local folder, it is to be joined in ffdir in due time 
+
+            solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Mach) ' | ',ffMPI,' -np ',num2str(ncores),' ','Newton_2D_Comp.edp'];         
+              %NB at the moment the script is in the local folder, it is to be joined in ffdir in due time 
+
               % REMARK : 'Newton_2D_Comp.edp' (mpi parallel version) works best but we have to find how to pass the parameters ! 
               
    % case (other cases...)
@@ -140,11 +148,19 @@ error = 'ERROR : SF_ base flow computation aborted';
           error('ERROR : SF_ base flow computation did not converge');
         end
         
+
+if(strcmp(baseflow.mesh.problemtype,'2DComp')
+%% to be rationalised
+        system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.txt']);
+        system(['cp ' ffdatadir 'BaseFlow.ff2m ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.ff2m']);
+else
         mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt']);
         mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m']);
+end
+
          baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
-         baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
+         baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.txt'];
         
  end
 

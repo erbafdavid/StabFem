@@ -44,7 +44,7 @@ end
 
 
 
-emi.xlim = [-2 20]; emi.ylim=[0,5];
+emi.xlim = [-2 ]; emi.ylim=[0,5];
 plotFF(emi,'ux1');
 title('Eigenmode for Re=60');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio

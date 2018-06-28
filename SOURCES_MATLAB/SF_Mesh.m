@@ -1,6 +1,6 @@
 function mesh = SF_Mesh(meshfile,varargin)
-% StabFem Driver for generating initial mesh 
-% 
+% Matlab/FreeFem driver for generating initial mesh 
+%
 % usage in one-input mode : mesh = SF_Mesh('Mesh.edp')
 %
 % usage in two-input mode : baseflow = SF_Init('Mesh.edp','Params',[Param1 Param2 ...])
@@ -10,11 +10,14 @@ function mesh = SF_Mesh(meshfile,varargin)
 % 'Mesh.edp' must be a FreeFem script which generates a file "mesh.msh",
 % a description file "mesh.ff2m", a geometrical parameter file "SF_Init.ff2m"
 %
-% Copyright D. Fabre , latest revision  june 2018
-% This function is part of the StabFem project distributed under gnu licence 3. 
+% Version 2.0 by D. Fabre ,  june 2017
 
+p = inputParser;
+addParameter(p,'Params',NaN);
+parse(p,varargin{:})
 
  global ff ffdir ffdatadir sfdir verbosity
+
 
 if(exist(ffdatadir)~=7&&exist(ffdatadir)~=5)
     mymake([ffdatadir]);
@@ -38,11 +41,12 @@ end
 
 myrm([ffdatadir 'BASEFLOWS/*']);
 
-if((Params)==NaN)
+
+if((p.Results.Params)==NaN)
     command = [ff,' ',meshfile];
 else
     stringparam = []; 
-    for pp = Params;
+    for pp = p.Results.Params;
         stringparam = [stringparam, num2str(pp), '  ' ]; 
     end
     command = ['echo   ', stringparam, '  | ',ff,' ',meshfile];
@@ -53,9 +57,9 @@ mysystem(command,error);
 
 % copy the mesh in directory ffdatadir
 mesh.filename=[ ffdatadir 'mesh.msh'];
-%mycp('mesh.msh', mesh.filename);
-%mycp('mesh.ff2m', [ffdatadir 'mesh.ff2m']); 
-%mycp('SF_Init.ff2m', [ffdatadir 'SF_Init.ff2m']); 
+mycp('mesh.msh', mesh.filename);
+mycp('mesh.ff2m', [ffdatadir 'mesh.ff2m']); 
+mycp('SF_Init.ff2m', [ffdatadir 'SF_Init.ff2m']); 
 
 mesh = importFFmesh([ffdatadir 'mesh.msh']);
 

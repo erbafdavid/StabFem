@@ -1,5 +1,7 @@
-global ff ffdir ffdatadir sfdir verbosity
+global ff ffMPI ffdir ffdatadir sfdir verbosity 
 
+% TODO : David We need to define a global variable in windows and unix
+% for ff-mpirun (or equivanlent)
 % THE ROLE OF THIS FUNCTION IS TO POSITION THE following global variables :
 % ff -> adress with full path of the FreeFem++ executable
 % ffdir -> path of the FreeFem sources of the project
@@ -7,10 +9,14 @@ global ff ffdir ffdatadir sfdir verbosity
 % ffdatadir -> path where to store the results (recommended is ./WORK) 
 
 if(isunix)
+
 ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++ -v 0'; % on IMFT network
+ffMPI = 'ff-mpirun';
 end
 if(ismac)
 ff = '/usr/local/bin/FreeFem++ -v 0';
+ffMPI = 'ff-mpirun';
+
 % NB normally this is where the FreeFem++ executable should be on a mac.
 % If not the case, either do a symbolic link (recommended) or replace with
 % the right one. option "-nw" is better to discard the ff++ graphical output. 
@@ -19,12 +25,18 @@ ff = '/usr/local/bin/FreeFem++ -v 0';
 %ff = '/usr/local/ff++/bin/FreeFem++'; for Flavio
 end
 if(ispc)
+
     ff = 'FreeFem++ -nw -v 0'; % for windows systems
-%   ff = 'launchff++'; % for older windows systems (?)
+    ffMPI = '';
+
+   
+
 end
 
 sfdir = '../SOURCES_MATLAB/'; 
 ffdir = '../SOURCES_FREEFEM/';
+
+
 
 
 
@@ -39,6 +51,8 @@ ffdir = '../SOURCES_FREEFEM/';
 %sfdir = '/Users/fabred/StabFem/SOURCES_MATLAB/'; % where to find the matlab drivers
 %ffdir = '/Users/fabred/StabFem/SOURCES_FREEFEM/'; % where to find the freefem scripts
 
+%sfdir = '/home/jsagg/Sources/StabFem/SOURCES_MATLAB/'; 
+%ffdir = '/home/jsagg/Sources/StabFem/SOURCES_FREEFEM/';
 
 addpath(sfdir);
 

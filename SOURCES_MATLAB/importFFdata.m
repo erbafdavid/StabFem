@@ -15,11 +15,10 @@ function pdestruct=importFFdata(varargin)
 %      typedata may be of the following types :
 %           - real -> one real scalar
 %           - complex -> complex number read as two reals
-%           - int -> integer
 %           - P1 -> P1 field (compatible with the mesh)
 %           - P1c -> P1 complex field
-%           - P1surf -> P1-lineic data along one part of the boundary
-%           - P1surfc -> same but complex
+%      (to be implemented : P1L -> 1D P1 field along a boundary of the mesh) 
+%
 %  Result is stored in a structure pdestruct
 % 
 
