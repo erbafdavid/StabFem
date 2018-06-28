@@ -147,7 +147,7 @@ plot(th,Shempty,cmm="Deformation maillage iteration "+i,wait=1);
 real NewVolume = int2d(th)(x);
 cout << "NewVolume = " << NewVolume << endl; 
 //Shempty = emptymesh(th);
-Shempty = movemesh(Shempty,[x+ur,y+uz]);
+Shempty = movemesh(Shempty,[x+urdef,y+uzdef]);
 
 // Recalcul des normales et courbures
 CalcGeomSurf;

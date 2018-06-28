@@ -71,11 +71,11 @@ end
    
 % Now the right parameters are in p.Results   
    Re = p.Results.Re;
-   Ma = p.Results.Mach
+   Ma = p.Results.Mach;
    Omegax = p.Results.Omegax;
    Darcy = p.Results.Darcy;
    Porosity=p.Results.Porosity;
-   ncores = p.Results.ncores % By now only for the 2D compressible
+   ncores = p.Results.ncores;  % By now only for the 2D compressible
 
 
 %%% SELECTION OF THE SOLVER TO BE USED DEPENDING ON THE CASE
@@ -149,7 +149,7 @@ error = 'ERROR : SF_ base flow computation aborted';
         end
         
 
-if(strcmp(baseflow.mesh.problemtype,'2DComp')
+if(strcmp(baseflow.mesh.problemtype,'2DComp'))
 %% to be rationalised
         system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.txt']);
         system(['cp ' ffdatadir 'BaseFlow.ff2m ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.ff2m']);
