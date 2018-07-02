@@ -51,11 +51,12 @@
 	include "Param_Adaptmesh.edp";
 
 
+// THIS IS TO BE DONE IN THE DRIVER AND REMOVED FROM HERE ! 
 	exec("cp "+ffdatadir+"mesh.msh "+ffdatadir+"mesh_ans.msh");
 	exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_ans.ff2m");
 	exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_ans.txt");
 	exec("cp "+ffdatadir+"BaseFlow.ff2m "+ffdatadir+"BaseFlow_ans.ff2m");
-
+//
 
 	 
 	mesh th=readmesh(ffdatadir+"mesh.msh");
@@ -241,7 +242,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 //	plot(pBN,fill=1,wait=1);
 
 	Re = Reans;
-	real nu = 1/Re;
+	real nu = 1/(Re+1e-30);
 	cout << "Writting BaseFlow_guess" << endl;
 	if(NdimBaseFlow == NdimUComp) 
 	{
@@ -259,20 +260,24 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	}
 
 // hack    
-    IFMACRO(problemtype,"2D")
-	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",uN,"BaseFlow",1);
-	[uNx,uNy,uNp] = [vB,uB,pB]; // interpolation of base flow
-	ofstream U(ffdatadir+"BaseFlow_guess.txt");		
+    IFMACRO(problemtype,2D)
+    cout << " writing BaseFlow_Adapted.ff2m" << endl;
+    [uNx,uNy,uNp] = [vB,uB,pB]; 
+    plot(uNx,wait=1);
+    th = thnew;
+	SFWriteBaseFlow(ffdatadir+"BaseFlow_Adapted.ff2m",uN,"BaseFlow",1);
+		ofstream U(ffdatadir+"BaseFlow_Adapted.txt");		
         U << uNx[];
         U << endl << endl <<  Re << endl;
 	ENDIFMACRO
 
-	IFMACRO(problemtype,"AxiXR")
+	IFMACRO(problemtype,AxiXR)
 	femp2xfemp2xfemp1N [uNNx,uNNr,uNNp];
 	[uNNx,uNNr,uNNp] = [vB,uB,pB];
-	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",uNN,"BaseFlow",1);
+	th = thnew;
+	SFWriteBaseFlow(ffdatadir+"BaseFlow_Adapted.ff2m",uNN,"BaseFlow",1);
 	[uNx,uNy,uNp] = [vB,uB,pB];
-	ofstream U(ffdatadir+"BaseFlow_guess.txt");		
+	ofstream U(ffdatadir+"BaseFlow_Adapted.txt");		
         U << uNx[];
         U << endl << endl <<  Re << endl;
 	ENDIFMACRO

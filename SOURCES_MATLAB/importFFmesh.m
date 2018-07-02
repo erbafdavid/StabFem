@@ -10,8 +10,8 @@ global ff ffdir ffdatadir sfdir verbosity
 % FileToRead1 is typically of the form "mesh.msh".
 % The program will also need files "mesh.ff2m" and "SF_Init.ff2m"
 %
-%  This program is adapted from FreeFem_to_matlab, copyright Julien Dambrine 2010 ; 
-%  modified by D. Fabre (2017)
+%  This program was originally adapted from FreeFem_to_matlab, copyright Julien Dambrine 2010 ; 
+%  modified by D. Fabre (2017) ; and redesigned in 2018 with help of M. Chloros
 
 
 % Check for the mesh file which should be in the ffdatadir directory
@@ -28,18 +28,15 @@ mydisp(2,['FUNCTION  importFFmesh.m : reading complementary files']);
     
 meshstruct = importFFdata(fileToRead2,fileToRead3);
 
-% change the field "datatype" to "problemtype"
+% change the field "datatype" to "problemtype" (to be rationalized ?)
 meshstruct.problemtype = meshstruct.datatype;
 meshstruct = rmfield(meshstruct,'datatype');
 
 %
 meshstruct.meshgeneration=0;
 
-%Secondly, reading mesh file
-
-
-if(1==1)
-    % new method from chloros !
+%Reading mesh file
+  
     fid=fopen(fileToRead1,'r');
     if fid < 0
       error('Error in importFFmesh : cannot open file');
@@ -77,93 +74,7 @@ if(1==1)
       fprintf('sizes %ix%i %ix%i %ix%i\n',size(points),size(tri),size(bounds));
       end
               
-else % previous method (obsolete)
-rawData1 = importdata(fileToRead1);
-mydisp(2,['FUNCTION  importFFmesh.m : reading file ' fileToRead1 ]);
-% For some simple files (such as a CSV or JPEG files), IMPORTDATA might
-% return a simple array.  If so, generate a structure so that the output
-% matches that from the Import Wizard.
-[unused,name] = fileparts(fileToRead1);
-newData1.(genvarname(name)) = rawData1;
 
-% Create new variables in the base workspace from those fields.
-vars = fieldnames(newData1);
-for i = 1:length(vars)
-    assignin('base', vars{i}, newData1.(vars{i}));
-end
-
-np=rawData1(1,1);
-
-if(nargin==2)&&(strcmp(opt,'nponly')==1) 
-    meshstruct.np = np;
-    return; 
-end %% in case only np is required ; for instance in adaptmesh processes (NO LONGER USED)
-
-k=0;
-for i=2:np+1
-    k=k+1;
-points(1,k)=rawData1(i,1);
-points(2,k)=rawData1(i,2);
-end
-
-nt=rawData1(1,2);
-k=0;
-
-for i=np+2:2:np+1+2*nt
-k=k+1;
-tri(1,k)=rawData1(i,1);
-tri(2,k)=rawData1(i,2);
-tri(3,k)=rawData1(i,3);
-tri(4,k)=rawData1(i+1,1);
-end
-
-
-
-
-if(nargin==2)&&(strcmp(opt,'seg')==1)
-mydisp(1,['FUNCTION  importFFmesh.m : constructing information for segments (may be long...)']);
-k=0;
-for i=1:nt
-    k=k+1;
-    lecseg(k,1)=tri(1,i);
-    lecseg(k,2)=tri(2,i);
-    k=k+1;
-    lecseg(k,1)=tri(2,i);
-    lecseg(k,2)=tri(3,i);
-    k=k+1;
-    lecseg(k,1)=tri(3,i);
-    lecseg(k,2)=tri(1,i);
-    
-end
-
-nlecseg=k;
-
-k=0;
-for i=1:nlecseg
-    sw=0;
-    for j=1:i-1
-        if((lecseg(i,1)==lecseg(j,1) && lecseg(i,2)==lecseg(j,2)) || (lecseg(i,1)==lecseg(j,2) && lecseg(i,2)==lecseg(j,1)))
-            sw=1;
-        end
-    end
-    if(sw<1)
-        k=k+1;
-        seg(1,k)=lecseg(i,1);
-        seg(2,k)=lecseg(i,2);
-        seg(3,k)=0;
-        seg(4,k)=1;
-        seg(5,k)=k;
-        seg(6,k)=1;
-        seg(7,k)=0;
-    end
-end
-
-else
-    seg = 0; 
-end 
-nv = np;
-
-end
 
 meshstruct.points = points;
 meshstruct.tri = tri;

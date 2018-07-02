@@ -145,8 +145,9 @@ end
     % recomputing base flow after adapt
 %      mycp('mesh_adapt.msh','mesh.msh');
 %      mycp('BaseFlow_adaptguess.txt','BaseFlow_guess.txt');
-    baseflowNew = baseflow; % initialise structure
-    baseflowNew.mesh=importFFmesh([ffdatadir 'mesh.msh']);
+%    baseflowNew = baseflow; % initialise structure
+    meshNew=importFFmesh([ffdatadir 'mesh.msh'])
+    baseflowNew = importFFdata(meshNew,'BaseFlow_Adapted.ff2m')
     
     baseflowNew = SF_BaseFlow(baseflowNew,'Re',baseflow.Re,'type','NEW');
     if(baseflowNew.iter>0)

@@ -37,7 +37,7 @@ macro FREEFEMPLOTS  NO //EOM
 ENDIFMACRO 
 
 IFMACRO(!problemtype)
-macro problemtype "2D"//EOM
+macro problemtype 2D //EOM
 ENDIFMACRO
 
 string ffdatadir = "./WORK/";
