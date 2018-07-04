@@ -4,15 +4,18 @@ function [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,varargin)
 %%% management of optionnal parameters
     p = inputParser;
    addParameter(p,'Re',meanflow.Re,@isnumeric);
+   if(isfield(meanflow,'Ma')) MaDefault = meanflow.Ma ; else MaDefault = 0.03; end;
+   addParameter(p,'Ma',MaDefault,@isnumeric); % Reynolds
    addParameter(p,'Aguess',-1,@isnumeric);
    addParameter(p,'Fyguess',-1,@isnumeric); 
    addParameter(p,'omegaguess',imag(mode.lambda));
    addParameter(p,'sigma',0);
    addParameter(p,'Cyguess',-1,@isnumeric);
+   addParameter(p,'ncores',1,@isnumeric);
    parse(p,varargin{:});
 
 
-global ff ffdir ffdatadir sfdir verbosity
+global ff ffMPI ffdir ffdatadir sfdir verbosity
 
 if(meanflow.datatype=='BaseFlow')
     disp('### Self Consistent  : with guess from BaseFlow/Eigenmode');
@@ -29,16 +32,31 @@ else
 end
 
  if(p.Results.Fyguess~=-1) 
+     if(strcmp(meanflow.mesh.problemtype,'2DComp')==1)
+     solvercommand = ['echo ' num2str(p.Results.Ma) ' ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
+                  ' L ' num2str(p.Results.Fyguess) ' | ' ffMPI,' -np ',num2str(p.Results.ncores), ' ' 'SelfConsistent.edp'];
+     else
       disp(['starting with guess Lift force : ' num2str(p.Results.Fyguess) ]);
      solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
                   ' L ' num2str(p.Results.Fyguess) ' | ' ff ' '  ffdir 'SelfConsistentDirect_2D.edp'];
- elseif(p.Results.Aguess~=-1)
-      disp(['starting with guess amplitude (Energy) ' num2str(p.Results.Aguess) ]);
-     solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
-                  ' E ' num2str(p.Results.Aguess) ' | ' ff ' '  ffdir 'SelfConsistentDirect_2D.edp'];
- else
-     solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
-                  ' None  | ' ff ' '  ffdir 'SelfConsistentDirect_2D.edp'];    
+     end
+elseif(p.Results.Aguess~=-1)
+      if(strcmp(meanflow.mesh.problemtype,'2DComp')==1)
+     solvercommand = ['echo ' num2str(p.Results.Ma) ' ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
+                  ' E ' num2str(p.Results.Aguess) ' | ' ffMPI,' -np ',num2str(p.Results.ncores), ' ' 'SelfConsistent.edp'];
+     else
+        disp(['starting with guess amplitude (Energy) ' num2str(p.Results.Aguess) ]);
+         solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
+                      ' E ' num2str(p.Results.Aguess) ' | ' ff ' '  ffdir 'SelfConsistentDirect_2D.edp'];
+      end
+else
+    if(strcmp(meanflow.mesh.problemtype,'2DComp')==1)
+     solvercommand = ['echo ' num2str(p.Results.Ma) ' ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
+                  ' None ' ' | ' ffMPI,' -np ',num2str(p.Results.ncores), ' ' 'SelfConsistent.edp'];
+    else
+         solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
+                  ' None  | ' ff ' '  ffdir 'SelfConsistentDirect_2D.edp'];   
+    end
  end
    
    

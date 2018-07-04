@@ -10,7 +10,7 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 
 if(isunix)
 
-ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++ -v 0'; % on IMFT network
+ff = 'FreeFem++ '; % on IMFT network
 ffMPI = 'ff-mpirun';
 end
 if(ismac)
@@ -33,8 +33,8 @@ if(ispc)
 
 end
 
-sfdir = '../SOURCES_MATLAB/'; 
-ffdir = '../SOURCES_FREEFEM/';
+sfdir = '../../SOURCES_MATLAB/'; 
+ffdir = '../../SOURCES_FREEFEM/';
 
 
 

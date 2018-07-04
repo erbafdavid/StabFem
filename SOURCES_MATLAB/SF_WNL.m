@@ -39,6 +39,9 @@ global ff ffdir ffdatadir sfdir
    addParameter(p,'Retest',-1,@isnumeric);
    addParameter(p,'Normalization','L');
    addParameter(p,'AdjointType','dA');
+   if(isfield(baseflow,'Ma')) MaDefault = baseflow.Ma ; else MaDefault = 0.03; end;
+   addParameter(p,'Ma',MaDefault,@isnumeric); % Reynolds
+   addParameter(p,'ncores',1,@isnumeric);
    parse(p,varargin{:});
 
 
@@ -54,6 +57,10 @@ end
 
 if(strcmp(baseflow.mesh.problemtype,'2D')==1)
      solvercommand = ['echo '  p.Results.Normalization ' '  p.Results.AdjointType ' ' num2str(p.Results.Retest) ' | ' ff ' ' ffdir 'WeaklyNonLinear_2D.edp '  ];
+end
+
+if(strcmp(baseflow.mesh.problemtype,'2DComp')==1)
+     solvercommand = ['echo '  p.Results.Normalization  ' ' num2str(p.Results.Retest) ' ' num2str(p.Results.Ma) ' | ' ff ' ' 'WeaklyNonLiner_Comp.edp '  ];
 end
 
 errormessage = 'Error in SF_WNL.m';
