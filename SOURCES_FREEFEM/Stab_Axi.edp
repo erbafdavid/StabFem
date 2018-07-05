@@ -293,7 +293,7 @@ else
 {
 XXXMh<complex> [ux0,ur0,uphi0,p0],[uxdirect,urdirect,uphidirect,pdirect],[uxadjoint,uradjoint,uphiadjoint,padjoint]; 
 
-int testCB = exec("ls WORK/Eigenmode_guess.txt");
+int testCB = exec("ls "+ffdatadir+"Eigenmode_guess.txt");
     	if (testCB!=0)
 		{
 		cout << "no file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;

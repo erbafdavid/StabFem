@@ -65,7 +65,7 @@ else
 end
 fclose(fid);
 
-disp(' '); 
+mydisp(1,' '); 
 
 
 
@@ -74,13 +74,13 @@ if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input : adapt to b
   error = 'ERROR : FreeFem adaptmesh aborted';
   mysystem(command,error);
   meshnp = importFFmesh('mesh.msh','nponly');
-  disp(['      ### ADAPT mesh to base flow ' ...% for Re = ' num2str(baseflow.Re)... 
+  mydisp(1,['      ### ADAPT mesh to base flow ' ...% for Re = ' num2str(baseflow.Re)... 
             ' ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])  
   if(verbosity>=1)
   meshinfo = importFFdata(baseflow.mesh,'mesh.ff2m');
-  disp(['      #   Number of points np = ',num2str(meshinfo.np), ...
+  mydisp(1,['      #   Number of points np = ',num2str(meshinfo.np), ...
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
-  disp(['      #  h_min, h_max : ',num2str(meshinfo.deltamin), ' , ',...
+  mydisp(1,['      #  h_min, h_max : ',num2str(meshinfo.deltamin), ' , ',...
         num2str(meshinfo.deltamax)]);    
 %  disp(['      # h_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
 %        num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]);    
@@ -89,8 +89,18 @@ if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input : adapt to b
   
 else % Adaptation to base flow + mode (or other specified field)
     if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1)
-        mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'AdaptField.txt']);
-        command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+        if(strcmp(eigenmode.type,'D')==1)
+            command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+            mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'AdaptField.txt']);
+        elseif(strcmp(eigenmode.type,'A')==1)
+            command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+            mycp([ffdatadir 'EigenmodeA.txt'],[ffdatadir 'AdaptField.txt']);
+        else %if(strcmp(eigenmode.type,'S')==1)
+            command = ['echo Sensitivity | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+            mycp([ffdatadir 'Sensitivity.txt'],[ffdatadir 'AdaptField.txt']);
+%        mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'AdaptField.txt']);
+%        command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+        end
     elseif(strcmp(baseflow.mesh.problemtype,'2DComp')==1)
         if(strcmp(eigenmode.type,'D')==1)
             command = ['echo Comp | ',ff,' ',ffdir,'Adapt_Mode.edp'];
@@ -127,14 +137,14 @@ else % Adaptation to base flow + mode (or other specified field)
 %    meshnp = importFFmesh('mesh_adapt.msh','nponly'); // old version to
 %    discard this and correct soon
      
-     disp(['      ### ADAPT mesh to base flow AND MODE ( type ',eigenmode.type,... ' )  for Re = ' num2str(baseflow.Re)... 
+     mydisp(1,['### ADAPT mesh to base flow AND MODE ( type ',eigenmode.type,... ' )  for Re = ' num2str(baseflow.Re)... 
             ' ) ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])     
 %     disp([' ; Number of points np = ',num2str(meshinfo.np) ' ; Ndof = ' num2str(meshinfo.Ndof)]; ])
 if(verbosity>=1)    
 meshinfo = importFFdata(baseflow.mesh,'mesh.ff2m');
-  disp(['      #   Number of points np = ',num2str(meshinfo.np), ...
+  mydisp(1,['#   Number of points np = ',num2str(meshinfo.np), ...
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
-  disp(['      #  deltamin, deltapax : ',num2str(meshinfo.deltamin), ' , ',...
+  mydisp(1,['#  deltamin, deltapax : ',num2str(meshinfo.deltamin), ' , ',...
         num2str(meshinfo.deltamax)]);    
 %  disp(['      #  delta_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
 %        num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]); 
@@ -146,10 +156,15 @@ end
 %      mycp('mesh_adapt.msh','mesh.msh');
 %      mycp('BaseFlow_adaptguess.txt','BaseFlow_guess.txt');
 %    baseflowNew = baseflow; % initialise structure
-    meshNew=importFFmesh([ffdatadir 'mesh.msh'])
-    baseflowNew = importFFdata(meshNew,'BaseFlow_Adapted.ff2m')
+
+%previous method
+%    meshNew=importFFmesh([ffdatadir 'mesh.msh'])
+%    baseflowNew = importFFdata(meshNew,'BaseFlow_Adapted.ff2m')
+%    baseflowNew = SF_BaseFlow(baseflowNew,'Re',baseflow.Re,'type','NEW');
+ 
+%new method (does not require to generate a BaseFlow.ff2m in Adapt)
+ baseflowNew = SF_BaseFlow(baseflow,'type','POSTADAPT');
     
-    baseflowNew = SF_BaseFlow(baseflowNew,'Re',baseflow.Re,'type','NEW');
     if(baseflowNew.iter>0)
 		%  Newton successful : store base flow
 		baseflow=baseflowNew;

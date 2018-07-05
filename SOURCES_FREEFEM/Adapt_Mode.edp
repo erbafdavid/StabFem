@@ -29,9 +29,7 @@
 //
 
 
-
-
-	verbosity = 0;
+	include "SF_Geom.edp"; 
 	include "Macros_StabFem.edp";
 	
 	string type;
@@ -223,6 +221,10 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	
 	savemesh(thnew,ffdatadir+"mesh.msh");
 	SFWriteMesh(ffdatadir+"mesh.ff2m",thnew);
+	
+	savemesh(thnew,ffdatadir+"mesh_adapt.msh");
+	SFWriteMesh(ffdatadir+"mesh_adapt.ff2m",thnew);
+
 
 
 	
@@ -265,8 +267,8 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
     [uNx,uNy,uNp] = [vB,uB,pB]; 
     plot(uNx,wait=1);
     th = thnew;
-	SFWriteBaseFlow(ffdatadir+"BaseFlow_Adapted.ff2m",uN,"BaseFlow",1);
-		ofstream U(ffdatadir+"BaseFlow_Adapted.txt");		
+	//SFWriteBaseFlow(ffdatadir+"BaseFlow_adaptguess.ff2m",uN,"BaseFlow",1);
+		ofstream U(ffdatadir+"BaseFlow_adaptguess.txt");		
         U << uNx[];
         U << endl << endl <<  Re << endl;
 	ENDIFMACRO
@@ -275,9 +277,9 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	femp2xfemp2xfemp1N [uNNx,uNNr,uNNp];
 	[uNNx,uNNr,uNNp] = [vB,uB,pB];
 	th = thnew;
-	SFWriteBaseFlow(ffdatadir+"BaseFlow_Adapted.ff2m",uNN,"BaseFlow",1);
+	//SFWriteBaseFlow(ffdatadir+"BaseFlow_Adapted.ff2m",uNN,"BaseFlow",1);
 	[uNx,uNy,uNp] = [vB,uB,pB];
-	ofstream U(ffdatadir+"BaseFlow_Adapted.txt");		
+	ofstream U(ffdatadir+"BaseFlow_adaptguess.txt");		
         U << uNx[];
         U << endl << endl <<  Re << endl;
 	ENDIFMACRO

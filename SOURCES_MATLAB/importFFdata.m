@@ -25,6 +25,8 @@ function pdestruct=importFFdata(varargin)
 
 global ff ffdir ffdatadir sfdir verbosity
 
+mydisp(2,['  ENTERING FUNCTION  importFFdata.m']);
+
 if(ischar(varargin{1})==0) 
  % if first argument is a mesh structure, take dimension np from it
   mesh = varargin{1};
@@ -48,9 +50,9 @@ fileToRead = varargin{i};
 if(exist([ffdatadir,fileToRead])==2) 
     fileToRead = [ffdatadir,fileToRead];
 end
-mydisp(2,[' function importFFdata : reading file ',fileToRead]);
+mydisp(2,['      Function importFFdata : reading file ',fileToRead]);
 rawData1 = importdata(fileToRead);
-mydisp(2,['FUNCTION  importFFdata.m : reading file ' fileToRead ]); 
+mydisp(2,['      FUNCTION  importFFdata.m : reading file ' fileToRead ]); 
 data = rawData1.data;
 
 if(np>0&&i==istart)
@@ -114,29 +116,29 @@ for ifield = 1:numfields
             value = data(indexdata:indexdata+sizefield(ifield)-1);
             indexdata = indexdata+sizefield(ifield);
             pdestruct=setfield(pdestruct,namefield,value);
-            mydisp(5,['Function importFFdata : reading real(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(value(1))]);
+            mydisp(15,['      Function importFFdata : reading real(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(value(1))]);
         case('int')
             value = data(indexdata:indexdata+sizefield(ifield)-1);
             indexdata = indexdata+sizefield(ifield);
             pdestruct=setfield(pdestruct,namefield,value);
-            mydisp(5,['Function importFFdata : reading int(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(value(1))]);
+            mydisp(15,['      Function importFFdata : reading int(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(value(1))]);
         case('complex')
             valueR = data(indexdata:2:indexdata+2*sizefield(ifield)-2);
             valueI = data(indexdata+1:2:indexdata+2*sizefield(ifield)-1);
             indexdata = indexdata+2*sizefield(ifield);
             pdestruct=setfield(pdestruct,namefield,valueR+1i*valueI);
-            mydisp(5,['Function importFFdata : reading complex(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(valueR(1)+1i*valueI(1))]);
+            mydisp(15,['      Function importFFdata : reading complex(',num2str(sizefield(ifield)),') field : ',namefield,' = ',num2str(valueR(1)+1i*valueI(1))]);
         case('P1')
             value = data(indexdata:indexdata+np-1);
             indexdata = indexdata+np;
             pdestruct=setfield(pdestruct,namefield,value);
-            mydisp(5,['Function importFFdata : reading P1 field : ',namefield,' (dimension = ',num2str(np),' )']);
+            mydisp(15,['      Function importFFdata : reading P1 field : ',namefield,' (dimension = ',num2str(np),' )']);
         case('P1c')
             value = data(indexdata:indexdata+2*np-1);
             valueC = value(1:2:end-1)+1i*value(2:2:end);
             indexdata = indexdata+2*np;
             pdestruct=setfield(pdestruct,namefield,valueC); 
-            mydisp(5,['Function importFFdata : reading P1c field : ',namefield,' (dimension = ',num2str(np),' )']);
+            mydisp(15,['      Function importFFdata : reading P1c field : ',namefield,' (dimension = ',num2str(np),' )']);
         case('P1surf')
             if(istart==2&&isfield(mesh,'nsurf')==1)
                 nsurf = mesh.nsurf;
@@ -148,7 +150,7 @@ for ifield = 1:numfields
                 value = data(indexdata:indexdata+nsurf-1);
                 indexdata = indexdata+nsurf;
                 pdestruct=setfield(pdestruct,namefield,value);
-                mydisp(5,['Function importFFdata : reading P1surf field : ',namefield,' (dimension = ',num2str(nsurf),' )']);
+                mydisp(15,['      Function importFFdata : reading P1surf field : ',namefield,' (dimension = ',num2str(nsurf),' )']);
             
          case('P1surfc')
             if(istart==2&&isfield(mesh,'nsurf')==1)
@@ -162,12 +164,12 @@ for ifield = 1:numfields
                 valueC = value(1:2:end-1)+1i*value(2:2:end);
                 indexdata = indexdata+2*nsurf;
                 pdestruct=setfield(pdestruct,namefield,valueC);
-                mydisp(5,['Function importFFdata : reading P1surfC field : ',namefield,' (dimension = ',num2str(nsurf),' )']);
+                mydisp(15,['      Function importFFdata : reading P1surfC field : ',namefield,' (dimension = ',num2str(nsurf),' )']);
             end 
     end
 
        
-mydisp(2,['END FUNCTION  importFFdata.m']);
+mydisp(2,['  END FUNCTION  importFFdata.m']);
 
 end
 

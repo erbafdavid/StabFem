@@ -34,7 +34,10 @@ function baseflow = SF_BaseFlow(baseflow,varargin)
 % Copyright D. Fabre, 2017-2018.
 %
 
+
 global ff ffMPI ffdir ffdatadir sfdir verbosity
+
+ mydisp(2,'### ENTERING FUNCTION SF_BaseFlow ');
 
 % MANAGEMENT OF PARAMETERS (Re, Mach, Omegax, Porosity...)
 % Explanation
@@ -81,22 +84,22 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 switch(baseflow.mesh.problemtype)
 
     case('AxiXR')   % Newton calculation for axisymmetric base flow
-        mydisp(1,'## solving base flow (axisymmetric case)'); 
+        mydisp(1,'## Entering SF_BaseFlow (axisymmetric case)'); 
         solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_Axi.edp'];
         filename = [ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re)];
  
     case('AxiXRPOROUS') % axisymmetric WITH SWIRL
-          mydisp(1,'## solving base flow (axisymmetric case WITH SWIRL)'); 
+          mydisp(1,'## Entering SF_BaseFlow (axisymmetric case WITH SWIRL)'); 
           solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Omegax) ' ' num2str(p.Results.Darcy) ' ' num2str(p.Results.Porosity) ' | ',ff,' ',ffdir,'Newton_AxiSWIRL.edp']   
           filename = [ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '_Omega' num2str(p.Results.Omegax) '_Da' num2str(p.Results.Darcy) '_Por' num2str(p.Results.Porosity)  ];
 
     case('2D')
-          mydisp(1,'## solving base flow (2D INCOMPRESSIBLE)'); 
+          mydisp(1,'## Entering SF_BaseFlow (2D INCOMPRESSIBLE)'); 
           solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_2D.edp'];
           filename = [ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re)];
              
     case('2DComp')
-         mydisp(1,'## solving base flow (2D COMPRESSIBLE) '); 
+         mydisp(1,'## Entering SF_BaseFlow (2D COMPRESSIBLE) '); 
          solvercommand = ['echo ' num2str(Re) ' ' num2str(p.Results.Mach) ' | ',ffMPI,' -np ',num2str(ncores),' ',ffdir,'Newton_2D_Comp.edp'];         
          filename = [ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma)];
               
@@ -105,70 +108,49 @@ switch(baseflow.mesh.problemtype)
 end %switch
 
 error = 'ERROR : SF_ base flow computation aborted';
-        
-% if (strcmp(p.Results.type,'PREV')==1) OBSOLETE
-% recover base flow from previous adapted case 
-%    disp(['      ### FUNCTION SF_BaseFlow : recovering previous adapted mesh/baseflow for Re = ', num2str(Re)]);
-%    file = [ ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(Re) '.txt' ];
-%         mycp(file,[ffdatadir 'BaseFlow_guess.txt']);
-%    file = [ ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(Re) '.msh' ];
-%         mycp(file,[ffdatadir 'mesh.msh']);
-%    mysystem(solvercommand,error); %needed to generate .ff2m file
-%    mesh = importFFmesh('mesh.msh');
-%    mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
-%    baseflow.mesh=mesh;
-%    baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
-%    baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
-%    baseflow.iter=0;
-    
- if(exist([ filename '.txt'])==2&&strcmp(p.Results.type,'NEW')~=1)   
-        disp(['FUNCTION SF_BaseFlow : base flow already computed for Re = ', num2str(Re)]);
+            
+ if(exist([ filename '.txt'])==2&&strcmp(p.Results.type,'NEW')~=1&&strcmp(p.Results.type,'POSTADAPT')~=1)   
+       mydisp(3,['Base flow already computed for Re = ', num2str(Re)]);
         mycp([filename '.txt'],[ffdatadir 'BaseFlow.txt']);
-%        mycp([ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         mycp([filename '.ff2m'],[ffdatadir 'BaseFlow.ff2m']);
-%         mysystem(solvercommand,error) %%%%%%%%%%%%%%%%%%%%%%%%%
-        baseflow = importFFdata(baseflow.mesh,[filename '.ff2m']); 
-        baseflow.filename = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt'];
         baseflow.iter=0;
         
  else
-        mydisp(1,['      ### FUNCTION SF_BaseFlow : computing base flow for Re = ', num2str(Re)]);
-        
+    
+
 %  POSITION THE "GUESS" FILE 
-    mycp(baseflow.filename,[ffdatadir 'BaseFlow_guess.txt']);
-           
+  if(strcmp(p.Results.type,'POSTADAPT')~=1)
+     mydisp(3,['Computing base flow for Re = ', num2str(Re)]);
+     mycp(baseflow.filename,[ffdatadir 'BaseFlow_guess.txt']);
+     mycp(baseflow.mesh.filename,[ffdatadir 'mesh.msh']);
+  else
+     mydisp(3,['Recomputing base flow after adaptmesh for Re = ', num2str(Re)]);
+     mycp([ffdatadir 'BaseFlow_adaptguess.txt'],[ffdatadir 'BaseFlow_guess.txt']);
+     mycp([ffdatadir 'mesh_adapt.msh'],[ffdatadir 'mesh.msh']); 
+     baseflow.mesh = importFFmesh([ffdatadir 'mesh.msh']); 
+  end
+  
 % CALL NEWTON SOLVER
      mysystem(solvercommand,error);  
-        if(exist([ffdatadir,'BaseFlow.txt'])==0);
+     if(exist([ffdatadir,'BaseFlow.txt'])==0);
           error('ERROR : SF_ base flow computation did not converge');
-        end
+     end
    
-
-%if(strcmp(baseflow.mesh.problemtype,'2DComp'))
-%% to be rationalised
-%        system(['cp ' ffdatadir 'BaseFlow.txt ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.txt']);
-%        system(['cp ' ffdatadir 'BaseFlow.ff2m ' ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) 'Ma' num2str(Ma) '.ff2m']);
-%else
-%        mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.txt']);
-%        mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BaseFlow_guess.txt']);
-%        mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Re) '.ff2m']);
-%end
-    
+% Copy under the expected name    
     mycp([ffdatadir 'BaseFlow.txt'],[filename '.txt']);
-%        mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BaseFlow_guess.txt']);
     mycp([ffdatadir 'BaseFlow.ff2m'],[filename '.ff2m']);
-
-         baseflow = importFFdata(baseflow.mesh,'BaseFlow.ff2m'); 
-         baseflow.filename = [filename '.txt'];
-        
+    
  end
 
+ % import data    
+    baseflow = importFFdata(baseflow.mesh,[filename '.ff2m']); 
+    baseflow.filename = [filename '.txt']; %maybe redundant ?
  
               
  
  
 if(baseflow.iter>=1)
-    message = ['      # Base flow converged in ',num2str(baseflow.iter),' iterations '];
+    message = ['=> Base flow converged in ',num2str(baseflow.iter),' iterations '];
     if(isfield(baseflow,'Fx')==1) %% adding drag information for blunt-body wake
         message = [message , '; Fx = ',num2str(baseflow.Fx)];
     end    
@@ -180,9 +162,9 @@ if(baseflow.iter>=1)
     end
     mydisp(2,message);
 else
- disp(['      ### Base flow recovered from previous computation for Re = ' num2str(Re)]);   
+ mydisp(1,['      ### Base flow recovered from previous computation for Re = ' num2str(Re)]);   
 end
 
-
+mydisp(2,'### END FUNCTION SF_STABILITY ');
 end
 

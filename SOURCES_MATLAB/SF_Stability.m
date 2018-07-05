@@ -56,12 +56,12 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    if(isfield(baseflow,'np')==1)
        % first argument is a simple mesh
        ffmesh = baseflow; 
-       %mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
+       mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
    else
        % first argument is a base flow
        ffmesh = baseflow.mesh;
        mycp(baseflow.filename,[ffdatadir 'BaseFlow.txt']);
-       %mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
+       mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
    end
    
 

@@ -9,7 +9,7 @@
 		real Ltotcav	= Hcav + 2.*Thick;	// Xdown+Bdown-Xup-Bup+Thick;	// total lengh of the two-hole element
 
 		real Rcav	= 9.0/3.0;   		// radius of the cavity
-		real Ldown	= 35.;    		// lengh of the mesh downstream
+		real Ldown	= 60.;    		// lengh of the mesh downstream
 		real Lup	= 10;    		// lengh of the mesh upstream
 		real Rout	= 2.5*Rcav;		// radius of the mesh downstream
 		real Rin	= 1.5*Rcav;		// radius of the mesh upstream
