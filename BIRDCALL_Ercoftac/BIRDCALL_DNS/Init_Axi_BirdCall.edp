@@ -1,0 +1,136 @@
+//
+		verbosity = 0.;
+		int rep=0;
+
+		mesh th;
+		
+	
+	        include "SOURCES/Params_BirdCall.edp"        
+		th=readmesh("CASE_"+CASE+"/mesh_BirdCall.msh");	        
+
+		real Uhole =1; // mean velocity across the hole
+		real Uinlet = Uhole*(Rhole/Rin)^2;
+
+//		plot(th,wait=1);
+
+		fespace femp2(th,P2);
+		fespace femp1(th,P1);
+		fespace femp0(th,P0);
+		fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+
+		real Re=100;
+
+		real dt=1./10.;		
+		real nu=1./Re;
+                     
+		femp2 up1,up2;
+		femp2 upp1,upp2;
+
+		real a0,a1,a2,bet0,bet1;
+
+		varf  NS ([u1,u2,p],[v1,v2,q])=
+    		 int2d(th)(
+        	    	 a0*(y^2*u1*v1+y^2*u2*v2)/dt
+            		+ nu*(y^2*dx(u1)*dx(v1)+y^2*dy(u1)*dy(v1)+y*dy(u1)*v1
+            		+ y^2*dx(u2)*dx(v2)+y^2*dy(u2)*dy(v2)+u2*v2+y*dy(u2)*v2)
+			- p*(y^2*dx(v1)+2*y*v2+y^2*dy(v2))
+            		+ q*(y*dx(u1)+u2+y*dy(u2)))
+  		 + on(1,u1=Uinlet,u2=0.)
+  		 + on(2,21,u1=0.,u2=0.)
+	 	 + on(6,7, u2=0.);
+
+		varf CONVECT ([u1,u2,p],[v1,v2,q])=
+		-int2d(th) (a1*y^2*convect([bet0*up1+bet1*upp1,bet0*up2+bet1*upp2],-dt,up1)*v1/dt
+			   +a2*y^2*convect([bet0*up1+bet1*upp1,bet0*up2+bet1*upp2],-2*dt,upp1)*v1/dt)
+		-int2d(th) (a1*y^2*convect([bet0*up1+bet1*upp1,bet0*up2+bet1*upp2],-dt,up2)*v2/dt
+			   +a2*y^2*convect([bet0*up1+bet1*upp1,bet0*up2+bet1*upp2],-2*dt,upp2)*v2/dt)
+  		 + on(1,u1=Uinlet,u2=0.)
+  		 + on(2,21,u1=0.,u2=0.)	
+		 + on(6,7,u2=0.);
+
+		femp2xfemp2xfemp1 [u1,u2,p];
+		femp2xfemp2xfemp1 [rhs1,rhs2,rhs3];
+		real tps;
+		int i0;
+			
+		if(rep==0)
+		{
+		 i0=0;
+		 tps=0;
+		 [u1,u2,p]=[0,0,0];
+                }
+		else
+		{
+		 ifstream file("sol"+rep+".txt");
+		 file >> i0;
+		 file >> tps;
+		 file >> u1[];
+		}
+
+	  	a0=1; a1=-1; a2=0; bet0=1; bet1=0;
+		matrix NSMAT=NS(femp2xfemp2xfemp1,femp2xfemp2xfemp1,solver=UMFPACK);
+		
+		int itmax = 30;
+
+		for (int i=i0+1; i<=i0+itmax; i++)
+ 		{
+			upp1=up1;
+			upp2=up2;
+   			up1=u1;
+  			up2=u2;
+
+			if(i==(i0+100))  // passage ordre 2 en tps
+			{
+		 	 a0=1.5; a1=-2.; a2=0.5; bet0=2; bet1=-1;
+		 	 NSMAT=NS(femp2xfemp2xfemp1,femp2xfemp2xfemp1,solver=UMFPACK);
+			}
+
+			rhs1[]=CONVECT(0,femp2xfemp2xfemp1);
+			u1[]=NSMAT^-1*rhs1[];
+		      	tps=tps+dt;
+
+			cout << " i = " << i  << "\n";
+			//cout << " tps = " << tps  << "\n";
+
+			if (!(i%30))
+			{
+				femp1 q=(-dy(u1)+dx(u2));
+			//	plot(q,value=1,wait=debug);
+			//	plot(p,value=1,wait=debug);
+			//	plot(u1,value=1,wait=debug);
+			//	plot(u2,value=1,wait=debug);
+			};
+		 };
+                       {
+			 femp2xfemp2xfemp1 [urp,uzp,pp]=[u2,u1,p];
+			 ofstream file("CASE_"+CASE+"/BaseField.txt");
+			 file << urp[] << endl;
+			 file <<  endl << Re << endl;
+			};
+			
+			// pressure at various points
+			real pcavA, pcavE, p0A, p0E, p10A, p10E, p15A, p15E;
+			pcavA = p(-(Ltotcav+Lup),0.);
+			pcavE = p(-(Ltotcav+Lup),Rcav);
+			p0A = p(0,0.);
+			p0E = p(0,Rcav);
+			p10A = p(0,0.);
+			p10E = p(0,Rcav);
+			p15A = p(0,0.);
+			p15E = p(0,Rcav);
+		
+/*			cout << "FLOW RATE :" << int1d(th,1)(y*u1) << " ; " << int1d(th,3)(y*u1) << endl ;
+			real Umean = int1d(th,1)(y*u1)/(Rhole^2/2) ;
+			cout << "MEAN VELOCITY THROUGH HOLE :" << Umean << endl ;
+			
+			cout << "PRESSURE AT VARIOUS POINTS :" << endl;
+			cout << "INSIDE INLET CHAMBER :" << pcavA << " " << pcavE << endl;
+			cout << "X = 0  : " << p0A << " " << p0E << endl;
+			cout << "X = 10 : " << p10A << " " << p10E << endl;
+			cout << "X = 15 : " << p10A << " " << p10E << endl;
+		    cout <<  endl << " >>> VENA CONTRACTA COEF. : " << endl;
+		    cout << (pcavA-p10E)/(Umean^2/2) << endl;
+*/		     
+			
+			
+		
