@@ -242,11 +242,10 @@ macro SFWriteMode(namefile,u,ev,shift,m,typeFlow,iter)
 		for (int j=0;j<ux1[].n ; j++) file << real(pp1[][j]) << " " << imag(pp1[][j]) << endl;
 		for (int j=0;j<ux1[].n ; j++) file << real(vort1[][j]) << " " << imag(vort1[][j]) << endl;
 		
-		cout << "#### customisable output for a mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
+		cout << "#### customisable output for MODE OF A WHISTLING JET : " << endl; 
 
 	
-		real AEnergyMode = sqrt(2*int2d(th)(abs(ux1)^2+abs(uy1)^2))*2; 
-		/* nb here the factor 2 is because in mantic-lugo the radius is 1, while here it is 0.5 ! */
+		real AEnergyMode = sqrt(int2d(th)((abs(ux1)^2+abs(uy1)^2))*y*2*pi); 
 		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
 		file << AEnergyMode << endl;
 

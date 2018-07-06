@@ -34,9 +34,11 @@ bf=SF_Adapt(bf,em,'Hmax',.5);
 figure();plotFF(bf,'mesh','xlim',[-1 5],'ylim',[0 4]);
 figure();plotFF(bf,'ux','xlim',[-1 5],'ylim',[0 4]); 
 
-
+%% 1C : spectrum exploration
 ev = SF_Stability(bf,'m',0,'shift',2 + 5i,'nev',20,'type','D');
-figure();plot(real(ev),imag(ev),'xr');title('spectrum for Re=1000')
+figure();plot(real(ev),imag(ev),'xr');title('spectrum for Re=1000');hold on;
+ev = SF_Stability(bf,'m',0,'shift',2 + 9i,'nev',20,'type','D');
+plot(real(ev),imag(ev),'xr');title('spectrum for Re=1000');hold on;
 
 %% CHAPTER 2 : stability branches
 
@@ -117,7 +119,7 @@ Re_Range4 = Re_Range4(1:length(EV4));
 
 
 %% save
-save('data.mat','Re_Range1','Re_Range2','Re_Range3','EV1','EV2','EV3');
+save('data.mat','Re_Range1','Re_Range2','Re_Range3','Re_Range4','EV1','EV2','EV3','EV4');
 
 %% chapter 2b : figures
 %load('data.mat');
@@ -130,11 +132,11 @@ save('data.mat','Re_Range1','Re_Range2','Re_Range3','EV1','EV2','EV3');
     plot(Re_Range1,imag(EV1)/(2*pi),'-*b',Re_Range2,imag(EV2)/(2*pi),'-*r',Re_Range3,imag(EV3)/(2*pi),'-*g',Re_Range4,imag(EV4)/2/pi,'-*c');
     title('Strouhal vs. Reynolds');
 
-
-    figure;
-    subplot(2,1,1);
-    plot(Re_Range1,real(EV1),'-*b',Re_Range2,real(EV2),'-*r');
-    title('growth rate Re(sigma) vs. Reynolds');
-    subplot(2,1,2);
-    plot(Re_Range1,imag(EV1)/(2*pi),'-*b',Re_Range2,imag(EV2)/(2*pi),'-*r');
-    title('Strouhal vs. Reynolds');
+%%
+%    figure;
+%    subplot(2,1,1);
+%    plot(Re_Range1,real(EV1),'-*b',Re_Range2,real(EV2),'-*r');
+%    title('growth rate Re(sigma) vs. Reynolds');
+%    subplot(2,1,2);
+%    plot(Re_Range1,imag(EV1)/(2*pi),'-*b',Re_Range2,imag(EV2)/(2*pi),'-*r');
+%    title('Strouhal vs. Reynolds');

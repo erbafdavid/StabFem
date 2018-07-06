@@ -65,22 +65,23 @@ else
 end
 fclose(fid);
 
-mydisp(1,' '); 
+%mydisp(3,' '); 
 
 
+ mydisp(1,['### ENTERING SF_ADAPT'])  
 
 if(isnumeric(eigenmode)==1) %% if no eigenmode is provided as input : adapt to base flow only
   command = ['echo BFonly | ',ff,' ',ffdir,'Adapt_Mode.edp'];
   error = 'ERROR : FreeFem adaptmesh aborted';
   mysystem(command,error);
   meshnp = importFFmesh('mesh.msh','nponly');
-  mydisp(1,['      ### ADAPT mesh to base flow ' ...% for Re = ' num2str(baseflow.Re)... 
+  mydisp(1,['### ADAPT mesh to base flow ' ...% for Re = ' num2str(baseflow.Re)... 
             ' ; InterpError = ' num2str(p.Results.InterpError) '  ; Hmax = ' num2str(p.Results.Hmax) ])  
   if(verbosity>=1)
   meshinfo = importFFdata(baseflow.mesh,'mesh.ff2m');
-  mydisp(1,['      #   Number of points np = ',num2str(meshinfo.np), ...
+  mydisp(3,['      #   Number of points np = ',num2str(meshinfo.np), ...
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
-  mydisp(1,['      #  h_min, h_max : ',num2str(meshinfo.deltamin), ' , ',...
+  mydisp(3,['      #  h_min, h_max : ',num2str(meshinfo.deltamin), ' , ',...
         num2str(meshinfo.deltamax)]);    
 %  disp(['      # h_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
 %        num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]);    
@@ -142,9 +143,9 @@ else % Adaptation to base flow + mode (or other specified field)
 %     disp([' ; Number of points np = ',num2str(meshinfo.np) ' ; Ndof = ' num2str(meshinfo.Ndof)]; ])
 if(verbosity>=1)    
 meshinfo = importFFdata(baseflow.mesh,'mesh.ff2m');
-  mydisp(1,['#   Number of points np = ',num2str(meshinfo.np), ...
+  mydisp(3,['#   Number of points np = ',num2str(meshinfo.np), ...
         ' ; Ndof = ', num2str(meshinfo.Ndof)]);
-  mydisp(1,['#  deltamin, deltapax : ',num2str(meshinfo.deltamin), ' , ',...
+  mydisp(3,['#  deltamin, deltapax : ',num2str(meshinfo.deltamin), ' , ',...
         num2str(meshinfo.deltamax)]);    
 %  disp(['      #  delta_(A,B,C,D) : ',num2str(meshinfo.deltaA),' , ',...
 %        num2str(meshinfo.deltaB),' , ',num2str(meshinfo.deltaC),' , ',num2str(meshinfo.deltaD) ]); 
@@ -152,10 +153,6 @@ end
  end
    
    
-    % recomputing base flow after adapt
-%      mycp('mesh_adapt.msh','mesh.msh');
-%      mycp('BaseFlow_adaptguess.txt','BaseFlow_guess.txt');
-%    baseflowNew = baseflow; % initialise structure
 
 %previous method
 %    meshNew=importFFmesh([ffdatadir 'mesh.msh'])

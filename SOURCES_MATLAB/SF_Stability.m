@@ -295,6 +295,7 @@ eigenvalues = EVr+1i*EVi;
 if(strcmp(p.Results.shift,'cont')==1)
 sigmaPrevPrev = sigmaPrev;
 sigmaPrev = eigenvalues(1);
+mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'Eigenmode_guess.txt']);  
 else
 sigmaPrevPrev = eigenvalues(1);
 sigmaPrev = eigenvalues(1); 
@@ -316,7 +317,7 @@ end
          disp(['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         end
         if(eigenvectors.iter<0) 
-            error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1)']);
+            error(['ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1)']);
         end   
     elseif(p.Results.nev>1&&p.Results.type=='D')
     eigenvectors=[];
@@ -335,7 +336,7 @@ end
     end
     eigenvectors=eigenvectors(o);%sort the eigenvectors with the same filter as the eigenvalues
     else
-        error('ERROR');
+        error('ERROR : wrong value for mode type / mode number nev');
     end
     
     end

@@ -13,7 +13,7 @@ function baseflow = SF_BaseFlow(baseflow,varargin)
 %   Omegax      Rotation rate (for swirling axisymetric or 2D body)
 %   Darcy       Darcy number (for cases with porous body)
 %   Porosity    Porosity (for cases with porous body)
-%   Type        'Normal' (default) ;  'NEW' to force new computation ; 'PREV' if connection was lost (obsolete ?) 
+%   Type        'Normal' (default) ;  'NEW' to force new computation ; 'POSTADAPT' ; for recomputing baseflow after mesh adaptation ; 'PREV' if connection was lost (obsolete ?) 
 %   ncores      Number of cores (for parallel computations)
 %
 % SF IMPLEMENTATION : 
