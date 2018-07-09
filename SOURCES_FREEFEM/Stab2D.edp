@@ -335,7 +335,7 @@ else if(iadjoint=="cS")
 	};
 
 
-	int itmax = 150;
+	int itmax = 50;
 	complex lambda0 = 1e6;
 	real err = 1e6;
 	real errmax=1e-6;
@@ -417,7 +417,8 @@ else if(iadjoint=="cS")
 else // case iteration failed
 {
 	cout << "$$ ERROR : shift-invert iteration failed ; shift is probably wrong" << endl;
-	SFWriteMode(namefileFF,u,lambda,shift,"EigenMode"+typeDA,-1);	 // MACRO DEFINED in StabFem_Macros.edp
+	namefileFF=ffdatadir+"Eigenmode.ff2m";	
+	SFWriteMode(namefileFF,u,lambda,shift,"EigenModeD",-1);	 // MACRO DEFINED in StabFem_Macros.edp
 
 };
 

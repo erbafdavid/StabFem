@@ -105,7 +105,7 @@ Basically this function does the following operations :
 This file is the one created by the FreeFem program in lines 14-22 of the Freefem program \ref{Lshape_Steady.edp}.
 
 Looking inside the file \keys{Data.ff2m}, the header (i.e.  first four lines) is as follows :
-\lstinputlisting[linerange={1-5}]{../EXAMPLE_Lshape/Data.ff2m}, 
+\lstinputlisting[linerange={1-6,199}]{../EXAMPLE_Lshape/Data.ff2m}, 
 meaning that this files contains a P1 mesh-organised field called 'T'.
 
 \item Return the data as a matlab {\em structure} object called {\sf heatS}.
@@ -171,8 +171,8 @@ There can be as many data objects as you want organised in the order of your cho
 \item{\bf complex} for complex scalars,
 \item{\bf real.N} for real vectors of dimension N not associated to a mesh,
 \item{\bf complex.N} for complex vectors of dimension N not associated to a mesh,
-\item{\bf P1s} for real data defined along a frontier of the mesh,
-\item{\bf P1sc} for complex data defined along a frontier of the mesh.
+\item{\bf P1surf} for real data defined along a frontier of the mesh,
+\item{\bf P1surfc} for complex data defined along a frontier of the mesh.
 \end{description}
 
 \subsection{Explanations about the mesh }

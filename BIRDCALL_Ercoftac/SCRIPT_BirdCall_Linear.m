@@ -69,6 +69,7 @@ guess4 = 0.178 + 10.256i;
 
 
 Re_Range1=[1000:-50:150];Re_Range2=Re_Range1;Re_Range3=Re_Range1;Re_Range4=Re_Range1;
+Re_Range4=[1000:-50:600];
 EV1 = []; EV2 = []; EV3 = []; EV4 = [];
 
 bf = SF_BaseFlow(bf,'Re',1000);

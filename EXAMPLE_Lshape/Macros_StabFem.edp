@@ -5,7 +5,7 @@
 // The present case pertains to the simple example EXAMPLE_Lshape
 
 IFMACRO(!FREEFEMPLOTS)
-macro FREEFEMPLOTS  NO //EOM
+macro FREEFEMPLOTS  YES //EOM
 ENDIFMACRO 
 // Set to YES to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
 // set to NO to disable all plots (recommended in Matlab/StabFem mode)

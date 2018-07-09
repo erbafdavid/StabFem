@@ -43,6 +43,7 @@ else % verbose mode
  disp('$$ LEAVING FREEFEM++ :')
  disp('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$');
     if(status~=0)&&(status~=141)&&(status~=13)&&(strcmp(errormessage,'skip')==0)
+        status
         error(errormessage);
     end   
 end

@@ -1,43 +1,33 @@
 
 
-% guess found for Re=400
-% first one  
-%guess1 = -0.0741+2.476i;
-guess1 = 0.02352+3.2924i; % for 1st hole normalisation
-%second one : 
-%guess2 =  -0.289+4.039i; % for 2nd hole normalisation
 guess2 = -0.0229848+5.39569i
-% third one :
-%guess3 = -0.930+8.006i;
 
-%%%%% BRANCH NUMBER 2:
 
-%%%%% CALCULATION OF A PART OF THE BRANCH CLOSE TO THE THRESHOLD
 
 Re_Range = [400 408 409 410 420 430 440 450];
-    
- if(exist('DP0_Branch')==0)% to save time if already computed
-    DP0_Branch = [];
+  
+ %if(exist('DP0_Branch')==0)% to save time if already computed
+     DP0_Branch = [];
+     EVW = [];  
+    [ev,em] = SF_Stability(bf,'m',0,'shift',guess2,'nev',1);
     for Re = Re_Range
-        bf=FreeFem_BaseFlow(bf,Re);
-        DP0_Branch = [DP0_Branch,bf.deltaP0]
+        bf=SF_BaseFlow(bf,'Re',Re);
+        DP0_Branch = [DP0_Branch,bf.Pup]
+        if(Re==Re_Range(1)) shift = guess2; else shift = 'cont'; end;
+        [ev,em] = SF_Stability(bf,'m',0,'shift',shift,'nev',1);
+        if(em.iter~=-1) EVW = [EVW ev]; else break; end;
     end
- end
+ %end
  
  figure(3);
     plot(Re_Range,DP0_Branch);
     title('Pressure drop across the whistle as function of Re');
     
 
-   % if(exist('EV1')==0)
-   %     EV1 = FreeFem_Stability_LoopRe(bf,Re_Range,0,guess1,1,'Branch1.dat');
-   % end
-    if(exist('EV2')==0)
-        EV2 = FreeFem_Stability_LoopRe(bf,Re_Range,0,guess2,1,'Branch2.dat');
-    end
-%    if(exist('EV3')==0)
-%        EV3 = FreeFem_Stability_LoopRe(bf,Re_Range,0,guess3,1);
+%    if(exist('EV2')==0)
+%        EV2 = SF_Stability_LoopRe(bf,Re_Range,0,guess2,1,'Branch2.dat');
 %    end
+
     
     figure(4);
     subplot(2,1,1);
@@ -55,17 +45,16 @@ pause(0.1);
 
 
 Rec = 408.56;
-bf = FreeFem_BaseFlow(bf,Rec)
+bf = SF_BaseFlow(bf,'Re',Rec)
 
 %if(exist('emA')==0)
-    bf = FreeFem_BaseFlow(bf,Rec)
-    [ev,em] = FreeFem_Stability(bf,Rec,0,5.39374i,1)
-    [evA,emA] = FreeFem_Stability(bf,Rec,0,5.39374i,1,'A')
-    bf.sensitivity = abs(em.ux1).*abs(emA.ux1)+abs(em.ur1).*abs(emA.ur1);
+    bf = SF_BaseFlow(bf,'Re',Rec)
+    [ev,em] = SF_Stability(bf,'Re',Rec,'m',0,'shift',5.39374i,'nev',1,'type','S');
+    %bf.sensitivity = abs(em.ux1).*abs(emA.ux1)+abs(em.ur1).*abs(emA.ur1);
     plotFF(bf,'sensitivity');
 %end
 %if(exist('wnl')==0)
-    wnl = FreeFem_WNL(bf)
+    wnl = SF_WNL(bf)
 %end
         ReWa = [Rec-20 Rec+20]; % vector to draw the 'linear' interpolations
         ReWb = Rec+ [0 :0.005 :1].^2*1000;  % vector to draw the 'weakly nonlinear' interpolations 
