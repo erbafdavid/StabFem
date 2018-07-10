@@ -208,7 +208,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 				
 		cout << " lecture of field with structure P2" << endl;
 			
-		thnew = adaptmesh(th,Sensitivity,[uBc,vBc,pBc,TBc],
+		thnew = adaptmesh(th,Sensitivity,[uBS,vBS,wBS,pBS], /// HERE BUG CORRECTED BY DF : [uBS,vBS,wBS,pBS] (incompressible case) instead of [uBc,vBc,pBc,TBc].
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
 	}

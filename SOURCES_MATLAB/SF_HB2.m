@@ -1,5 +1,20 @@
 
-function [meanflow,mode,mode2] = SF_HarmonicBalance_Ordre2(meanflow,mode,mode2,varargin)
+function [meanflow,mode,mode2] = SF_HB2(meanflow,mode,mode2,varargin)
+% StabFem wrapper for Harmonic Balance order 2  
+%
+% usage : [meanflow,mode,mode2] = SF_HB1(meanflow,mode,mode2,[Param1, Value1,...])
+%
+% first argument is either a "baseflow" or 'meanflow"  
+% second argument is either an "eigenmode" or a "selfconsistentmode".
+% third argument is a 'SecondHarmonicMode'.
+%
+% Parameters include :
+%
+%   Re :        Reynolds number (specify only if it differs from the one of base flow, which is not usual)
+%
+%  Copyright D. Fabre, 2018
+
+
 
  %%% management of optionnal parameters
      p = inputParser;
@@ -38,6 +53,11 @@ global ff ffdir ffdatadir sfdir verbosity
 %      solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
 %                  ' E ' num2str(p.Results.Aguess) ' | ' ff ' '  ffdir 'SelfConsistentDirect_2D.edp'];
 % else
+
+mycp(meanflow.filename,[ffdatadir 'MeanFlow_guess.txt']);
+mycp(mode.filename,[ffdatadir 'SelfConsistentMode_guess.txt']);
+mycp(mode2.filename,[ffdatadir 'SecondHarmonicMode_guess.txt']);
+
      solvercommand = ['echo ' num2str(p.Results.Re)  ' | ' ff ' '  ffdir 'HarmonicBalance_Order2_2D.edp'];    
 % end
    

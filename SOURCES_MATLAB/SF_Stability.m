@@ -1,6 +1,6 @@
 function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 
-% StabFem wrapper for Eigenvaluee calculations 
+% StabFem wrapper for Eigenvalue calculations 
 %
 % usage : [eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
 %
@@ -293,8 +293,8 @@ eigenvalues = EVr+1i*EVi;
 
 % updating two previous iterations
 if(strcmp(p.Results.shift,'cont')==1)
-sigmaPrevPrev = sigmaPrev
-sigmaPrev = eigenvalues(1)
+sigmaPrevPrev = sigmaPrev;
+sigmaPrev = eigenvalues(1);
 mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'Eigenmode_guess.txt']);  
 else
 sigmaPrevPrev = eigenvalues(1);

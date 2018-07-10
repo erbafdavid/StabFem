@@ -251,7 +251,7 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
 		file << AEnergyMode << endl << endl;
 		complex LiftMode = Portance(u,"A"); 
-		cout << "#   Fy = " << real(LiftMode) << " * cos( omega t) + " << -imag(LiftMode) << " * sin( omega t) + "  << endl;
+		cout << "#   Fy = " << real(LiftMode) << " * cos( omega t) + " << -imag(LiftMode) << " * sin( omega t)  "  << endl;
 		file << real(LiftMode) << endl << imag(LiftMode) << endl;
 		}
 		if(typeFlow=="SecondHarmonicMode")
