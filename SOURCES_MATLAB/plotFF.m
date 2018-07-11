@@ -13,8 +13,7 @@ function handle = plotFF(FFdata,varargin);
 %       (See Below)
 %
 %  FFdata is the structure containing the data to plot
-%  field is the field to plot (the data may comprise multiple fields)
-%  (may be useful, for instance, to plot re/im parts of a complex field)
+%  'field' is the field to plot (the data may comprise multiple fields)
 %
 %   This version of plotFF is based on ffpdeplot developed by chloros2
 %   as an Octave-compatible alternative to pdeplot from toolbox pdetools 
