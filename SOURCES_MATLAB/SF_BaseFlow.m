@@ -94,7 +94,8 @@ switch(baseflow.mesh.problemtype)
     case('2D')
             if(verbosity>1)  disp('## solving base flow (2D CASE)'); end
             solvercommand = ['echo ' num2str(Re) ' | ',ff,' ',ffdir,'Newton_2D.edp'];
-            
+            disp('Ups');
+            pause(10000)
     case('2DComp')
             if(verbosity>1)  disp('## solving base flow (2D CASE COMPRESSIBLE)'); end
 

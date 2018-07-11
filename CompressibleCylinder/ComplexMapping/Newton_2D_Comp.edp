@@ -134,7 +134,7 @@ varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank)( (1.0/(HX
 								       +ps*(dp-(drho*Tb+Rhob*dT))
 								  )))
   +int2d(th,mpirank)(AMPFORCE*(usy*duy+usx*dux+Ts*dT+rhos*drho))
-  +BoundaryconditionsBaseFlow(du,dp,dT,drho);
+  +BoundaryconditionsBaseFlow(du,dp,dT,drho,HX);
 
 
 varf vNs(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpirank)( (1.0/(HX*HY))*(rhos*(Rhob*div(Ub)+ugradf(Ub,Rhob))
@@ -146,7 +146,7 @@ varf vNs(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpirank)( (1.0/(HX*HY)
 							   +ps*(Pb-(Rhob*Tb))
 							   ))
   -int2d(th,mpirank)(AMPFORCE*(usy*(Uby-Urify)+usx*(Ubx-Urifx)+Ts*(Tb-Trif)+rhos*(Rhob-Rhorif)))
-  +BoundaryconditionsBaseFlow(du,dp,dT,drho);
+  +BoundaryconditionsBaseFlow(du,dp,dT,drho,HX);
 
 real res,ener=1.;
 if(mpirank==0)

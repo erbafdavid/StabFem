@@ -53,25 +53,29 @@ real n1;
 real n2;
 real ns;
 real nsponge;
-// sponge coeffient
+// Sponge parameters
 real alpha = 1e-5;
+
+// Method selection
 string method; // If S Sponge method chosen if CM complex mapping
 
-string ffdatadir = "./WORK/";
 
-string symmetryBaseFlow = 2; // symmetry propery of base flow :; set "S"(1) if domain is hzalf domain and "N" (2) if it is full domain
+string ffdatadir = "./WORK/";
+// TODO!
+string symmetryBaseFlow = 1; // symmetry propery of base flow :; set "A" (0) antisymmetric set "S"(1) if domain is hzalf domain and "N" (2) if it is full domain
+int symmetryEigenmode;
+
 int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
 
 macro Uinlet(y) 1.
 // inlet flow for constant flow
-
 func complex Hx(real L, real c, real g, real x0, real x1)
 {
 if(x>x0)
 {
-	complex Gx = (1i*g*(1.0/cosh((x-x0)/(2*c)))^2*tanh((x-x0)/(2*c))*(x-x0))/(c*(1-(x-x0)^2/L^2)^2)
-				 +(4*(1i*g*tanh((x-x0)/(2*c))^2+1)*(x-x0)^2)/(L^2*(1-(x-x0)^2/L^2)^3)
-				 +(1i*g*tanh((x-x0)/(2*c))^2+1)/(1-(x-x0)^2/L^2)^2;
+	complex Gx = (1i*g*(1.0/cosh((x-x0)^2/(4*c^2)))^2*(x-x0)^2)/(2*c^2*(1-(x-x0)^2/L^2)^2)
+				+(4*(1i*g*tanh((x-x0)^2/(4*c^2))+1)*(x-x0)^2)/(L^2*(1-(x-x0)^2/L^2)^3)
+				+(1i*g*tanh((x-x0)^2/(4*c^2))+1)/(1-(x-x0)^2/L^2)^2;
 	return 1.0/Gx;
 }
 else if( x < -x1)
@@ -80,8 +84,8 @@ else if( x < -x1)
 	real cm = -1.2*x1;
 	real L2 = 2.0*x1;
 	complex Gx = (1i*gm*(1.0/cosh((x+x1)/(2*cm)))^2*tanh((x+x1)/(2*cm))*(x+x1))/(cm*(1-(x+x1)^2/L2^2)^2)
-				 +(4*(1i*gm*tanh((x+x1)/(2*cm))^2+1)*(x+x1)^2)/(L2^2*(1-(x+x1)^2/L2^2)^3)
-				 +(1i*gm*tanh((x+x1)/(2*cm))^2+1)/(1-(x+x1)^2/L2^2)^2;
+				 +(4*(1i*gm*(tanh((x+x1)/(2*cm)))^2+1)*(x+x1)^2)/(L2^2*(1-(x+x1)^2/L2^2)^3)
+				 +(1i*gm*(tanh((x+x1)/(2*cm)))^2+1)/(1-(x+x1)^2/L2^2)^2;
 	return 1.0/Gx;
 
 }
@@ -93,17 +97,17 @@ func complex Hy(real L, real c, real g, real x0, real yo)
 {
 	if( y > yo){
 		complex Gy = (1i*g*(1.0/cosh((y-yo)/(2*c)))^2*tanh((y-yo)/(2*c))*(y-yo))/(c*(1-(y-yo)^2/L^2)^2)
-				  +(4*(1i*g*tanh((y-yo)/(2*c))^2+1)*(y-yo)^2)/(L^2*(1-(y-yo)^2/L^2)^3)
-				  +(1i*g*tanh((y-yo)/(2*c))^2+1)/(1-(y-yo)^2/L^2)^2;
+				  +(4*(1i*g*(tanh((y-yo)/(2*c)))^2+1)*(y-yo)^2)/(L^2*(1-(y-yo)^2/L^2)^3)
+				  +(1i*g*(tanh((y-yo)/(2*c)))^2+1)/(1-(y-yo)^2/L^2)^2;
 		return 1.0/Gy;
 	}
 
-	else if( y < -yo){
+	else if( y < -yo && symmetryBaseFlow == 2){
 		real gm = -g;
 		real cm = -c;
 		complex Gy = (1i*gm*(1.0/cosh((y+yo)/(2*cm)))^2*tanh((y+yo)/(2*cm))*(y+yo))/(cm*(1-(y+yo)^2/L^2)^2)
-				  +(4*(1i*gm*tanh((y+yo)/(2*cm))^2+1)*(y+yo)^2)/(L^2*(1-(y+yo)^2/L^2)^3)
-				  +(1i*gm*tanh((y+yo)/(2*cm))^2+1)/(1-(y+yo)^2/L^2)^2;
+				  +(4*(1i*gm*(tanh((y+yo)/(2*cm)))^2+1)*(y+yo)^2)/(L^2*(1-(y+yo)^2/L^2)^3)
+				  +(1i*gm*(tanh((y+yo)/(2*cm)))^2+1)/(1-(y+yo)^2/L^2)^2;
 		return 1.0/Gy;
 	}
 
@@ -130,20 +134,20 @@ else
 	return 0.0;
 }
 
-macro BoundaryconditionsBaseFlow(du,dp,dT,drho)
+macro BoundaryconditionsBaseFlow(du,dp,dT,drho,hx)
 	           on(bcinlet,du#x=Uinlet(y)-Ubx,du#y=0.0-Uby,drho=1.-Rhob,dT=1.-Tb)
 	           /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
 	         + on(bcoutflow,du#x=Uinlet(y)-Ubx,du#y=0.0-Uby,drho=1.-Rhob,dT=1.-Tb)  /* if you want to try no-penetration boundary (not optimal) */
              + on(bcwall,du#x=0.0-Ubx,du#y=0.0-Uby)
-             + int1d(th,bcaxis)(du#x*us#x*1e30*(symmetryBaseFlow=="A")+du#y*us#y*1e30*(symmetryBaseFlow=="S"))       
+             + int1d(th,bcaxis)((1.0/hx)*((du#x*us#x + dT*Ts + drho*rhos)*1e30*(symmetryBaseFlow==0)+du#y*us#y*1e30*(symmetryBaseFlow==1)))       
 //EOM
 
-macro BoundaryconditionsStability(du,us,dp,dT,drho,symmetry)
+macro BoundaryconditionsStability(du,us,dp,dT,drho,symmetry,hx)
 	           on(bcinlet,dux#=0,du#y=0.0,dT=0.0,drho=0.0)
 	            /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
 	         + on(bcoutflow,dux#=0,du#y=0.0,dT=0.0,drho=0.0)  /* if you want to try no-penetration boundary (not optimal) */
              + on(bcwall,du#x=0.0,du#y=0.0)
-             + int1d(th,bcaxis)(du#x*us#x*1e30*(symmetry==0)+du#y*us#y*1e30*(symmetry==1))  // I am not sure what to impose on T,rho and p 
+             + int1d(th,bcaxis)((1.0/hx)*((du#x*us#x + dT*Ts + drho*rhos)*1e30*(symmetry==0)+du#y*us#y*1e30*(symmetry==1)))  // I am not sure what to impose on T,rho and p 
 //EOM
 
 
@@ -152,10 +156,11 @@ macro BoundaryconditionsStability(du,us,dp,dT,drho,symmetry)
 
 macro Trainee(u,symmetry)   
 	(
-
-	int1d(th,2,21,22,23)((u#p-1)/(gamma*Ma^2)*N.x)
+	(1*(symmetry==2)+2*(symmetry==1))
+	*(
+	int1d(th,2,21,22,23)((u#p)/(gamma*Ma^2)*N.x)
 	-nu*int1d(th,2,21,22,23)( (((4./3.)*dx(u#x) - (2./3.)*dy(u#y))*N.x+ (dx(u#y)+dy(u#x))*N.y))
-	
+	)
 	)
 //EOM
 	
@@ -164,7 +169,7 @@ macro Portance(u,symmetry)
 	(
 	(1*(symmetry==2)+2*(symmetry==0))
 	*(
-	int1d(th,2,21,22,23)(((u#p-1)/(gamma*Ma^2))*N.y)
+	int1d(th,2,21,22,23)(((u#p)/(gamma*Ma^2))*N.y)
 	-nu*int1d(th,2,21,22,23)( (((4./3.)*dy(u#y) - (2./3.)*dx(u#x))*N.y+(dx(u#y)+dy(u#x))*N.x))
 	)
 	)

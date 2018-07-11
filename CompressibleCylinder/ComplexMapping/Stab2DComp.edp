@@ -191,7 +191,7 @@ varf LNSE(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpirank)((1.0/(HX*HY)
 								  ))
   -int2d(th,mpirank)(AMPFORCE*(usy*duy+usx*dux+Ts*dT+rhos*drho))
   -int2d(th,mpirank)((1.0/(HX*HY))*sigma*(rhos*drho+Rhob*duy*usy+Rhob*dux*usx+Ts*Rhob*dT))+int2d(th,mpirank)((1.0/(HX*HY))*ssvv*(rhos*drho))
-  + BoundaryconditionsStability(du,us,dp,dT,drho,symmetry);
+  + BoundaryconditionsStability(du,us,dp,dT,drho,symmetry,HX);
 
 
 
@@ -209,8 +209,8 @@ varf LNSEadjointDiscrete(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpiran
 								       +ps*(-1.0/(gamma*Ma^2)*div(du) + (gamma-1.0)*dT*div(Ub) + dp)
 								  ))
   -int2d(th,mpirank)(AMPFORCE*(usy*duy+usx*dux+Ts*dT+rhos*drho))
-  -int2d(th,mpirank)((1.0/(HX*HY))*conj(shift)*(rhos*drho+Rhob*duy*usy+Rhob*dux*usx+Ts*Rhob*dT))+int2d(th,mpirank)((1.0/(HX*HY))*ssvv*(rhos*drho))
-  + BoundaryconditionsStability(du,us,dp,dT,drho,symmetry);
+  -int2d(th,mpirank)((1.0/(HX*HY))*conj(sigma)*(rhos*drho+Rhob*duy*usy+Rhob*dux*usx+Ts*Rhob*dT))+int2d(th,mpirank)((1.0/(HX*HY))*ssvv*(rhos*drho))
+  + BoundaryconditionsStability(du,us,dp,dT,drho,symmetry,HX);
 
 if(mpirank==0)
 {
@@ -234,7 +234,7 @@ varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank)((1.0/(HX*
 								       +ps*(dp-(drho*Tb+Rhob*dT))
 								  ))
   +int2d(th,mpirank)(AMPFORCE*(usy*duy+usx*dux+Ts*dT+rhos*drho))
-  +BoundaryconditionsStability(du,us,dp,dT,drho,symmetry);
+  +BoundaryconditionsStability(du,us,dp,dT,drho,symmetry,HX);
 
 
 varf DerMachNS(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank)((1.0/(HX*HY))*(Ts*(2.0*gamma*(gamma-1.0)*Ma/Re*(2.0*((Strain(Ub):Strain(Ub)))-2.0/3.0*(div(Ub)*div(Ub))))+ 2.0*ugradf(us,Pb)/(gamma*Ma^3)));

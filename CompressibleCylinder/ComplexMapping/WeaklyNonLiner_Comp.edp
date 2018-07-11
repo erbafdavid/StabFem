@@ -197,18 +197,18 @@ macro NS(u,Re,v)(
 	            /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
 	         + on(bcoutflow,du#x=0,du#y=0.0,dT=0.0,drho=0.0)  /* if you want to try no-penetration boundary (not optimal) */
              + on(bcwall,du#x=0.0,du#y=0.0)
-             + int1d(th,bcaxis)(du#x*us#x*1e30*(symmetry==0)+du#y*us#y*1e30*(symmetry==1))  // I am not sure what to impose on T,rho and p 
+             + int1d(th,bcaxis)((1.0/HX)*((du#x*us#x + dT*us#T + drho*us#rho)*1e30*(symmetry==0)+du#y*us#y*1e30*(symmetry==1)))  // I am not sure what to impose on T,rho and p 
 //EOM
 macro Lift(nu,u)   
 	(
-	int1d(th,2,21,22,23)(((u#p-1.0)/(gamma*Ma^2))*N.y)
+	int1d(th,2,21,22,23)(((u#p)/(gamma*Ma^2))*N.y)
 	+ int1d(th,2,21,22,23)( -nu*((((4.0/3.)*dy(u#y) - (2.0/3.)*dx(u#x))*N.y+(dx(u#y)+dy(u#x))*N.x)))
 	)//
 
 // WARNING : HERE IT IS Lift FORCE
 macro Drag(nu,u)    
 	(
-	int1d(th,2,21,22,23)((u#p-1.0)/(gamma*Ma^2)*N.x)
+	int1d(th,2,21,22,23)((u#p)/(gamma*Ma^2)*N.x)
 	+ int1d(th,2,21,22,23)( -nu*((((4./3.)*dx(u#x) - (2./3.)*dy(u#y))*N.x+ (dx(u#y)+dy(u#x))*N.y)))
 	)//
 
@@ -218,12 +218,12 @@ macro dDrag(nu,u)
 	)
 // Drag FORCE
 
-macro EnergyNorm(u,U) sqrt(int2d(th)(  (1.0/(HX*HY))*(U#rho*(abs(u#x)^2+abs(u#y)^2+abs(u#T)^2) + abs(u#rho)^2 )) )
+macro EnergyNorm(u,U) sqrt(int2d(th)(  (1*(symmetryBaseFlow!=1)+2*(symmetryBaseFlow==1))*(1.0/(HX*HY))*(U#rho*(abs(u#x)^2+abs(u#y)^2+abs(u#T)^2) + abs(u#rho)^2 ) ))
 // "Energy" norm for a real or complex field
 
-macro EnergyNormCS(uc,us,U) sqrt( int2d(th)( (1.0/(HX*HY))*(U#rho*(abs(uc#x)^2+abs(uc#y)^2+abs(uc#T)^2 +
-				  	      abs(us#x)^2+abs(us#y)^2+abs(us#T)^2) + abs(uc#rho)^2 + abs(us#rho)^2)) )
-// "Energy" norm for a field defined by "cos" and "sin" components (factor .5 because of time-average)
+macro EnergyNormCS(uc,us,U) sqrt( (1*(symmetryBaseFlow!=1)+2*(symmetryBaseFlow==1))*(int2d(th)((1.0/(HX*HY))*(U#rho*(abs(uc#x)^2+abs(uc#y)^2+abs(uc#T)^2 +
+				  	      abs(us#x)^2+abs(us#y)^2+abs(us#T)^2) + abs(uc#rho)^2 + abs(us#rho)^2) )))
+// "Energy" norm for a field defined by "cos" and "sin" components 
 
        
 
@@ -305,20 +305,20 @@ solve varfEpsilon([uepsx,uepsy,uepsp,uepsT,uepsrho],[vx,vy,vp,vT,vrho]) =
   	  int2d(th)( (1.0/(HX*HY))*(NSL(ub,ueps,ReC,v)) )
 	+ int2d(th) ((1.0/(HX*HY))*(ViscousTermsBF(ub,1.0,v))) 
 	+ int2d(th)(AMPFORCE*(vy*uepsy+vx*uepsx+vT*uepsT+vrho*uepsrho))
-    + Boundaryconditions(ueps,v,uepsp,uepsT,uepsrho,2);
+    + Boundaryconditions(ueps,v,uepsp,uepsT,uepsrho,symmetryBaseFlow);
 	
 solve varf20([u20x,u20y,u20p,u20T,u20rho],[vCx,vCy,vCp,vCT,vCrho]) =
   	  int2d(th)( (1.0/(HX*HY))*(NSL(ub,u20,ReC,vC)) )
 	+ int2d(th)( (1.0/(HX*HY))*(NonLinear(u1,u1C,ub,vC) + NonLineardtABConj(u1,u1C,omegaC,vC)) ) 
 	+ int2d(th)(AMPFORCE*(vCy*u20y+vCx*u20x+vCT*u20T+vCrho*u20rho))
-    + Boundaryconditions(u20,vC,u20p,u20T,u20rho,2);
+    + Boundaryconditions(u20,vC,u20p,u20T,u20rho,symmetryBaseFlow);
 	
 solve varf22([u22x,u22y,u22p,u22T,u22rho],[vCx,vCy,vCp,vCT,vCrho]) =
   	  int2d(th)( (1.0/(HX*HY))*(NSL(ub,u22,ReC,vC)) )
   	+ int2d(th)((1.0/(HX*HY))*(2i*omegaC*BNorm(ub,u22,vC)))
 	+ int2d(th)( (1.0/(HX*HY))*(0.5*NonLinear(u1,u1,ub,vC)))  
 	+ int2d(th)(AMPFORCE*(vCy*u22y+vCx*u22x+vCT*u22T+vCrho*u22rho))
-    + Boundaryconditions(u22,vC,u22p,u22T,u22rho,2);
+    + Boundaryconditions(u22,vC,u22p,u22T,u22rho,symmetryBaseFlow);
 
 [uepsrx,uepsry,uepsrp,uepsrT,uepsrrho] = [real(uepsx),real(uepsy),real(uepsp),real(uepsT),real(uepsrho)];
 

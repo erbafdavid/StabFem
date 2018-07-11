@@ -97,7 +97,7 @@ border b4(t=0,1){ x=x2v-(x2v-x2m)*t;y=+y2;label=0;}
 mesh th=buildmesh(inletsponge(2*(yinf+ls)/n*nsponge)+latinfsponge((xinfv-xinfm+2*ls)/n*nsponge)+outletsponge(2*(yinf+ls)/n*nsponge)+latsupsponge((xinfv-xinfm+2*ls)/n*nsponge)+
 inlet(2*yinf/n*ns)+latinf((xinfv-xinfm)/n*ns)+outlet(2*yinf/n*ns)+latsup((xinfv-xinfm)/n*ns)+cilindro(-ncil*pi/n)+a1(n1/n*2*y1)+a2(n1/n*(x1v-x1m))+a3(n1/n*2*y1)+a4(n1/n*(x1v-x1m))+b1(2*y2/n*n2)+b2((x2v-x2m)/n*n2)+b3(2*y2/n*n2)+b4((x2v-x2m)/n*n2));
 
-plot(th);
+//plot(th);
 savemesh(th,ffdatadir+"mesh.msh");
 
 
@@ -140,7 +140,7 @@ savemesh(th,ffdatadir+"mesh.msh");
 // Save in ff2m format (for StabFem)	    
 	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
 
-plot(th,cmm="Mesh",wait=1,ps="Mesh.eps");
+//plot(th,cmm="Mesh",wait=1,ps="Mesh.eps");
 /*
 fespace Xh(th,P2);
 Xh DELTA=hTriangle;

@@ -37,8 +37,6 @@ include "SF_Geom.edp";
 include "SF_Mesh.edp";
 include "SF_Method.edp"
 string copyfile = "yes"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
-
-
 /////////////////////////////////////////////////////////////////////////////////
 
 
@@ -167,13 +165,13 @@ include "MethodSel.edp"
 	            /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
 	         + on(bcoutflow,du#x=0,du#y=0.0,dT=0.0,drho=0.0)  /* if you want to try no-penetration boundary (not optimal) */
              + on(bcwall,du#x=0.0,du#y=0.0)
-             + int1d(th,bcaxis)(du#x*us#x*1e30*(symmetry==0)+du#y*us#y*1e30*(symmetry==1))  // I am not sure what to impose on T,rho and p 
+             + int1d(th,bcaxis)((1.0/HX)*((du#x*us#x + dT*us#T + drho*us#rho)*1e30*(symmetry==0)+du#y*us#y*1e30*(symmetry==1)))  // I am not sure what to impose on T,rho and p 
 //EOM
 
 
 macro Lift(nu,u)   
 	(
-	int1d(th,2,21,22,23)(((u#p-1.0)/(gamma*Ma^2))*N.y)
+	int1d(th,2,21,22,23)(((u#p)/(gamma*Ma^2))*N.y)
 	+ int1d(th,2,21,22,23)( -nu*((((4.0/3.)*Dy(u#y) - (2.0/3.)*Dx(u#x))*N.y+(Dx(u#y)+Dy(u#x))*N.x)))
 	)//
 
@@ -186,16 +184,16 @@ macro dLift(nu,u)
 // WARNING : HERE IT IS Lift FORCE
 macro Drag(nu,u)    
 	(
-	int1d(th,2,21,22,23)((u#p-1.0)/(gamma*Ma^2)*N.x)
+	int1d(th,2,21,22,23)((u#p)/(gamma*Ma^2)*N.x)
 	+ int1d(th,2,21,22,23)( -nu*((((4./3.)*Dx(u#x) - (2./3.)*Dy(u#y))*N.x+ (Dx(u#y)+Dy(u#x))*N.y)))
 	)
 // Drag FORCE
 
-macro EnergyNorm(u,U) sqrt(int2d(th)(  (1.0/(HX*HY))*(U#rho*(abs(u#x)^2+abs(u#y)^2+abs(u#T)^2) + abs(u#rho)^2 ) ))
+macro EnergyNorm(u,U) sqrt(int2d(th)(  (1*(symmetryBaseFlow!=1)+2*(symmetryBaseFlow==1))*(1.0/(HX*HY))*(U#rho*(abs(u#x)^2+abs(u#y)^2+abs(u#T)^2) + abs(u#rho)^2 ) ))
 // "Energy" norm for a real or complex field
 
-macro EnergyNormCS(uc,us,U) sqrt( .5* int2d(th)((1.0/(HX*HY))*(U#rho*(abs(uc#x)^2+abs(uc#y)^2+abs(uc#T)^2 +
-				  	      abs(us#x)^2+abs(us#y)^2+abs(us#T)^2) + abs(uc#rho)^2 + abs(us#rho)^2) ))
+macro EnergyNormCS(uc,us,U) sqrt( (1*(symmetryBaseFlow!=1)+2*(symmetryBaseFlow==1))*(.5* int2d(th)((1.0/(HX*HY))*(U#rho*(abs(uc#x)^2+abs(uc#y)^2+abs(uc#T)^2 +
+				  	      abs(us#x)^2+abs(us#y)^2+abs(us#T)^2) + abs(uc#rho)^2 + abs(us#rho)^2) )))
 // "Energy" norm for a field defined by "cos" and "sin" components (factor .5 because of time-average)
 
 real eps=1.e-7; 
@@ -307,7 +305,7 @@ cout << " defining operators for nonlinear term..." << endl;
 varf NLOpF1([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
 // block 1 : NS for base flow
    int2d(th)( (1.0/(HX*HY))*(-NS(u0,v)) )
-	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,2)
+	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,symmetryBaseFlow)
 	+int2d(th,mpirank)(AMPFORCE*(vy*du0y+vx*du0x+vT*du0T+vrho*du0rho))
     +int2d(th)( (1.0/(HX*HY))*(.25*NonLinear(u1c,u1c,u0,v) + .25*NonLinear(u1s,u1s,u0,v) + .5*omega*NonLinearOmega(u1c,u1s,v)) );
  			
@@ -317,14 +315,14 @@ varf NLOpF2([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
 	- int2d(th) ((1.0/(HX*HY))*( sigma1 * BNorm(u0,u1c,v)) )
 	+ int2d(th) ((1.0/(HX*HY))*( -omega * BNorm(u0,u1s,v)) ) 
 	+int2d(th,mpirank)(AMPFORCE*(vy*du1cy+vx*du1cx+vT*du1cT+vrho*du1crho))
-    + Boundaryconditions(du1c,v,du1cp,du1cT,du1crho,2);
+    + Boundaryconditions(du1c,v,du1cp,du1cT,du1crho,symmetryEigenmode);
 	
 // block 3 : base-flow effect on imag part of eigenmode			
 varf NLOpF3([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
 	 int2d(th)( (1.0/(HX*HY))*(-NSL(u0,u1s,v))  )
 	+int2d(th,mpirank)(AMPFORCE*(vy*du1sy+vx*du1sx+vT*du1sT+vrho*du1srho))
               
-    + Boundaryconditions(du1s,v,du1sp,du1sT,du1srho,2)			
+    + Boundaryconditions(du1s,v,du1sp,du1sT,du1srho,symmetryEigenmode)			
 	- int2d(th) ( (1.0/(HX*HY))*(sigma1 * BNorm(u0,u1s,v)) )
 	+ int2d(th) ( (1.0/(HX*HY))*(omega * BNorm(u0,u1c,v)) );
 
@@ -347,7 +345,7 @@ cout << " defining operators for linear term..." << endl;
 varf LinOp11([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
    	int2d(th)( (1.0/(HX*HY))*(-NSL(u0,du0,v) + .25*NonLineardq(u1c,u1c,du0,v) + .25*NonLineardq(u1s,u1s,du0,v)) ) 
  	+int2d(th,mpirank)(AMPFORCE*(vy*du0y+vx*du0x+vT*du0T+vrho*du0rho))       
- 	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,2);
+ 	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,symmetryBaseFlow);
 
 // block 1-2 : nonlinear term (real parts)
 varf LinOp12([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
@@ -370,7 +368,7 @@ varf LinOp22([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
              int2d(th)( (1.0/(HX*HY))*(-NSL(u0,du1c,v)) )
             - int2d(th)( (1.0/(HX*HY))*(sigma1*BNorm(u0,du1c,v))  )
 			+int2d(th,mpirank)(AMPFORCE*(vy*du1cy+vx*du1cx+vT*du1cT+vrho*du1crho))
- 			+ Boundaryconditions(du1c,v,du1cp,du1cT,du1crho,2);	
+ 			+ Boundaryconditions(du1c,v,du1cp,du1cT,du1crho,symmetryEigenmode);	
  			
 // block 2-3 : effect of omega on real part of equation for eigenmode
 varf LinOp23([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
@@ -395,7 +393,7 @@ varf LinOp33([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
              int2d(th)( (1.0/(HX*HY))*(-NSL(u0,du1s,v)) )
            - int2d(th) ( (1.0/(HX*HY))*(sigma1*BNorm(u0,du1s,v))  )
      	   + int2d(th,mpirank)(AMPFORCE*(vx*du1sy+vy*du1sx+vT*du1sT+vrho*du1srho))
- 		   + Boundaryconditions(du1s,v,du1sp,du1sT,du1srho,2)	
+ 		   + Boundaryconditions(du1s,v,du1sp,du1sT,du1srho,symmetryEigenmode)	
  			;
 
 // block 3-4 : effect of domega on eigenmode-imag equations
