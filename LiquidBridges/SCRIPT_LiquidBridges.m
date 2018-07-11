@@ -1,8 +1,9 @@
+%%
 close all;
 run('../SOURCES_MATLAB/SF_Start.m');
 system('mkdir FIGURES');
 figureformat = 'png';
-%%%%%% CHAPTER 0 : creation of initial mesh for cylindrical bridge, L=4
+%% CHAPTER 0 : creation of initial mesh for cylindrical bridge, L=4
 
 L = 4;
 density=20;
@@ -15,7 +16,7 @@ Vol0 = ffmesh.Vol;
 figure(1);hold off;
 plot(ffmesh.xsurf,ffmesh.ysurf); hold
 
-%%%% CHAPTER 1 : Eigenvalue computation for m=0 and m=1 FOR A CYLINDRICAL BRIDGE
+%% CHAPTER 1 : Eigenvalue computation for m=0 and m=1 FOR A CYLINDRICAL BRIDGE
 [evm0,emm0] =  SF_Stability(ffmesh,'nev',10,'m',0,'sort','SIA');
 [evm1,emm1] =  SF_Stability(ffmesh,'nev',10,'m',1,'sort','SIA');
 
@@ -83,12 +84,12 @@ box on; pos = get(gcf,'Position'); pos(3)=pos(4)*.8;set(gcf,'Position',pos); % r
 set(gca,'FontSize', 12);
 saveas(gcf,'FIGURES/Bridges_NV_Eigenmodes_eta_cyl_L3_5',figureformat);
 % note that for m=0 the two first modes are spurious, so we take modes 3 and 5
-
+%%
 pause(0.1);
 
-
+%%
 if(1==1)
-%%%%% CHAPTER 2 : Construction of equilibrium shape and stability
+ CHAPTER 2 : Construction of equilibrium shape and stability
 %%%%% calculations for a family of bridge shapes with L=4 and variable volume and pressure
 
 % CHAPTER 2a : First loop in the interval [0.85,1] (decreasing values)

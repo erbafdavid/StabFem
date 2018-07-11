@@ -1,5 +1,7 @@
 
+
 function status=mysystem(command,errormessage);
+
 global ff ffdir ffdatadir sfdir verbosity
 
 %%% system command managements of StabFem.

@@ -1,3 +1,7 @@
+
+include "Macros_StabFem.edp"
+
+
 //verbosity = 0;
 real R = 1,Rbase=1;
 real Rpin,Lsurf,Rdrop;
@@ -62,25 +66,76 @@ mesh MeshInt;
 //cout << " Portion de sphere : Rc = " << Rc << " ; thetac = " << thetac << " ; Lsurf = " << Lsurf << endl;
 //border SurfBulle(t=-thetac,thetac){y=Rc*(sin(t)+sin(thetac));x=Rc*cos(t);label=2;
 border SurfDrop(t=angle,0){y=Rdrop*(cos(t)-cos(angle));x=Rdrop*sin(t);label=2;};
+MeshInt = buildmesh(SurfDrop(d*Rdrop*angle)+Wall(d*Rbase)+Wallbis(1)+Axe(d*Rdrop*(1-cos(angle)))+Axebis(1)); // Attention modif sauvage
 
+mesh th = MeshInt;
+
+
+//savemesh(MeshInt,"MeshDrop_guess.msh");
+
+IFMACRO(FREEFEMPLOTS,YES)
 plot(SurfDrop(2*R*d)+Wall(R*(d-1))+Wallbis(1)+Axe(LL*(d-1))+Axebis(1));
-MeshInt = buildmesh(SurfDrop(d)+Wall(d-1)+Wallbis(1)+Axe(d-1)+Axebis(1)); // Attention modif sauvage
-
-
-
-savemesh(MeshInt,"MeshDrop_guess.msh");
-
-
 plot(MeshInt,wait=1);
+ENDIFMACRO
 
-savemesh(MeshInt,"mesh_guess.msh");
+//savemesh(MeshInt,"mesh_guess.msh");
+
+
+//SAVE MESH TO FILE
+
+savemesh(MeshInt,ffdatadir+"mesh_guess.msh");
+savemesh(MeshInt,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Defininition of problem type and geometry for StabFem. Problem type : " << endl;
+			file << "3DFreeSurfaceStatic" << endl;
+			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "real R0 real Rbase real H real thetas" << endl;
+			file << Rdrop  << endl << Rbase << endl << Rdrop*(1-cos(angle)) << endl << angle << endl;
+}
+
+
+// SECOND AUXILIARY FILE mesh.ff2m
+{ 
+mesh Shempty=emptymesh(MeshInt); 
+real K0 = 2/Rdrop;real dpdz = 0;	
+//include "Macros_Geometrie_Surface.edp";
+include "MG.edp";
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+CalcGeomSurf;
+SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+SFWriteMesh(ffdatadir+"mesh_guess.ff2m",th)
+}
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomRbridge = 1 ;" << endl ;
+            file2 << " real SFGeomLbridge = " << LL <<  " ;" << endl ;
+            file2 << " real SFGeomGAMMA = " << 0 <<  " ;" << endl ;
+
+}
 
 
 
+
+
+
+
+
+
+
+
+/*
 
 ////////////////////////////////////////////////////////////////
 //
-// POST-TRAITEMENT : fichiers Infos_Geom.txt et Geom_Surface.txt
+// POST-TRAITEMENT ANCIENNE METHODE : fichiers Infos_Geom.txt et Geom_Surface.txt
 //
 ////////////////////////////////////////////////////////////////
 
@@ -97,6 +152,7 @@ mesh Shempty=MeshInt;
 
 real K0, dpdz;
 include "Macros_Geometrie_Surface.edp";
+//include "MG.edp"
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
 CalcGeomSurf;
 
@@ -155,3 +211,5 @@ for(int ksurf=Nsurface;ksurf>-1;ksurf--)
 	<< alphaPointSurf(ksurf) << "   " << K0aPointSurf(ksurf) << "  " << K0bPointSurf(ksurf)  
 	<< "  " << dS0PointSurf(ksurf)  	<< endl ;
 	};
+*/
+
