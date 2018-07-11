@@ -1,3 +1,4 @@
+
 global ff ffMPI ffdir ffdatadir sfdir verbosity 
 
 % TODO : David We need to define a global variable in windows and unix
@@ -9,8 +10,7 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 % ffdatadir -> path where to store the results (recommended is ./WORK) 
 
 if(isunix)
-
-ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++ -v 0'; % on IMFT network
+ff = '/PRODCOM/Ubuntu16.04/freefem/3.55/gcc-5.4-mpich_3.2/bin/FreeFem++ -v 0'; % on IMFT network
 ffMPI = 'ff-mpirun';
 end
 if(ismac)
@@ -65,3 +65,4 @@ verbosity = 1;
 %     mysystem(['mkdir ' ffdatadir]);
 % end
 % mysystem(['echo "// File automatically created by StabFem" > SF_Geom.edp']); % a file SF_Geom should be present, even if blank 
+

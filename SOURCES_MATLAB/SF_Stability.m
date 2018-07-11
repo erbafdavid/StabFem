@@ -1,6 +1,6 @@
 function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 
-% StabFem wrapper for Eigenvalue calculations 
+% StabFem wrapper for Eigenvaluee calculations 
 %
 % usage : [eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
 %
@@ -17,7 +17,9 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 %   DAMPING :   For spring-mounted object
 %   gamma :     Surface tension (for free-surface problems)
 %   rhog :      gravity parameter (for free-surface problems)
-%   nu :        viscosity (for free-surface problelms)
+%   nu :        viscosity (for free-surface problems)
+%   typestart : type of BC at s = s0 (for free-surface problems)
+%   typeend :    type of BC at s = Smax (for free-surface problems)
 %   sym :       Symmetry condition for a 2D problem 
 %               (set to 'S' for symmetric, 'A' for antisymmetric, or 'N' if no symmetry plane is present)
 %   shift :     shift for shift-invert algorithm.
@@ -56,12 +58,12 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    if(isfield(baseflow,'np')==1)
        % first argument is a simple mesh
        ffmesh = baseflow; 
-       mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
+       %mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
    else
        % first argument is a base flow
        ffmesh = baseflow.mesh;
        mycp(baseflow.filename,[ffdatadir 'BaseFlow.txt']);
-       mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
+       %mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
    end
    
 
@@ -95,6 +97,8 @@ persistent eigenvaluesPrev % for sort of type 'cont'
     addParameter(p,'rhog',rhogDefault);
     if(isfield(baseflow,'nu')) nuDefault = baseflow.nu ;else nuDefault = 0; end;
     addParameter(p,'nu',nuDefault);
+    addParameter(p,'typestart','pined',@ischar);
+    addParameter(p,'typeend','pined',@ischar);
    
   %parameters for the eigenvalue solver
    addParameter(p,'shift',1+1i);
@@ -222,7 +226,8 @@ switch ffmesh.problemtype
         % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
         if(p.Results.nu==0)
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE POTENTIAL : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
-        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(p.Results.nev)  ' ' num2str(imag(p.Results.shift)) ' " '];
+        argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' p.Results.typestart ' ' p.Results.typeend  ' '...
+                          num2str(p.Results.m) ' ' num2str(p.Results.nev)  ' ' num2str(imag(p.Results.shift)) ' " '];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
         status = mysystem(solvercommand);     
         else
@@ -295,7 +300,6 @@ eigenvalues = EVr+1i*EVi;
 if(strcmp(p.Results.shift,'cont')==1)
 sigmaPrevPrev = sigmaPrev;
 sigmaPrev = eigenvalues(1);
-mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'Eigenmode_guess.txt']);  
 else
 sigmaPrevPrev = eigenvalues(1);
 sigmaPrev = eigenvalues(1); 
@@ -317,7 +321,7 @@ end
          disp(['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         end
         if(eigenvectors.iter<0) 
-            error(['ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1)']);
+            error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1)']);
         end   
     elseif(p.Results.nev>1&&p.Results.type=='D')
     eigenvectors=[];
@@ -336,7 +340,7 @@ end
     end
     eigenvectors=eigenvectors(o);%sort the eigenvectors with the same filter as the eigenvalues
     else
-        error('ERROR : wrong value for mode type / mode number nev');
+        error('ERROR');
     end
     
     end
