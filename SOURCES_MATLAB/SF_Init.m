@@ -50,7 +50,7 @@ if(nargout==1)
     mesh = importFFmesh([ffdatadir 'mesh.msh']);
     mycp([ffdatadir 'mesh.msh'],[ffdatadir '/mesh_init.msh']);
     mycp([ffdatadir 'BaseFlow_guess.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_init.txt']);
-    mesh.namefile=[ffdatadir 'BASEFLOWS/mesh_init.msh'];
+    mesh.filename=[ffdatadir 'BASEFLOWS/mesh_init.msh'];
     baseflow=importFFdata(mesh,'BaseFlow.ff2m');
     baseflow.filename = [ffdatadir 'BASEFLOWS/BaseFlow_init.txt'];
     disp(['      ### INITIAL MESH CREATED WITH np = ',num2str(mesh.np),' points']);

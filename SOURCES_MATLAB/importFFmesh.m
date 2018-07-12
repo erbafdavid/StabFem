@@ -26,11 +26,16 @@ fileToRead3 = [filepath,'/SF_Init.ff2m'];
 
 mydisp(2,['FUNCTION  importFFmesh.m : reading complementary files']);
     
-meshstruct = importFFdata(fileToRead2,fileToRead3);
+meshstruct = importFFdata(fileToRead2,fileToRead3); 
+% WARNING : in future may be better to do meshstruct = importFFdata(fileToRead3,fileToRead2); 
+
 
 % change the field "datatype" to "problemtype" (to be rationalized ?)
+if(~isfield(meshstruct,'problemtype')) % for retrocompatibility ; to be removed in future
 meshstruct.problemtype = meshstruct.datatype;
 meshstruct = rmfield(meshstruct,'datatype');
+end
+    
 
 %
 meshstruct.meshgeneration=0;

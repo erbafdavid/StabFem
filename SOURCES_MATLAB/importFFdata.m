@@ -61,16 +61,39 @@ if(np>0&&i==istart)
     [filepath,name,ext] = fileparts(fileToRead);
     pdestruct.filename=[filepath,'/',name,'.txt'];
 end
-%interpret headers
-datatype = rawData1.textdata{2};
+%interprets the first four lines in the file
+Datadescription = rawData1.textdata{2};
+pdestruct.DataDescription=Datadescription;
+keawords = rawData1.textdata{3};
 header = rawData1.textdata{4};
 description=textscan(header,'%s');
 numfields = length(description{1})/2;
-pdestruct.datatype=datatype;
+words=textscan(keawords,'%s');
 
-%create structure
+numkeywords = length(words{1});
+K1 = words{1}{1};
+
+if strcmp(lower(K1),'format')
+   mydisp(5,'Warning : third line or data file is "Format :" ; this is obsolete ! please revert to new format (see manual)'); 
+   pdestruct.datatype = Datadescription;
+else
+   if mod(numkeywords,2)
+       error('Error in importFFdata : number of words at third line of file should be an even number')
+   else
+       for i=1:2:numkeywords-1
+            keywordname = words{1}{i};
+            keywordvalue = words{1}{i+1};
+            pdestruct=setfield(pdestruct,keywordname,keywordvalue);
+            mydisp(15,['      Function importFFdata : setting keyword ''',keywordname,' '' =  ''',keywordvalue,'''']);
+            
+       end
+   end
+end
+
+
+%determines the kind of numerical data to be read in the file,
+% and checks if the number of numerical data is consistent
 indexdata = 1;
-
 Ndata = 0;
 for ifield = 1:numfields
    typefield = description{1}{2*ifield-1};
