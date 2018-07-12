@@ -1,0 +1,130 @@
+
+
+/// JET SIFFLANT : CAS D'UN FORCAGE PULSE
+	load "UMFPACK64"
+/// DECLARATIONS FORMELLES
+	include "Params_Conduct.edp";
+	
+	cout << " Entrez omegamin, omegamax, omegastep :" << endl;
+	cin >> omegamin >> omegamax >> omegastep ;
+	cout << "Boucle omegamin = " << omegamin << 
+	        " , omegamax = " << omegamax << " , omegastep = " << omegastep
+		<< endl;
+		
+		
+	int Nprof =6;
+	macro Uin(rr) ( (2+Nprof)/Nprof*(1-rr^Nprof) )  //EOM
+	
+	mesh th=readmesh("mesh.msh");
+ 	fespace p2xp2xp1(th,[P2,P2,P1]);
+ 	fespace p2(th,P2);
+	fespace p1(th,P1);	
+ 	fespace p2xp2xp2xp1(th,[P2,P2,P2,P1]);
+	p2xp2xp1<complex> [urp,uzp,pp];
+    p2xp2xp1<complex> [ur,uz,p],[vr,vz,q];
+    p2xp2xp1 [urr,uzr,pr],[uri,uzi,pii];
+    
+	int m=0; 
+	real nu,Re;
+	real epsilonPQ = 0*1e-20; // terme de desingularisation
+	real omega;
+//	real S = (Rin/a)^2;
+	real S = 100.;
+	real Q = 1.;
+
+	{
+	ifstream cbin("chbaseCOMPLEX.txt");
+	cbin >> urp[];
+	cbin >> Re;
+	};
+	cout << " Lecture CB : Re = " << Re << endl;
+	
+nu=2*Rhole/Re;
+	
+	
+//	cout << " Entrez Re et omega :  " << endl; 
+//	cin  >> Re >> omega;
+	
+
+//real gammaC = 0.5;
+//	real LC = 5;		
+	
+//	func G =  (x<0?1:1/(1+1i*gammaC*(1+x/LC)*exp(-LC/x)));
+//	func G =  (x<0?1:1/(1-1i*gammaC*(1+x/LC)*exp(-LC/x)));
+
+
+		problem PulsedJet([ur,uz,p],[vr,vz,q],eps=1e-16) = 
+	int2d(th)(
+	(
+	- yphys*vz*(
+		(uzp*G*dx(uz)+uz*G*dx(uzp)+urp*Gy*dy(uz)+ur*Gy*dy(uzp))	
+		  -1i*omega*uz )  				
+	- yphys*vr*(
+		(uzp*G*dx(ur)+uz*G*dx(urp)+urp*Gy*dy(ur)+ur*Gy*dy(urp))	
+		-1i*omega*ur )	
+		
+	- nu*(yphys*G*dx(uz)*G*dx(vz)+yphys*Gy*dy(uz)*Gy*dy(vz)  
+	+ yphys*G*dx(ur)*G*dx(vr)+yphys*Gy*dy(ur)*Gy*dy(vr)+1/yphys*ur*vr  )  
+	  
+	+ p*(yphys*G*dx(vz)+vr+yphys*Gy*dy(vr))
+	- q*(yphys*G*dx(uz)+ur+yphys*Gy*dy(ur))
+	)*1/(Gy*G)
+	)
+
+	+ on(1,uz=Q/S,ur=0.)
+  	+ on(2,uz=0.,ur=0.)	
+	+ on(6,7,ur=0.)
+	+on(3,uz=0); // mirror
+	
+
+
+for (real omegaS = omegamin ; omegaS < omegamax; omegaS=omegaS+omegastep)
+{
+omega  = omegaS;
+
+
+	cout << " Calcul d'une impedance pour un trou ; Re    = " << Re << endl; 
+	cout << "                                       nu    = " << nu << endl;
+	cout << "                                       omega = " << omega << endl;	
+
+	PulsedJet;
+
+//	{ofstream file("UVP_conductivity_Re"+Re+"_omega"+omega+".txt");
+//  	file << ur[] ;	
+//   	file << endl << endl << Re << endl;}
+	
+
+
+	complex Rate = 2*pi*int1d(th,1)(uz*y);
+	complex Force = 2*pi*int1d(th,1)(y*p);
+	complex pin = Force/(2*pi*int1d(th,1)(y)); // force/surface
+	
+	real Energy = int2d(th)((yphys/abs(G)/Gy)*(abs(uz)^2+abs(ur)^2));
+
+	complex Imp = (pin/Rate);
+ 	complex K   = -1i*omega/Imp; 
+
+	cout << ">>>> JET PULSE :  omega = " << omega << endl;
+	cout << "Debit Q = " << Rate << endl;
+	cout << "FORCE   = " << Force << endl;
+	cout << "DeltaP (= Pression  entree) = " << pin << endl;
+	cout << "IMPEDANCE = P/Q = " << Imp << endl;
+	cout << "Conductance = " << K << endl;
+	cout << "Delta, Gamma : " << real(K)/2 << " " << -imag(K)/2 << endl;
+	cout << "Energie : " << Energy << endl; 
+	
+ 
+	
+	
+
+	// Sortie des critères
+	ofstream file2("Cond_Re"+Re+".txt",append);
+	file2  	<< omega << " "
+	    	<< real(K/2) 		<< " " << -imag(K/2) 	<< " "  << abs(K)	<< " " 	
+		<< real(Imp) 		<< " " << imag(Imp) 	<< " "  << abs(Imp)	<< " " 
+		<< -imag(Imp)/(omega+1e-10) 		<< " " << Re 	<< endl;
+
+	};
+	
+	
+	
