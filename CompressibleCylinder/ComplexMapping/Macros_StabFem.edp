@@ -69,6 +69,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
 
 macro Uinlet(y) 1.
 // inlet flow for constant flow
+
 func complex Hx(real L, real c, real g, real x0, real x1)
 {
 if(x>x0)
@@ -82,10 +83,10 @@ else if( x < -x1)
 {
 	real gm = -g;
 	real cm = -1.2*x1;
-	real L2 = 2.0*x1;
-	complex Gx = (1i*gm*(1.0/cosh((x+x1)/(2*cm)))^2*tanh((x+x1)/(2*cm))*(x+x1))/(cm*(1-(x+x1)^2/L2^2)^2)
-				 +(4*(1i*gm*(tanh((x+x1)/(2*cm)))^2+1)*(x+x1)^2)/(L2^2*(1-(x+x1)^2/L2^2)^3)
-				 +(1i*gm*(tanh((x+x1)/(2*cm)))^2+1)/(1-(x+x1)^2/L2^2)^2;
+	real Lm = 2.0*x1;
+	complex Gx = (1i*g*(1.0/cosh((x+x1)^2/(4*cm^2)))^2*(x+x1)^2)/(2*cm^2*(1-(x+x1)^2/Lm^2)^2)
+				+(4*(1i*g*tanh((x+x1)^2/(4*cm^2))+1)*(x+x1)^2)/(Lm^2*(1-(x+x1)^2/Lm^2)^3)
+				+(1i*g*tanh((x+x1)^2/(4*cm^2))+1)/(1-(x+x1)^2/Lm^2)^2;
 	return 1.0/Gx;
 
 }
@@ -95,19 +96,19 @@ else
 
 func complex Hy(real L, real c, real g, real x0, real yo)
 {
-	if( y > yo){
-		complex Gy = (1i*g*(1.0/cosh((y-yo)/(2*c)))^2*tanh((y-yo)/(2*c))*(y-yo))/(c*(1-(y-yo)^2/L^2)^2)
-				  +(4*(1i*g*(tanh((y-yo)/(2*c)))^2+1)*(y-yo)^2)/(L^2*(1-(y-yo)^2/L^2)^3)
-				  +(1i*g*(tanh((y-yo)/(2*c)))^2+1)/(1-(y-yo)^2/L^2)^2;
+	if( y > yo ){
+		complex Gy = (1i*g*(1.0/cosh((y-yo)^2/(4*c^2)))^2*(y-yo)^2)/(2*c^2*(1-(y-yo)^2/L^2)^2)
+				+(4*(1i*g*tanh((y-yo)^2/(4*c^2))+1)*(y-yo)^2)/(L^2*(1-(y-yo)^2/L^2)^3)
+				+(1i*g*tanh((y-yo)^2/(4*c^2))+1)/(1-(y-yo)^2/L^2)^2;
 		return 1.0/Gy;
 	}
 
-	else if( y < -yo && symmetryBaseFlow == 2){
+	else if( y < -yo  && symmetryBaseFlow == 2){
 		real gm = -g;
 		real cm = -c;
-		complex Gy = (1i*gm*(1.0/cosh((y+yo)/(2*cm)))^2*tanh((y+yo)/(2*cm))*(y+yo))/(cm*(1-(y+yo)^2/L^2)^2)
-				  +(4*(1i*gm*(tanh((y+yo)/(2*cm)))^2+1)*(y+yo)^2)/(L^2*(1-(y+yo)^2/L^2)^3)
-				  +(1i*gm*(tanh((y+yo)/(2*cm)))^2+1)/(1-(y+yo)^2/L^2)^2;
+		complex Gy = (1i*g*(1.0/cosh((y+yo)^2/(4*cm^2)))^2*(y+yo)^2)/(2*cm^2*(1-(y+yo)^2/L^2)^2)
+					+(4*(1i*g*tanh((y+yo)^2/(4*cm^2))+1)*(y+yo)^2)/(L^2*(1-(y+yo)^2/L^2)^3)
+					+(1i*g*tanh((y+yo)^2/(4*cm^2))+1)/(1-(y+yo)^2/L^2)^2;
 		return 1.0/Gy;
 	}
 

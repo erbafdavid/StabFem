@@ -70,7 +70,8 @@
 	fespace XXxxxH(th,[P2,P2,P1,P1,P1]); /// 
         femp2xfemp2xfemp1 [vB,uB,pB]; // base flow
         femp2xfemp2xfemp2xfemp1 [vBS,uBS,wBS,pBS]; // base flow
-	XXxxxH[uBc,vBc,pBc,TBc,rhoBc]; // compressible base flow
+        femp2xfemp2xfemp2xfemp1 [vBi,uBi,wBi,pBi]; // base flow
+	XXxxxH<complex>[uBc,vBc,pBc,TBc,rhoBc]; // compressible base flow
 	XXxxxH<complex>[uc,vc,pc,Tc,rhoc]; // compressible structure for adaptation
 	femp2xfemp2xfemp2xfemp1[uComp,vComp,pComp,TComp];
         femp2xfemp2xfemp1<complex> [vC,uC,pC];	// structure for adaptation (case UVP)
@@ -138,7 +139,14 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 // selection of the type of adaptation to be done 
 	if(type=="BFonly")
 	{
-	if(NdimBaseFlow == NdimUComp) {[vBS,uBS,wBS,pBS] = [vBc,uBc,0,pBc];}
+	if(NdimBaseFlow == NdimUComp) {
+		[vBS,uBS,wBS,pBS] = [real(vBc),real(uBc),0,real(pBc)];
+		[vBi,uBi,wBi,pBi] = [imag(vBc),imag(uBc),0,imag(pBc)];
+		thnew = adaptmesh(th,[vBS,uBS,wBS,pBS],[vBi,uBi,wBi,pBi],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);
+
+	}
 	thnew = adaptmesh(th,[vBS,uBS,wBS,pBS],
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
@@ -172,12 +180,13 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 		fileAdaptField >> uc[];
 		[uc1,vc1,pc1,Tc1] = [real(uc),real(vc),real(pc),real(Tc)];
 		[uc2,vc2,pc2,Tc2] = [imag(uc),imag(vc),imag(pc),imag(Tc)];
-		[uComp,vComp,pComp,TComp] = [uBc,vBc,pBc,TBc];
+		[uComp,vComp,pComp,TComp] = [real(uBc),real(vBc),real(pBc),real(TBc)];
+		[vBi,uBi,wBi,pBi] = [imag(uBc),imag(vBc),imag(pBc),imag(TBc)];
 		cout << " lecture of field with structure [U,V,P,T,RHO]" << endl;
 		if(uc2[].max<1e-6){ cout << " (Real field ; most likely a base flow) " << endl;}
 		else{  cout << " (complex field ; most likely an eigenmode or response to a forcing) "<< endl; };
 			
-		thnew = adaptmesh(th,[uc1,vc1,pc1,Tc1],[uc2,vc2,pc2,Tc2],[uBc,vBc,pBc,TBc],
+		thnew = adaptmesh(th,[uc1,vc1,pc1,Tc1],[uc2,vc2,pc2,Tc2],[uComp,vComp,pComp,TComp],[vBi,uBi,wBi,pBi],
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
 	}
@@ -206,10 +215,11 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 		ifstream fileAdaptField(ffdatadir+"AdaptField.txt");
     	femp2 Sensitivity;	// real and imaginary parts
 		fileAdaptField >> Sensitivity[];
-				
+		[uComp,vComp,pComp,TComp] = [real(uBc),real(vBc),real(pBc),real(TBc)];
+		[vBi,uBi,wBi,pBi] = [imag(uBc),imag(vBc),imag(pBc),imag(TBc)];
 		cout << " lecture of field with structure P2" << endl;
 			
-		thnew = adaptmesh(th,Sensitivity,[uBc,vBc,pBc,TBc],
+		thnew = adaptmesh(th,Sensitivity,[uComp,vComp,pComp,TComp],[vBi,uBi,wBi,pBi],
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
 	}
@@ -233,7 +243,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
     fespace femp2xfemp2xfemp2xfemp1N(thnew,[P2,P2,P2,P1]);
     fespace XXxxxHN(thnew,[P2,P2,P1,P1,P1]); /// 
     femp2xfemp2xfemp1N [uNx,uNy,uNp];
-    XXxxxHN[uBcN,vBcN,pBcN,TBcN,rhoBcN];
+    XXxxxHN<complex>[uBcN,vBcN,pBcN,TBcN,rhoBcN];
   
     [uNx,uNy,uNp] = [vB,uB,pB]; // interpolation of base flow
 //	plot(uBN,fill=1,wait=1);
@@ -279,7 +289,7 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	
 	IFMACRO(problemtype,"2DComp")
 	XXxxxHN[uNNc,vNNc,pNNc,TNNc,rhoNNc];
-	[uNNc,vNNc,pNNc,TNNc,rhoNNc] = [uBc,vBc,pBc,TBc,rhoBc]; // interpolation of base flow
+	[uNNc,vNNc,pNNc,TNNc,rhoNNc] = [real(uBc),real(vBc),real(pBc),real(TBc),real(rhoBc)]; // interpolation of base flow
 	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",uNNc,"BaseFlow",1);
 	ENDIFMACRO
 

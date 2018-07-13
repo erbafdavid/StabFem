@@ -222,7 +222,8 @@ int contout=0;
 		
 
 // temporary fix
-XXxxxH [ux,uy,up,utemp,uro] = [real(Ubx),real(Uby),real(Pb),real(Tb),real(Rhob)];
+XXxxxH<complex> [ux,uy,up,utemp,uro] = [(Ubx),(Uby),(Pb),(Tb),(Rhob)];
+XXxxxH [urx,ury,urp,urtemp,urro] = [real(Ubx),real(Uby),real(Pb),real(Tb),real(Rhob)];
 
 		{
 		  {ofstream file(ffdatadir+"BaseFlow.txt"); // file in .txt format for FreeFem solvers
@@ -232,9 +233,9 @@ XXxxxH [ux,uy,up,utemp,uro] = [real(Ubx),real(Uby),real(Pb),real(Tb),real(Rhob)]
           exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt"); 
          
 
-          SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",i); // file in .ff2ml format for StabFem driver
+          SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",ur,"BaseFlow",i); // file in .ff2ml format for StabFem driver
           int[int] forder=[1,1,1,1];
-		  savevtk(ffdatadir+"/BflowCM_Re"+Re+"_M"+Ma+".vtk",th,up,[ux,uy,0],utemp,uro,order=forder,dataname="Pb vel temp rho");
+		  savevtk(ffdatadir+"/BflowCM_Re"+Re+"_M"+Ma+".vtk",th,urp,[urx,ury,0],urtemp,urro,order=forder,dataname="Pb vel temp rho");
         
 		};
           

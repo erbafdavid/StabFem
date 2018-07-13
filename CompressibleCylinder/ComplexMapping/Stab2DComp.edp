@@ -139,7 +139,7 @@ fespace Mh(th,P1);            ////// f.e. space for pressure
 
 macro def(u,p,T,rho)[u#x,u#y,p,T,rho]//EOF
 
-XXxxxH def(Ub,Pb,Tb,Rhob);
+XXxxxH<complex> def(Ub,Pb,Tb,Rhob);
 XXxxxH<complex> def(dUb,dPb,dTb,dRhob); // Base flow variation with respect to Mach modifications
 XXxxxH<complex> def(u,up,uT,urho);
 
