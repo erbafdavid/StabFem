@@ -70,7 +70,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
 macro Uinlet(y) 1.
 // inlet flow for constant flow
 
-func complex Hx(real L, real c, real g, real x0, real x1)
+func complex Hx(real L, real Lm, real c, real cm, real g, real gm, real x0, real x1)
 {
 if(x>x0)
 {
@@ -81,9 +81,7 @@ if(x>x0)
 }
 else if( x < -x1)
 {
-	real gm = -g;
-	real cm = -1.2*x1;
-	real Lm = 2.0*x1;
+	
 	complex Gx = (1i*g*(1.0/cosh((x+x1)^2/(4*cm^2)))^2*(x+x1)^2)/(2*cm^2*(1-(x+x1)^2/Lm^2)^2)
 				+(4*(1i*g*tanh((x+x1)^2/(4*cm^2))+1)*(x+x1)^2)/(Lm^2*(1-(x+x1)^2/Lm^2)^3)
 				+(1i*g*tanh((x+x1)^2/(4*cm^2))+1)/(1-(x+x1)^2/Lm^2)^2;
