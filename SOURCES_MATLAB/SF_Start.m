@@ -10,12 +10,13 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 % ffdatadir -> path where to store the results (recommended is ./WORK)
 
 if (isunix)
+    %ff = '/usr/local/bin/FreeFem++ -v 0'; % on most systems
     ff = '/PRODCOM/Ubuntu16.04/freefem/3.55/gcc-5.4-mpich_3.2/bin/FreeFem++ -v 0'; % on IMFT network
-    ffMPI = 'ff-mpirun';
+    ffMPI = '/PRODCOM/Ubuntu16.04/freefem/3.55/gcc-5.4-mpich_3.2/bin/ff-mpirun -v 0';
 end
 if (ismac)
     ff = '/usr/local/bin/FreeFem++ -v 0';
-    ffMPI = 'ff-mpirun';
+    ffMPI = '/usr/local/bin/ff-mpirun';
     
     % NB normally this is where the FreeFem++ executable should be on a mac.
     % If not the case, either do a symbolic link (recommended) or replace with
@@ -25,15 +26,12 @@ if (ismac)
     %ff = '/usr/local/ff++/bin/FreeFem++'; for Flavio
 end
 if (ispc)
-    
-    ff = 'FreeFem++ -nw -v 0'; % for windows systems
-    ffMPI = '';
-    
-    
+    ff = 'FreeFem++ -nw -v 0 -nw'; % for windows systems
+    ffMPI = 'ffm-mpirun -v 0 -nw';
 end
 
-sfdir = '../SOURCES_MATLAB/';
-ffdir = '../SOURCES_FREEFEM/';
+sfdir = '~/StabFem/SOURCES_MATLAB/';
+ffdir = '~/StabFem/SOURCES_FREEFEM/';
 
 
 % This is the recommended implementation on most systems.
