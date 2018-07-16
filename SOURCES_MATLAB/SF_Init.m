@@ -28,6 +28,14 @@ else
     myrm([ffdatadir 'BASEFLOWS/*']);
 end
 
+% Cr?ation et vidange de BASEFLOWS/
+if(exist([ffdatadir 'MESHES'])~=7)
+    mymake([ffdatadir 'MESHES/']);
+else
+    myrm([ffdatadir 'MESHES/*']);
+end
+
+
 % Ex?cution du maillage
 if(nargin==1)
     command = [ff ' ' meshfile];
@@ -48,11 +56,18 @@ mysystem(command,error);
 % Traitement des infos
 if(nargout==1)
     mesh = importFFmesh([ffdatadir 'mesh.msh']);
-    mycp([ffdatadir 'mesh.msh'],[ffdatadir '/mesh_init.msh']);
+ %   mycp([ffdatadir 'mesh.msh'],[ffdatadir '/BASEFLOWS/mesh_init.msh']);
+    mycp([ffdatadir 'mesh.msh'],[ffdatadir '/MESHES/mesh_init.msh']);
+    mycp([ffdatadir 'mesh.ff2m'],[ffdatadir '/MESHES/mesh_init.ff2m']);
+     mycp([ffdatadir 'SF_Init.ff2m'],[ffdatadir '/MESHES/SF_Init.ff2m']);
     mycp([ffdatadir 'BaseFlow_guess.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_init.txt']);
-    mesh.filename=[ffdatadir 'BASEFLOWS/mesh_init.msh'];
-    baseflow=importFFdata(mesh,'BaseFlow.ff2m');
-    baseflow.filename = [ffdatadir 'BASEFLOWS/BaseFlow_init.txt'];
+    mycp([ffdatadir 'BaseFlow_guess.txt'],[ffdatadir 'MESHES/BaseFlow_init.txt']);
+    mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BaseFlow_guess.ff2m']); % in future the mesh creator should create direcly BaseFlow_guess
+    mycp([ffdatadir 'BaseFlow_guess.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_init.ff2m']);
+    mycp([ffdatadir 'BaseFlow_guess.ff2m'],[ffdatadir 'MESHES/BaseFlow_init.ff2m']);
+    mesh.filename=[ffdatadir 'MESHES/mesh_init.msh'];
+    baseflow=importFFdata(mesh,'BaseFlow_guess.ff2m');
+    baseflow.filename = [ffdatadir 'MESHES/BaseFlow_init.txt'];
     disp(['      ### INITIAL MESH CREATED WITH np = ',num2str(mesh.np),' points']);
 end
 

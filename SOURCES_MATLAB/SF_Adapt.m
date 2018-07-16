@@ -165,16 +165,24 @@ end
     if(baseflowNew.iter>0)
 		%  Newton successful : store base flow
 		baseflow=baseflowNew;
-		baseflow.mesh.namefile=[ffdatadir 'BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
-    	mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
-        baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
-        mycp([ffdatadir 'mesh.msh'],[ffdatadir 'BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
+        
+        % Store adapted mesh/base flow in directory "MESHES"
+		baseflow.mesh.namefile=[ffdatadir 'MESHES/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
+        mycp([ffdatadir 'mesh.msh'],[ffdatadir 'MESHES/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
+        mycp([ffdatadir 'mesh.ff2m'],[ffdatadir 'MESHES/mesh_adapt_Re' num2str(baseflow.Re) '.ff2m']);
+    	mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'MESHES/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
+        mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'MESHES/BaseFlow_adapt_Re' num2str(baseflow.Re) '.ff2m']);
+       
+       
     	 % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
-         myrm([ffdatadir 'BASEFLOWS/BaseFlow_Re*']);
+         myrm([ffdatadir 'BASEFLOWS/BaseFlow*']);
          mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);
     	 mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);
-         
+         baseflow.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
+       
          % in case requested, recompute the eigenmode as well
+         % NB IN FUTURE VERSIONS IT IS NOT RECOMMENDED ANY MORE TO RECOMPUTE
+         % EIGENMODES IN AN AUTOMATICAL WAY....
          if(nargout==2&&isnumeric(eigenmode)==0)
             if(strcmp(baseflow.mesh.problemtype,'AxiXR')==1) 
                 [ev,eigenmode]=SF_Stability(baseflow,'m',eigenmode.m,'shift',eigenmode.lambda,'nev',1,'type',eigenmode.type);

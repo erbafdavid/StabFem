@@ -1,68 +1,117 @@
-function baseflow = SF_Split(baseflow)
+function flowfield = SF_Split(varargin)
 % 
 % This is part of StabFem Project, D. Fabre, July 2017 -- present
 % Matlab driver for SplitMesh 
+% The mesh will be refined by splitting each triangles in 'nsplit' triangles
+% (usually nsplit = 2 is enough).
+% The base flow will be recomputed on the adapted mesh.
 %
-% Usage : baseflow = SF_Split(baseflow)
+% Usage 1 : mesh=SF_Split(mesh [,'nsplit',nsplit] )
+% if argument is a 'mesh' object, simple split.
 %
-% The mesh will be refined by splitting each triangles in four triangles.
-% The base flow will be recomputed on the adapted mesh
+% Usage 2 : baseflow = SF_Split(baseflow [,'nsplit',nsplit] )
+% if argument is a 'baseflow' object, recompute on the new mesh.
 %
-
-
+% (To be done : generalisation of reinterpolation to multiple fields)
+%
+% This is part of the StabFem project, copyright D. Fabre, jkuly 2018.
+%
+% NB "backups in case of failure" are probably not useful anymore thanks
+% to the new method to position entry files. To be checked and probably
+% removed...
+% 
 global ff ffdir ffdatadir sfdir verbosity
 
 
-        mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'AdaptField.txt']);
-        command = [ff,' ',ffdir,'SplitMesh.edp'];
-        error = 'ERROR : FreeFem adaptmesh aborted';
-        status=mysystem(command,'skip');
-    
-    
-    if(status~=0)
-        mymv([ffdatadir 'mesh_ans.msh'],[ffdatadir 'mesh.msh']);
-        mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow.txt']);
-        mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);
-        error(' ERROR in SF_Split : recomputing base flow failed, going back to baseflow/mesh')
-    end
-%    meshnp = importFFmesh('mesh_adapt.msh','nponly'); // old version to
-%    discard this and correct soon
-     
- meshinfo = importFFdata(baseflow.mesh,'mesh.ff2m');
-     disp(['      ### SPLIT MESH : ']);
-  
-    disp(['      #   Number of points np = ',num2str(meshinfo.np), ...
-        ' ; Ndof = ', num2str(meshinfo.Ndof)]);
-    disp(['      #  deltamin, deltamax : ',num2str(meshinfo.deltamin), ' , ',...
-        num2str(meshinfo.deltamax)]);    
- 
-   
-   
-    % recomputing base flow after adapt
-    
-    baseflowNew = baseflow; % initialise structure
-    baseflowNew.mesh=importFFmesh([ffdatadir 'mesh.msh']);
-    
-    baseflowNew = SF_BaseFlow(baseflowNew,'Re',baseflow.Re,'type','NEW');
-    
-     
-    
-    if(baseflowNew.iter>0)
-		%  Newton successful : store base flow
-		baseflow=baseflowNew;
-		baseflow.mesh.namefile=[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh'];
-    	mycp(['BaseFlow.txt'],[ffdatadir '/BASEFLOWS/BaseFlow_adapt_Re' num2str(baseflow.Re) '.txt']);
-        baseflow.namefile = [ ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt'];
-    	mycp(['mesh.msh'],[ffdatadir '/BASEFLOWS/mesh_adapt_Re' num2str(baseflow.Re) '.msh']);
-        % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
-         myrm([ffdatadir '/BASEFLOWS/BaseFlow_Re*']);
-         mycp(['BaseFlow.txt'],[ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.txt']);
-    	 mycp(['BaseFlow.ff2m'],[ffdatadir '/BASEFLOWS/BaseFlow_Re' num2str(baseflow.Re) '.ff2m']);
+flowfield=varargin{1};
+vararginopt = {varargin{2:end}};
+
+p = inputParser;
+addParameter(p,'nsplit',2);
+parse(p,vararginopt{:});
+
+
+% position input files
+switch (flowfield.datatype)
+    case('Mesh')
+        mydisp(1,'FUNCTION SF_Split : splitting mesh for single mesh');
+        mycp(flowfield.filename,[ffdatadir 'mesh.msh']);
+        optionstring = [' ', num2str(p.Results.nsplit), ' 0 '];
+   case('BaseFlow')
+       mydisp(1,'FUNCTION SF_Split : splitting mesh and recomputing base flow');
+       mycp(flowfield.mesh.filename,[ffdatadir 'mesh.msh']);
+       mycp(flowfield.filename,[ffdatadir 'FlowFieldToAdapt1.txt']);
+       optionstring = [' ', num2str(p.Results.nsplit), ' 1 ',flowfield.datastoragemode,' '];
+    case default
+        error('ERROR IN FUNCTION SF_Split : data type not recognised');
+end
        
-   	else % Newton has probably diverged : revert to previous mesh/baseflow
-        mymv([ffdatadir 'mesh_ans.msh'],[ffdatadir 'mesh.msh']);
-        mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);
-        error(' ERROR in SF_Adapt : recomputing base flow failed, going back to baseflow/mesh') 
+
+%backup in case of failure (obsolete ?)
+%        mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BaseFlow_ans.txt']);   
+%        mycp([ffdatadir 'mesh.msh'],[ffdatadir 'mesh_ans.msh'] );        
+        
+% launch ff++ code        
+        command = ['echo ',optionstring, ' | ' ff,' ',ffdir,'SplitMesh.edp'];
+        errormessage = 'ERROR : FreeFem splitmesh aborted';
+        status=mysystem(command,errormessage);
+    
+% in case of failure    
+    if(status~=0)
+%        mymv([ffdatadir 'mesh_ans.msh'],[ffdatadir 'mesh.msh']);
+%        mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow.txt']);
+        error(' ERROR in SF_Split : recomputing base flow failed, going back to flowfield/mesh')
     end
-        %myrm([ffdatadir 'mesh_ans.msh ',ffdatadir 'BaseFlow_ans.txt']);
+
+% repositions an import new mesh    
+    mycp([ffdatadir 'mesh_split.msh'],[ffdatadir 'MESHES/mesh_split_Re' num2str(flowfield.Re) '.msh']);
+    mycp([ffdatadir 'mesh_split.ff2m'],[ffdatadir 'MESHES/mesh_split_Re' num2str(flowfield.Re) '.ff2m']);
+    ffmesh = importFFmesh([ffdatadir 'MESHES/mesh_split_Re' num2str(flowfield.Re) '.msh']);
+   
+% info 
+    mydisp(2,['      ### SPLIT MESH : ']);
+    mydisp(2,['      #   Number of points np = ',num2str(ffmesh.np), ...
+        ' ; Ndof = ', num2str(ffmesh.Ndof)]);
+    mydisp(2,['      #  deltamin, deltamax : ',num2str(ffmesh.deltamin), ' , ',...
+        num2str(ffmesh.deltamax)]);    
+
+    
+% reposition guess base flow   (obsolete ?) 
+%    mycp([ffdatadir 'BaseFlow_guess.txt'],[ffdatadir 'MESHES/BaseFlow_split_Re' num2str(flowfield.Re) '.txt']);
+%    mycp([ffdatadir 'BaseFlow_guess.ff2m'],[ffdatadir 'MESHES/BaseFlow_split_Re' num2str(flowfield.Re) '.ff2m']);
+    
+    
+    
+if(strcmp(flowfield.datatype,'BaseFlow'))  
+    
+% recomputing base flow after split : use "NEW" mode in order to use only .txt files, 
+%  not .ff2m (which are not regenerated by split but by SF_BaseFlow)
+    
+% initialise structure and position input files
+    flowfield.mesh =  ffmesh;
+    flowfield.filename=[ffdatadir 'FlowFieldAdapted1.txt'];
+% launch SF_Baseflow in 'NEW' mode
+    flowfield = SF_BaseFlow(flowfield,'type','NEW');
+    
+     if(flowfield.iter>0)
+     %%% NB : WE HAVE TO FIND A BETTER ERROR MANAGEMENT SYSTEM !
+		%  Newton successful : store base flow in MESHES
+        flowfield.filename=[ffdatadir 'MESHES/BaseFlow_split_Re' num2str(flowfield.Re) '.txt'];
+    	mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'MESHES/BaseFlow_split_Re' num2str(flowfield.Re) '.txt']);
+        mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'MESHES/BaseFlow_split_Re' num2str(flowfield.Re) '.ff2m']);
+        % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
+        myrm([ffdatadir 'BASEFLOWS/BaseFlow_*']);
+        % reposition as well in BASEFLOWS
+        mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(flowfield.Re) '.txt']);
+    	mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(flowfield.Re) '.ff2m']);
+       
+       
+   	 else % Newton has probably diverged : revert to previous mesh/baseflow
+        %mymv([ffdatadir 'mesh_ans.msh'],[ffdatadir 'mesh.msh']);
+        %mycp([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);
+        %mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow.txt']);
+        error(' ERROR in SF_Adapt : recomputing base flow failed, going back to previous baseflow/mesh') 
+     end
+end
+
 end
