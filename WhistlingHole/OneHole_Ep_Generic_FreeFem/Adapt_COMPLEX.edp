@@ -1,0 +1,133 @@
+
+
+
+	verbosity = 0;
+	string AAA = "FreeFem++";
+
+    include "Params_Conduct.edp";
+
+
+	mesh th=readmesh("mesh_guess.msh");
+	int nvprev = th.nv;
+	    fespace femp2(th,P2);   
+        fespace femp1(th,P1);
+        fespace femp0(th,P0);
+        fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+        femp2xfemp2xfemp1<complex> [v,u,p];
+        femp2xfemp2xfemp1 [vr,ur,pr],[vi,ui,pii];
+	
+	
+	cout << "###################################" << endl;
+cout << endl << "       Adapt_Axi.edp        " << endl; 
+cout << endl << "###################################" << endl << endl;
+
+	
+	
+	real Re;
+	
+	{
+	ifstream U("chbase_guessCOMPLEX.txt");		
+	U >> v[];
+	U >> Re;
+	}
+
+//cout << "SINGLE MESH ADAPTATION ; " << endl; 
+
+cout << " Reynolds number = " << Re << endl;
+
+
+cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;  
+        cout << "#### Number of vertices    " << th.nv <<  endl;
+	    cout << "### Dimension of matrices " << v[].n << endl << endl;
+
+
+	
+	
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Calcul des champs de base //////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////
+	//  Parameters for the adaptMesh  //
+	////////////////////////////////////
+
+
+
+/*
+	string date;
+	{date=exec("date +%d/%m-%H:%M");}                 
+	
+	{ofstream log("log.txt",append);	//output log file, usefull if you want to  			
+	log << endl << endl;			//check adaptMesh's settings
+	log <<  "/////////////////////////////////////////////////////////" <<endl;
+	log <<  "/////////////////////New calculation/////////////////////" <<endl;		
+	log <<  "/////////////////////////////////////////////////////////" <<endl;	
+	log <<  "// Date                = "<< date                          <<endl;
+	log <<  "// Nbvx                = "<< Nbvx                          <<endl;		
+	log <<	"// Hmin                = "<< Hmin                          <<endl;   	
+	log <<	"// Hmax                = "<< Hmax                          <<endl;	
+	log <<	"// Ratio               = "<< Ratio                         <<endl;         	
+	log <<	"// Thetamax            = "<< Thetamax                      <<endl;		
+	log <<	"// Verbosity           = "<< Verbosity                     <<endl;
+	log <<	"// Splitpbedge         = "<< Splitpbedge                   <<endl;
+	log <<	"// error               = "<< error                         <<endl;	
+	log <<	"// error ratio         = "<< rr                            <<endl;	
+	log <<  "/////////////////////////////////////////////////////////" <<endl<<endl;}
+*/		
+	
+	
+			cout << " dim of u[] before adapt : " << u[].n <<  endl;
+			
+			mesh thold = th;
+			mesh thnew;				
+			[vr,ur,pr] = [real(v),real(u),real(p )];
+			[vi,ui,pii] = [imag(v),imag(u),imag(p )];
+			
+			thnew = adaptmesh(	th,[vr,ur,0*pr],[vi,ui,0*pii],nbvx=Nbvx,err=error,ratio=Ratio,
+					hmax=Hmax,hmin=Hmin,thetamax=Thetamax,verbosity=Verbosity,splitpbedge=Splitpbedge);
+			
+			cout << endl << "...............New mesh created..............." << endl << endl;
+
+
+ 
+
+
+		
+			
+	    fespace femp2N(thnew,P2);   
+        fespace femp1N(thnew,P1);
+        fespace femp0N(thnew,P0);
+        fespace femp2xfemp2xfemp1N(thnew,[P2,P2,P1]);
+        femp2xfemp2xfemp1N<complex> [vN,uN,pN];
+		[vN,uN,pN] = [v,u,p];
+ 		femp2xfemp2xfemp1N [vii,uii,piii] = [imag(v),imag(u),imag(p )];
+
+
+cout << endl << "#### Mesh information AFTER ADAPT :" << endl;  
+        cout << "#### Number of vertices    " << thnew.nv <<  endl;
+	    cout << "### Dimension of matrices " << vN[].n << endl << endl;
+					
+//			plot(thold,th,wait=1);
+
+
+
+savemesh(thnew,"mesh_adapt.msh");
+    {
+	ofstream U("chbase_adaptCOMPLEX.txt");		
+	U << vN[];
+	U << endl << endl <<  Re << endl;
+	}
+exec("cp mesh_adapt.msh mesh_guess.msh");
+exec("cp chbase_adaptCOMPLEX.txt chbase_guessCOMPLEX.txt");
+
+
+
+plot(thnew,wait=1);
+			plot(uN,fill=1,cmm="ur",value=1,wait=1);
+			plot(uii,fill=1,cmm="ui",value=1,wait=1);
+			plot(vN,fill=1,cmm="vr",value=1,wait=1);
+			plot(vii,fill=1,cmm="vi",value=1,wait=1);
+			plot(pN,fill=1,cmm="pr",value=1,wait=1);
+			plot(piii,fill=1,cmm="pi",value=1,wait=1);
+

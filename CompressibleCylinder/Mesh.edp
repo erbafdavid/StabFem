@@ -129,7 +129,7 @@ savemesh(th,ffdatadir+"mesh.msh");
  	fespace femp1(th,P1);
 	fespace femp2xfemp2xfemp1(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
         femp2xfemp2xfemp1 [ux,uy,up,utemp,uro]=[1.0,0.0,1.0,1.0,1.0];
-        real Re = 0;real nu=1; real Ma = 0.01; // these three are useless at this stage but required in the macros 
+        real Re = 0;real nu=1; real Ma = 0.01; real gamma = 1.4; real Pr = 0.7; // these three are useless at this stage but required in the macros 
         
 // Save in txt format (for FreeFem)        
       	{

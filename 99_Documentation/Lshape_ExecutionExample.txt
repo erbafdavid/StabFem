@@ -3,16 +3,20 @@
 
 ffmesh = 
 
-                np: 1426
-                nt: 2690
-           density: 40
-                 R: 1
-       problemtype: 'EXAMPLE'
-    meshgeneration: 0
-            points: [2x1426 double]
-               tri: [4x2690 double]
-               seg: 0
-          filename: './mesh.msh'
+	DataDescription: 'Mesh for a L-shaped domain'
+              datatype: 'Mesh'
+              meshtype: '2D'
+                    np: 1426
+                    nt: 2690
+           problemtype: 'EXAMPLE'
+                     R: 1
+    InitialMeshDensity: 40
+        meshgeneration: 0
+                points: [3x1426 double]
+                   tri: [4x2690 double]
+                   seg: []
+                bounds: [3x160 double]
+              filename: '././mesh.msh'
 
 >> heatS=SF_Launch('Lshape_Steady.edp','Mesh',ffmesh)
 

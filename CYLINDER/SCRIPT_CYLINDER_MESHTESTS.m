@@ -9,6 +9,7 @@ verbosity=0;
 figureformat='png'; AspectRatio = 0.56; % for figure
 
  
+%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  disp(' ');    
  disp('### 1 : MESH based on base flow : ');     
@@ -54,7 +55,7 @@ disp(['Mode AE : ' num2str(mode.AEnergy)]);
 disp(['Mode omega : ' num2str(imag(mode.lambda))]);
 
 
-
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp(' ' );
 disp('### 2 : ADAPT ON SENSITIVITY (ref case)');
@@ -160,7 +161,7 @@ disp(['Mode omega : ' num2str(imag(mode.lambda))]);
 % 
 
 
-
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp(' ' );
 disp('### 3 : ADAPT ON SENSITIVITY (split)');
@@ -201,7 +202,7 @@ disp(['Mode AE : ' num2str(mode.AEnergy)]);
 disp(['Mode omega : ' num2str(imag(mode.lambda))]);
 
 
-
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp(' ' );
 disp('### 4 : ADAPT ON MODE');
@@ -265,7 +266,7 @@ disp(['Mode omega : ' num2str(imag(mode.lambda))]);
 
 
 
-
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp(' ' );
 disp('### 5 : ADAPT ON MODE (adjoint)');
@@ -315,7 +316,7 @@ disp(['Mode omega : ' num2str(imag(mode.lambda))]);
 
 
 
-
+%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  disp(' ');    
  disp('### 6 : [-20 40 20]');     
@@ -369,7 +370,7 @@ disp(['Mode AE : ' num2str(mode.AEnergy)]);
 disp(['Mode omega : ' num2str(imag(mode.lambda))]);
 
 
-
+%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  disp(' ');    
  disp('### 7 : [-80 160 80]');     
@@ -424,7 +425,7 @@ disp(['Mode omega : ' num2str(imag(mode.lambda))]);
 
 
 
-
+%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  disp(' ');    
  disp('### 8 : [-40 80 40] WITH SLIP CONDITIONS');     
@@ -475,7 +476,7 @@ disp(['Mode Fy : ' num2str(mode.Fy)]);
 disp(['Mode AE : ' num2str(mode.AEnergy)]);
 disp(['Mode omega : ' num2str(imag(mode.lambda))]);
 
-
+%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  disp(' ');    
  disp('### 9 : [-40 80 40] WITH NO SLIP CONDITIONS');     

@@ -19,12 +19,15 @@
 // INCORPORATED INTO THE STABFEM PROJECT BY D. FABRE ON A BUSY DAY AT UNIVERSITA DI SALERNO, 18 july 2017
 // REwriten on october 2 2017 with macros.
 
+cout << "$$$$ ENTERING Newton_Axi.edp " << endl << "$$" << endl; 
+
+
 		include "SF_Geom.edp";
 		include "Macros_StabFem.edp";
 		
 		if(ncomponentsBF==3) 
-		{ cout << "ERROR in Newton_Axi :  for this solver the parameter ncomponentsBF should be 2 not 3 !" << endl;
-		  cout << "Change this in Macro_StabFem.edm" < endl;
+		{ cout << "$$ERROR in Newton_Axi :  for this solver the parameter ncomponentsBF should be 2 not 3 !" << endl;
+		  cout << "$$Change this in Macro_StabFem.edm" < endl;
 		  exit(-1);
 		 } 
 		
@@ -47,7 +50,7 @@
 	real Re;
 	real Reans,lecture;
 
-	cout << " Entrer le Nombre de Reynolds :" << endl;
+	cout << "$$ Entrer le Nombre de Reynolds :" << endl;
     cin >>  Re;
 		XXXMh [u3cx,u3cr,u3cphi,u3cp];
 		int NdimUVP = ux[].n;
@@ -60,14 +63,14 @@
 		
 		if(NdimBaseFlow == NdimUVP) 
 		{
-        cout << "Ndim = " << NdimUVP << " : reading UVP baseflow " << endl;
+        cout << "$$Ndim = " << NdimUVP << " : reading UVP baseflow " << endl;
         ifstream file(ffdatadir+"BaseFlow_guess.txt");
         file >> ux[];
 		file >> Reans;
         }
         else if(NdimBaseFlow == NdimUVWP) 
         {
-        cout << "Ndim = " << NdimUVWP << " : reading UVWP baseflow ; skipping W component" << endl;
+        cout << "$$Ndim = " << NdimUVWP << " : reading UVWP baseflow ; skipping W component" << endl;
         ifstream file(ffdatadir+"BaseFlow_guess.txt");
         file >> u3cx[];
         [ux,ur,up] = [u3cx,u3cr,u3cp]; 
@@ -75,15 +78,15 @@
         }
         else 
         {
-        cout << " Error : Wrong dimension For BaseFlow_guess.txt file" << endl;
+        cout << "$$ Error : Wrong dimension For BaseFlow_guess.txt file" << endl;
         exit(-1);
         };
 
 
 	//	[ux,ur,up] = [ur,ux,up];
 
-	cout << " Newton pour Re = " << Re << endl;	
-	cout << " CI : " << Reans << endl; 
+	cout << "$$ Newton pour Re = " << Re << endl;	
+	cout << "$$ CI : " << Reans << endl; 
 	real nu=1./Re;
 	real eps = 1e-20; // may not be required
 
@@ -156,7 +159,7 @@ problem NewtonIter([dux,dur,dup],[vx,vr,vp]) =
         ux[] = ux[]+dux[];
 		real enerl2=dux[].l2;
 		ener=sqrt(int2d(th)(dux^2+dur^2)/th.area);
-	    cout << " iter = "<< iter+1 << "   Re = " << Re << " res = " << ener << " ; res l2 = " << enerl2 << endl;
+	    cout << "$$ iter = "<< iter+1 << "   Re = " << Re << " res = " << ener << " ; res l2 = " << enerl2 << endl;
         iter++;
 	  } ;
 
@@ -166,7 +169,7 @@ problem NewtonIter([dux,dur,dup],[vx,vr,vp]) =
 
 		if((ener>50)||(iter>Nitermax))
 		{
-			cout << " NEWTON ITERATION FAILED" << endl;
+			cout << "$$ NEWTON ITERATION FAILED" << endl;
 			exec("rm "+ffdatadir+"BaseFlow.txt");
 			SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",-1);
 		}
@@ -186,3 +189,4 @@ problem NewtonIter([dux,dur,dup],[vx,vr,vp]) =
     
 		};
           
+cout << "$$$$ SUCESSFULLY LEAVING Newton_Axi.edp " << endl ; 

@@ -1,0 +1,260 @@
+
+
+
+	verbosity = 0;
+	string AAA = "FreeFem++";
+
+include "Params_Conduct.edp";
+
+	mesh th=readmesh("mesh.msh");
+	int nvprev = th.nv;
+	    fespace femp2(th,P2);   
+        fespace femp1(th,P1);
+        fespace femp0(th,P0);
+        fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+        femp2xfemp2xfemp1<complex> [vB,uB,pB]; // base flow
+        femp2xfemp2xfemp1<complex> [vC,uC,pC];	// structure of forced problem (complex)
+        femp2xfemp2xfemp1 [v,u,p], [vi,ui,pii],[vBR,uBR,pBR];	// real and imaginary parts
+	
+	cout << "###################################" << endl;
+cout << endl << "       Adapt_Axi.edp        " << endl; 
+cout << endl << "###################################" << endl << endl;
+
+	
+	
+	real Re;
+	
+	{
+	ifstream U("chbaseCOMPLEX.txt");		
+	U >> vB[];
+	U >> Re;
+	}
+    cout << " lecture of Base flow : Reynolds number = " << Re << endl;
+
+
+cin >> uC[];
+cin >> Re;
+
+//[v,u,p] = [real(vC)/abs(vC)*exp(-y^2),real(uC)/abs(uC)*exp(-y^2),real(pC)/abs(pC)*exp(-y^2)];
+
+//[v,u,p] = [real(pC)/abs(pC)*exp(-y^2),real(pC)/abs(pC)*exp(-y^2),real(pC)/abs(pC)*exp(-y^2)];
+
+//[v,u,p] = [real(vC)*exp(-y^2),real(uC)*exp(-y^2),real(pC)/abs(pC)*exp(-y^2)];
+
+[v,u,p] = [real(vC),real(uC),real(pC)];
+[vi,ui,pii] = [imag(vC),imag(uC),imag(pC)];
+[vBR,uBR,pBR] = [real(vB),real(uB),real(pB)];
+
+cout << " lecture of field [V,U,P] from standart input for RE = " << Re;
+if(ui[].max<1e-6){ cout << " (Real field ; most likely a base flow) " << endl;}
+else{  cout << " (complex field ; most likely response to a forcing) "<< endl; };
+
+
+//cout << "SINGLE MESH ADAPTATION ; " << endl; 
+
+//cout << " Reynolds number = " << Re << endl;
+
+
+cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;  
+        cout << "#### Number of vertices    " << th.nv <<  endl;
+	    cout << "### Dimension of matrices " << v[].n << endl << endl;
+
+
+	
+	
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Calcul des champs de base //////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+	string date;
+	{date=exec("date +%d/%m-%H:%M");}                 
+	
+	{ofstream log("log.txt",append);	//output log file, usefull if you want to  			
+	log << endl << endl;			//check adaptMesh's settings
+	log <<  "/////////////////////////////////////////////////////////" <<endl;
+	log <<  "/////////////////////New calculation/////////////////////" <<endl;		
+	log <<  "/////////////////////////////////////////////////////////" <<endl;	
+	log <<  "// Date                = "<< date                          <<endl;
+	log <<  "// Nbvx                = "<< Nbvx                          <<endl;		
+	log <<	"// Hmin                = "<< Hmin                          <<endl;   	
+	log <<	"// Hmax                = "<< Hmax                          <<endl;	
+	log <<	"// Ratio               = "<< Ratio                         <<endl;         	
+	log <<	"// Thetamax            = "<< Thetamax                      <<endl;		
+	log <<	"// Verbosity           = "<< Verbosity                     <<endl;
+	log <<	"// Splitpbedge         = "<< Splitpbedge                   <<endl;
+	log <<	"// error               = "<< error                         <<endl;	
+	log <<	"// error ratio         = "<< rr                            <<endl;	
+	log <<  "/////////////////////////////////////////////////////////" <<endl<<endl;}
+*/		
+	
+real Lcut=2;	
+			cout << " dim of u[] before adapt : " << u[].n <<  endl;
+			
+			mesh thold = th;
+			mesh thnew;				
+thnew = adaptmesh(th,[v,u,0*p],[vi,ui,pii],[vBR,uBR,pBR],
+[vi*exp(-x^2/Lcut^2),ui*exp(-x^2/Lcut^2),0*pii],[vBR*exp(-x^2/Lcut^2),uBR*exp(-x^2/Lcut^2),0*pBR],
+
+
+nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,verbosity=Verbosity,splitpbedge=Splitpbedge);
+			
+			cout << endl << "...............New mesh created..............." << endl << endl;
+
+
+
+
+   fespace femp2N(thnew,P2);   
+        fespace femp1N(thnew,P1);
+        fespace femp0N(thnew,P0);
+        fespace femp2xfemp2xfemp1N(thnew,[P2,P2,P1]);
+        femp2xfemp2xfemp1N [vN,uN,pN];
+        femp2xfemp2xfemp1N<complex> [vBN,uBN,pBN];
+        [vN,uN,pN] = [v,u,p]; // interpolation of structure
+	[vBN,uBN,pBN] = [vB,uB,pB]; // interpolation of base flow
+
+cout << endl << "#### Mesh information AFTER ADAPT :" << endl;  
+        cout << "#### Number of vertices    " << thnew.nv <<  endl;
+	    cout << "### Dimension of matrices " << vN[].n << endl << endl;
+					
+
+
+
+
+
+
+
+
+
+	cout << "     copying  interpolated base flow to files chbase_adapt.txt and chbase_guess.txt " 
+	     << endl;
+	     
+	   
+			
+
+	savemesh(thnew,"mesh_adapt.msh");
+
+ 
+
+
+
+
+
+
+	
+
+	
+cout << "...............New mesh  saved..............." << endl;
+
+	     
+		{
+		ofstream U("chbase_adaptCOMPLEX.txt");		
+        U << vBN[];
+        U << endl << endl <<  Re << endl;
+	  	}
+
+
+         exec("cp chbase_adaptCOMPLEX.txt chbase_guessCOMPLEX.txt");			
+	 exec("cp mesh_adapt.msh mesh_guess.msh");
+	 exec("cp mesh_adapt.msh mesh.msh");
+	   
+
+ 
+
+
+			plot(thold,wait=1);
+
+			plot(thnew,wait=1);
+
+			plot(uBN,fill=1,wait=1);
+			plot(vBN,fill=1,wait=1);
+			plot(pBN,fill=1,wait=1);
+
+			plot(uN,fill=1,wait=1);
+			plot(vN,fill=1,wait=1);
+			plot(pN,fill=1,wait=1);
+
+
+
+
+	
+
+//exec("cp chbase_adapt.txt chbase_guess.txt");
+
+
+//			exec("mv cbn_Re"+Re+".* save/");	
+//			exec("rm meshallnew.msh");
+		//	plot(th,wait=0);			// --> May cause broken pipe error.
+			
+		//			error = error * rr;			//interpolation error level, it decreases on each iteration
+
+/*			
+			///////////////////////////////////////////////////////////////////////////
+			/////  Creation of the matrix for the change of finite element base  ////// 	
+			///////////////////////////////////////////////////////////////////////////
+
+			mesh thold=readmesh("meshall.msh");			//old mesh
+			fespace Vhold(thold,[P2,P2,P1]);			//old FE-space
+
+			
+			mesh thnew=readmesh("meshallnew.msh");			//new mesh
+			fespace Vhnew(thnew,[P2,P2,P1]);			//new FE-space
+			Vhnew [V,U,P];						//new base flow field
+
+			
+			int nbvold = thold.nv;
+			int nbvnew = thnew.nv;
+
+			
+			cout << endl;
+			cout << "Old mesh, Nmat = " << v[].n << "Nbvertices =" << nbvold << endl;
+			cout << "New mesh, Nmat = " << V[].n << "Nbvertices =" << nbvnew << endl;	
+			cout << "Error criteria for the adaptmesh calculation, err = " << error/rr << endl; 
+
+			plot(th,U); 
+			     {ofstream log("log.txt",append);
+			     log << "Old mesh, Nmat =     " << v[].n << "     Nbvertices =     " << nbvold << endl;	
+			     log << "New mesh, Nmat =     " << V[].n << "     Nbvertices =     " << nbvnew << endl;	
+			     log << "Error criteria, err =     "<<error/rr<< endl<<endl;}	 
+
+			matrix IV = interpolate(Vhnew,Vhold);			//matrix for the change of FE-space
+
+			cout << "...............Matrix for the change of FE-space created..............." << endl;
+
+			/////////////////////////////////////////////////////////////////////
+			/////  Calculation of u,v,p in the new base of finite element  ////// 	
+			/////////////////////////////////////////////////////////////////////
+
+			V[] = IV*v[];				//calculation of the base flow field in the new FE-space 
+
+			cout << "...............Base flow writen in the FE-space..............." << endl;
+
+			exec("rm chbase_guess.txt chbase.txt");			//suppression of the base flow wroten 
+										//for the old FE-space
+
+			{
+			ofstream file("chbase.txt");				//output of the new base flow field
+			file << V[];
+			file << endl << endl << Re << endl;
+			}
+
+
+			exec("cp chbase.txt chbase_guess.txt");
+			exec("mv meshallnew.msh meshall.msh");
+			cout << "...............AdaptMesh section ended..............." << endl;
+		}
+
+		else 	{
+		//	exec("mv criteria.txt save/");  			// convergence criteria
+			cout << endl << endl << endl;
+			cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+			cout << "!!! Calculation of base flow ended !!!" << endl;
+			cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl << endl << endl; 
+			}
+	
+	}
+
+exec("rm Re.txt");
+*/
+

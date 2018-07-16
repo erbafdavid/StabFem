@@ -11,12 +11,20 @@
 
 // Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
 
+
+
+
 // Definition des parametres necessaires au bon fonctionnement des macros
+
+// CES PARAMETRES SONT A METTRE DANS MACROS_STABFEM.edp
+
 string surfaceorder="direct"; /// possibilities : "direct", "reverse" (use reverse to fit with matlab "meniscus" program);
 string typestart = "angle"; // possibilites : "pined", "axis", "plane", "angle"
 string typeend = "axis";    // possibilites : "pined", "axis", "plane", "angle"
 int anglecut =2; // position of the "cut" in the tan2 determination. 
                   // 0 -> alpha in [-pi,pi]; 1-> [-pi/2,3pi/2]; 2 -> [0,pi] ; 3 -> [-3*pi/2,pi/2] 
+// 
+
 
 verbosity=0;
 

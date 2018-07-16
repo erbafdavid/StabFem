@@ -18,14 +18,24 @@ bf=SF_BaseFlow(bf,'Re',1);
 bf=SF_BaseFlow(bf,'Re',10);
 bf=SF_BaseFlow(bf,'Re',60);
 bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_Adapt(bf,'Hmax',5);
+bf=SF_Adapt(bf,'Hmax',1);
 disp(' ');
 disp('mesh adaptation to SENSITIVITY : ')
+
+figure();plotFF(bf,'ux','xlim',[-2 5],'ylim',[0 3]);
+pause(0.1);
+
+
 [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
-[bf,em]=SF_Adapt(bf,em,'Hmax',10);
+bf=SF_Adapt(bf,em,'Hmax',1);
+[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
+
 bf.xlim = [-2 4]; bf.ylim=[0,3];
 figure();plotFF(bf,'ux','xlim',[-2 4],'ylim',[0 3]);
-figure();plotFF(bf,'mesh','xlim',[-2 4],'ylim',[0 3]);
+figure();plotFF(bf,'mesh','xlim',[-4 10],'ylim',[0 6]);
+pause(0.1);
+
+[bf,em]=SF_FindThreshold(bf,em)
 
 
 

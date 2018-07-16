@@ -26,6 +26,7 @@
 // 	ERROR MANAGEMENT : 
 //      if Newton iteration diverges, SelfConsistentMode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
 //
+// Initial Version DF, avril 2018 ;  corrected by Diogo, may 2018 
 
 
 
@@ -305,23 +306,27 @@ varf LinOp21([du0x,du0y,du0p],[vx,vy,vp]) =
              
 // block 2-2 : effect of du1c on u1c            
 varf LinOp22([du1cx,du1cy,du1cp],[vx,vy,vp]) =
-             int2d(th)( NSL(nu,u0,du1c,v) )
-            + int2d(th)( - Conv(du1c,u2c,v) )
-            - int2d(th)( sigma1*(du1cx*vx+du1cy*vy) )
- 			+ Boundaryconditions(du1cx,du1cy,vx,vy,"A");
+	int2d(th)( NSL(nu,u0,du1c,v) )
+	//+ int2d(th)( - Conv(du1c,u2c,v) ) DIOGO has corrected this///////////////////////////////////////////////////////
+	+ int2d(th)( -.5*Conv(du1c,u2c,v) )
+	- int2d(th)( sigma1*(du1cx*vx+du1cy*vy) )
+	+ Boundaryconditions(du1cx,du1cy,vx,vy,"A");
  			
 // block 2-3 : effect of du1s on u1c
 varf LinOp23([du1sx,du1sy,du1sp],[vx,vy,vp]) =
-			 int2d(th)( - Conv(du1s,u2s,v)  )
-			+ int2d(th)(-omega*(du1sx*vx+du1sy*vy));
+	//int2d(th)( - Conv(du1s,u2s,v)  ) DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(du1s,u2s,v)  )
+	+ int2d(th)(-omega*(du1sx*vx+du1sy*vy));
 
 // block 2-4 : effect of du2c on u1c             
 varf LinOp24([du2cx,du2cy,du2cp],[vx,vy,vp]) =
-             int2d(th)( - Conv(u1c,du2c,v)  );
-           
+	//int2d(th)( - Conv(u1c,du2c,v)  );DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(u1c,du2c,v)  );
+          
 // block 2-5 : effect of du2s on u1c
 varf LinOp25([du1sx,du1sy,du1sp],[vx,vy,vp]) =
-			 int2d(th)( - Conv(u1s,du2s,v)  );
+	//int2d(th)( - Conv(u1s,du2s,v)  );DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(u1s,du2s,v)  );
 
 // block 2-6 : effect of domega on eigenmode-real equations
 varf LinOp26([du0x,du0y,du0p],[vx,vy,vp]) =  
@@ -333,27 +338,31 @@ varf LinOp26([du0x,du0y,du0p],[vx,vy,vp]) =
 
 // block 3-1 : effect of du0 on u1s		
 varf LinOp31([du0x,du0y,du0p],[vx,vy,vp]) =
-	 int2d(th)( - Conv(du0,u1s,v) );  
+	 int2d(th)( - Conv(du0,u1s,v) );
 	             
 // block 3-2 : effect of du1c on u1s
 varf LinOp32([du1cx,du1cy,du1cp],[vx,vy,vp]) =
- 			 int2d(th)( - Conv(du1c,u2s,v)  )
-		   + int2d(th)(omega*(du1cx*vx+du1cy*vy));
+	//int2d(th)( - Conv(du1c,u2s,v)  ) DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(du1c,u2s,v)  )
+	+ int2d(th)(omega*(du1cx*vx+du1cy*vy));
 			 			
 // block 3-3 : effect of du1s on u1s         
 varf LinOp33([du1sx,du1sy,du1sp],[vx,vy,vp]) =
-             int2d(th)( NSL(nu,u0,du1s,v) )
-           + int2d(th)( Conv(du1s,u2c,v)  )
-           - int2d(th) ( sigma1*(du1sx*vx+du1sy*vy) )
- 		   + Boundaryconditions(du1sx,du1sy,vx,vy,"A");
+	int2d(th)( NSL(nu,u0,du1s,v) )
+	//+ int2d(th)( Conv(du1s,u2c,v)  ) DIOGO has corrected this///////////////////////////////////////////////////////
+	+ int2d(th)( .5*Conv(du1s,u2c,v)  )	
+	- int2d(th) ( sigma1*(du1sx*vx+du1sy*vy) )
+	+ Boundaryconditions(du1sx,du1sy,vx,vy,"A");
 
 // block 3-4 : effect of du2c on u1s             
 varf LinOp34([du2cx,du2cy,du2cp],[vx,vy,vp]) =
-             int2d(th)( Conv(u1s,du2c,v)  );
+	//int2d(th)( Conv(u1s,du2c,v)  ); DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( .5*Conv(u1s,du2c,v)  );
            
 // block 3-5 : effect of du2s on u1s
 varf LinOp35([du1sx,du1sy,du1sp],[vx,vy,vp]) =
-			 int2d(th)( - Conv(u1c,du2s,v)  );
+	//int2d(th)( -Conv(u1c,du2s,v)  ); DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( -.5*Conv(u1c,du2s,v)  ); 
 
 // block 3-6 : effect of domega on eigenmode-real equations
 varf LinOp36([du0x,du0y,du0p],[vx,vy,vp])
@@ -397,11 +406,13 @@ varf LinOp51([du0x,du0y,du0p],[vx,vy,vp]) =
  	
 // block 5-2 : effect of du1c on u2s
 varf LinOp52([du1cx,du1cy,du1cp],[vx,vy,vp]) =
- 			 int2d(th)( - Conv(du1c,u1s,v)  );
+	//int2d(th)( - .5*Conv(du1c,u1s,v)  ); DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(du1c,u1s,v)  );
  			
 // block 5-3 : effect of du1s on u2s
 varf LinOp53([du1sx,du1sy,du1sp],[vx,vy,vp]) =
- 			 int2d(th)( - Conv(u1c,du1s,v)  );
+	//int2d(th)( - Conv(u1c,du1s,v)  );  DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(u1c,du1s,v)  );
 
 // block 5-4 : effect of du2c on u2s
 varf LinOp54([du2cx,du2cy,du2cp],[vx,vy,vp]) =
@@ -431,8 +442,9 @@ cout << " defining operators for linear term... done" << endl << endl;
 
 ///// BEGINING OF NEWTON LOOP
 real dXX = 1;
+domega = 1;
 int iter=1;
-while(abs(dXX)>1e-7&&abs(dXX)<1000&&iter<100)
+while(abs(domega)>1e-6&&abs(domega)<1000&&iter<100)
 	{ 
 	cout << endl << endl << "Newton loop step " << iter << endl;
 
@@ -528,6 +540,8 @@ cout << " LU-ing matrix... done" << endl;
 	cout <<  "   ### omega = " << omega << endl;
 	cout << "   ### Energy of perturbation A = " << EnergyNormCS(u1c,u1s)  << endl;	
 	cout << " 	### Ly,c = " << Lift(1/Re,u1cx,u1cy,u1cp)  << endl ; 
+	cout << "   ### [Fy,1c Fy,1s]  = [ " << Lift(1/Re,u1cx,u1cy,u1cp)
+						<< " , "  << Lift(1/Re,u1sx,u1sy,u1sp) << endl;
 	cout << "   ### [Fx,0, Fx,2c Fx,2s]  = [ " << Drag(1/Re,u0x,u0y,u0p) 
 						<< " , "  << Drag(1/Re,u2cx,u2cy,u2cp) << " , " 
 						<< Drag(1/Re,u2sx,u2sy,u2sp) << " ] " << endl;
@@ -575,18 +589,18 @@ SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0,"MeanFlow",iter);
    	file << endl << endl << Re << endl
    	<< endl << sigma1 << "   " << omega  << endl;
 };
-SFWriteMode(ffdatadir+".ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
-
+SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
+cout << "after macro" << endl;
    
 
 // harmonic
  [u2x,u2y,u2p] = [u2cx-1i*u2sx,u2cy-1i*u2sy,u2cp-1i*u2sp]; 
 {
- 	ofstream file(ffdatadir+"SecondHarmonic.txt");
+ 	ofstream file(ffdatadir+"SecondHarmonicMode.txt");
    	file << u2x[] ;	
 };
 
-SFWriteMode(ffdatadir+"SecondHarmonicMode.ff2m",u2,0,0,"SecondHarmonic",iter);
+SFWriteMode(ffdatadir+"SecondHarmonicMode.ff2m",u2,2*(1i*omega+sigma1),2*(1i*omega+sigma1),"SecondHarmonicMode",iter);
 
 
 
@@ -607,7 +621,7 @@ cout << " COPYING Output into guess for next calculation..." << endl;
    	<< endl << sigma1 << "   " << omega  << endl;
 };
 {
- 	ofstream file(ffdatadir+"SecondHarmonic_guess.txt");
+ 	ofstream file(ffdatadir+"SecondHarmonicMode_guess.txt");
    	file << u2x[] ;	
 };
 };

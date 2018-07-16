@@ -18,7 +18,7 @@ Re_Range1 = [400 390 380 374 373 370 368 ];
  if(exist('DP0_Branch1')==0)% to save time if already computed
     DP0_Branch1 = [];
     for Re = Re_Range1
-        bf=FreeFem_BaseFlow(bf,Re);
+        bf=FreeFem_BaseFlow(bf,'Re',Re);
         DP0_Branch1 = [DP0_Branch1,bf.deltaP0]
     end
  end

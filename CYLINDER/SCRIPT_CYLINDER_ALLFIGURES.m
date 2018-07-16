@@ -10,7 +10,7 @@
 %  5/ Harmonic-Balance for Re = REc-100
 %  6/ Self-consistent model for Re=100
 
-% CHAPTER 0 : set the global variables needed by the drivers
+%% CHAPTER 0 : set the global variables needed by the drivers
 
 clear all;
 close all;
@@ -28,13 +28,13 @@ meshstrategynonlinear = 'S'; % select 'D' or 'S'
 
 tic;
 
-%##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
+%% ##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
 
-if(exist('mesh_completed')==1)
-disp(' ADAPTMESH PROCEDURE AS PREVIOUSLY DONE, START WITH EXISTING MESH : '); 
-bf=SF_BaseFlow(bf,'Re',60);
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
-else
+%if(exist('mesh_completed')==1)
+%disp(' ADAPTMESH PROCEDURE AS PREVIOUSLY DONE, START WITH EXISTING MESH : '); 
+%bf=SF_BaseFlow(bf,'Re',60);
+%[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
+%else
    
 disp(' STARTING ADAPTMESH PROCEDURE : ');    
 disp(' ');
@@ -44,19 +44,21 @@ bf=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
 bf=SF_BaseFlow(bf,'Re',1);
 bf=SF_BaseFlow(bf,'Re',10);
 bf=SF_BaseFlow(bf,'Re',60);
-bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_Adapt(bf,'Hmax',5);
+bf=SF_Adapt(bf,'Hmax',2);
+bf=SF_Adapt(bf,'Hmax',2);
 disp(' ');
 disp('mesh adaptation to SENSITIVITY : ') % This is mesh M2 from the appendix
 [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
-[bf,em]=SF_Adapt(bf,em,'Hmax',10);
-mesh_completed = 1;
-end
+[bf,em]=SF_Adapt(bf,em,'Hmax',2);
+%mesh_completed = 1;
+%end
 
-%%% CHAPTER 1b : DRAW FIGURES
+
+
+%% CHAPTER 1b : DRAW FIGURES
 
 % plot the mesh (full size)
-figure();plotFF(bf,'mesh');
+figure();plotFF(bf,'mesh','xlim',[-40 80],'ylim',[0 40]);
 %title('Initial mesh (full size)');
 box on; %pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -72,7 +74,7 @@ saveas(gca,'FIGURES/Cylinder_Mesh',figureformat);
     
 % plot the base flow for Re = 60
 %bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
-figure();plotFF(bf,'ux','Contour','on','Levels',[0 0],'xlim',[-1.5 4.5],'ylim',[0 3]);
+figure();plotFF(bf,'ux','Contour','on','CLevels',[0 0],'xlim',[-1.5 4.5],'ylim',[0 3]);
 %plotFF(bf,'ux');
 %title('Base flow at Re=60 (axial velocity)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -102,11 +104,9 @@ box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_SensitivityRe60',figureformat);
 
+pause(0.1);
 
-
-%%%% CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)
-
-if(exist('completed_Cx')==0)
+%% CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)
 
 Re_BF = [2 : 2: 50];
 Fx_BF = []; Lx_BF = [];
@@ -115,8 +115,7 @@ Fx_BF = []; Lx_BF = [];
         Fx_BF = [Fx_BF,bf.Fx];
         Lx_BF = [Lx_BF,bf.Lx];
     end
-completed_Cx = 1;    
-end
+
 
 %%% chapter 2B : figures
  
@@ -138,11 +137,9 @@ saveas(gca,'FIGURES/Cylinder_Lx_baseflow',figureformat);
 pause(0.1);
 
 
-%%% CHAPTER 3 : COMPUTING STABILITY BRANCH
+%% CHAPTER 3 : COMPUTING STABILITY BRANCH
 
-if(exist('completed_lambda')==1)
-    disp('STABILITY BRANCH ALREADY COMPUTED')
-else
+
     disp('COMPUTING STABILITY BRANCH')
 
 % LOOP OVER RE FOR BASEFLOW + EIGENMODE
@@ -159,10 +156,10 @@ Fx_LIN = []; Lx_LIN = [];lambda_LIN=[];
         lambda_LIN = [lambda_LIN ev];
     end  
 completed_lambda = 1;
-end
 
 
-%%% CHAPTER 3b : figures
+
+%% CHAPTER 3b : figures
 
 figure(20);
 plot(Re_LIN,real(lambda_LIN),'b+-');
@@ -186,7 +183,7 @@ tlin = toc;
 disp([ '   ' num2str(tlin) ' seconds']);
 tic;
 
-%%% CHAPTER 4 : computation of weakly nonlinear expansion
+%% CHAPTER 4 : computation of weakly nonlinear expansion
 
 disp(' ');
 disp('######     ENTERING NONLINEAR PART       ####### ');
@@ -197,7 +194,7 @@ if(meshstrategynonlinear=='D')
     bf=SF_BaseFlow(bf,'Re',60);
     disp('using mesh adaptated to EIGENMODE (M4) ')
     [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D');
-    bf=SF_Adapt(bf,em,'Hmax',10);
+    bf=SF_Adapt(bf,em,'Hmax',5);
     [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D');
 else
      disp('using mesh adaptated to SENSITIVITY (M2) ')
@@ -213,27 +210,21 @@ set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_EigenModeRe60_AdaptD',figureformat);  % 
 
 
-if(exist('Rec')==1)
-    disp('INSTABILITY THRESHOLD ALREADY COMPUTED');
-    bf=SF_BaseFlow(bf,'Re',Rec);
-    [ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
-else 
-%%% DETERMINATION OF THE INSTABILITY THRESHOLD
+
+
+% DETERMINATION OF THE INSTABILITY THRESHOLD
 disp('COMPUTING INSTABILITY THRESHOLD');
 bf=SF_BaseFlow(bf,'Re',50);
 [ev,em] = SF_Stability(bf,'shift',+.75i,'nev',1,'type','D');
 [bf,em]=SF_FindThreshold(bf,em);
 Rec = bf.Re;  Fxc = bf.Fx; 
 Lxc=bf.Lx;    Omegac=imag(em.lambda);
-%[ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
-end
-
 
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
 [wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.); % Here to generate a starting point for the next chapter
 
-%%% PLOTS of WNL predictions
+%% PLOTS of WNL predictions
 
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);
@@ -267,12 +258,9 @@ pause(0.1);
 
 
 
-%%% CHAPTER 5 : SELF CONSISTENT
+%% CHAPTER 5 : SELF CONSISTENT / HB1
 
-if(exist('HB_completed')==1)
-    disp('SC quasilinear model on the range [Rec , 100] already computed');
-else
-    disp('SC quasilinear model on the range [Rec , 100]');
+disp('SC quasilinear model on the range [Rec , 100]');
 Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
 
 
@@ -285,10 +273,10 @@ Res = 47. ;
 %bf=SF_BaseFlow(bf,'Re',Res);
 %[ev,em] = SF_Stability(bf,'shift',Omegac*i);
 
-[meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'sigma',0.,'Re',47.); 
+[meanflow,mode] = SF_HB1(meanflow,mode,'sigma',0.,'Re',Res); 
 
 for Re = Re_HB(2:end)
-    [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'Re',Re);
+    [meanflow,mode] = SF_HB1(meanflow,mode,'Re',Re);
     Lx_HB = [Lx_HB meanflow.Lx];
     Fx_HB = [Fx_HB meanflow.Fx];
     omega_HB = [omega_HB imag(mode.lambda)];
@@ -297,16 +285,18 @@ for Re = Re_HB(2:end)
     
     if(Re==60)
        meanflow.xlim = [-2 4]; meanflow.ylim=[0,3];
-       figure();plotFF(meanflow,'ux','contour','on','levels',[0 0],'xlim',[-2 4],'ylim',[0 3]);
+       figure();plotFF(meanflow,'ux','contour','on','clevels',[0 0],'xlim',[-2 4],'ylim',[0 3]);
        box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
        set(gca,'FontSize', 18);
        saveas(gca,'FIGURES/Cylinder_MeanFlowRe60',figureformat); 
     end
 end
-HB_completed = 1;   
-end
 
-%%% chapter 5b : figures
+
+save('Cylinder_AllFigures.mat');
+
+%% chapter 5b : figures
+%load('Cylinder_AllFigures.mat');
 
 figure(21);hold off;
 plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');

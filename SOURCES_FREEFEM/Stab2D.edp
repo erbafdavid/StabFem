@@ -33,7 +33,7 @@
 //      if Newton iteration diverges, Eigenmode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
 //
 
-
+cout << "$$$$ ENTERING Stab2D.edp " << endl << "$$" << endl; 
 
 //load "MUMPS_seq"        ////////  load sparsesolver    
 include "SF_Geom.edp";
@@ -46,44 +46,44 @@ include "Macros_StabFem.edp";
 
 
 	real Re;                  
-	cout << " Enter Reynolds :   " << endl; 
+	cout << "$$ Enter Reynolds :   " << endl; 
 	cin  >> Re;
 	real nu=1.0/Re;  
 	real shiftr,shifti;	
-	cout << " Enter SHIFT (re,im) :   " << endl; 
+	cout << "$$ Enter SHIFT (re,im) :   " << endl; 
 	cin  >> shiftr >> shifti;
 	complex shift = 1i*shifti+shiftr;
 	string symmetry;
-	cout << " Symmetry properties ?? (A, S or N)" << endl;
+	cout << "$$ Symmetry properties ?? (A, S or N)" << endl;
 	cin >> symmetry;
 	string iadjoint; // 0 for direct ; 1 for adjoint
-	cout << " Direct (D), Adjoint (A), continusous adjoint (cA), D&A+sensitivity (S), D&A(c)+sentitivity (cS) ?" << endl;
+	cout << "$$ Direct (D), Adjoint (A), continusous adjoint (cA), D&A+sensitivity (S), D&A(c)+sentitivity (cS) ?" << endl;
 	cin >> iadjoint;	
 
 	int nev;
-    cout << " Enter nev ? (will use simple shift-invert if nev = 1)" << endl;
+    cout << "$$ Enter nev ? (will use simple shift-invert if nev = 1)" << endl;
     cin >> nev ;
 	int ncv = 4*nev;   ///// Krylov Basis
 
 	
-	cout << " ### PARAMETERS SELECTED : " << endl;
-	cout << " Re = " << Re<< endl;
-	cout << " shift = " << shift << endl;
+	cout << "$$ ### PARAMETERS SELECTED : " << endl;
+	cout << "$$ Re = " << Re<< endl;
+	cout << "$$ shift = " << shift << endl;
 	
-		if (symmetry =="S") {cout << " Symmetric modes" << endl;}
-		else if (symmetry =="A") {cout << " Antiymmetric modes" << endl;}	
-		else if (symmetry =="N") {cout << " No symmetry axis" << endl;}
+		if (symmetry =="S") {cout << "$$ Symmetric modes" << endl;}
+		else if (symmetry =="A") {cout << "$$ Antiymmetric modes" << endl;}	
+		else if (symmetry =="N") {cout << "$$ No symmetry axis" << endl;}
 		;	
 	
-		if (iadjoint =="D") {cout << " DIRECT PROBLEM" << endl;}
-		else if (iadjoint =="A") {cout << " ADJOINT PROBLEM (discrete)" << endl;}
-		else if (iadjoint =="cA") {cout << " ADJOINT PROBLEM (continuous)" << endl;}
-		else if (iadjoint =="S") {cout << " DIRECT+ADJOINT (discrete) PROBLEM INCLUDING SENSITIVITY" << endl;}
-		else if (iadjoint =="cS") {cout << " DIRECT+ADJOINT (continuous) PROBLEM INCLUDING SENSITIVITY" << endl;}
-		else {cout << " ERROR WHEN SELECTING PROBLEM TYPE" << endl;}
+		if (iadjoint =="D") {cout << "$$ DIRECT PROBLEM" << endl;}
+		else if (iadjoint =="A") {cout << "$$ ADJOINT PROBLEM (discrete)" << endl;}
+		else if (iadjoint =="cA") {cout << "$$ ADJOINT PROBLEM (continuous)" << endl;}
+		else if (iadjoint =="S") {cout << "$$ DIRECT+ADJOINT (discrete) PROBLEM INCLUDING SENSITIVITY" << endl;}
+		else if (iadjoint =="cS") {cout << "$$ DIRECT+ADJOINT (continuous) PROBLEM INCLUDING SENSITIVITY" << endl;}
+		else {cout << "$$ ERROR WHEN SELECTING PROBLEM TYPE" << endl;}
 		;
 	
-	cout << " nev = " << nev << endl;
+	cout << "$$ nev = " << nev << endl;
 	
 	
 
@@ -195,7 +195,7 @@ else if(iadjoint=="A")
 { OP=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
 else if(iadjoint=="cA")
 { OP=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
-else if(iadjoint=="S"||iadjoint=="cS") { cout << " WARNING : in this program option S will work only for nev=1" << endl; }
+else if(iadjoint=="S"||iadjoint=="cS") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; }
 ;
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -217,20 +217,19 @@ if(iadjoint=="A") { ev = conj(ev); } ;
 	for (int i=0;i<nev;i++)
 	{
        fileVP1 << real(ev[i]) << " " << imag(ev[i]) << " " << Re << " " << 0 << " " << real(shift) << " " << imag(shift) << endl;
-       	cout << " valeur propre : " << i+1 << "  : " << ev[i] << endl;
+       	cout << "$$ Valeur propre : " << i+1 << "  : " << ev[i] << endl;
 
  		 if(iadjoint=="D"){namefile=ffdatadir+"Eigenmode"+(i+1);}
  		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
  		 {ofstream fileMode(namefile+".txt");
  		  fileMode << eux[i][]; 
- 		  fileMode << endl << endl << Re << endl << endl << real(ev[i]) << "   " << imag(ev[i])  << endl;
+ 		  fileMode << endl << endl << Re << endl << endl << real(ev[i]) << endl << imag(ev[i])  << endl;
  		  }
  		  ux[] = eux[i][]; 
- 		 cout << "Writing eigenmode in file " << namefile << endl;
+ 		 cout << "$$ Writing eigenmode in file " << namefile << endl;
  		 SFWriteMode(namefile+".ff2m",u,ev[i],shift,"EigenModeD",1);	 // MACRO DEFINED in StabFem_Macros.edp
  		 
  	};
-	cout << "it's done" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -267,12 +266,12 @@ XXMh<complex> [ux0,uy0,p0],[uxdirect,uydirect,pdirect],[uxadjoint,uyadjoint,padj
 int testCB = exec("ls WORK/Eigenmode_guess.txt");
     	if (testCB!=0)
 		{
-		cout << "no file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
+		cout << "$$ No file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
 		[ux0,uy0,p0] = [1,0,0];
 		} 
 		else
 		{
-		cout << "starting shift/invert from mode in file Eigenmode_guess.txt" << endl;
+		cout << "$$ Starting shift/invert from mode in file Eigenmode_guess.txt" << endl;
 		ifstream cbin(ffdatadir+"Eigenmode_guess.txt");
 		cbin >> ux0[];
 		};
@@ -284,27 +283,27 @@ int directadjointA,directadjointB;
 if(iadjoint=="D")
 	{
 	directadjointA = 1; directadjointB=1;
-	cout << "Shift-invert algorithm for DIRECT problem" << endl;
+	cout << "$$ Shift-invert algorithm for DIRECT problem" << endl;
 	}
 else if(iadjoint=="A")
 	{
 	directadjointA = 2; directadjointB=2;
-	cout << "Shift-invert algorithm for ADJOINT problem" << endl;
+	cout << "$$ Shift-invert algorithm for ADJOINT problem" << endl;
 	}
 else if(iadjoint=="cA")
 	{
 	directadjointA = 0; directadjointB=0;
-	cout << "Shift-invert algorithm for ADJOINT problem (continuous)" << endl;	
+	cout << "$$ Shift-invert algorithm for ADJOINT problem (continuous)" << endl;	
 	}
 else if(iadjoint=="S")
 	{
 	directadjointA = 1; directadjointB=2;
-	cout << "Shift-invert algorithm for BOTH DIRECT AND ADJOINT(discrete) problem" << endl;
+	cout << "$$ Shift-invert algorithm for BOTH DIRECT AND ADJOINT(discrete) problem" << endl;
 	}
 else if(iadjoint=="cS")
 	{
 	directadjointA = 0; directadjointB=1;
-	cout << "Shift-invert algorithm for BOTH DIRECT AND ADJOINT(continuous) problem" << endl;
+	cout << "$$ Shift-invert algorithm for BOTH DIRECT AND ADJOINT(continuous) problem" << endl;
 	};	
 	
 	
@@ -315,28 +314,28 @@ else if(iadjoint=="cS")
 
 	if(directadjoint==1)
 	{
-		cout << " Constructing operator for DIRECT problem ..." << endl;
+		cout << "$$ Constructing operator for DIRECT problem ..." << endl;
 		OP=LNSE(XXMh,XXMh,solver=sparsesolver);
 		shiftOP = shift;
-		cout << " solving DIRECT problem ..." << endl;
+		cout << "$$ Solving DIRECT problem ..." << endl;
 	}
 	else if(directadjoint==2)
 	{
-		cout << " Constructing operator for ADJOINT(discrete) problem ..." << endl;
+		cout << "$$ Constructing operator for ADJOINT(discrete) problem ..." << endl;
 		OP=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver);
 		shiftOP = conj(shift);
-		cout << "solving ADJOINT problem ..." << endl;
+		cout << "$$ Solving ADJOINT problem ..." << endl;
 	}
 	else if(directadjoint==0)
 	{
-		cout << " Constructing operator for ADJOINT(continuous) problem ..." << endl;
+		cout << "$$ Constructing operator for ADJOINT(continuous) problem ..." << endl;
 		OP=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver);
 		shiftOP = conj(shift);
-		cout << "solving ADJOINT problem ..." << endl;
+		cout << "$$ Solving ADJOINT problem ..." << endl;
 	};
 
 
-	int itmax = 150;
+	int itmax = 50;
 	complex lambda0 = 1e6;
 	real err = 1e6;
 	real errmax=1e-6;
@@ -361,16 +360,16 @@ else if(iadjoint=="cS")
 		//      ( the choice Y = X_{n+1} is convenient but we could choose something else )
 		lambda = shiftOP+1/GG;
 		err = abs(lambda-lambda0);
-		cout << " iteration " << iter+1 << " : " << endl;	
-		//	cout << " GG = " << GG << endl;
-		//	cout << " XnXn = " << XnXn << endl;
-		cout << " estimated eigenvalue lambda = " << lambda << endl;	
+		cout << "$$ Iteration " << iter+1 << " : " << endl;	
+		//	cout << "$$ GG = " << GG << endl;
+		//	cout << "$$ XnXn = " << XnXn << endl;
+		cout << "$$ Estimated eigenvalue lambda = " << lambda << endl;	
 	
 		ux0[] = 1/sqrt(abs(Xn1Xn1))*ux[];
 		lambda0 = lambda;
 	};
 	/// END ITERATION LOOP	
-//	cout << "ttoto" << endl ;
+//	cout << "$$ttoto" << endl ;
 	if(directadjoint==2||directadjoint==0){lambda=conj(lambda);};
  	// renormalization by MAXIMUM
  	Xh NormU = sqrt(abs(ux)^2+abs(uy)^2);
@@ -417,8 +416,9 @@ else if(iadjoint=="cS")
 	} // end of post processing of simple shift-invert case
 else // case iteration failed
 {
-	cout << " ERROR : shift-invert iteration failed ; shift is probably wrong" << endl;
-	SFWriteMode(namefileFF,u,lambda,shift,"EigenMode"+typeDA,-1);	 // MACRO DEFINED in StabFem_Macros.edp
+	cout << "$$ ERROR : shift-invert iteration failed ; shift is probably wrong" << endl;
+	namefileFF=ffdatadir+"Eigenmode.ff2m";	
+	SFWriteMode(namefileFF,u,lambda,shift,"EigenModeD",-1);	 // MACRO DEFINED in StabFem_Macros.edp
 
 };
 
@@ -433,9 +433,9 @@ if (testCB==0)
 if(iadjoint=="S"||iadjoint=="cS")
 //
 {
-cout << "Computation of sensitivity after direct and adjoint" << endl;
+cout << "$$ Computation of sensitivity after direct and adjoint" << endl;
 
-//	cout << "STAT" << uxdirect(2.5,.5) << " " << uxadjoint(2.5,.5) << " " << uydirect(2.5,.5) << " " << uyadjoint(2.5,.5) << endl ;
+//	cout << "$$STAT" << uxdirect(2.5,.5) << "$$ " << uxadjoint(2.5,.5) << "$$ " << uydirect(2.5,.5) << "$$ " << uyadjoint(2.5,.5) << endl ;
 
 	fespace p2(th,P2);fespace p1(th,P1);
 	p2 sensitivity;
@@ -492,4 +492,5 @@ cout << "Computation of sensitivity after direct and adjoint" << endl;
 
 
 };
+cout << "$$$$ SUCCESSFULLY LEAVING Stab2D.edp " << endl ;
 
