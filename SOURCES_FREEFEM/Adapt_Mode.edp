@@ -33,7 +33,9 @@
 //
 
 
-	include "SF_Geom.edp"; 
+
+
+	verbosity = 0;
 	include "Macros_StabFem.edp";
 
 	int nFields=3; // Number of fields considered for mesh adaptation
@@ -63,7 +65,6 @@
 // NB ALL THESE PARAMETERS ARE NOW WRITTEN IN THIS FILE :
 	include "Param_Adaptmesh.edp";
 
-<<<<<<< HEAD
 	// Copy input files
 	exec("cp "+ffdatadir+"mesh.msh "+ffdatadir+"mesh_ans.msh");
 	exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_ans.ff2m");
@@ -71,15 +72,6 @@
 	{
 		exec("cp "+ffdatadir+"Field"+i+"_toadapt.txt "+ffdatadir+"Field"+i+"_toadapt_ans.txt ");
 	}
-=======
-
-// THIS IS TO BE DONE IN THE DRIVER AND REMOVED FROM HERE ! 
-	exec("cp "+ffdatadir+"mesh.msh "+ffdatadir+"mesh_ans.msh");
-	exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_ans.ff2m");
-	exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_ans.txt");
-	exec("cp "+ffdatadir+"BaseFlow.ff2m "+ffdatadir+"BaseFlow_ans.ff2m");
-//
->>>>>>> master
 
 	// Read the old mesh	 
 	mesh th=readmesh(ffdatadir+"mesh_toadapt.msh");
@@ -112,83 +104,17 @@
 	femp2xfemp2xfemp1xfemp1[int] definitionField(FieldRe)(nFields);
 	femp2xfemp2xfemp1xfemp1[int] definitionField(FieldImag)(nFields);
 
-<<<<<<< HEAD
 	femp2 defP2(ReP2Field); // Real P2P2P1 Field
     femp2 <complex> defP2(CxP2Field); // Complex P2P2P1 Field
-=======
-	else if(type=="Comp")
-	{
-		cout << " ADAPTATION TO FIELD WITH UVPTRho STRUCTURE" << endl;	
-		ifstream fileAdaptField(ffdatadir+"AdaptField.txt");
-    		femp2xfemp2xfemp2xfemp1 [uc1,vc1,pc1,Tc1], [uc2,vc2,pc2,Tc2];	// real and imaginary parts
-		fileAdaptField >> uc[];
-		[uc1,vc1,pc1,Tc1] = [real(uc),real(vc),real(pc),real(Tc)];
-		[uc2,vc2,pc2,Tc2] = [imag(uc),imag(vc),imag(pc),imag(Tc)];
-		[uComp,vComp,pComp,TComp] = [uBc,vBc,pBc,TBc];
-		cout << " lecture of field with structure [U,V,P,T,RHO]" << endl;
-		if(uc2[].max<1e-6){ cout << " (Real field ; most likely a base flow) " << endl;}
-		else{  cout << " (complex field ; most likely an eigenmode or response to a forcing) "<< endl; };
-			
-		thnew = adaptmesh(th,[uc1,vc1,pc1,Tc1],[uc2,vc2,pc2,Tc2],[uBc,vBc,pBc,TBc],
-						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
-						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
-	}
-	
-	else if(type=="UVWP")
-	{
-		cout << " ADAPTATION TO FIELD WITH UVWP STRUCTURE" << endl;	
-		ifstream fileAdaptField(ffdatadir+"AdaptField.txt");
-    	femp2xfemp2xfemp2xfemp1 [u,v,w,p], [ui,vi,wi,pii];	// real and imaginary parts
-		fileAdaptField >> uCC[];
-		[u,v,w,p] = [real(uCC),real(vCC),real(wCC),real(pCC)];
-		[ui,vi,wi,pii] = [imag(uCC),imag(vCC),imag(wCC),imag(pCC)];
-		
-		cout << " lecture of field with structure [U,V,W,P]" << endl;
-		if(ui[].max<1e-6){ cout << " (Real field ; most likely a base flow) " << endl;}
-		else{  cout << " (complex field ; most likely an eigenmode or response to a forcing) "<< endl; };
-			
-		thnew = adaptmesh(th,[u,v,w,p],[ui,vi,wi,pii],[vBS,uBS,wBS,pBS],
-						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
-						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
-	}
-	
-	else if(type=="Sensitivity")
-	{
-		cout << " ADAPTATION TO FIELD WITH UVP STRUCTURE" << endl;	
-		ifstream fileAdaptField(ffdatadir+"AdaptField.txt");
-    	femp2 Sensitivity;	// real and imaginary parts
-		fileAdaptField >> Sensitivity[];
-				
-		cout << " lecture of field with structure P2" << endl;
-			
-		thnew = adaptmesh(th,Sensitivity,[uBS,vBS,wBS,pBS], /// HERE BUG CORRECTED BY DF : [uBS,vBS,wBS,pBS] (incompressible case) instead of [uBc,vBc,pBc,TBc].
-						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
-						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);		
-	}
->>>>>>> master
 
     femp2xfemp2xfemp1  defP2P2P1(ReP2P2P1Field); // Real P2P2P1 Field
     femp2xfemp2xfemp1 <complex>  defP2P2P1(CxP2P2P1Field); // Complex P2P2P1 Field
 
-<<<<<<< HEAD
     femp2xfemp2xfemp2xfemp1 defP2P2P2P1(ReP2P2P2P1Field); // Real P2P2P2P1 Field2
     femp2xfemp2xfemp2xfemp1 <complex> defP2P2P2P1(CxP2P2P2P1Field); // Complex P2P2P2P1 Field2
 
     femp2xfemp2xfemp1xfemp1 defP2P2P1P1(ReP2P2P1P1Field); // Real P2P2P1P1 Field2
     femp2xfemp2xfemp1xfemp1 <complex> defP2P2P1P1(CxP2P2P1P1Field); // Complex P2P2P1P1 Field2
-=======
-	IFMACRO(FREEFEMPLOTS,YES)		
-	plot(thold,wait=1);
-	plot(thnew,wait=1);
-	ENDIFMACRO
-	
-	savemesh(thnew,ffdatadir+"mesh.msh");
-	SFWriteMesh(ffdatadir+"mesh.ff2m",thnew);
-	
-	savemesh(thnew,ffdatadir+"mesh_adapt.msh");
-	SFWriteMesh(ffdatadir+"mesh_adapt.ff2m",thnew);
-
->>>>>>> master
 
     femp2xfemp2xfemp1xfemp1xfemp1 defP2P2P1P1P1(ReP2P2P1P1P1Field); // Real P2P2P1P1P1 Field2
     femp2xfemp2xfemp1xfemp1xfemp1<complex> defP2P2P1P1P1(CxP2P2P1P1P1Field); // Complex P2P2P1P1P1 Field2
@@ -320,7 +246,6 @@
     fespace femp2xfemp2xfemp1N(thnew,[P2,P2,P1]);
     fespace femp2xfemp2xfemp1xfemp1N(thnew,[P2,P2,P1,P1]);
     fespace femp2xfemp2xfemp2xfemp1N(thnew,[P2,P2,P2,P1]);
-<<<<<<< HEAD
 	fespace femp2xfemp2xfemp1xfemp1xfemp1N(thnew,[P2,P2,P1,P1,P1]); /// 
 
 // INTERPOLATION in the NEW mesh of FIELDS
@@ -401,125 +326,4 @@
     		}
 			cout << "Interpolation of Field"<< i << " has finished" << endl;
 		}
-=======
-    fespace XXxxxHN(thnew,[P2,P2,P1,P1,P1]); /// 
-    femp2xfemp2xfemp1N [uNx,uNy,uNp];
-    XXxxxHN[uBcN,vBcN,pBcN,TBcN,rhoBcN];
-  
-    [uNx,uNy,uNp] = [vB,uB,pB]; // interpolation of base flow
-//	plot(uBN,fill=1,wait=1);
-//	plot(vBN,fill=1,wait=1);
-//	plot(pBN,fill=1,wait=1);
 
-	Re = Reans;
-	real nu = 1/(Re+1e-30);
-	cout << "Writting BaseFlow_guess" << endl;
-	if(NdimBaseFlow == NdimUComp) 
-	{
-		[uBcN,vBcN,pBcN,TBcN,rhoBcN] = [uBc,vBc,pBc,TBc,rhoBc];
-		ofstream U(ffdatadir+"BaseFlow_guess.txt");		
-		U << uBcN[];
-		U << endl << endl <<  Re << endl;
-	}
-	else{
-		[uNx,uNy,uNp] = [vB,uB,pB];
-		ofstream U(ffdatadir+"BaseFlow_guess.txt");		
-		U << uNx[];
-		U << endl << endl <<  Re << endl;
-
-	}
-
-// hack    
-    IFMACRO(problemtype,2D)
-    cout << " writing BaseFlow_Adapted.ff2m" << endl;
-    [uNx,uNy,uNp] = [vB,uB,pB]; 
-    plot(uNx,wait=1);
-    th = thnew;
-	//SFWriteBaseFlow(ffdatadir+"BaseFlow_adaptguess.ff2m",uN,"BaseFlow",1);
-		ofstream U(ffdatadir+"BaseFlow_adaptguess.txt");		
-        U << uNx[];
-        U << endl << endl <<  Re << endl;
-	ENDIFMACRO
-
-	IFMACRO(problemtype,AxiXR)
-	femp2xfemp2xfemp1N [uNNx,uNNr,uNNp];
-	[uNNx,uNNr,uNNp] = [vB,uB,pB];
-	th = thnew;
-	//SFWriteBaseFlow(ffdatadir+"BaseFlow_Adapted.ff2m",uNN,"BaseFlow",1);
-	[uNx,uNy,uNp] = [vB,uB,pB];
-	ofstream U(ffdatadir+"BaseFlow_adaptguess.txt");		
-        U << uNx[];
-        U << endl << endl <<  Re << endl;
-	ENDIFMACRO
-	
-	IFMACRO(problemtype,"2DComp")
-	XXxxxHN[uNNc,vNNc,pNNc,TNNc,rhoNNc];
-	[uNNc,vNNc,pNNc,TNNc,rhoNNc] = [uBc,vBc,pBc,TBc,rhoBc]; // interpolation of base flow
-	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",uNNc,"BaseFlow",1);
-	ENDIFMACRO
-
-// end of hack : this is because SFWriteBaseFlow expects different component names for 2D and axi cases !
-
-
-// INTERPOLATE THE DATA AND WRITE TO FILE
-
- 
- if(type=="UVP")
-   {
-	femp2xfemp2xfemp1N<complex> [vCN,uCN,pCN]; 
-	[vCN,uCN,pCN] = [vC,uC,pC]; // interpolation of structure
-	ofstream U(ffdatadir+"AdaptField_guess.txt");		
-    U << vCN[];
-    U << endl << endl <<  Re << endl;
-   }
-   
-   else if(type=="UVWP")
-   {
-	femp2xfemp2xfemp2xfemp1N<complex> [uCCN,vCCN,wCCN,pCCN]; 
-	[uCCN,vCCN,wCCN,pCCN] = [uCC,vCC,wCC,pCC]; // interpolation of structure
-	ofstream U(ffdatadir+"AdaptField_guess.txt");		
-    U << uCCN[];
-    U << endl << endl <<  Re << endl;
-   }
-
-   else if(type=="Comp")
-   {
-	XXxxxHN<complex> [ucn,vcn,pcn,Tcn,rhocn]; 
-	[ucn,vcn,pcn,Tcn,rhocn] = [uc,vc,pc,Tc,rhoc]; // interpolation of structure
-	ofstream U(ffdatadir+"AdaptField_guess.txt");		
-	U << ucn[];
-	U << endl << endl <<  Re << endl;
-   }
-   
-   else if(type=="Sensitivity")
-   {
-	femp2N SensitivityN; 
-	SensitivityN = Sensitivity; // interpolation of structure
-	ofstream U(ffdatadir+"AdaptField_guess.txt");		
-   	U << SensitivityN[];
-    	U << endl << endl <<  Re << endl;
-	cout << "Creating AdaptField_guess.txt" << endl;
-   }
-
-
- 
-
-
-//	cout << "     copying  interpolated base flow to files BaseFlow_adapt.txt and BaseFlow_guess.txt " 
-//	     << endl;
-	     
-	   
-			
-
-	
-
- 		     	 
-     	
-
-
-
-
-
-
-
->>>>>>> master
