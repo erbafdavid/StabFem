@@ -6,14 +6,12 @@ function wnl = FreeFem_WNL(baseflow);
 % usage : wnl = FreeFem_WNL(baseflow);
 %    return is a structure with fields wnl.lambda, wnl.mu, wnl.a, etc..
 %
-global ff ffdir ffdatadir sfdir 
+global ff ffdir ffdatadir sfdir
 
-if(strcmp(ffdatadir,'./DATA_FREEFEM_BIRDCALL_ERCOFTAC')==0) % in future we should manage this in a better way
-    [status]=system([ff ' ' ffdir 'WeaklyNonLinear_Axi.edp']);
-else 
-    [status]=system([ff ' ' ffdir 'WeaklyNonLinear_BirdCall.edp']);
+if (strcmp(ffdatadir, './DATA_FREEFEM_BIRDCALL_ERCOFTAC') == 0) % in future we should manage this in a better way
+    [status] = system([ff, ' ', ffdir, 'WeaklyNonLinear_Axi.edp']);
+else
+    [status] = system([ff, ' ', ffdir, 'WeaklyNonLinear_BirdCall.edp']);
 end
 
-wnl = importFFdata(baseflow.mesh,'WNL_results.ff2m');
-
-
+wnl = importFFdata(baseflow.mesh, 'WNL_results.ff2m');
