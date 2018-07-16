@@ -1,5 +1,19 @@
-
-function [baseflow,eigenmode] = SF_FindThreshold(baseflow,eigenmode)
+%> @file SOURCES_MATLAB/SF_FindThreshold.m
+%> @brief TODO ADD DESCRIPTION HERE
+%>
+%> @param[in] baseflow: TODO ADD DESCRIPTION HERE
+%> @param[in] eigenmode: TODO ADD DESCRIPTION HERE
+%> @param[out] baseflow: TODO ADD DESCRIPTION HERE
+%> @param[out] eigenmode: TODO ADD DESCRIPTION HERE
+%>
+%> usage: <code>[baseflow, eigenmode] = SF_FindThreshold(baseflow, eigenmode)</code>
+%>
+%> ADD COMPLETE DOCUMENTATION HERE
+%>
+%> @author David Fabre
+%> @date 2017-2018
+%> @copyright GNU Public License
+function [baseflow, eigenmode] = SF_FindThreshold(baseflow, eigenmode)
 
 % Direct computation of instability threshold
 

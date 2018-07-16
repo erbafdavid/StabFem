@@ -1,17 +1,21 @@
-function baseflow = SF_Init(meshfile,parameters)
-% Matlab/FreeFem driver for generating initial mesh and base flow
-%
-% usage in one-input mode : baseflow = SF_Init('Mesh.edp')
-%
-% usage in two-input mode : baseflow = SF_Init('Mesh.edp',params)
-%   in this case params is an array containing the parameters needed by the
-%   freefem script ;  for instance the dimensions of the mesh  
-%
-% 'Mesh.edp' must be a FreeFem script which generates a file "mesh.msh",
-% a description file "mesh.ff2m", a parameter file "SF_Init.ff2m", and an initial base flow "BaseFlow_init.txt" / "BaseFlow_init.ff2m" 
-%
-% Version 2.0 by D. Fabre ,  june 2017
-
+%> @file SOURCES_MATLAB/SF_Init.m
+%> @brief Matlab/FreeFem driver for generating initial mesh and base flow
+%>
+%> @param[in] meshfile: FreeFem script file
+%> @param[in] parameters: Parameters for the FreeFem++ script
+%> @param[out] baseflow: Generated Base Flow
+%>
+%> Usage in single-input mode: <code>baseflow = SF_Init('Mesh.edp')</code>
+%> Usage in two-inputs mode: <code>baseflow = SF_Init('Mesh.edp',params)</code>
+%>
+%> 'Mesh.edp' must be a FreeFem script which generates a file "mesh.msh", a
+%>  parameter file "SF_Init.ff2m", and an initial base flow
+%>  "BaseFlow_init.txt" / "BaseFlow_init.ff2m"
+%>
+%> @author David Fabre
+%> @date june 2017
+%> @version 2.0
+function baseflow = SF_Init(meshfile, parameters)
 global ff ffdir ffdatadir sfdir verbosity
 
 % Cr?ation et vidange du WORK/

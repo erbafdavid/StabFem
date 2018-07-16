@@ -1,4 +1,13 @@
-function exportFF_tecplot(femstruct,namefile)
+%> @file exportFF_tecplot.m
+%> @brief Exports a finite-element file for tecplot
+%>
+%> @param[in] femstruct: TO COMPLETE, short description of femstruct
+%> @param[in] namefile: name of the tecplot file
+%>
+%> @author David Fabre
+%> @date 07/07/2017 Initial upload on github
+function exportFF_tecplot(femstruct, namefile)
+
 %% program to export a finite-element file for tecplot
 disp('PROGRAM exportFF_tecplot : exporting data in tecplot format');
 

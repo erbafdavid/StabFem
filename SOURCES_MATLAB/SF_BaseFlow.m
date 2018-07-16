@@ -1,40 +1,49 @@
-function baseflow = SF_BaseFlow(baseflow,varargin) 
-% StabFem wrapper for Base flow calculation (Newton iteration)
-%
-% usage : baseflow = SF_BaseFlow(baseflow1,['Param1',Value1,...])
-%
-% this wrapper will lanch the "Newton" FreeFem++ program of the corresponding
-% case. NB if base flow was already created it simply copies it from
-% "BASEFLOW" directory (unless if specified differently by parameter 'Type').
-%
-% List of valid parameters :
-%   Re          Reynolds number 
-%   Ma          Mach number (for compressible cases)
-%   Omegax      Rotation rate (for swirling axisymetric or 2D body)
-%   Darcy       Darcy number (for cases with porous body)
-%   Porosity    Porosity (for cases with porous body)
-%   Type        'Normal' (default) ;  'NEW' to force new computation ; 'POSTADAPT' ; for recomputing baseflow after mesh adaptation ; 'PREV' if connection was lost (obsolete ?) 
-%   ncores      Number of cores (for parallel computations)
-%
-% SF IMPLEMENTATION : 
-% According to parameters, this wrapper will launch one of the following FreeFem++ solvers :
-%       'Newton_Axi.edp'
-%       'Newton_AxiSWIRL.edp'
-%       'Newton_2D.edp'
-%       'Newton_2D_Comp.edp'
-%
-% 		NB if for some reason the mesh/baseflow compatibility was lost, use SF_BaseFlow(baseflow,'Re',Re,'type','PREV') 
-%	    to recontstruct the structures and reposition the files correctly.
-%       similarly to force recomputation even in the case a file exists (for instance just after adaptmesh) use 
-%        SF_BaseFlow(baseflow,'Re',Re,'type','NEW')
-% This syntax allows to do baseflow=SF_BaseFlow(baseflow) which is useful
-% for instance to recompute the baseflow after mesh adaptation.
-%
-% This program is part of the StabFem project distributed under gnu licence. 
-% Copyright D. Fabre, 2017-2018.
-%
-
-
+%> @file SOURCES_MATLAB/SF_BaseFlow.m
+%> @brief StabFem wrapper for Base flow calculation (Newton iteration)
+%>
+%> @param[in] baseflow: baseflow guess to initialise NEwton iterations
+%> @param[in] varargin: list of parameters and associated values
+%> @param[out] baseflow: baseflow solved by Newton iterations
+%>
+%> usage: <code>baseflow = SF_BaseFlow(baseflow1,['Param1',Value1,...])</code>
+%>
+%> This wrapper will launch the Newton FreeFem++ program of the corresponding
+%>  case. Nota Bene: if baseflow was already created, it is simply copied from
+%>  the "BASEFLOW" directory (unless specified otherwise by parameter 'Type').
+%>
+%> List of valid parameters:
+%>   - <code>Re</code>          Reynolds number
+%>   - <code>Ma</code>          Mach number (for compressible cases)
+%>   - <code>Omegax</code>      Rotation rate (for swirling axisymetric or 2D body)
+%>   - <code>Darcy</code>       Darcy number (for cases with porous body)
+%>   - <code>Porosity</code> \t\t    Porosity (for cases with porous body)
+%>   - <code>Type</code>
+%>      - <code>'Normal'</code> (default) ;
+%>      - <code>'NEW'</code> to force new computation ;
+%>      - <code>'POSTADAPT'</code> for recomputing baseflow after mesh adaptation ;
+%>      - <code>'PREV'</code> if connection was lost (obsolete ?)
+%>   - <code>ncores</code>      Number of cores (for parallel computations)
+%>
+%> SF IMPLEMENTATION:
+%> Depending on set parameters, this wrapper will select and launch one of the
+%>  following FreeFem++ solvers:
+%>       'Newton_Axi.edp'
+%>       'Newton_AxiSWIRL.edp'
+%>       'Newton_2D.edp'
+%>       'Newton_2D_Comp.edp'
+%>
+%> Nota Bene: if for some reason the mesh/baseflow compatibility was lost, use
+%>  <CODE>SF_BaseFlow(baseflow,'Re',Re,'type','PREV')</CODE> to reconstruct the structure and
+%>  relocate files correctly. Similarly, to force recomputation even if files exist,
+%>  (for instance, just after adaptmesh), use <code>SF_BaseFlow(baseflow,'Re',Re,'type','NEW')</code>.
+%>
+%> This syntax allows to do <CODE>baseflow=SF_BaseFlow(baseflow)</CODE> which is useful
+%>  for instance to recomputed the baseflow after mesh adaptation.
+%>
+%> @author David Fabre
+%> @date 2017-2018
+%> @copyright GNU Public License
+function baseflow = SF_BaseFlow(baseflow, varargin)
 global ff ffMPI ffdir ffdatadir sfdir verbosity
 
  mydisp(2,'### ENTERING FUNCTION SF_BaseFlow ');

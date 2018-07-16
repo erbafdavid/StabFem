@@ -1,25 +1,22 @@
-function [baseflow,eigenmode] = SF_Adapt(varargin)
-% 
-% This is part of StabFem Project, version 2.1, D. Fabre, July 2017
-% Matlab driver for Adapting Mesh 
-%
-% usage : [baseflow] = SF_Adapt(baseflow,eigenmode)
-%
-% with only one input argument the adaptation will be done only on base
-% flow.
-%
-% with two input arguments the adaptation will be done on base flow and
-% eigenmode structure.
-%
-%
-% The base flow (and if specified the eigenmode) will be recomputed on
-% adapted mesh
-%
-% improved usage : [baseflow,eigenmode] = SF_Adapt(baseflow,eigenmode)
-% eigenmode will also be recomputed (works in 2D but nor recommended)
-%
-% Version 2.1 by D. Fabre, 2 july 2017
-
+%> @file SOURCES_MATLAB/SF_Adapt.m
+%> @brief Matlab driver for Mesh Adaptation
+%>
+%> @param[in] baseflow: baseflow on which the adaptation is performed
+%> @param[in] (eigenmode): if provided, eigenmode on which the adaptation is performed
+%> @param[out] baseflow: baseflow recomputed on adapted mesh
+%> @param[out] (eigenmode): if asked, eigenmode recomputed on adapted mesh
+%>
+%> With only one argument, adaptation will be done on base flow only.
+%> With two arguments, adaptation is performed on base flow and eigen-
+%> mode structures.
+%> This method returns the baseflow on adapted mesh, and may return
+%> the eigenmode on this new mesh if asked. The latter works fine in
+%> 2D but is not recommended.
+%>
+%> @author David Fabre
+%> @version 2.1
+%> @date 02/07/2017 Release of version 2.1
+function [baseflow, eigenmode] = SF_Adapt(varargin)
 global ff ffdir ffdatadir sfdir verbosity
 
 % managament of optional parameters
