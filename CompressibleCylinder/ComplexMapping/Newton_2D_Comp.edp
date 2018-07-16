@@ -26,7 +26,7 @@
 load "MUMPS_FreeFem"
 load "scotch";
 load "iovtk"
-load "./FLAVIOSVERSION/CPP_FUNCTIONS/BinaryIO_64";
+load "./CPP_FUNCTIONS/BinaryIO_64";
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
 include "SF_Mesh.edp";

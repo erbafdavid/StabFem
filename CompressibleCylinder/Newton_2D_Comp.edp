@@ -26,7 +26,7 @@ load "iovtk"
 //load "MUMPS_FreeFem"
 load "MUMPS_FreeFem"
 load "scotch";
-load "./FLAVIOSVERSION/CPP_FUNCTIONS/BinaryIO_64";
+load "./CPP_FUNCTIONS/BinaryIO_64";
 include "Params.edp";
 ///////////////////
 
