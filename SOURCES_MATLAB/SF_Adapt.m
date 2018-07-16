@@ -1,30 +1,39 @@
 function [Field1New,Field2New,Field3New] = SF_Adapt(varargin)
 % 
 % This is part of StabFem Project, version 2.1, D. Fabre, July 2017
+% Generalized in July 2018, J. Sierra.
 % Matlab driver for Adapting Mesh 
 %
-% usage : [baseflow] = SF_Adapt(baseflow,eigenmode)
+% usage : [Field1New,Field2New,Field3New] = SF_Adapt(nFields,Field1,{Field2},
+%          {Field3},{TypeField1},{TypeField2},{TypeField3},{Hmax},{Hmin}
+%          {rr},{Ratio},{InterpError},{Splitin2})
 %
-% with only one input argument the adaptation will be done only on base
-% flow.
+% Parameters between {} are optional
+% 
 %
-% with two input arguments the adaptation will be done on base flow and
-% eigenmode structure.
+% In the current version the user may select between 1 to 3 generic Fields
+% Theu user may selected between the following types of FEM spaces
+%
+%   type = "ReP2P2P1" -> Real P2xP2xP1 data (for instance 2D base flow)
+%   type = "CxP2P2P1" -> Complex P2xP2xP1 data (for instance 2D mode or 2D base flow with complex mapping)
+%   type = "ReP2P2P2P1" -> Real P2xP2xP2xP1 data (for instance 3D base flow)
+%   type = "CxP2P2P2P1" -> Complex P2xP2xP2xP1 data (for instance 3D mode or 3D base flow with complex mapping)
+%   type = "ReP2P2P1P1" -> Real P2xP2xP1xP1 data (for instance 2D base flow with extra scalar)
+%   type = "CxP2P2P1P1" -> Complex P2xP2xP1xP1 data (for instance 2D mode or 2D base flow with complex mapping with an extra scalar)
+%   type = "ReP2P2P1P1P1" -> Real P2xP2xP1xP1xP1 data (for instance 2D compressible base flow)
+%   type = "CxP2P2P1P1P1" -> Complex P2xP2xP1xP1xP1 data (for instance 2D compressible mode or 2D compressible base flow with complex mapping)
 %
 %
-% The base flow (and if specified the eigenmode) will be recomputed on
-% adapted mesh
+% Note: The baseflow should be included in Field1
+% If baseflow is included in Field1, then the base flow will be recomputed 
+% on the adapted mesh
 %
-% improved usage : [baseflow,eigenmode] = SF_Adapt(baseflow,eigenmode)
-% eigenmode will also be recomputed (works in 2D but nor recommended)
 %
-% Version 2.1 by D. Fabre, 2 july 2017
+% Version 2.2 by J. Sierra, 16 july 2018
 
 global ff ffdir ffdatadir sfdir verbosity
 
 % managament of optional parameters
-% NB here the parser had to be customized because input parameter number 2
-% is optional and is a structure ! we should find a better way in future
 p = inputParser;
 nFields=varargin{1};
 if(nFields==1)
@@ -43,8 +52,7 @@ elseif(nFields == 3)
     Field3=varargin{4};
     vararginopt={varargin{5:end}};
 end
-%    addRequired(p,'baseflow');
-%    addOptional(p,'eigenmode',0);
+
 addParameter(p,'Hmax',10);
 addParameter(p,'Hmin',1e-4);
 addParameter(p,'Ratio',10.);               	
@@ -56,8 +64,6 @@ addParameter(p,'typeField2','None');
 addParameter(p,'typeField3','None'); 
 parse(p,vararginopt{:});
     
-% mycp('mesh.msh','mesh_ans.msh');
-% mycp('BaseFlow.txt','BaseFlow_ans.txt');
 
 %%% Writing parameter file for Adapmesh
 fid = fopen('Param_Adaptmesh.edp','w');
