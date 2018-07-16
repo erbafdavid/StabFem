@@ -58,6 +58,20 @@ real alpha = 1e-5;
 
 // Method selection
 string method; // If S Sponge method chosen if CM complex mapping
+// Coefficients of CM
+real BoxXnCoeff;
+real BoxXpCoeff;
+real BoxYpCoeff;
+real LaXpCoeff;
+real LaXnCoeff;
+real LaYpCoeff;
+real LcXpCoeff;
+real LcXnCoeff;
+real LcYpCoeff;
+real gcXpCoeff;
+real gcXnCoeff;
+real gcYpCoeff;
+
 
 
 string ffdatadir = "./WORK/";

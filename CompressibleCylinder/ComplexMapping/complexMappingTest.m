@@ -30,28 +30,56 @@ method = 'CM';
 symm = 1;
 symmEig = 0;
 
+BoxXpCoeff = 0.2;
+BoxXnCoeff = -0.35;
+BoxYpCoeff = 0.3;
+LaXpCoeff = 1.01;
+LaXnCoeff = 1.01;
+LaYpCoeff = 1.01;
+LcXpCoeff = 0.5;
+LcXnCoeff = 0.6;
+LcYpCoeff = 0.4;
+gcXpCoeff = 0.0;
+gcXnCoeff = 1.0;
+gcYpCoeff = 0.0;
+
+
 mysystem(['echo "xinfm= ' num2str(xinfm) '; xinfv= ' num2str(xinfv) ...
           '; yinf= ' num2str(yinf) ';" > SF_Mesh.edp']); 
 mysystem(['echo "alpha= ' num2str(alpha) '; method= \"' method ...
     '\"; symmetryBaseFlow= ' num2str(symm)...
-    '; symmetryEigenmode= ' num2str(symmEig) ';" > SF_Method.edp']);
+    '; symmetryEigenmode= ' num2str(symmEig) ... 
+    '; BoxXpCoeff= ' num2str(BoxXpCoeff) ... 
+    '; BoxXnCoeff= ' num2str(BoxXnCoeff) ... 
+    '; BoxYpCoeff= ' num2str(BoxYpCoeff) ... 
+    '; LaXpCoeff= ' num2str(LaXpCoeff) ... 
+    '; LaXnCoeff= ' num2str(LaXnCoeff) ... 
+    '; LaYpCoeff= ' num2str(LaYpCoeff) ... 
+    '; LcXpCoeff= ' num2str(LcXpCoeff) ... 
+    '; LcXnCoeff= ' num2str(LcXnCoeff) ... 
+    '; LcYpCoeff= ' num2str(LcYpCoeff) ... 
+    '; gcXpCoeff= ' num2str(gcXpCoeff) ... 
+    '; gcXnCoeff= ' num2str(gcXnCoeff) ... 
+    '; gcYpCoeff= ' num2str(gcYpCoeff) ';" > SF_Method.edp']);
 
 % Ma = 0.5 Nonlinear analysis
-Ma = 0.5
-Omegac = 0.6945
-Rec = 49.15
+Ma = 0.1
+Omegac = 0.72
+Rec = 46.94
 
 bf = SF_Init('Mesh_Cylinder.edp',[xinfm,xinfv,yinf]);
 bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1);
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',10);
 bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1);
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',10);
+[evD,emD] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
+bf=SF_Adapt(2,bf,emD,'typeField1','CxP2P2P1P1P1',...
+            'typeField2','CxP2P2P1P1P1','Hmax',10);
 [evD,emD] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
 [evA,emA] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','A','sym','A','Ma',Ma);
-bf=SF_Adapt(3,bf,emD,emA,'typeField1','CxP2P2P1P1P1',...
-            'typeField2','CxP2P2P1P1P1','typeField3','CxP2P2P1P1P1','Hmax',1);
-[evD,emD] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
-[evA,emA] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','A','sym','A','Ma',Ma);
+
+[ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S','sym','A','Ma',Ma); % type "S" because we require both direct and adjoint
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',49.35,'Normalization','V'); % Here to generate a starting point for the next chapter
 
 figure();
 % plot the base flow for Re = 60

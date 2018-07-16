@@ -89,6 +89,8 @@ if(nFields == 3)
     mycp([Field3.filename],[ffdatadir 'Field2_toadapt.txt']);
 elseif(nFields == 2)
     mycp([Field2.filename],[ffdatadir 'Field1_toadapt.txt']);
+    % We add it only to avoid issues with FF code
+    mycp([Field1.filename],[ffdatadir 'Field2_toadapt.txt']);
 else
     mycp([Field1.filename],[ffdatadir 'Field1_toadapt.txt']);
     mycp([Field1.filename],[ffdatadir 'Field2_toadapt.txt']);
@@ -149,16 +151,7 @@ end
         mycp([ffdatadir 'Field0_adapted.txt'],[ffdatadir 'BaseFlow_guess.txt']);
         Field1New = SF_BaseFlow(Field1New,'Re',Field1.Re,'type','NEW');
         if(Field1New.iter>0)
-            %  Newton successful : store base flow
-            Field1New.mesh.namefile=[ffdatadir 'BASEFLOWS/mesh_adapt_Re' num2str(Field1.Re) '.msh'];
-            mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_adapt_Re' num2str(Field1New.Re) '.txt']);
-            Field1.namefile = [ ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Field1New.Re) '.txt'];
-            mycp([ffdatadir 'mesh.msh'],[ffdatadir 'BASEFLOWS/mesh_adapt_Re' num2str(Field1New.Re) '.msh']);
-             % clean 'BASEFLOWS' directory to avoid mesh/baseflow incompatibilities
-             myrm([ffdatadir 'BASEFLOWS/BaseFlow_Re*']);
-             mycp([ffdatadir 'BaseFlow.txt'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Field1New.Re) '.txt']);
-             mycp([ffdatadir 'BaseFlow.ff2m'],[ffdatadir 'BASEFLOWS/BaseFlow_Re' num2str(Field1New.Re) '.ff2m']);
-
+            disp('Newton iteration has been completed');
         else % Newton has probably diverged : revert to previous mesh/baseflow
             mymv([ffdatadir 'mesh_ans.msh'],[ffdatadir 'mesh.msh']);
             mymv([ffdatadir 'BaseFlow_ans.txt'],[ffdatadir 'BaseFlow_guess.txt']);
