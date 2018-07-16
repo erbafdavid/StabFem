@@ -10,17 +10,20 @@ if(method == "CM")
 {
 	/// Complex mapping
 	cout << "  >>> Sponge is disabled; Complex mapping is activated" << endl;
-	real x1 = -0.8*xinfm;
-	real x0 = 0.8*xinfv;
-	real yo = 0.75*yinf;
+	real x1 = -0.25*xinfm;
+	real x0 =  10;
+	real yo = 0.15*yinf;
 	cout << "  >>> BOX parameters: " << "x1 " << x1 << "; x0 " << x0 << "; y0 " << yo << endl;
-	real La = xinfv*1.000001;
-	real Lay = yinf*1.000001;
-	real Lc = x0+5.0;
-	real Lcy = yo+5.0;
-	real gc = 2.0;
-	real gy = 2.0;
-	HX=Hx(La,Lc,gc,x0,x1);
+	real La = xinfv*1.01;
+	real Lam = -1.0001*xinfm;
+	real Lay = yinf*1.01;
+	real Lc = x0+5;
+	real Lcm = -0.35*xinfm;
+	real Lcy = yo+7;
+	real gc = -0.0;
+	real gcm=  1.0;
+	real gy = -0.0;
+	HX=Hx(La,Lam,Lc,Lcm,gc,gcm,x0,x1);
 	HY=Hy(Lay,Lcy,gy,x0,yo);
 	AMPFORCE=AmpSponge(-1.0);
 	INNERREG=InnerReg(x0, yo,x1);
@@ -31,7 +34,7 @@ else if(method == "S")
 	cout << ">>> Sponge is activated; Complex mapping is disabled" << endl;
 	AMPFORCE=AmpSponge(Ma);
 	INNERREG=InnerReg(1e8, 1e8,1e8);
-	HX=Hx(1.0,1.0,0.0,1e8,1e8);
+	HX=Hx(1.0,1.0,1.0,1.0,0.0,0.0,1e8,1e8);
 	HY=Hy(1.0,1.0,0.0,1e8,1e8);
 
 }

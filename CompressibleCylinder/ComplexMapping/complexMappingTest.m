@@ -43,24 +43,22 @@ Rec = 49.15
 
 bf = SF_Init('Mesh_Cylinder.edp',[xinfm,xinfv,yinf]);
 bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',1);
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1);
 bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',1);
-[ev,em] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
-[bf,em]=SF_Adapt(bf,em,'Hmax',3);
-
-
-
-bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
-[ev,em] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','S','sym','A','Ma',Ma);
-
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1);
+[evD,emD] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
+[evA,emA] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','A','sym','A','Ma',Ma);
+bf=SF_Adapt(3,bf,emD,emA,'typeField1','CxP2P2P1P1P1',...
+            'typeField2','CxP2P2P1P1P1','typeField3','CxP2P2P1P1P1','Hmax',1);
+[evD,emD] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
+[evA,emA] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','A','sym','A','Ma',Ma);
 
 figure();
 % plot the base flow for Re = 60
 bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
 plotFF(bf,'ux','Contour','on','Levels',[0 0]);
 %plotFF(bf,'ux');
-str = 'Box $$B_3$$ Baseflow without complex mapping';
+str = 'Box $$B_3$$ Baseflow with complex mapping';
 title(str,'Interpreter','latex');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -68,7 +66,7 @@ set(gca,'FontSize', 18);
 figure();
 % plot the eigenmode for Re = Rec
 em.xlim = [-2 8]; em.ylim=[0,5];
-plotFF(em,'ux1Adj');
+plotFF(emA,'ux1Adj');
 str = ' Adjoint Eigenmode with $$\gamma_c = 1.0$$';
 title(str,'Interpreter','latex');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -77,7 +75,7 @@ set(gca,'FontSize', 18);
 figure();
 % plot the eigenmode for Re = Rec
 em.xlim = [-2 8]; em.ylim=[0,5];
-plotFF(em,'ux1');
+plotFF(emD,'ux1');
 str = 'Eigenmode with $$\gamma_c = 0.0$$';
 title(str,'Interpreter','latex');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
