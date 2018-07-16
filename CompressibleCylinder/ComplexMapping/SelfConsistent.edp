@@ -56,7 +56,7 @@ fespace XXxxxH(th,[P2,P2,P1,P1,P1]); // space for (ux,uy,p,T,rho)
 //////////////////////////// MARCRO /////////////////////////// 
 macro def(u,p,T,rho)[u#x,u#y,p,T,rho]//EOF
 
-XXxxxH def(ub,ubp,ubT,ubrho); // base flow (start) 
+XXxxxH<complex>  def(ub,ubp,ubT,ubrho); // base flow (start) 
 XXxxxH def(Uba,Ubap,Ubatemp,Ubaro); // base flow (save) 
 XXxxxH def(Ub,Pb,Tb,Rhob); // For the macros
 XXxxxH def(Urif,Prif,Trif,Rhorif)=[1.0,0.0,1.0,1.0,1.0];
@@ -506,7 +506,7 @@ cout << " LU-ing matrix... done" << endl;
 	if(abs(dXX)>1e6) 
 	{
 	cout << "dXX" << dXX << endl;
-	def(Uba,Ubap,Ubatemp,Ubaro) = def(ub,ubp,ubT,ubrho);
+	def(Uba,Ubap,Ubatemp,Ubaro) = [u0x,u0y,u0p,u0T,u0rho];
 	def(Ub,Pb,Tb,Rhob) = [u0x,u0y,u0p,u0T,u0rho];
 	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",Uba,"MeanFlow",iter);
 	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omegaM+sigma1,"HarmonicMode",-1);
@@ -536,8 +536,8 @@ cout << " LU-ing matrix... done" << endl;
 	file << u0x[]; 
 	file << endl << endl << Re;
 }; 
-def(Ub,Pb,Tb,Rhob) = [u0x,u0y,u0p,u0T,u0rho];
-[U0x,U0y,U0p,U0temp,U0ro] = [u0x,u0y,u0p,u0T,u0rho];
+def(Ub,Pb,Tb,Rhob) = [real(u0x),real(u0y),real(u0p),real(u0T),real(u0rho)];
+[U0x,U0y,U0p,U0temp,U0ro] = [real(u0x),real(u0y),real(u0p),real(u0T),real(u0rho)];
 SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",U0,"MeanFlow",iter);
 
 [u1x,u1y,u1p,u1T,u1rho] = [u1cx-1i*u1sx,u1cy-1i*u1sy,u1cp-1i*u1sp,u1cT-1i*u1sT,u1crho-1i*u1srho]; 
