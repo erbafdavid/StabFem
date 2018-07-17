@@ -32,13 +32,13 @@ parse(p, varargin{:});
 global ff ffdir ffdatadir sfdir verbosity
 
 %if(meanflow.datatype=='BaseFlow')
-%    disp('### Self Consistent  : with guess from BaseFlow/Eigenmode');
+%    mydisp(1,'### Self Consistent  : with guess from BaseFlow/Eigenmode');
 %system(['cp ',ffdatadir, 'BaseFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
 %system(['cp ',ffdatadir, 'Eigenmode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);
 %    mycp([ffdatadir, 'BaseFlow.txt'],[ffdatadir, 'MeanFlow_guess.txt']);
 %    mycp([ffdatadir, 'Eigenmode.txt'],[ffdatadir, 'SelfConsistentMode_guess.txt']);
 %elseif(meanflow.datatype=='MeanFlow')
-%    disp('### Self Consistent : with guess from MeanFlow/SCMode');
+%    mydisp(1,'### Self Consistent : with guess from MeanFlow/SCMode');
 %system(['cp ',ffdatadir, 'MeanFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
 %system(['cp ',ffdatadir, 'SelfConsistentMode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);
 %    mycp([ffdatadir, 'MeanFlow.txt'],[ffdatadir, 'MeanFlow_guess.txt']);
@@ -53,11 +53,11 @@ mycp(meanflow.filename, [ffdatadir, 'MeanFlow_guess.txt']);
 mycp(mode.filename, [ffdatadir, 'SelfConsistentMode_guess.txt']);
 
 if (p.Results.Fyguess ~= -1)
-    disp(['starting with guess Lift force : ', num2str(p.Results.Fyguess)]);
+    mydisp(1,['starting with guess Lift force : ', num2str(p.Results.Fyguess)]);
     solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
         ' L ', num2str(p.Results.Fyguess), ' | ', ff, ' ', ffdir, 'SelfConsistentDirect_2D.edp'];
 elseif (p.Results.Aguess ~= -1)
-    disp(['starting with guess amplitude (Energy) ', num2str(p.Results.Aguess)]);
+    mydisp(1,['starting with guess amplitude (Energy) ', num2str(p.Results.Aguess)]);
     solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
         ' E ', num2str(p.Results.Aguess), ' | ', ff, ' ', ffdir, 'SelfConsistentDirect_2D.edp'];
 else
@@ -69,7 +69,7 @@ end
 status = mysystem(solvercommand);
 
 
-disp(['#### SELF CONSISTENT CALCULATION COMPLETED with Re = ', num2str(p.Results.Re), ' ; sigma = ', num2str(p.Results.sigma)]);
+mydisp(1,['#### Self-Consistent (HB1) CALCULATION COMPLETED with Re = ', num2str(p.Results.Re), ' ; sigma = ', num2str(p.Results.sigma)]);
 meanflow = importFFdata(meanflow.mesh, 'MeanFlow.ff2m');
 mode = importFFdata(meanflow.mesh, 'SelfConsistentMode.ff2m');
 
@@ -77,8 +77,8 @@ if (meanflow.iter < 0)
     error('ERROR in SF_HarmonicBalance : Newton iteration did not converge')
 end
 
-disp(['#### omega =  ', num2str(imag(mode.lambda))]);
-%disp(['#### A =  ' num2str(mode.A) ]);
+mydisp(1,['#### omega =  ', num2str(imag(mode.lambda))]);
+%mydisp(1,['#### A =  ' num2str(mode.A) ]);
 
 
 end

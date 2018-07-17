@@ -72,7 +72,7 @@ if (nargout == 1)
     mesh.filename = [ffdatadir, 'MESHES/mesh_init.msh'];
     baseflow = importFFdata(mesh, 'BaseFlow_guess.ff2m');
     baseflow.filename = [ffdatadir, 'MESHES/BaseFlow_init.txt'];
-    disp(['      ### INITIAL MESH CREATED WITH np = ', num2str(mesh.np), ' points']);
+    mydisp(1,['      ### INITIAL MESH CREATED WITH np = ', num2str(mesh.np), ' points']);
 end
 
 % myrm([ffdatadir 'Eigenmode_guess.txt']);

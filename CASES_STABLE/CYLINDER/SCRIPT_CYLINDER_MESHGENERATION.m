@@ -7,7 +7,7 @@
 
 % CHAPTER 0 : set the global variables needed by the drivers
 
-run('../SOURCES_MATLAB/SF_Start.m');verbosity = 10;
+run('../../SOURCES_MATLAB/SF_Start.m');verbosity = 10;
 
 figureformat='png'; AspectRatio = 0.56; % for figures
 

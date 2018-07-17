@@ -266,7 +266,7 @@ if (status ~= 0 && status ~= 141)
     %result
     error('ERROR : FreeFem stability computation aborted');
 else
-    % disp(['FreeFem : FreeFem stability computed for Re = ' num2str(p.Results.Re), ' ; m = '  num2str(p.Results.m) ' shift = ' num2str(shift) ])
+    % mydisp(1,['FreeFem : FreeFem stability computed for Re = ' num2str(p.Results.Re), ' ; m = '  num2str(p.Results.m) ' shift = ' num2str(shift) ])
     %
 end
 
@@ -325,15 +325,15 @@ if (nargout > 1) %% process output of eigenmodes
         if (p.Results.type == 'D')
             eigenvectors = importFFdata(ffmesh, 'Eigenmode.ff2m');
             eigenvectors.type = p.Results.type;
-            disp(['      # Stability calculation completed, eigenvalue = ', num2str(eigenvalues), ' ; converged in ', num2str(eigenvectors.iter), ' iterations']);
+            mydisp(1,['      # Stability calculation completed, eigenvalue = ', num2str(eigenvalues), ' ; converged in ', num2str(eigenvectors.iter), ' iterations']);
         elseif (p.Results.type == 'A')
             eigenvectors = importFFdata(ffmesh, 'EigenmodeA.ff2m');
             eigenvectors.type = p.Results.type;
-            disp(['      # Stability calculation completed (ADJOINT), eigenvalue = ', num2str(eigenvalues), ' ; converged in ', num2str(eigenvectors.iter), ' iterations']);
+            mydisp(1,['      # Stability calculation completed (ADJOINT), eigenvalue = ', num2str(eigenvalues), ' ; converged in ', num2str(eigenvectors.iter), ' iterations']);
         elseif (p.Results.type == 'S')
             eigenvectors = importFFdata(ffmesh, 'Eigenmode.ff2m', 'EigenmodeA.ff2m', 'Sensitivity.ff2m');
             eigenvectors.type = p.Results.type;
-            disp(['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ', num2str(eigenvalues), ' ; converged in ', num2str(eigenvectors.iter), ' iterations']);
+            mydisp(1,['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ', num2str(eigenvalues), ' ; converged in ', num2str(eigenvectors.iter), ' iterations']);
         end
         if (eigenvectors.iter < 0)
             error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1)']);

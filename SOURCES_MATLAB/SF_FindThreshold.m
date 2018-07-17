@@ -24,14 +24,14 @@ system(['cp ', ffdatadir, 'Eigenmode.txt ', ffdatadir, 'Eigenmode_guess.txt']);
 solvercommand = [ff, ' ', ffdir, 'FindThreshold2D.edp'];
 status = mysystem(solvercommand);
 
-disp(['#### Direct computation of instability threshold ']);
+mydisp(1,['#### Direct computation of instability threshold ']);
 
 baseflowT = importFFdata(baseflow.mesh, 'BaseFlow_threshold.ff2m');
 eigenmodeT = importFFdata(baseflow.mesh, 'Eigenmode_threshold.ff2m');
 
 
-disp(['#### Re_c =  ', num2str(baseflowT.Re)]);
-disp(['#### lambda_c =  ', num2str(eigenmodeT.lambda)]);
+mydisp(1,['#### Re_c =  ', num2str(baseflowT.Re)]);
+mydisp(1,['#### lambda_c =  ', num2str(eigenmodeT.lambda)]);
 
 if (nargout > 0)
     baseflow = baseflowT;

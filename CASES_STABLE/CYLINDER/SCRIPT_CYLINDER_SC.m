@@ -5,7 +5,7 @@
 
 
 %% ##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
-run('../SOURCES_MATLAB/SF_Start.m');verbosity = 10;
+run('../../SOURCES_MATLAB/SF_Start.m');verbosity = 10;
 figureformat='png'; AspectRatio = 0.56; % for figures
 
 type = 'S';
