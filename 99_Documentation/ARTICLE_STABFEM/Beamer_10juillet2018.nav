@@ -1,0 +1,103 @@
+\headcommand {\slideentry {0}{0}{1}{1/1}{}{0}}
+\headcommand {\beamer@framepages {1}{1}}
+\headcommand {\sectionentry {1}{Linear global stability : basic principles, and a few useful tricks}{2}{Linear global stability : basic principles, and a few useful tricks}{0}}
+\headcommand {\beamer@sectionpages {1}{1}}
+\headcommand {\beamer@subsectionpages {1}{1}}
+\headcommand {\slideentry {1}{0}{1}{2/2}{}{0}}
+\headcommand {\beamer@framepages {2}{2}}
+\headcommand {\beamer@subsectionentry {0}{1}{1}{3}{Qu'es aqu\IeC {\`o} ??}}\headcommand {\beamer@subsectionpages {2}{2}}
+\headcommand {\slideentry {1}{1}{1}{3/3}{Qu'es aqu\IeC {\`o} ??}{0}}
+\headcommand {\beamer@framepages {3}{3}}
+\headcommand {\slideentry {1}{1}{2}{4/4}{Qu'es aqu\IeC {\`o} ??}{0}}
+\headcommand {\beamer@framepages {4}{4}}
+\headcommand {\slideentry {1}{1}{3}{5/5}{Qu'es aqu\IeC {\`o} ??}{0}}
+\headcommand {\beamer@framepages {5}{5}}
+\headcommand {\slideentry {1}{1}{4}{6/6}{Qu'es aqu\IeC {\`o} ??}{0}}
+\headcommand {\beamer@framepages {6}{6}}
+\headcommand {\slideentry {1}{1}{5}{7/7}{Qu'es aqu\IeC {\`o} ??}{0}}
+\headcommand {\beamer@framepages {7}{7}}
+\headcommand {\beamer@subsectionentry {0}{1}{2}{8}{Three ideas to really speed up your linear stability computations !}}\headcommand {\beamer@subsectionpages {3}{7}}
+\headcommand {\slideentry {1}{2}{1}{8/15}{Three ideas to really speed up your linear stability computations !}{0}}
+\headcommand {\beamer@framepages {8}{15}}
+\headcommand {\sectionentry {2}{StabFem : a software that may save your life !}{16}{StabFem : a software that may save your life !}{0}}
+\headcommand {\beamer@sectionpages {2}{15}}
+\headcommand {\beamer@subsectionpages {8}{15}}
+\headcommand {\slideentry {2}{0}{1}{16/16}{}{0}}
+\headcommand {\beamer@framepages {16}{16}}
+\headcommand {\beamer@subsectionentry {0}{2}{1}{17}{Qu'es aqu\IeC {\`o} ???}}\headcommand {\beamer@subsectionpages {16}{16}}
+\headcommand {\slideentry {2}{1}{1}{17/23}{Qu'es aqu\IeC {\`o} ???}{0}}
+\headcommand {\beamer@framepages {17}{23}}
+\headcommand {\slideentry {2}{1}{2}{24/26}{Qu'es aqu\IeC {\`o} ???}{0}}
+\headcommand {\beamer@framepages {24}{26}}
+\headcommand {\slideentry {2}{1}{3}{27/35}{Qu'es aqu\IeC {\`o} ???}{0}}
+\headcommand {\beamer@framepages {27}{35}}
+\headcommand {\slideentry {2}{1}{4}{36/45}{Qu'es aqu\IeC {\`o} ???}{0}}
+\headcommand {\beamer@framepages {36}{45}}
+\headcommand {\slideentry {2}{1}{5}{46/49}{Qu'es aqu\IeC {\`o} ???}{0}}
+\headcommand {\beamer@framepages {46}{49}}
+\headcommand {\beamer@subsectionentry {0}{2}{2}{50}{Demonstration for the wake of a cylinder}}\headcommand {\beamer@subsectionpages {17}{49}}
+\headcommand {\slideentry {2}{2}{1}{50/52}{Demonstration for the wake of a cylinder}{0}}
+\headcommand {\beamer@framepages {50}{52}}
+\headcommand {\slideentry {2}{2}{2}{53/53}{Demonstration for the wake of a cylinder}{0}}
+\headcommand {\beamer@framepages {53}{53}}
+\headcommand {\slideentry {2}{2}{3}{54/57}{Demonstration for the wake of a cylinder}{0}}
+\headcommand {\beamer@framepages {54}{57}}
+\headcommand {\slideentry {2}{2}{4}{58/58}{Demonstration for the wake of a cylinder}{0}}
+\headcommand {\beamer@framepages {58}{58}}
+\headcommand {\slideentry {2}{2}{5}{59/59}{Demonstration for the wake of a cylinder}{0}}
+\headcommand {\beamer@framepages {59}{59}}
+\headcommand {\slideentry {2}{2}{6}{60/64}{Demonstration for the wake of a cylinder}{0}}
+\headcommand {\beamer@framepages {60}{64}}
+\headcommand {\beamer@subsectionentry {0}{2}{3}{65}{List of test-cases currently available}}\headcommand {\beamer@subsectionpages {50}{64}}
+\headcommand {\slideentry {2}{3}{1}{65/65}{List of test-cases currently available}{0}}
+\headcommand {\beamer@framepages {65}{65}}
+\headcommand {\slideentry {2}{3}{2}{66/66}{List of test-cases currently available}{0}}
+\headcommand {\beamer@framepages {66}{66}}
+\headcommand {\slideentry {2}{3}{3}{67/67}{List of test-cases currently available}{0}}
+\headcommand {\beamer@framepages {67}{67}}
+\headcommand {\slideentry {2}{3}{4}{68/68}{List of test-cases currently available}{0}}
+\headcommand {\beamer@framepages {68}{68}}
+\headcommand {\slideentry {2}{3}{5}{69/69}{List of test-cases currently available}{0}}
+\headcommand {\beamer@framepages {69}{69}}
+\headcommand {\slideentry {2}{3}{6}{70/70}{List of test-cases currently available}{0}}
+\headcommand {\beamer@framepages {70}{70}}
+\headcommand {\slideentry {2}{3}{7}{71/71}{List of test-cases currently available}{0}}
+\headcommand {\beamer@framepages {71}{71}}
+\headcommand {\slideentry {2}{3}{8}{72/72}{List of test-cases currently available}{0}}
+\headcommand {\beamer@framepages {72}{72}}
+\headcommand {\sectionentry {3}{Nonlinear global stability approaches : status and future}{73}{Nonlinear global stability approaches : status and future}{0}}
+\headcommand {\beamer@sectionpages {16}{72}}
+\headcommand {\beamer@subsectionpages {65}{72}}
+\headcommand {\slideentry {3}{0}{1}{73/73}{}{0}}
+\headcommand {\beamer@framepages {73}{73}}
+\headcommand {\slideentry {3}{0}{2}{74/74}{}{0}}
+\headcommand {\beamer@framepages {74}{74}}
+\headcommand {\beamer@subsectionentry {0}{3}{1}{75}{Weakly nonlinear approach}}\headcommand {\beamer@subsectionpages {73}{74}}
+\headcommand {\slideentry {3}{1}{1}{75/75}{Weakly nonlinear approach}{0}}
+\headcommand {\beamer@framepages {75}{75}}
+\headcommand {\beamer@subsectionentry {0}{3}{2}{76}{Self-consistent approach}}\headcommand {\beamer@subsectionpages {75}{75}}
+\headcommand {\slideentry {3}{2}{1}{76/79}{Self-consistent approach}{0}}
+\headcommand {\beamer@framepages {76}{79}}
+\headcommand {\slideentry {3}{2}{2}{80/80}{Self-consistent approach}{0}}
+\headcommand {\beamer@framepages {80}{80}}
+\headcommand {\beamer@subsectionentry {0}{3}{3}{81}{Harmonic-balance approach}}\headcommand {\beamer@subsectionpages {76}{80}}
+\headcommand {\slideentry {3}{3}{1}{81/81}{Harmonic-balance approach}{0}}
+\headcommand {\beamer@framepages {81}{81}}
+\headcommand {\slideentry {3}{3}{2}{82/82}{Harmonic-balance approach}{0}}
+\headcommand {\beamer@framepages {82}{82}}
+\headcommand {\slideentry {3}{3}{3}{83/83}{Harmonic-balance approach}{0}}
+\headcommand {\beamer@framepages {83}{83}}
+\headcommand {\partentry {Annexe}{1}}
+\headcommand {\beamer@partpages {1}{83}}
+\headcommand {\beamer@sectionpages {73}{83}}
+\headcommand {\beamer@subsectionpages {81}{83}}
+\headcommand {\beamer@appendixpages {84}}
+\headcommand {\slideentry {3}{0}{4}{84/84}{}{1}}
+\headcommand {\beamer@framepages {84}{84}}
+\headcommand {\slideentry {3}{0}{5}{86/86}{}{1}}
+\headcommand {\beamer@framepages {86}{86}}
+\headcommand {\beamer@partpages {84}{86}}
+\headcommand {\beamer@subsectionpages {84}{86}}
+\headcommand {\beamer@sectionpages {84}{86}}
+\headcommand {\beamer@documentpages {86}}
+\headcommand {\def \inserttotalframenumber {38}}

@@ -1,0 +1,5 @@
+// Description geometry (file automatically created ; to be included in the FreeFem programs)
+real GeometricalParameterD = 1;
+real GeometricalParameterH = 2;
+real GeometricalParameterXmin = -10;
+real GeometricalParameterYmax = 120;

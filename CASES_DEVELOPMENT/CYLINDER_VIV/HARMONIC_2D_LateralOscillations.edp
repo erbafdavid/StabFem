@@ -1,0 +1,137 @@
+///
+///
+///
+///		SCRIPT TO COMPUTE THE LINEAR FORCED PROBLEM OF AN OSCILLATING 2D BODY
+/// 
+///		ALL THIS COMES FROM A VERSION USED DURING N. FALL's internship (2014)
+///		recollected by D. Fabre in 2017 with mininum adaptation (to be cleaned up someday...)
+///
+
+
+
+                mesh th=readmesh("mesh.msh");
+		
+//		include "data.txt"
+
+		fespace femp2(th,P2);
+		fespace femp1(th,P1);
+		fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+		femp1 pa ,pra;
+		femp2 uxa,uya;
+
+	        femp2xfemp2xfemp1 [UX,UY,PP];
+		int Nt = UX[].n;
+		real Re;
+		string nomfile;
+		int m;
+		real OMEGA;	
+		
+//		cout << "Objet en mouvement harmonique impose (selon U)";
+//		cout << " entrez OMEGA" << endl;
+//	        cin >> OMEGA;
+//	        cout << " OMEGA = " << OMEGA << endl;
+	        
+// lecture du fichier champ de base (DEMI-ESPACE)	   
+	
+	femp2xfemp2xfemp1 [ux0,uy0,pp0];
+	femp2xfemp2xfemp1<complex> [vx,vy,qr],[ux,uy,pr];
+	femp2xfemp2xfemp1 [uxR,uyR,prR],[uxI,uyI,prI];
+
+
+		{
+ 		ifstream cbin("chbase.txt");
+		 cbin >> ux0[];
+		 cbin >> Re;
+		};
+
+
+cout << " Lecture du champ de base  : Re = " << Re << endl; 
+real nu=1./Re;
+
+//[ux0,uy0,pp0]=[0,0,0];
+//real nu=1.;
+
+// création d'une structure de vecteur permettant de calculer les différents efforts
+// traînée
+	varf DragT([vx,vy,q],[ux,uy,pp]) = int1d(th,2)( 2*pp*N.x -2*nu * ( 2*dx(ux) * N.x + (dx(uy)+dy(ux)) * N.y ) );
+	real[int] VdragT(Nt);
+	VdragT(:) = DragT(0,femp2xfemp2xfemp1);
+	
+	complex[int] VdragC(Nt);
+	VdragC(:) = DragT(0,femp2xfemp2xfemp1);
+	
+  // portance
+	varf FyT([vx,vy,q],[ux,uy,pp])   
+	= int1d(th,2)( 2*pp*N.y -2*nu * ( (dx(uy)+dy(ux)) * N.x + 2*dy(uy) * N.y ) ); 
+	real[int] VFyT(Nt);
+	VFyT(:) = FyT(0,femp2xfemp2xfemp1);
+	complex[int] VFyC(Nt);
+	VFyC(:) = FyT(0,femp2xfemp2xfemp1);
+	
+    // Moment	
+	varf MomentT([vx,vy,q],[ux,uy,pp])  = int1d(th,2)( 
+	          2*x * (pp*N.y -nu * ( (dx(uy)+dy(ux)) * N.x + 2*dy(uy) * N.y ) )
+	         -2*y * (pp*N.x -nu * ( 2*dx(ux) * N.x + (dx(uy)+dy(ux)) * N.y ) ) );
+	real[int] VmomentT(Nt);
+	VmomentT(:) = MomentT(0,femp2xfemp2xfemp1);
+	complex[int] VmomentC(Nt);
+	VmomentC(:) = MomentT(0,femp2xfemp2xfemp1);
+	
+       
+/// CALCUL trainée du champ de base
+	
+	real Drag0 = VdragT'*ux0[];
+	cout << "Trainee du champ de base : " << Drag0 <<endl;
+	real DragP = int1d(th,2)( 2*pp0*N.x );
+	real DragV = int1d(th,2)( -2*nu * ( 2*dx(ux0) * N.x + (dx(uy0)+dy(ux0)) * N.y ) );
+//	cout << " partie Pression  : " << DragP << endl;
+//	cout << " partie Visqueuse : " << DragV << endl;
+	
+
+// calcul du champ [ux,uy,pr] correspondant a une vitesse harmonique
+
+real U0=-1.; // vecteur d'osciallation latérale
+// Oscillation laterale sans changement d'inclinaison  (alpha=-gamma,theta=0)
+problem vfStokes([ux,uy,pr],[vx,vy,qr]) =
+    int2d(th)(
+            -((ux0*dx(ux)+ux*dx(ux0)+uy0*dy(ux)+uy*dy(ux0))*vx)
+            -((ux0*dx(uy)+ux*dx(uy0)+uy0*dy(uy)+uy*dy(uy0))*vy)
+            - nu*(dx(ux)*dx(vx)+dy(ux)*dy(vx))
+            - nu*(dx(uy)*dx(vy)+dy(uy)*dy(vy))
+	    + pr*(dx(vx)+dy(vy))
+            -(dx(ux)+dy(uy))*qr
+	    + pr*qr*(1e-12) 
+	    - 1i*OMEGA*ux*vx
+            - 1i*OMEGA*uy*vy
+             )
+   + int2d(th)(
+            - 1i*OMEGA*vy*U0
+             )
+       + on(2,ux=0)
+       + on(2,uy=0)
+       + on(1,4,ux=0,uy=-U0)          // 1= entree et 4 = paroi (3 = sortie)
+       + on(6,ux=0,pr=0);         		   // axe (mode antisym)
+       
+      complex L2,M2;
+      
+      
+      
+    
+ ofstream resout("HARMONIC_2D_LateralOscillations_Re"+Re+".txt");
+        
+           for(int Iom=1; Iom < 76; Iom++)
+       {
+       OMEGA = Iom*.02; // lineaire
+       cout << "OMEGA = " << OMEGA << endl;
+       vfStokes;
+
+       L2 = VFyC'*ux[];
+	M2 = VmomentC'*ux[];
+		
+	cout << "OMEGA = " << OMEGA << " ; L2 : " << L2 << endl;
+               ofstream resout("HARMONIC_2D_LateralOscillations_Re"+Re+".txt",append);
+	resout << OMEGA << " " << Re << " " << real(L2) << " " << imag(L2) << "  " << real(M2) << " " << imag(M2) << endl; 	
+	}
+
+
+	

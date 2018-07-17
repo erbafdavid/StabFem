@@ -1,0 +1,4 @@
+\select@language {french}
+\beamer@sectionintoc {1}{StabFem : pr\IeC {\'e}sentation du logiciel}{2}{0}{1}
+\beamer@sectionintoc {2}{Using StabFem for Linear stability }{36}{0}{2}
+\beamer@sectionintoc {3}{The future of StabFem }{53}{0}{3}

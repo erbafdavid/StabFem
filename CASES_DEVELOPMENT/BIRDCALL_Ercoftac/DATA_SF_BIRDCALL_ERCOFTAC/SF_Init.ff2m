@@ -1,0 +1,10 @@
+Defininition of problem type and geometrical parameters for StabFem. Problem type : 
+AxiXR
+Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)
+real Rinlet real Rhole1 real Rhole2 real H real Xin real Rcav 
+4.5
+0.5
+0.416667
+2.1054
+-10
+3

@@ -1,0 +1,6 @@
+Defininition of problem type and geometry for StabFem. Problem type : 
+3DFreeSurfaceStatic
+Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)
+real Rinit real Linit 
+1
+4

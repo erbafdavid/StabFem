@@ -1,0 +1,9 @@
+Defininition of problem type and geometry for StabFem. Problem type : 
+3DFreeSurfaceStatic
+Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)
+real R real a real Hmax real GAMMA real xi
+1
+0.3
+0.314636
+0.500935
+0.1

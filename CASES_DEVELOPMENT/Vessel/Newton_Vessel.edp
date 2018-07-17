@@ -1,0 +1,335 @@
+
+// Programme adapte a partir de Newton_FormePont (N. Achour & DF, 16 fevrier 2018 - ) 
+//load "thresholdings"
+//load "SuperLu"
+
+verbosity = 0; // bavardage a l'ecran
+ real intwait = 1; // 1 si l'on veut des traces intermediaires
+int idebug = 1;
+int c=0;
+// Calcul de la forme d'equilibre d'un pont liquide axisymetrique
+
+
+// Parametres :
+real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueur (eviter de changer !)
+
+// La methode consiste a deformer iterativement la forme 
+// de la surface jusqu'a aboutir a cet equilibre.
+// Remarque : la forme est parametree par la courbure K0, donc la methode ne
+// marche pas au voisinage d'un extremum de K0... 
+// (dans ce cas utiliser Newton_FormePont_Volume)
+
+// La forme initiale est lue dans le fichier "MeshBridge_guess.msh". 
+
+
+// Definition des parametres necessaires au bon fonctionnement des macros
+string surfaceorder="direct"; /// possibilities : "direct", "reverse" (use reverse to fit with matlab "meniscus" program);
+string typestart = "pined"; // possibilites : "pined", "axis", "plane", "angle"
+string typeend = "axis";    // possibilites : "pined", "axis", "plane", "angle"
+int anglecut =3; // position of the "cut" in the tan2 determination. 
+                  // 0 -> alpha in [-pi,pi]; 1-> [-pi/2,3pi/2]; 2 -> [0,pi] ; 3 -> [-3*pi/2,pi/2] 
+int labelsurf = 2;
+
+
+
+
+real P0;
+cout << " ENTREZ LA VALEUR DE (P0-Pext) ?" << endl;
+cin >> P0;
+
+
+
+real dpdz; 
+//cout << " ENTREZ LA VALEUR Du Bond inverse (delta rho g R^2)/(sigma)  " << endl;
+cout << " ENTREZ LA VALEUR de delta rho g " << endl;
+cin >> dpdz;
+cout << "==> dpdz = " << dpdz << endl;
+
+real gamma;
+cout << " ENTREZ LA VALEUR de gamma " << endl;
+cin >> gamma;
+cout << "==> gamma = " << gamma << endl;
+
+real RRR = 1; // NB sinon il faut integrer R dans le mailleur
+
+cout << " Nombre de Bond : " << dpdz*RRR^2/gamma << endl;
+
+real beta ;
+if(typestart=="angle")
+{
+real betadeg;
+cout << " ENTREZ LA VALEUR de beta (en degres) " << endl;
+cin >> betadeg;
+beta =pi/180*betadeg;
+cout << "==> beta = " << betadeg << " degres = "<<beta << "  radians "  << endl;
+};
+
+real K0 = P0/gamma;
+cout << "==> Courbure a l'altitude z=0 : " << K0 << endl;
+
+// entrer la valeur de beta (en degres par exemple)
+//real beta=pi/4;// pour l'instant
+
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+
+mesh MeshInt=readmesh("mesh_guess.msh");
+
+
+// NB : pour la discretisation de eta et autres variables definies sur la surface
+// on utilise le champ d'EF sur le maillage "SHEMPTY"
+// deux possibilités : 1/ shempty = MeshInt (on utilise le maillage complet)
+//                     2/ shempty = emptymesh(MeshInt) (on utilise un maillage 'vide')
+// attention il faut aussi le changer ligne 252
+
+
+//mesh Shempty=emptymesh(MeshInt); 	// Maillage 'surface'
+mesh Shempty=MeshInt;                  
+matrix A;
+
+//real[int] RHS(Shempty.nv);
+
+
+
+macro MeshForSurf  Shempty // car changement de nom (ou alors faire un replace global)
+macro dS0PointSurf dS0SegSurf // 
+
+
+include "Macros_Geometrie_SurfaceVessel.edp"
+
+// Calcul des normales et des courbures
+CalcGeomSurf;
+real[int,int] matAfiltree(Nsurface+1,Nsurface+1);
+matAfiltree=0;
+real[int] RHSfilte(Nsurface+1);
+real[int] etaNewton1(Nsurface+1);
+// Plots
+
+ExtendC;
+plot(K0ext,[N0r,N0z],fill=1,value=1,wait=intwait,cmm="Normales de la forme initiale et Courbure K0 prolongee dans le plan");
+// plot(K0ext,fill=1,value=1,wait=0,cmm="Courbure K0 prolongee dans le plan");
+
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// ALGORITHME DE NEWTON
+//
+////////////////////////////////////////////////////////////////
+
+
+
+
+real Res=1, Res1=2;
+int Itmax = 16;
+int conv=1, conv1=1, conv2=1;
+
+for(int j = 0; (j<Itmax)&(Res>1.5e-10); j++)
+{
+// Calcul de la deformation de surface et deplacement du maillage
+
+//CalcEta;
+
+//CalcEta2018; // nouvelle version avec constuction explicite de la matrice.
+//en dur
+if(c==0)
+	{
+	 varf CalcEtaMatrice(etaNewton,test) = 
+		int1d(Shempty,2)((gamma*(K0a+K0b)-(P0-dpdz*y))*test*abs(x)) 
+		                /* 1ere integrale : RHS */ 
+	     + int1d(Shempty,2)((gamma*(Ds(etaNewton))*(Ds(test))-gamma*(K0a^2+K0b^2)*etaNewton*test+dpdz*etaNewton*test*N0z)*abs(x)) 
+		                /* 2e integrale : matrice A */
+			    + int2d(Shempty)(1e-10*etaNewton*test) 
+			    +on(5,55,etaNewton=0) // dirichlet sur la surface (cas pined)
+		            +on(1,etaNewton=0);
+	A =CalcEtaMatrice(Wh1,Wh1,solver=sparsesolver);
+	real[int] RHS = CalcEtaMatrice(0,Wh1);
+	RHS = -RHS;
+	etaNewton = etaNewton;	
+	set(A,solver=sparsesolver);
+	etaNewton[] = A^-1*RHS;
+	}//end calc A, RHS, eta case 0
+if (c==1) //construction des matrices
+ {
+include "case1.edp"
+  };//end if c=1
+if (c==2)
+ {
+include "case2.edp"
+}//end if c=2
+
+/*
+for(int ksurf=0;ksurf<Nsurface;ksurf++)
+	{
+cout << "K0a("<<ksurf<<")="<<K0aPointSurf(ksurf)<<endl;
+	};
+for(int ksurf=0;ksurf<Nsurface;ksurf++)
+	{
+cout << "K0b("<<ksurf<<")="<<K0bPointSurf(ksurf)<<endl;
+	};
+for(int ksurf=0;ksurf<Nsurface;ksurf++)
+	{
+cout << "Alpha("<<ksurf<<")="<<alphaPointSurf(ksurf)<<endl;
+	};*/
+
+// ExtendEta; plot(etaext,fill=1,value=1,wait=intwait,cmm="Eta prolonge iteration "+i); //(pour visualisation)
+plot(etaNewton,fill=1,value=1,wait=intwait,cmm="Eta prolonge iteration "+j); //(pour visualisation)
+
+ if (typestart=="pined")
+       { CalcDef;}
+else {if(typestart=="angle")
+       { CalcDefAngle;}
+      };
+
+plot([ur,uz],fill=1,value=1,wait=intwait,cmm="champ de deformation calcule iteration "+j);
+
+MeshInt = movemesh(MeshInt,[x+ur,y+uz]);
+plot(MeshInt,Shempty,cmm="Deformation maillage iteration "+j,wait=intwait);
+
+//Shempty = emptymesh(MeshInt);
+Shempty = MeshInt;
+//Shempty = movemesh(Shempty,[x+ur,y+uz]);
+etaNewton = etaNewton; // IMPORTANT : pour "remettre a jour" la variable etaNewton compte tenu du changement de maillage
+
+// Recalcul des normales et courbures
+CalcGeomSurf;
+
+{
+PP1 yy,pzeromoinsdpsurdzfoisy;
+yy = y;
+for(int ksurf=0;ksurf<Nsurface+1;ksurf++)
+  {
+	pzeromoinsdpsurdzfoisy[](IndexPointSurf(ksurf)) =(P0-dpdz*yy[](IndexPointSurf(ksurf))) ;
+  };
+//ExtendC;
+//K0ext = K0ext-(P0-dpdz*yysurf)/gamma;
+K0ext = K0a+K0b-pzeromoinsdpsurdzfoisy/gamma;
+
+plot(K0ext,fill=1,value=1,cmm="Erreur courbure iteration "+j,wait=intwait);
+}
+
+Res = int1d(Shempty,2)(abs(x)*(gamma*(K0a+K0b)-(P0-dpdz*y))^2);
+cout << "res" << Res << endl;
+
+//cout << " iteration " << i << " : Res = " << Res << endl;
+
+// verif convergence
+conv = (Res<Res1); // on verifie si l'erreur diminue au cours des 3 dernieres iterations
+Res1 = Res;
+conv2=conv1;
+conv1=conv;
+}
+//  ----------------------------------------------------------------------------------------------------
+// Fin du Newton 
+//  ----------------------------------------------------------------------------------------------------
+
+cout << endl << " ------- NEWTON TERMINE -------" << endl << endl;
+cout << "Criteres de convergence = " << conv << " " << conv1 << " " << conv2 << endl;
+// Ecriture du maillage dans un fichier
+
+
+if (conv*conv1*conv2==0)
+{ 
+cout << "ATTENTION : convergence du Newton douteuse..." << endl;
+savemesh(MeshInt,"MeshVessel_NoConv.msh");
+savemesh(MeshInt,"MeshVessel.msh");
+}
+else
+{	
+cout << "solution convergee : on copie le maillage dans MeshVessel_guess.msh" << endl;
+ savemesh(MeshInt,"MeshVessel.msh");
+ savemesh(MeshInt,"MeshVessel_guess.msh");
+};
+
+//plot(MeshInt,cmm="Maillage final",wait=intwait,ps='mesh.eps");
+
+
+// a l'avenir il faudra aussi le sauver sous le nom meshguess.msh
+
+////////////////////////////////////////////////////////////////
+//
+// POST-TRAITEMENT : fichiers Infos_Geom.txt et Geom_Surface.txt
+//
+////////////////////////////////////////////////////////////////
+
+
+// Construction de vecteurs contenant les points de la surface numerotes (cf. macro)  
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+
+
+// ##################  ECRITURE D'un fichier contenant la geometrie de la surface ############ 
+real LongueurSurface = S0PointSurf(Nsurface);
+ofstream filegeom("Geom_Surface_Vessel.txt") ; // format : s0 x y K0a K0b N0r N0z,  ds(K0a K0b N0r N0z)
+// (Rem. abcisse s0 comptee a partir du sommet)
+	PP1 dsN0r = Ds(N0r);
+	PP1 dsN0z = Ds(N0z);
+	PP1 dsK0b = Ds(K0a);
+	PP1 dsK0a = Ds(K0b);
+for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
+	{
+	filegeom << S0PointSurf(ksurf) << "   " << xPointSurf(ksurf) << "  "  << yPointSurf(ksurf) << "   " 
+	<< K0a(xPointSurf(ksurf), yPointSurf(ksurf) ) << "   " << K0b(xPointSurf(ksurf), yPointSurf(ksurf) ) << "   "
+	<< N0r(xPointSurf(ksurf), yPointSurf(ksurf) )<< "   " << N0z[][IndexPointSurf(ksurf)  ] << "   " 
+	<< dsK0a(xPointSurf(ksurf), yPointSurf(ksurf) )<< "   " << dsK0b(xPointSurf(ksurf), yPointSurf(ksurf) ) << "   "
+	<< dsN0r(xPointSurf(ksurf), yPointSurf(ksurf) ) << "   " << dsN0z(xPointSurf(ksurf), yPointSurf(ksurf) ) << endl ;
+	};
+//
+
+
+
+// Calcul de diverses quantites interessantes
+real Vol = 2*pi*int2d(MeshInt)(x); // Volume
+real Area = 2*pi*int1d(MeshInt,2)(x); // Surface
+real Rmax = xPointSurf(0:Nsurface).max;
+real Rmin = xPointSurf(0:Nsurface).min;
+real Zmax = yPointSurf(0:Nsurface).max;
+real Zmin = yPointSurf(0:Nsurface).min;
+real Z1 = yPointSurf(0);
+real Z2 = yPointSurf(Nsurface);
+real L = Z2-Z1;
+real alphastart = alphaPointSurf(0)*180/pi;
+real alphaend = alphaPointSurf(Nsurface)*180/pi;
+
+
+cout << " ####### STATISTIQUES sur la forme : " << endl << endl;
+cout << " ## Longueur                        : " << L << endl;
+cout << " ## gradient pression adim (Bo^-1)  : " << dpdz*RRR^2/gamma << endl;
+cout << " ## Volume                          : " << Vol << endl;
+cout << " ## Volume / Volume cyl             : " << Vol/(pi*L*Rbase^2) << endl;
+cout << " ## Courbure                        : " << K0 << endl;
+cout << " ## SURFACE                         : " << Area << endl;
+cout << " ## Rmax                            : " << Rmax << endl;
+cout << " ## Rmin                            : " << Rmin << endl;
+cout << " ## Zmax                            : " << Zmax << endl;
+cout << " ## Zmin                            : " << Zmin << endl;
+cout << " ## alphastart (deg)                : " << alphastart << endl;
+cout << " ## alphaend (deg)                  : " << alphaend << endl;
+cout << endl;
+
+
+// fichier info geom
+{
+ofstream fileG("Infos_Geom_Vessel.txt");
+fileG.scientific;
+fileG << L << " " ; 
+fileG << Vol/(pi*L*Rbase^2) << " " ;
+fileG << K0 << " " ; 
+fileG << dpdz << " " ;
+fileG << Area << " ";
+fileG << Zmin << " " ; 
+fileG << Zmax << " " ; 
+fileG << Rmin << " " ; 
+fileG << Rmax << " ";
+fileG <<  endl ; 
+fileG << "### Infos geometrie : L Vol' K0 dpdz Area Zmin Zmax Rmin Rmax" << endl;
+};
+cout << endl << "The end..." << endl << endl;

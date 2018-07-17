@@ -1,0 +1,12 @@
+\select@language {french}
+\beamer@sectionintoc {1}{Linear global stability : basic principles, and a few useful tricks}{2}{0}{1}
+\beamer@subsectionintoc {1}{1}{Qu'es aqu\IeC {\`o} ??}{3}{0}{1}
+\beamer@subsectionintoc {1}{2}{Three ideas to really speed up your linear stability computations !}{8}{0}{1}
+\beamer@sectionintoc {2}{StabFem : a software that may save your life !}{16}{0}{2}
+\beamer@subsectionintoc {2}{1}{Qu'es aqu\IeC {\`o} ???}{17}{0}{2}
+\beamer@subsectionintoc {2}{2}{Demonstration for the wake of a cylinder}{50}{0}{2}
+\beamer@subsectionintoc {2}{3}{List of test-cases currently available}{65}{0}{2}
+\beamer@sectionintoc {3}{Nonlinear global stability approaches : status and future}{73}{0}{3}
+\beamer@subsectionintoc {3}{1}{Weakly nonlinear approach}{75}{0}{3}
+\beamer@subsectionintoc {3}{2}{Self-consistent approach}{76}{0}{3}
+\beamer@subsectionintoc {3}{3}{Harmonic-balance approach}{81}{0}{3}

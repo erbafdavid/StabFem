@@ -1,0 +1,310 @@
+//  Computation of the eigenvalues and eigenvectors for sessile drop
+//  (inviscid theory)
+// ----------------------------------------
+// the problem is potential : u = i grad (phi) (mind the "i" factor !) 
+// PROBLEM : find $\omega$ and $[phi,eta]$  such that
+// 	$$ \Delta \phi = 0 $$ inside the domain
+// 	$$ \omega \phi = \gamma (-(K0a^2+K0b^2) \eta - \partial^2 \eta / \partial s^2 + m^2/r^2 \eta $$ on the free surface
+// 	$$ \omega \eta = grad \phi \dot n $$ on the free surface 
+// 
+//-----------------------------------------
+
+// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
+
+// Definition des parametres necessaires au bon fonctionnement des macros
+string surfaceorder="direct"; /// possibilities : "direct", "reverse" (use reverse to fit with matlab "meniscus" program);
+string typestart = "pined"; // possibilites : "pined", "axis", "plane", "angle"
+string typeend = "axis";    // possibilites : "pined", "axis", "plane", "angle"
+int anglecut =2; // position of the "cut" in the tan2 determination. 
+                  // 0 -> alpha in [-pi,pi]; 1-> [-pi/2,3pi/2]; 2 -> [0,pi] ; 3 -> [-3*pi/2,pi/2] 
+
+verbosity=0;
+
+// constantes physiques 
+real g=1;//9.81;                 // Gravity field
+real gamma = 1;//72.8;	  // Surface Tension
+real R=4.6;
+real dpdz ;
+int  testDIR = exec("ls RES_STAB > OUTRES");
+	
+	if (testDIR!=0)
+		{
+		cout << "Creation d'un repertoire RES_STAB" << endl;
+		exec("mkdir RES_STAB");
+		}
+
+// Parametres du calcul
+int m;  // Nombre d'onde
+int Nval = 10;  // nb. de valeurs propres à calculer
+int Nmodes = 10; // nb. de vecteurs propres à post-traiter
+
+cout << " ENTREZ Le nombre d'onde m ?" << endl;
+cin >> m;
+cout << "==> Calcul des valeurs propres pour m = " << m << endl;
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+//MeshVessel_guess.msh
+
+mesh Th=readmesh("Mesh_Translator_guess.msh");
+
+//mesh Th=readmesh("mesh_guess.msh");
+
+mesh MeshInt=Th; // autre nom possible...
+mesh Shempty=MeshInt; 	
+real L, K0, Vol, Area;
+
+include "MG.edp"
+
+// Calcul des normales et des courbures
+CalcGeomSurf;
+
+
+// fichier info geom
+
+{
+ifstream fileG("Infos_Geom.txt");
+fileG >> L; 
+fileG >> Vol;
+fileG >> K0;
+fileG >> dpdz; 
+fileG >> Area;
+//fileG >> Nsurface;
+}
+
+dpdz= 1;//979.04; // warning in future
+Vol = 2*pi*int2d(MeshInt)(x);
+
+
+cout << " ####### Infos Geometrie    " << endl << endl;
+cout << " ## Longueur              : " << L << endl;
+cout << " ## Volume                : " << Vol << endl;
+cout << " ## K0                    : " << K0 << endl;
+cout << " ## Bo                    : " << dpdz*1^2/gamma << endl;
+cout << " ## SURFACE               : " << Area << endl;
+cout << " ## Densite maillage      : " << Nsurface << endl;
+
+
+
+
+////////////////////////////////////////////////////
+//
+//  DECLARATION DES MATRICES
+//
+/////////////////////////////////////////////////////
+
+
+//fespace Vh(Th,P1);
+fespace VhxVh(Th,[P1,P1]);
+
+VhxVh [phi,eta],[q,v];
+Vh phiB,etaB,qB,vB,phiA,etaA,qA,vA;
+
+real shift = 0;  // value of the shift
+real RegEta = 1e-8;
+
+
+
+// Construction de la matrice A
+// ANCIENNE METHODE
+//varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v] instead
+// Laplacian	  
+//	  int2d(Th)(  (dx(phi)*dx(v) + dy(phi)*dy(v)+(m^2+1e-8)*phi*v/(x^2+1e-30))*x  ) 
+//	  		// desingularisation term necessary if m=0 ; don't know why
+// Curvature	  
+//	+ int1d(Th,2)(gamma*((Ds(eta))*(Ds(q))-(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*abs(x))
+// gravity
+//	+int1d(Th,2)(dpdz*eta*q*N0z*x)
+// shift 
+//	- int1d(Th,2)(shift*(eta*v+q*phi)*x)
+// Pour regulariser eta dans le volume	
+//		+ int2d(Th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*abs(x)) //  deuxieme idee : laplacien 
+// Conditions limites par penalisation
+//+ int1d(Th,1,5)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
+//+ int1d(Th,1)(m*phi*v*1e30) // CL axe pour m different de 0
+//;
+//matrix A= a(VhxVh,VhxVh,solver=UMFPACK);
+
+
+// Nouvelle methode par blocs
+varf avphi(phiA,vA)=	  
+	  int2d(Th)(  (dx(phiA)*dx(vA) + dy(phiA)*dy(vA)+(m^2+1e-8)*phiA*vA/(x^2+1e-30))*x  ) 
+	+ int1d(Th,1)(m*phiA*vA*1e30)
+;
+
+varf aqeta(etaA,qA)=
+	int1d(Th,2)(gamma*((Ds(etaA))*(Ds(qA))-(K0a^2+K0b^2)*etaA*qA+m^2/(x^2+1e-30)*qA*etaA)*abs(x))
+	+int1d(Th,2)(dpdz*etaA*qA*N0z*x)
+	+ int2d(Th)((dx(qA)*dx(etaA)+dy(qA)*dy(etaA))*RegEta*abs(x))
+	+ int1d(Th,1,5)(1e30*etaA*qA*abs(x))
+	+ int1d(Th,55)(etaA*qA*1e30*(typestart=="pined"))
+;
+
+/*varf aveta(etaA,vA)=
+	int2d(Th)((dx(vA)*dx(etaA)+dy(vA)*dy(etaA))*1e-30*abs(x))//
+	- int1d(Th,2)(shift*(etaA*vA)*x)
+;
+
+varf aqphi(phiA,qA)=
+	int2d(Th)( 1e-30*(dx(phiA)*dx(qA) + dy(phiA)*dy(qA))*x  ) //
+	- int1d(Th,2)(shift*(qA*phiA)*x)
+;*/
+matrix Avphi = avphi(Vh,Vh,solver=UMFPACK);
+//matrix Aqphi = aqphi(Vh,Vh,solver=UMFPACK);
+matrix Aqeta = aqeta(Vh,Vh,solver=UMFPACK); 
+//matrix Aveta = aveta(Vh,Vh,solver=UMFPACK); 
+Aqeta(IndexPointSurf(0),IndexPointSurf(0)) = Aqeta(IndexPointSurf(0),IndexPointSurf(0))
+                                            +gamma*(1/tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0)*(typestart=="angle");
+
+matrix A = [[0,Aqeta],[Avphi,0]];
+set(A,solver =UMFPACK);
+
+
+// Construction de la matrice B
+// ANCIENNE METHODE
+//varf b([phi,eta],[q,v]) = 
+//        int1d(Th,2)(eta*v*x)
+//       +int1d(Th,2)(q*phi*x);
+//matrix B= b(VhxVh,VhxVh,solver=GMRES,eps=1e-20); 
+
+// Nouvelle methode par blocs
+varf bqphi(phiB,qB) = 
+       int1d(Th,2)(qB*phiB*x);
+
+varf bveta(etaB,vB) = 
+        int1d(Th,2)(etaB*vB*x);
+
+matrix Bqphi = bqphi(Vh,Vh,solver=GMRES,eps=1e-20); 
+matrix Bveta = bveta(Vh,Vh,solver=GMRES,eps=1e-20); 
+matrix B = [[Bqphi,0],[0,Bveta]];
+set(B,solver =GMRES);
+
+ 
+
+
+
+////////////////////////////////////////////////////
+//
+//  RESOLUTION DU PB AUX VALEURS PROPRES
+//
+/////////////////////////////////////////////////////
+
+
+ 
+
+
+
+
+/*real[int,int] A1(A.n,A.m);
+A1=0.;
+cout<<IndexPointSurf.n<<endl;
+int[int] Xi(A.nbcoef) ;
+int[int] Xj(A.nbcoef) ;
+real[int] Axij(A.nbcoef);
+[Xi,Xj,Axij]=A;
+//cout<<"nbcoef"<< A.n<<endl;
+for(int n1 = 0; n1 < A.nbcoef; n1++)
+	{
+		A1(Xi(n1),Xj(n1))=Axij(n1);
+	};
+matrix A2=A1;	*/
+
+int nev=Nval;  // number of computed eigen valeu close to sigma
+real[int] ev(nev),evi(nev); // to store nev eigein value
+VhxVh[int] [eVphi,eVeta](nev);   // to store nev eigen vector
+
+real[int,int] EVV(A.n,nev);
+
+int k=EigenValue(A,B,sym=false,sigma=shift,value=ev,ivalue=evi,vector=eVphi,tol=1e-10,maxit=0,ncv=0);
+
+//EVV = eVphi[][];
+
+
+////////////////////////////////////////////////////
+//
+//    POST TRAITEMENT
+//
+///////////////////////////////////////////////////
+
+
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
+
+cout << " ### VP Calculees :" << endl;
+
+real[int]  eev(Nval);
+ofstream EV("spectrum.dat");
+EV.scientific;
+
+
+for (int i=0;i<k;i++)
+{
+  cout << " VP numero " <<  i<< " : " << ev[i] << "+i"<<evi[i] <<  endl;
+  EV << ev[i] << "  "<< evi[i] << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
+//    plot(u1,cmm="Eigen  Vector "+i+" valeur =" + ev[i]  ,wait=1,value=1);
+
+}; 
+  
+exec("cp spectrum.dat RES_STAB/VPSessileDrops_L"+L+"_K"+K0+"_m"+m+".dat");  
+    
+    
+// Post-traitement MODES
+for (int i=0;i<Nmodes;i++)
+   {	
+    Vh ModePhi,ModeEta;
+//    ModePhi=eVphi[i];
+//    ModeEta=eVeta[i];
+	real[int] EVVV(A.n);
+	EVVV = eVphi[i][];
+	//ModeEta = ModeEta/ModeEta(1,0)*.5;
+	//ModePhi = ModePhi/ModeEta(1,0)*.5;
+	[ModePhi[],ModeEta[]] = EVVV;
+
+    
+    
+
+
+
+    Vh ux,uy;
+    ux = dx(ModePhi);
+    uy = dy(ModePhi);
+    Vh dsEta;
+ // autre methode a essayer : 
+	solve calcdeta(dsEta,test) = int1d(Th,2)(test*dsEta)-int1d(Th,2)(test*Ds(ModeEta))+int2d(Th)((dx(dsEta)*dx(test)+dy(dsEta)*dy(test))*RegEta*abs(x)); 
+ 
+	ofstream FilePhi("RES_STAB/ModeSessileDrops_L"+L+"_K"+K0+"_m"+m+"_Mode"+i+"_PHI.dat");
+	ofstream FileEta("RES_STAB/ModeSessileDrops_L"+L+"_K"+K0+"_m"+m+"_Mode"+i+"_ETA.dat");
+	cout << "post-traitement mode "+i+" : fichiers ModeSessileDrops_L"+L+"_K"+K0+"_m"+m+"_Mode"+i+"_PHI.dat et _ETA.dat" << endl; 
+	
+	plot(ModePhi,cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : phi"  ,wait=1,value=1);
+        plot([ux,uy],cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : [u,v]"  ,wait=1,value=1);
+	Vh normU = sqrt(ux^2+uy^2);
+	plot(normU,cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : mean velocity"  ,wait=1,value=1,fill=1);
+        plot(ModePhi,cmm="Eigen  Vector "+i+" valeur =" + ev[i]+" : eta"  ,wait=1,value=1);
+	
+	FilePhi << ModePhi[] << ModeEta[] << endl << endl << ev[i]  << " " <<  evi[i] <<  endl;
+	
+	for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
+	{
+	FileEta << S0PointSurf(ksurf) << "   "  << ModeEta(xPointSurf(ksurf), yPointSurf(ksurf) )  << "   " 
+ 	<< dsEta(xPointSurf(ksurf), yPointSurf(ksurf) )  << "   " 
+		<< xPointSurf(ksurf) << "  "  << yPointSurf(ksurf) << "   " 
+	    << N0r(xPointSurf(ksurf), yPointSurf(ksurf) )<< "   " << N0z(xPointSurf(ksurf), yPointSurf(ksurf) )  << endl ;
+	};
+   };
+	
+
+
+
+

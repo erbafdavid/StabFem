@@ -1,0 +1,8 @@
+Definition of problem type and geometrical parameters for StabFem. Problem type : 
+2D
+Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)
+real D real Xmin real H real Ymax
+1
+-10
+2
+120

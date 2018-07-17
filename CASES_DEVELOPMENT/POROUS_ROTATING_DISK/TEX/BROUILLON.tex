@@ -1,0 +1,85 @@
+\documentclass[article,11pt,a4paper,nomtoc]{LaRouviereClasse}
+	\title{Axi Pourous Disk}
+	\author{Adrien Rouviere}
+	\date{\today}
+	\hypersetup{pdftitle=Axi Pourous Disk,
+				pdfauthor=Adrien Rouviere}
+
+%\graphicspath{{Images/Brouillon/}}
+	
+\begin{document}
+%ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Équations physiques}
+
+Dans le fluide $\Omega_f$ :
+\begin{equation}
+	\left(\vec{u}\cdot\gradd\right)\vec{u} = -\gradd p + \dfrac{2}{Re}\Divv\tens{D}(\vec{u}).
+	\label{Fluide}
+\end{equation}
+
+Dans le disque $\Omega_p$ :
+\begin{equation}
+	\left(\dfrac{1}{\epsilon^2}\vec{u}\cdot\gradd\right)\vec{u} = -\gradd p + \dfrac{2}{\epsilon Re}\Divv\tens{D}(\vec{u}) - \dfrac{1}{Re}\dfrac{1}{Da}\left(\vec{u}-\vecg{\Omega}\wedge\vec{x}\right).
+	\label{Poreux}
+\end{equation}
+
+Partout $\Omega$ :
+\begin{equation}
+	\Divv\vec{u} = \vecg{0}.
+	\label{Div u}
+\end{equation}
+
+On note
+\begin{equation}
+	\mathcal{NS}(\vec{u},p) = -\mathcal{S}_1\left(\vec{u}\cdot\gradd\right)\vec{u} - \gradd p + \mathcal{S}_2\dfrac{2}{Re}\Divv\tens{D}(\vec{u}),
+	\label{NS}
+\end{equation}
+où
+\begin{equation}
+\mathcal{S}_1 =
+\begin{cases}
+	1						& \text{dans }\Omega_f \\
+	\frac{1}{\epsilon^2}	& \text{dans }\Omega_p
+\end{cases}
+\qquad\text{et}\qquad
+\mathcal{S}_2 =
+\begin{cases}
+	1						& \text{dans }\Omega_f \\
+	\frac{1}{\epsilon}		& \text{dans }\Omega_p
+\end{cases}
+\end{equation}
+
+\section{Formulation faible}
+
+\begin{equation}
+	\underbrace{\iint_\Omega{q\cdot\eqref{Div u}\;\dd S}}_{(I)} + \underbrace{\iint_\Omega{\vec{v}\cdot\eqref{NS}}\;\dd S}_{(II)} + \underbrace{\iint_{\Omega_p}{\vec{v}\cdot\left[\dfrac{-1}{Re\ Da}\left(\vec{u}-\vecg{\Omega}\wedge\vec{x}\right)\right]\;\dd S}}_{(III)}.
+\end{equation}
+
+On pose
+\begin{equation}
+	\begin{bmatrix}
+	\vec{u} \\ 
+	p
+	\end{bmatrix}
+	=	\begin{bmatrix}
+	\vec{u^\star} \\ 
+	p^\star
+	\end{bmatrix} + \begin{bmatrix}
+	\vec{\delta u} \\ 
+	\delta p
+	\end{bmatrix}
+\end{equation}
+
+On obtient tout calculs faits :
+
+\begin{multline}
+	\iint_{\Omega}{q\cdot\Div\left(\vec{u^\star}\right)} + \iint_{\Omega}{q\cdot\Div\left(\vec{\delta u}\right)} + \iint_{\Omega}{-\mathcal{S}_1\;\dfrac{1}{2}\mathcal{C}\left(\vec{u^\star},\vec{u^\star}\right)\cdot\vec{q}} + \iint_{\Omega}{-\mathcal{S}_1\;\mathcal{C}\left(\vec{u^\star},\vec{\delta u}\right)\cdot\vec{q}} \\ + \iint_{\Omega}{p^\star\cdot\Div(\vec{v})} + \iint_{\Omega}{\delta p\cdot\Div(\vec{v})} + \iint_{\Omega}{-\mathcal{S}_2\;\tens{D}(\vec{v}):\tens{D}(\vec{u^\star})} + \iint_{\Omega}{-\mathcal{S}_2\;\tens{D}(\vec{v}):\tens{D}(\vec{\delta u})} \\ + \iint_{\Omega_p}{\dfrac{-1}{Re\;Da}\vec{v}\cdot\left(\vec{u}-\vec{u_s}\right)} + \iint_{\Omega_p}{\dfrac{-1}{Re\;Da}\vec{v}\cdot\vec{\delta u}} + \text{ C.L } = 0
+\end{multline}
+
+%ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+\end{document}
+
+%%-----------------------------------------
+%	\subsection{}
