@@ -1,0 +1,9 @@
+Mesh for a sphere
+PROBLEM TYPE :
+2D
+PARAMETERS : 
+R  Xmin Xmax Rmax
+0.5
+-40
+120
+40

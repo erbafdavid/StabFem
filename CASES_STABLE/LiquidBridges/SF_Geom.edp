@@ -1,0 +1,4 @@
+// Description geometry (file automatically created ; to be included in the FreeFem programs)
+ real SFGeomRbridge = 1 ;
+ real SFGeomLbridge = 4 ;
+ real SFGeomGAMMA = 0 ;

@@ -1,0 +1,6 @@
+// Description geometry (file automatically created ; to be included in the FreeFem programs)
+ real SFGeomR = 1 ;
+ real SFGeomGAMMA = 0.500935 ;
+ real SFGeomXI = 0.1 ;
+ real SFGeoma = 0.3 ;
+ real SFGeomHmax = 0.314636 ;

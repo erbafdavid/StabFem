@@ -1,0 +1,7 @@
+// Description geometry (file automatically created ; to be included in the FreeFem programs)
+ real SFGeomLengthscale = 1 ; // length scale for nondimensionalization
+ real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization
+ real SFGeomLcyl = 1 ; 
+ real SFGeomRbody = 0.5 ; 
+ real SFGeomRpipe = 10 ; 
+ string SFGeomtypeinlet = "Constant" ; 

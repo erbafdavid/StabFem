@@ -1,0 +1,61 @@
+ //////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// PARAMETERS ////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+// MESH INFO and SPONGE
+
+
+// boundary label
+//int bcinlet=1;
+//int bcoutlet=3;
+//int bcnoslip=2;
+
+real xinfm,xinfv,yinf;
+real x1m,x1v,y1;
+real x2m,x2v,y2;
+// dominio sponge
+
+
+// Sponge zone
+real ls;
+// densità di vertici nelle sottozone 
+real n;
+
+real ncil=75, n1=5, n2=2.5,ns=0.4;
+real nsponge=0.05;
+// sponge
+
+
+
+
+// Path dove salvare
+
+string pht="./WORK/";
+string namemesh="mesh.msh"; 
+
+//if(mpirank==0)
+  exec("mkdir -p "+pht+" ");
+
+real alpha = 1e-4;
+//cout<<alpha/ls^2<<endl;
+
+func real AmpSponge(real M)
+  
+{
+  if(M>0)
+    return abs(1.+1./M)*(x>xinfv)*(alpha*(x-xinfv))+abs(1.-1./M)*(x<xinfm)*(alpha*(xinfm-x))+abs(1./M)*(abs(y)>yinf)*(alpha*(abs(y)-yinf));
+  else
+    return 0.0;
+}
+
+func real InnerReg()
+{
+if(x>x2m && x<x2v && y < y2 && y > (-y2))
+	return 1.0;
+
+else
+	return 0.0;
+}
+
+//load "./CPP_FUNCTIONS/BinaryIO_64"
+//load "./CPP_FUNCTIONS/ComplexIO_64"

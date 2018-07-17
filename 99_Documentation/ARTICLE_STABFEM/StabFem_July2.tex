@@ -1,0 +1,107 @@
+\documentclass[10pt,blue,hyperref={pdfpagemode=FullScreen}]{beamer}
+%\usepackage[latin1]{inputenc}
+%\usepackage[T1]{fontenc}
+\usepackage[frenchb]{babel}
+\usepackage{aeguill}
+\usepackage{graphics}
+\usepackage{multimedia}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{rotate}
+\usepackage{epstopdf}
+
+
+\usepackage[normalem]{ ulem }
+\usepackage{soul}
+
+%\usepackage{beamerthemePauline}
+%\usepackage{beamerfontthemestructuresmallcapsserifPauline}
+\usecolortheme{seahorse}
+\setbeamertemplate{frametitle}
+{
+\begin{centering}
+\insertframetitle
+\par
+\end{centering}
+}
+
+\title[]{ Rénion "StabFem" }
+%\institute[]{  IMFT UMR CNRS 5502, Universit\'e Paul Sabatier Toulouse }
+\author[D. Fabre]{David Fabre et al.}
+\date{\vspace{1.cm} 02/07/2018}
+
+\begin{document}
+
+
+\setbeamertemplate{navigation symbols}{}
+%\AtBeginSection{
+%\frame{\tableofcontents[current]}
+%}
+
+\AtBeginSubsection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Plan}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+%\AtBeginSubsection{
+%\frame{\tableofcontents[currentsection,currentsubsection]}
+%}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\frame{
+\titlepage
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\frame{
+%\tableofcontents
+%}
+
+
+%\section{A simple "1D" problem }
+%\subsection{Définition du problème}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{StabFem : Cahier des charges }
+%Equations : 
+%\begin{equation}
+%$$\frac{\partial V }{\partial t} = \nu \frac{\partial^2 V}{\partial y^2} $$
+%\label{eq:navier}
+%\end{equation}
+%(on a supposé pour simplifier qu'il n'y avait pas de gradient de pression autre qu'hydrostatique).
+%Conditions limites : $\left. v\right|_{y=0} = 0$, $\left. v\right|_{y=h} = U(t)$  
+
+\begin{itemize}[<+->]
+
+\item StabFem : an open-source and easy-to-use software allowing a large range of computations in fluid mechanics.
+
+\item Initially  oriented towards Global Stability Approches (Linear \& Nonlinear) but allowing a larger number of computations
+(DNS, linear acoustics, etc...)
+
+\item Easy to use/install/customize, 
+
+\item Multi-platform (Unix, MacOs, Windows) and design to run on "light" computers (Laptops...)
+
+\item Freeware, based on two softwares : FreeFem++ and \sl{Matlab} -> Octave ? Python ?
+
+\item Developed as a collaborative project
+(IMFT, Università di Salerno, ONERA, UPFL, ...)
+
+\item Maintained on Github
+
+\end{itemize}
+
+\end{frame}
+
+
+
+\end{document}
+
+%\section{Objets mobiles}
+
+

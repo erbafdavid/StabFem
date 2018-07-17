@@ -1,0 +1,187 @@
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////
+///// 
+/////                              MESH GENERATOR for a cylinder
+/////
+/////             This file creates a mesh and an initial base flow for the "StabFem" program.
+/////
+/////             input parameters : Xmin Xmax Ymax
+/////  			  
+/////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
+include "Macros_StabFem.edp" 
+
+
+//string ffdatadir = "./WORK/";
+
+// load "iovtk"                       /// load library to write in vtk format
+// load "BinaryIO"                 ////load libary to write the solution in binary form
+// load "BinaryIO_64"
+
+
+
+//real Rbody=0.5;         /////// Cylinder Rbody
+ 
+
+
+real n=1;                 
+int ns=60; 
+
+cout << " Generation of an initial mesh for an AFTERBODY in a PIPE" << endl;
+cout << " Enter the dimensions Rbody, Lcyl, Rmax, xmax ? " << endl; 
+
+//real xinlet=-20.;     
+//real xoutlet=40.; 
+//real yside=20.;       
+real xinlet , xoutlet, Rpipe,Lcyl,Rbody, Lel ;
+
+cin >> Rbody >> Lcyl >> Rpipe >> xoutlet ;
+
+cout << "DIMENSION OF THE BODY ; radius Rb = " << Rbody << endl; 
+cout << "Length of cylindrical part :  Lcyl = " << Lcyl << endl;  
+cout << "Confinement : Rtube = " << Rpipe << endl;
+cout << "SIZE OF DOMAIN : Xmin = " << xinlet << " ; Xmax = " << xoutlet << endl;
+
+
+int bctype;
+cout << "Type of Boundary condition at lateral boundary : " << endl;
+cout << "             1-> constant velocity " << endl <<  "             2-> fixed wall (zero velocity) " << endl 
+<< "             5 -> slip  " << endl;
+cin >> bctype;
+
+/////////////////////////////////////////////////////////////////////////////////
+//int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+                         /////// label for boundary conditions  
+/////////////////////////////////////////////////////////////////////////////////
+// cylinder center is in (0,0)
+
+xinlet = 0;
+
+//border cylinder(t=0,pi){ x=Rbody*cos(t);y=Rbody*sin(t);label=bcwall;}
+//border square1(t=0,pi/2){x=-Lel*cos(t);y=Rbody*sin(t);label=21;}
+border square2(t=0,Lcyl){x=t;y=Rbody;label=22;}
+border square3(t=Rbody,0){x=Lcyl;y=t;label=23;}
+
+//border cylref(t=0,2*pi){ x=(Rbody+RR)*cos(t);y=(Rbody+RR)*sin(t);label=999;}
+
+border inlet(t=Rpipe,2*Rbody){ x=xinlet;y=t;label=1;}
+border inlet2(t=2*Rbody,Rbody){ x=xinlet;y=t;label=1;}
+//border axis1(t=xinlet,-2*Lel){ x=t;y=0;label=6;}
+//border axis11(t=-2*Lel,-Lel){ x=t;y=0;label=6;}
+border axis21(t=Lcyl,Lcyl+Rbody){ x=t;y=0;label=6;}
+border axis2(t=Lcyl+Rbody,xoutlet){ x=t;y=0;label=6;}
+border outlet(t=0,Rpipe){ x=xoutlet;y=t;label=3;}
+border latsup1(t=xoutlet,Lcyl){x=t;y=Rpipe;label=bctype;}
+border latsup2(t=Lcyl,xinlet){x=t;y=Rpipe;label=bctype;}
+
+
+border refinedcorner(t=0,pi/2){x=Lcyl+Rbody*cos(t);y=Rbody*(1+sin(t));label=99;}
+//border latsup3(t=-Rbody,xinlet){x=t;y=Rpipe;label=bctype;}
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+// plot(inlet(10)+latinf(10)+outlet(10)+latsup(10)+cylref(10)+cylinder(10)+a1(10)+a2(10)+a3(10)+a4(10));
+                         /////// Just to check the borders
+/////////////////////////////////////////////////////////////////////////////////
+// Build a mesh 
+
+IFMACRO(FREEFEMPLOTS,YES)
+cout << "toto" << endl;
+plot(inlet((Rpipe-2*Rbody)*n)+inlet2(Rbody*ns)
+//	+axis1((-Rbody-xinlet)*n)+axis11(ns*Rbody)
+	+axis21(ns*Rbody)+axis2((xoutlet-Lcyl)*n)
+	+outlet(Rpipe*n)
+	+latsup1((xoutlet-Lcyl)*n)
+	+latsup2(n*(Rbody+Lcyl))//+latsup3((-Rbody-xinlet)*n)
+	//+square1(ns*Rbody*pi/2)
+	+square2(ns*Lcyl)+square3(ns*Rbody)
+	+refinedcorner(ns/3*Rbody*pi/2) ,wait=1);
+ENDIFMACRO
+
+
+	
+
+mesh th=buildmesh(inlet((Rpipe-2*Rbody)*n)+inlet2(Rbody*ns)
+//	+axis1((-Rbody-xinlet)*n)+axis11(ns*Rbody)
+	+axis21(ns*Rbody)+axis2((xoutlet-Lcyl)*n)
+	+outlet(Rpipe*n)
+	+latsup1((xoutlet-Lcyl)*n)
+	+latsup2(n*(Rbody+Lcyl))//+latsup3((-Rbody-xinlet)*n)
+	//+square1(ns*Rbody*pi/2)
+	+square2(ns*Lcyl)+square3(ns*Rbody)
+	+refinedcorner(ns/3*Rbody*pi/2)
+	)
+	;
+
+
+IFMACRO(FREEFEMPLOTS,YES)
+plot(th,wait=0);
+ENDIFMACRO
+	
+// SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+			file << "AxiXR" << endl;
+			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "real Rbody real Lcyl real Rbody real Xmin real Xmax" << endl;
+			file <<  Rbody  << endl << Lcyl << endl << Rbody << endl << xinlet << endl << xoutlet << endl;
+}
+
+
+// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization"  << endl ;
+            file2 << " real SFGeomLcyl = " << Lcyl  << " ; " << endl ;
+            file2 << " real SFGeomRbody = " << Rbody  << " ; " << endl ;
+            file2 << " real SFGeomRpipe = " << Rpipe  << " ; " << endl ;
+           if(bctype==2)
+           {
+            file2 << " string SFGeomtypeinlet = \"Poiseuille\" ; " << endl ;
+           }
+           else
+           {
+           	 file2 << " string SFGeomtypeinlet = \"Constant\" ; " << endl ;
+           };
+}
+
+
+
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+ 		fespace femp1(th,P1);
+        fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+        femp2xfemp2xfemp1 [ux,ur,up]=[0,0,0];
+        real Re = 0;real nu=1; // these two are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+      	{
+      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+	    file << ur[] << endl;
+	    file <<  endl << 0 << endl;
+      	}
+      	
+// Save in ff2m format (for StabFem)	    
+	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
+	     
+
+

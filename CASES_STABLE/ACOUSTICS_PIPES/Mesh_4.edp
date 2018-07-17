@@ -1,0 +1,95 @@
+verbosity=0;
+include "Macros_StabFem.edp";
+
+
+// maillage pour un tube contenant une chambre d'expansion
+// Anciennement : Mesh_ExpansionChamber.edp
+
+// dimensions de la conduite
+real L1=10;
+real L2 = 10;
+real L3 = 10;
+real H = L1+L2+L3;
+
+real R1 = 1;
+real R2 = 4;
+real RR3 = 1;
+
+// LABELS :
+// 1 = axis
+// 2 = inlet (imposed normal velocity)
+// 21 = inlet (imposed pressure)
+// 22 = inlet (imposed incident wave)
+
+// 3 = wall (normal velocity = 0)
+// 5 = outlet condition (Spherical wave, Sommerfeld)
+// 6 = outlet condition (plane wave)
+
+border axe(t=0,-H){x=0;y=t;label=1;};
+border fond(t=0,R1){x=t;y=-H;label=2;};
+
+border mur1(t=-H,-(L2+L3)){x=R1;y=t;label=3;};
+border plat1(t=R1,R2){x=t; y=-(L2+L3); label=3;};
+border mur2(t=-(L2+L3),-L3){x=R2;y=t;label=3;};
+border plat2(t=R2,RR3){x=t; y=-L3; label=3;};
+border mur3(t=-L3,0){x=RR3;y=t;label=3;};
+
+border outlet(t=RR3,0){x=t;y=0;label=6;};
+
+
+real d = 8;
+mesh th = buildmesh(axe(d*H)+fond(d*R1)+mur1(d*L1)
++ plat1(d*abs(R2-R1))+mur2(d*L2)+plat2(d*abs(RR3-R2))+mur3(d*L3)+outlet(d*RR3) );
+                 
+
+// SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+			file << "2D" << endl;
+			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "real ZERO" << endl;
+			file <<  0  << endl;
+}
+
+
+// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
+}
+
+
+
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+ 		fespace femp1(th,P1);
+        fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+        femp2xfemp2xfemp1 [ux,uy,up]=[0,0,0];
+        real Re = 0;real nu=1; // these two are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+      	{
+      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+	    file << ux[] << endl;
+	    file <<  endl << 0 << endl;
+      	}
+      	
+// Save in ff2m format (for StabFem)	    
+	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m");
+	     
+  
+  plot(th);

@@ -1,0 +1,54 @@
+\contentsline {chapter}{\numberline {1}General View of \textit {StabFem}}{3}{chapter.1}
+\contentsline {section}{\numberline {1.1}General Features}{3}{section.1.1}
+\contentsline {section}{\numberline {1.2}What is attended from this manual document}{3}{section.1.2}
+\contentsline {section}{\numberline {1.3}Notes and tips for users and developers}{4}{section.1.3}
+\contentsline {subsection}{\numberline {1.3.1}FAQ}{4}{subsection.1.3.1}
+\contentsline {subsection}{\numberline {1.3.2}Note on the usage of github}{4}{subsection.1.3.2}
+\contentsline {paragraph}{If you are contributing as a user}{4}{section*.3}
+\contentsline {paragraph}{If you are contributing as a developer}{5}{section*.4}
+\contentsline {section}{\numberline {1.4}Notes/tips about FreeFem}{5}{section.1.4}
+\contentsline {part}{I\hspace {1em}Stabfem principles : learning by examples}{6}{part.1}
+\contentsline {chapter}{\numberline {2}The basics of StabFem }{8}{chapter.2}
+\contentsline {section}{\numberline {2.1}Simple problem : solution of heat equation in a L-shaped domain}{8}{section.2.1}
+\contentsline {section}{\numberline {2.2}Matlab script and results}{8}{section.2.2}
+\contentsline {section}{\numberline {2.3}How does it work ?}{12}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Analysis of the example}{12}{subsection.2.3.1}
+\contentsline {subsection}{\numberline {2.3.2}Explanations of the \texttt {.ff2m} exchange format}{14}{subsection.2.3.2}
+\contentsline {subsection}{\numberline {2.3.3}Explanations about the mesh }{14}{subsection.2.3.3}
+\contentsline {chapter}{\numberline {3}Using StabFem for globals stability calculations}{16}{chapter.3}
+\contentsline {section}{\numberline {3.1}Running logic of a \textit {StabFem} project}{16}{section.3.1}
+\contentsline {section}{\numberline {3.2}Create a \textit {StabFem} project}{17}{section.3.2}
+\contentsline {paragraph}{\textit {FreeFEM++} file: SCRIPT\_*.edp}{18}{section*.5}
+\contentsline {paragraph}{\textit {FreeFEM++} file: Mesh\_*.edp}{18}{section*.6}
+\contentsline {paragraph}{\textit {FreeFEM++} file: Macros\_StabFem.edp}{18}{section*.7}
+\contentsline {paragraph}{\textit {Matlab} file: mains\_cript.m}{18}{section*.8}
+\contentsline {chapter}{\numberline {4}Using StabFem to perform DNS (tipe-stepping resolution of NS equations)}{19}{chapter.4}
+\contentsline {chapter}{\numberline {5}Plotting data with StabFem}{20}{chapter.5}
+\contentsline {section}{\numberline {5.1}Plotting with StabFem : \texttt {plotFF.m}}{20}{section.5.1}
+\contentsline {section}{\numberline {5.2}Native FreeFem plots (ffglut)}{20}{section.5.2}
+\contentsline {section}{\numberline {5.3}Interfacing with Tecplot}{20}{section.5.3}
+\contentsline {section}{\numberline {5.4}Interfacing with Paraview}{20}{section.5.4}
+\contentsline {section}{\numberline {5.5}Alternative idea}{20}{section.5.5}
+\contentsline {part}{II\hspace {1em}Description of the test-cases}{21}{part.2}
+\contentsline {chapter}{\numberline {6}Stability of the flow around a 2D cylinder}{23}{chapter.6}
+\contentsline {chapter}{\numberline {7}Stability of the flow around a spring-mounted}{24}{chapter.7}
+\contentsline {chapter}{\numberline {8}Stability of the flow around a flying menhir}{25}{chapter.8}
+\contentsline {chapter}{\numberline {9}Capillary oscillations of a liquid bridge}{26}{chapter.9}
+\contentsline {chapter}{\numberline {10}Instabilities of a potential free-surface vortex flow}{28}{chapter.10}
+\contentsline {part}{III\hspace {1em}Appendix : documentation of the source programs}{30}{part.3}
+\contentsline {chapter}{\numberline {A}Mutual Matlab Files}{32}{appendix.A}
+\contentsline {section}{\numberline {A.1}General drivers and FF/Matlab interface tools}{32}{section.A.1}
+\contentsline {subsection}{\numberline {A.1.1}\texttt {SF\_Mesh.m}}{32}{subsection.A.1.1}
+\contentsline {subsection}{\numberline {A.1.2}\texttt {SF\_Launch.m}}{32}{subsection.A.1.2}
+\contentsline {subsection}{\numberline {A.1.3}\texttt {importFFMesh.m}}{32}{subsection.A.1.3}
+\contentsline {subsection}{\numberline {A.1.4}\texttt {importFFData.m}}{32}{subsection.A.1.4}
+\contentsline {section}{\numberline {A.2}Stability-oriented drivers}{32}{section.A.2}
+\contentsline {subsection}{\numberline {A.2.1}\texttt {SF\_Init.m}}{32}{subsection.A.2.1}
+\contentsline {subsection}{\numberline {A.2.2}\texttt {SF\_BaseFlow.m}}{32}{subsection.A.2.2}
+\contentsline {subsection}{\numberline {A.2.3}\texttt {SF\_Stability.m}}{32}{subsection.A.2.3}
+\contentsline {subsection}{\numberline {A.2.4}\texttt {SF\_Adapt.m}}{32}{subsection.A.2.4}
+\contentsline {section}{\numberline {A.3}Plotting programs}{32}{section.A.3}
+\contentsline {section}{\numberline {A.4}Auxiliary programs}{32}{section.A.4}
+\contentsline {subsection}{\numberline {A.4.1}\texttt {mysystem.m}}{32}{subsection.A.4.1}
+\contentsline {subsection}{\numberline {A.4.2}\texttt {mycp.m}}{32}{subsection.A.4.2}
+\contentsline {chapter}{\numberline {B}Mutual FreeFEM++ Files}{33}{appendix.B}

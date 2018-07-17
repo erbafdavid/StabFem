@@ -1,0 +1,54 @@
+clear all; clc;
+
+run('../SOURCES_MATLAB/SF_Start.m');
+verbosity = 20;
+
+close all;
+
+% generating initial mesh
+bf = SF_Init('Mesh.edp',[]);
+
+% plot
+bf.mesh.xlim=[-5,10];bf.mesh.ylim=[-8,8];
+Re_Final = 10;
+Ma_Final = 0.02;
+Re_BF = [10 : 10: Re_Final];
+Ma_BF = [0.001 : 0.1: Ma_Final];
+Fx_BF = [;]; Lx_BF = [;]; Lbx_BF = [;]; Lby_BF = [;];
+bf = SF_BaseFlow(bf,'Re',Re,'Mach',0.3,'ncores',1);
+bf=SF_Adapt(bf,'Hmax',4);
+for i = 1:size(Ma_BF)
+    Ma = Ma_BF(i);
+    for j = 1:size(Re_BF)
+        Re = Re_BF(j);
+        bf = SF_BaseFlow(bf,'Re',Re,'Mach',Ma,'ncores',1);
+        bf=SF_Adapt(bf,'Hmax',4);
+        [evM005,emM005] = SF_Stability(bf005,'shift',0.041+0.76i,'nev',1,'type','S','sym','N','Ma',Ma);
+        Fx_BF(i,j) = [Fx_BF,bf.Fx];
+        Lx_BF(i,j) = [Lx_BF,bf.Lx];
+        Lbx_BF(i,j) = [Lbx_BF,bf.Lbx];
+        Lby_BF(i,j) = [Lby_BF,bf.Lby];
+    end
+end
+
+
+
+% TO BE TESTED IN PARALLEL (I have some issues with my install, and I can 
+% only run it in serial.
+
+%system('ff-mpirun -np 2 Newton_2D_Comp.edp'); Function importFFdata : reading complex(1) field : lambdaVarBF = 8.2008e-06+1.7857e-06i
+
+%bf = import=====================================================
+%plotFF(bf,'ux');
+% This first basic integration works, FANTASTICO !
+
+
+
+emi.xlim = [-2 20]; emi.ylim=[0,5];
+plotFF(emi,'ux1');
+title('Eigenmode for Re=60');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_EigenModeRe60_AdaptS',figureformat); 
+
+
