@@ -1,12 +1,13 @@
 # StabFem
 
-## *Latest news (20/06/2018)*
+## *Latest news (17/07/2018)*
 
 *The project is currently in rapid progress. Here are the latest novelties:*
 
-- A research paper advertising the software was just submitted to Rev. Appl. Mech. [See here:](https://github.com/erbafdavid/StabFem/blob/master/ARTICLE_STABFEM/ARTICLE_ASME_Submitted.pdf)
-- Writing a documentation is in progress. [See here:](https://github.com/erbafdavid/StabFem/blob/master/99_Documentation/main.pdf)
-- The graphical interface has been modified to replace pdetools/pdeplots by the alternative (and freeware) pdeplot2dff, 
+- A research paper advertising the software was just submitted to Rev. Appl. Mech. [See here:](https://github.com/erbafdavid/StabFem/blob/master/99_Documentation/ARTICLE_STABFEM/ARTICLE_ASME_Submitted.pdf)
+- Writing a Manual is in progress. [See here:](https://github.com/erbafdavid/StabFem/blob/master/99_Documentation/MANUAL/main.pdf)
+- An automatic documentation using Doxygen is now available
+- The graphical interface has been modified to replace pdetools/pdeplots by the alternative (and freeware) ffpdeplot, 
 - Compatibility with Octave is now supported ! Test-cases "EXAMPLE_Lshape", "CYLINDER" and "ROTATING_POLYGONS" are successful. (a few points still may have to be fixed in other cases) 
 - Compatibility with windows 10 is now (check test-cases "EXAMPPLES_Lshape", "CYLINDER" and "POROUSDISK")
 - DNS will soon be possible with StabFem :)
