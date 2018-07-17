@@ -277,7 +277,7 @@ else if(normalisation=="E")
 		cout << "Cy after renarmalisation : " << Lift(1/Re,u1) << endl;
 		};
 
-[u0x,u0y,u0p,u0T,u0rho] = [ubx,uby,ubp,ubT,ubrho]; 
+[u0x,u0y,u0p,u0T,u0rho] = [real(ubx),real(uby),real(ubp),real(ubT),real(ubrho)]; 
 [u1cx,u1cy,u1cp,u1cT,u1crho] = [real(u1x), real(u1y), real(u1p), real(u1T), real(u1rho)]; 
 [u1sx,u1sy,u1sp,u1sT,u1srho] = [-imag(u1x), -imag(u1y), -imag(u1p), -imag(u1T), -imag(u1rho)]; 
 cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s,ub) << endl << endl;

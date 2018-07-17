@@ -17,15 +17,15 @@ method = 'CM';
 symm = 1;
 symmEig = 0;
 
-BoxXpCoeff = 0.2;
-BoxXnCoeff = -0.3;
-BoxYpCoeff = 0.15;
+BoxXpCoeff = 20;
+BoxXnCoeff = -20;
+BoxYpCoeff = 20;
 LaXpCoeff = 1.01;
-LaXnCoeff = 1.01;
+LaXnCoeff = 1.1;
 LaYpCoeff = 1.01;
-LcXpCoeff = 0.4;
-LcXnCoeff = 0.5;
-LcYpCoeff = 0.35;
+LcXpCoeff = 0.7;
+LcXnCoeff = 0.7;
+LcYpCoeff = 0.7;
 gcXpCoeff = 0.0;
 gcXnCoeff = 1.0;
 gcYpCoeff = 0.0;
@@ -54,25 +54,43 @@ Ma = 0.1
 Omegac = 0.7272
 Rec = 46.94
 
-bf = SF_Init('Mesh_Cylinder.edp',[xinfm,xinfv,yinf]);
+bf = SF_Init('Mesh_NACA0012.edp',[xinfm,xinfv,yinf]);
 bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',10);
-bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',10);
-[evD,emD] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
-bf=SF_Adapt(2,bf,emD,'typeField1','CxP2P2P1P1P1',...
-            'typeField2','CxP2P2P1P1P1','Hmax',5, 'InterpError', 4e-2);
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_BaseFlow(bf,'Re',50,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_BaseFlow(bf,'Re',50,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_BaseFlow(bf,'Re',100,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_BaseFlow(bf,'Re',500,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1,'InterpError',5e-3);
+bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1,'InterpError',5e-3);
+bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1.0,'InterpError',1e-3);
+bf=SF_BaseFlow(bf,'Re',1500,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',3e-3);
+bf=SF_BaseFlow(bf,'Re',2000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',3e-3);
+bf=SF_BaseFlow(bf,'Re',2000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',2e-3);
+bf=SF_BaseFlow(bf,'Re',5000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',2e-3);
+bf=SF_BaseFlow(bf,'Re',5000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',1e-3);
+bf=SF_BaseFlow(bf,'Re',10000,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',5e-4);
 
-% [evD,emD] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
-% [evA,emA] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','A','sym','A','Ma',Ma);
-bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
-[ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S','sym','A','Ma',Ma); % type "S" because we require both direct and adjoint
-[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.3,'Normalization','L'); % Here to generate a starting point for the next chapter
 
 figure();
 % plot the base flow for Re = 60
 bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
-plotFF(bf,'ux','Contour','on','Levels',[0 0]);
+plotFF(bf,'ux');
 %plotFF(bf,'ux');
 str = 'Box $$B_3$$ Baseflow with complex mapping';
 title(str,'Interpreter','latex');
