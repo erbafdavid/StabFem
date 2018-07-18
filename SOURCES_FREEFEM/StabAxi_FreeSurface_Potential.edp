@@ -38,13 +38,15 @@ if(typesurfacemesh=="empty")
 thsurface = emptymesh(th); 	// Maillage 'surface'
 };
 
-real L, K0, Vol, Area;
+real L, PP0, Vol, Area;
 
 // constantes physiques 
 real gamma; // tension de surface
 real R; // echelle de longueur (rayon pour un pont liquide)
 real dpdz; // parametre de gravite
 real GAMMA; // circulation pour cas polygones tournants
+string typestart; // possibilites : "pined", "axis", "plane", "angle"
+string typeend;    // possibilites : "pined", "axis", "plane", "angle"
 
 include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 
@@ -68,8 +70,6 @@ cout << "GAMMA = " << GAMMA << endl;
 int m;  // Nombre d'onde
 
 
-string typestart; // possibilites : "pined", "axis", "plane", "angle"
-string typeend;    // possibilites : "pined", "axis", "plane", "angle"
 
 cout << "ENTREZ typestart (pined, axis, plane or angle) : "<< endl;
 cin >> typestart;
@@ -290,7 +290,7 @@ else if(matrixconstruction=="block")
 
 {
   cout << " VP numero " <<  i<< " : " << real(lambda) << "+i"<<imag(lambda) <<  endl;
-  EV << -evi[i] << "  "<< evr[i] << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
+  EV << -evi[i] << "  "<< evr[i] << " " << L << "  " << PP0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
 }; 
   
     

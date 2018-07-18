@@ -2,31 +2,28 @@
 
 // README :
 // This file is adapted from "Newton_FormePont_V.edp" from "LiquidBridges++_V1.3".
-// Rapidly adapted by DF in december 2017 but it should be rationalised a lot !
-
-
-
-verbosity = 0;
-
+// Has been updated by N. Achour & D. Fabre in July 2018
 
 
 
 // Calcul de la forme d'equilibre d'un pont liquide axisymetrique
 
-
-// Parametres :
-real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueur (eviter de changer !)
-
-// La forme d'equilibre correspond a  K0 = constante
+// La forme d'equilibre correspond a  PP0 = constante
 // La methode consiste a deformer iterativement la forme 
 // de la surface jusqu'a aboutir a cet equilibre.
 
-// Remarque : la forme est parametree par la courbure K0, donc la methode ne
-// marche pas au voisinage d'un extremum de K0... 
+// Remarque : la forme est parametree par la pression de reference PP0, donc la methode ne
+// marche pas au voisinage d'un extremum de PP0... 
 // (dans ce cas utiliser Newton_FormePont_Volume)
 
 // La forme initiale est lue dans le fichier "MeshBridge_guess.msh". 
 
+
+
+verbosity = 0;
+
+// Parametres :
+real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueur (eviter de changer !)
 
 
 ////////////////////////////////////////////////////////////////
@@ -51,8 +48,8 @@ if(typesurfacemesh=="empty")
 thsurface = emptymesh(th); 	// Maillage 'surface'
 };
 //mesh Shempty=thsurface;
-real K0 = 1; // guess
-real K1;
+real PP0 = 1; // guess
+real PP1;
 real dpdz;
 real gamma ; // tension de surface (parametre pas encore utilisé dans cette version du programme mais a integrer proprement
 string typestart; // possibilites : "pined", "axis", "plane", "angle"
@@ -85,9 +82,9 @@ VolObj = VolObj/(2*pi);
 }
 else if(typecont=="P")
 {
-cout << " ENTREZ LA VALEUR DE LA Courbure ?" << endl;
-cin >> K0;
-cout << "==> Courbure = " << K0 << endl;
+cout << " ENTREZ LA VALEUR DE LA pression de reference ?" << endl;
+cin >> PP0;
+cout << "==> Courbure = " << PP0 << endl;
 }
 
 cout << "ENTREZ LA VALEUR DE LA TENSION DE SURFACE ?" << endl;
@@ -137,17 +134,17 @@ int Itmax = 30;
 
 //Res = 0;
 
-for(int i = 0; (i<Itmax)&(Res>1e-9);i++)
+for(int i = 0; (i<Itmax)&(Res>1e-7);i++)
 {
 
 // Calcul de la deformation de surface 
 
 if(typecont=="V")
 {
-CalcEtaV(etaNewton,K1,VolObj);
-cout << " Modif courbure : K1 = " << K1 << endl;
-K0 = K0+K1;
-cout << " Nouvelle courbure : K0 : " << K0 << endl;
+CalcEtaV(etaNewton,PP1,VolObj);
+cout << " Modif pression : PP1 = " << PP1 << endl;
+PP0 = PP0+PP1;
+cout << " Nouvelle pression : PP0 : " << PP0 << endl;
 }
 else if(typecont=="P")
 {
@@ -181,14 +178,14 @@ thsurface = th;
 // Recalcul des normales et courbures
 CalcGeomSurf;
 ExtendC;
-K0ext = K0ext-(K0-dpdz*y);
+K0ext = K0ext-(PP0-dpdz*y);
 IFMACRO(FREEFEMPLOTS,YES)
 plot(K0ext,fill=1,value=1,cmm="Erreur courbure iteration "+i,wait=1);
 ENDIFMACRO
 //Res = int1d(Shempty,2)( (K0a+K0b-(K0-dpdz*y))^2 );
-Res = int1d(thsurface,2)(abs(x)*(gamma*(K0a+K0b)-(K0-dpdz*y))^2);
-cout << " iteration " << i << " : Res = " << Res << " Volume = " << NewVolume <<  " K1 = " << K1 
-<< " K0 : " << K0 <<  endl; 
+Res = int1d(thsurface,2)(abs(x)*(gamma*(K0a+K0b)-(PP0-dpdz*y))^2);
+cout << " iteration " << i << " : Res = " << Res << " Volume = " << NewVolume <<  " PP1 = " << PP1 
+<< " PP0 : " << PP0 <<  endl; 
 
 cout << " Statistique sur geometrie" << endl;
 //cout << " Max(eta) :" << etaNewton[].max << endl;

@@ -37,7 +37,7 @@ fespace Wh1(thsurface,P1);
 Wh1 N0r,N0z,T0r,T0z,K0a,K0b,test,NormN;
 fespace Vh(th,P1);
 
-fespace PP1(thsurface,P1);
+fespace femPP1(thsurface,P1); // maybe useless ?
 int nbboundaryelements = thsurface.nbe;
 int[int]  IndexPointSurf(nbboundaryelements+1); // Index du sommet dans la numrotation gnrale  
 real[int] xPointSurf(nbboundaryelements+1); 
@@ -162,43 +162,30 @@ problem ExtendC(K0ext,dK0ext)=
 ;
 
 // Calcul de la deformation de surface libre necessaire pour corriger la courbure du maillage (a pression imposee)
-// ANCIENNE METHODE  : formulation variationelle
 Wh1 etaNewton ;
-problem CalcEta(etaNewton,test) = int1d(thsurface,2)((gamma*(K0a+K0b)-(K0-dpdz*y))*test*abs(x)) /* 1ere integrale : RHS */ 
-                    + int1d(thsurface,2)((gamma*(Ds(etaNewton))*(Ds(test))  -gamma*(K0a^2+K0b^2)*etaNewton*test +dpdz*etaNewton*test*N0z)*abs(x)) /* 2e integrale : matrice A */
-		    + int2d(thsurface)(1e-20*etaNewton*test) /* conditions limite */
-		    +on(1,5,55,6,etaNewton=0);
-		    
-// Nouvelle methode avec macro
-macro CalcEta2018
-{
-varf CalcEtaMatrice(etaNewton,test) = 
-          int1d(thsurface,2)(((K0a+K0b)-(K0-dpdz*y))*test*abs(x)) 
-                        /* 1ere integrale : RHS */ 
-        + int1d(thsurface,2)(((Ds(etaNewton))*(Ds(test))  -(K0a^2+K0b^2)*etaNewton*test +dpdz*etaNewton*test*N0z)*abs(x)) 
-                        /* 2e integrale : matrice A */
-		    + int2d(thsurface)(1e-20*etaNewton*test) /* conditions limite */
-		    +on(1,5,6,etaNewton=0);
-A =CalcEtaMatrice(Wh1,Wh1,solver=sparsesolver);
-RHS = CalcEtaMatrice(0,Wh1);
-RHS = -RHS;
-etaNewton[] = A^-1*RHS;
-}
-//end of macro
+problem CalcEta(etaNewton,test) 
+	= int1d(thsurface,2)((gamma*(K0a+K0b)-(PP0-dpdz*y))*test*abs(x)) /* 1ere integrale : RHS */ 
+        + int1d(thsurface,2)((gamma*(Ds(etaNewton))*(Ds(test))  -gamma*(K0a^2+K0b^2)*etaNewton*test +dpdz*etaNewton*test*N0z)*abs(x)) /* 2e integrale : matrice A */
+        + int2d(thsurface)(1e-20*etaNewton*test) /* desingularisation */
+        //+ on(1,5,55,6,etaNewton=0);
+	+ int1d(thsurface,5,55)(etaNewton*test*1e30*(typestart=="pined"))
+	+ int1d(thsurface,1)(etaNewton*test*1e30)
+	+ int1d(thsurface,5)(etaNewton*test*1e30*(typestart=="angle"));		    
 
-// EOM		    
 		    
 		    
 // Calcul de la deformation de surface libre necessaire pour corriger la courbure du maillage (a volume impose)	
 // A REVOIR	   
-macro CalcEtaV(etaNewton,K1,V)
+macro CalcEtaV(etaNewton,PP1,V)
 {
 varf MatEta(etaNewton,test) = 
-    int1d(thsurface,2)(((Ds(etaNewton))*(Ds(test))  -(K0a^2+K0b^2)*etaNewton*test)*abs(x))
+    int1d(thsurface,2)((gamma*(Ds(etaNewton))*(Ds(test))  -gamma*(K0a^2+K0b^2)*etaNewton*test+dpdz*etaNewton*test*N0z)*abs(x))
   + int2d(thsurface)(1e-20*etaNewton*test)
-  + on(1,5,6,etaNewton=0);	
+  + int1d(thsurface,5,55)(etaNewton*test*1e30*(typestart=="pined"))
+  + int1d(thsurface,1)(etaNewton*test*1e30)
+  + int1d(thsurface,5)(etaNewton*test*1e30*(typestart=="angle"));		 
 varf MatEtaRHS(etaNewton,test) = 
-	int1d(thsurface,2)(-((K0a+K0b)-K0)*test*abs(x));		    
+	int1d(thsurface,2)(-(gamma*(K0a+K0b)-(PP0-dpdz*y))*test*abs(x));		    
 varf VecEta(etaNewton,test) = int1d(thsurface,2)(-test*abs(x));
 varf VecVol(etaNewton,test) = int1d(thsurface,2)(test*abs(x));
 matrix A11 = MatEta(Wh1,Wh1); 
@@ -212,7 +199,7 @@ real RHS2 = V-int2d(th)(x);
 real[int] RHS = [RHS1,RHS2];
 real[int] xx = A^-1 * RHS;
 etaNewton = etaNewton;
-[etaNewton[],K1] = xx;
+[etaNewton[],PP1] = xx;
 }
 //EOM
 
@@ -234,8 +221,11 @@ Vh11 [uz,ur], [vz,vr];
 problem CalcDef([uz,ur],[vz,vr])=
     int2d(th)( ((dx(uz)*dx(vz)+dy(uz)*dy(vz)) + (dx(ur)*dx(vr)+dy(ur)*dy(vr))) )
 +on(2,ur=etaNewton*N0r,uz=etaNewton*N0z)
-+on(5,6,55,ur=0,uz=0)
-+on(1,11,ur=0,uz=0); // ne pas le faire sur l'axe
++int1d(th,5,55)((ur*vr*1e30+uz*vz*1e30)*(typestart=="pined"))
++int1d(th,1,11)((ur*vr)*1e30);
+//+on(5,6,55,ur=0,uz=0)
+//+on(1,11,ur=0,uz=0); // ne pas le faire sur l'axe
+
 
 // problem pour cas angle
 problem CalcDefAngle([uz,ur],[vz,vr])=
