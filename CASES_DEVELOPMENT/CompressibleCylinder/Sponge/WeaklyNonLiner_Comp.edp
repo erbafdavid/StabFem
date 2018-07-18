@@ -209,14 +209,14 @@ macro NS(u,Re,v)(
 //EOM
 macro Lift(nu,u)   
 	(
-	int1d(th,2,21,22,23)(((u#p-1.0)/(gamma*Ma^2))*N.y)
+	int1d(th,2,21,22,23)(((u#p)/(gamma*Ma^2))*N.y)
 	+ int1d(th,2,21,22,23)( -nu*((((4.0/3.)*dy(u#y) - (2.0/3.)*dx(u#x))*N.y+(dx(u#y)+dy(u#x))*N.x)))
 	)//
 
 // WARNING : HERE IT IS Lift FORCE
 macro Drag(nu,u)    
 	(
-	int1d(th,2,21,22,23)((u#p-1.0)/(gamma*Ma^2)*N.x)
+	int1d(th,2,21,22,23)((u#p)/(gamma*Ma^2)*N.x)
 	+ int1d(th,2,21,22,23)( -nu*((((4./3.)*dx(u#x) - (2./3.)*dy(u#y))*N.x+ (dx(u#y)+dy(u#x))*N.y)))
 	)//
 
@@ -444,13 +444,12 @@ Re = Recheck;
 
 {
 	ofstream file(ffdatadir+"MeanFlow_guess.txt");
-		umx[] = ubx[]+epsilonTT^2*uepsx[];
+	umx[] = ubx[]+epsilonTT^2*uepsx[];
 	[umx,umy,ump,umT,umro]=[umx,umy,ump,umT,umro]+AAA^2*epsilonTT^2*[real(u20x),real(u20y),real(u20p),real(u20T),real(u20rho)];
 	file << umx[]; 
 	file << endl << endl << Re;
 }; 
 SFWriteBaseFlow(ffdatadir+"MeanFlow_guess.ff2m",um,"MeanFlow",1);
-
 int[int] forder=[1,1,1,1];
 savevtk(ffdatadir+"/WNLq21.vtk",th,real(uepsp),[real(uepsx),real(uepsy),0],real(uepsT),real(uepsrho),order=forder,dataname="Pb vel temp rho");
 savevtk(ffdatadir+"/WNLq1A.vtk",th,real(u20p),[real(u20x),real(u20y),0],real(u20T),real(u20rho),order=forder,dataname="Pb vel temp rho");
