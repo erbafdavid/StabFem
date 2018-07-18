@@ -1,14 +1,20 @@
-
-%%% SAMPLE STABFEM PROGRAM TO STUDY THE STABILITY OF POTENTIAL VORTEX
+function value = autorun(isfigures);
+% Autorun function for StabFem. 
+% This function will produce sample results for the case ROTATING_POLYGONS
 %
-% This script reproduces results from figures 4, 5 and 6 from Mougel et al. (2018)
+% USAGE : 
+% autorun(0) -> automatic check
+% autorun(1) -> produces the figures used for the manual
+if(nargin==0) 
+    isfigures=0; 
+end;
 
 %%
 close all;
 run('../../SOURCES_MATLAB/SF_Start.m');
 system('mkdir FIGURES');
 figureformat = 'png';
-verbosity = 10;
+verbosity = 0;
 %% CHAPTER 0 : creation of initial mesh 
 a=.3;
 density=60;
@@ -18,7 +24,16 @@ gamma = 0;
 
 % CHAPTER 1 : Eigenvalue computation for m=3
 [evm3,emm3] =  SF_Stability(ffmesh,'gamma',gamma,'nev',15,'m',3,'shift',3i,'typestart','angle','typeend','angle');
-evm3FIG = evm3;
+evm3FIG = evm3(1:4).'
+
+evm3_REF =  [2.8333i, 3.7210i, 4.2695i, 1.3374i]
+
+disp('### autorun test 1 : check eigenvalues for a=0.3, xi = 0.25, m=3');
+error = sum(abs(evm3_REF-evm3FIG))
+
+value = (error>1e-3)
+
+if(isfigures)
 
 % 1b : plots
 figure(10);
@@ -146,3 +161,7 @@ ylim([0  .1]);
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*1;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 14);
 saveas(gca,'FIGURES/POLYGONS_sigma',figureformat);
+
+end 
+
+end

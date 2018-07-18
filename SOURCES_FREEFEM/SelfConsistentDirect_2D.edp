@@ -397,6 +397,9 @@ cout << " LU-ing matrix... done" << endl;
 			<< " " << du1cx[].l2 << " " << du1sx[].l2 << " " << -domega << endl;
 	dXX = du0x[].l2+du1cx[].l2+du1sx[].l2+abs(domega);
 	
+	cout << " ### domega, dFx0, dFy1c, dFY1s : " << -domega << " " << -Drag(1/Re,du0x,du0y,du0p) << " " 
+	     << -Lift(1/Re,du1cx,du1cy,du1cp) << " " << -Lift(1/Re,du1sx,du1sy,du1sp) << endl;
+	
 	cout << "   ### ||u0||, ||u1,r||, ||u1,i|| : " << u0x[].l2 
 			<< " " << u1cx[].l2 << " " << u1sx[].l2  << endl;
 
@@ -406,6 +409,8 @@ cout << " LU-ing matrix... done" << endl;
 	cout << " 	### Fy = " << Lift(1/Re,u1cx,u1cy,u1cp) << endl ; 
 	IFMACRO(FREEFEMPLOTS,YES)
 	plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
+	plot(u1cx,cmm="c1 component approximation iteration "+iter, fill=1,value=1,wait=0);
+	plot(u1sx,cmm="s1 component approximation iteration "+iter, fill=1,value=1,wait=0);
 	ENDIFMACRO
 
 	iter++;

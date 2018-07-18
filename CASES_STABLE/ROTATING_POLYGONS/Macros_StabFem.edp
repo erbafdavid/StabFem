@@ -12,6 +12,12 @@
 /// macro SFWriteMode
 /// 
 
+/// PARAMETRES NECESSAIRES POUR LES MACROS GEOMETRIE DE SURFACE
+string surfaceorder="reverse"; /// possibilities : "direct", "reverse" (use reverse to fit with matlab "meniscus" program);
+int anglecut =2; // position of the "cut" in the tan2 determination. 
+string matrixconstruction = "block"; // how to assembly the matrices. Either "block" or "composite".
+string typesurfacemesh = "plain"; // select "empty" for empymesh(th), "plain" for th 
+
 
 /// The following case is for the 2D cylinder and include the additional macros
 /// required to compute lift and drag forces : Trainee(ux,uy,p,symmetry) and Portance(ux,uy,p,symmetry)

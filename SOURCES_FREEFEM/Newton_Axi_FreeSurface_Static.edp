@@ -221,17 +221,17 @@ exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_guess.ff2m");
 //// EXPORTATION DU CHAMP DE BASE AUX FORMAT FF2M
 	
 	
-		fespace femp2(th,P2);
-		femp2 phi = 0;
-		fespace femp1(th,P1);
-		femp1 phiP1 = 0;
+//		fespace femp2(th,P2);
+//		femp2 phi = 0;
+//		fespace femp1(th,P1);
+//		femp1 phiP1 = 0;
 				
-		ofstream file(ffdatadir+"BaseFlow.txt");
-	    file << phi[] << endl;
-	    file <<  endl << 0 << endl;
+//		ofstream file(ffdatadir+"BaseFlow.txt");
+//	    file << phi[] << endl;
+//	    file <<  endl << 0 << endl;
 
 
-SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",phiP1);
+//SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",phiP1);
 
 
 
