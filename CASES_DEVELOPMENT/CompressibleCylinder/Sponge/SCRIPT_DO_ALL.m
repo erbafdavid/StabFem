@@ -47,25 +47,18 @@ disp(' ');
 
 if(exist('mesh_completed')==1)
 disp(' ADAPTMESH PROCEDURE AS PREVIOUSLY DONE, START WITH EXISTING MESH : '); 
-bf=SF_BaseFlow(bf,'Re',47,'Mach',Ma,'ncores',1,'type','NEW');
-[ev,em] = SF_Stability(bf,'shift',0.001 + 0.732i,'nev',1,'type','D','sym','N','Ma',Ma);
+bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma,'ncores',1,'type','NEW');
+[ev,em] = SF_Stability(bf,'shift',0.041 + 0.735i,'nev',1,'type','S','sym','N','Ma',Ma);
 else
 bf = SF_Init('Mesh.edp',[xinfm,xinfv,yinf,x1m,x1v,y1,x2m,x2v,y2,ls,n,ncil,n1,n2,ns,nsponge]);
-bf=SF_BaseFlow(bf,'Re',1,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',10);
-bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',10);
 bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',10);
-[ev,em] = SF_Stability(bf,'shift',0.041 + 0.735i,'nev',1,'type','S','sym','N','Ma',Ma);
-[bf,em]=SF_Adapt(bf,em,'Hmax',10);
 [ev,em] = SF_Stability(bf,'shift',0.041 + 0.735i,'nev',1,'type','S','sym','N','Ma',Ma);
 mesh_completed = 1;
 end
 
 
 %%% CHAPTER 1b : DRAW FIGURES
-
+figure();
 % plot the mesh (full size)
 plotFF(bf,'mesh');
 title('Initial mesh (full size)');
@@ -73,6 +66,7 @@ box on; %pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position'
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Mesh_Full',figureformat); 
 
+figure();
 % plot the mesh (zoom)
 bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
 plotFF(bf,'mesh');
@@ -80,17 +74,27 @@ title('Initial mesh (zoom)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Mesh',figureformat);
-    
+
+figure();    
 % plot the base flow for Re = 60
 bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
-plotFF(bf,'ux','Contour','on','Levels',[0 0]);
+plotFF(bf,'ux');
 %plotFF(bf,'ux');
 title('Base flow at Re=60 (axial velocity)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_BaseFlowRe60',figureformat);
 
+figure();
+% plot the eigenmode for Re = 60
+em.xlim = [-2 8]; em.ylim=[0,5];
+plotFF(em,'sensitivity');
+title('Sensitivity for Re=60');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_SensitivityRe60_AdaptS',figureformat);  % 
 
+figure();
 % plot the eigenmode for Re = 60
 em.xlim = [-2 8]; em.ylim=[0,5];
 plotFF(em,'ux1');
@@ -99,6 +103,7 @@ box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_EigenModeRe60_AdaptS',figureformat);  % 
 
+figure();
 em.xlim = [-2 8]; em.ylim=[0,5];
 plotFF(em,'ux1Adj');
 title('Adjoint Eigenmode for Re=60');
@@ -106,6 +111,7 @@ box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_EigenModeAdjRe60',figureformat);
 
+figure();
 em.xlim = [-2 4]; em.ylim=[0,3];
 plotFF(em,'sensitivity');
 title('Structural sensitivity for Re=60');
@@ -159,7 +165,7 @@ else
 % LOOP OVER RE FOR BASEFLOW + EIGENMODE
 Re_LIN = [40 : 2: 100];
 bf=SF_BaseFlow(bf,'Re',40,'Mach',Ma,'ncores',1,'type','NEW');
-[ev,em] = SF_Stability(bf,'shift',-.05+.68i,'nev',1,'type','D','sym','N','Ma',Ma);
+[ev,em] = SF_Stability(bf,'shift',-.035+.678i,'nev',1,'type','D','sym','N','Ma',Ma);
 
 Fx_LIN = []; Lx_LIN = [];lambda_LIN=[];
     for Re = Re_LIN
@@ -221,8 +227,8 @@ disp([ '   ' num2str(tlin-tinit) ' seconds']);
 bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma,'ncores',1,'type','NEW');
 disp('mesh adaptation to EIGENMODE : ')
 [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D','sym','N','Ma',Ma);
-bf=SF_Adapt(bf,em,'Hmax',10);
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D','sym','N','Ma',Ma);
+%bf=SF_Adapt(bf,em,'Hmax',5);
+%[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D','sym','N','Ma',Ma);
 % plot the eigenmode for Re = 60
 em.xlim = [-2 8]; em.ylim=[0,5];
 plotFF(em,'ux1','colorrange',[-.5 .5]);
