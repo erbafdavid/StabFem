@@ -48,7 +48,6 @@ mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
 
 real Re, Ma, ReM;
 real omega, omegaM, sigmaM, domega;
-Ma = 0.2;
 real gamma=1.4; //////////////////         GAMMA        //////////////////////////
 real Pr=0.7;         //////////////////  PRANDTL NUM   //////////////////////////
 
@@ -198,6 +197,9 @@ real eps=1.e-7;
 real sigma1; // parameter sigma1 from Mantic-lugo et al ; should be zero for harmonic balance
 //real A,dA ; // amplitude 
 
+cout << " Choice of Ma : " << endl;
+cin >> Ma; 
+cout << " --> Ma = " << Ma << endl;
 
 cout << " Choice of Re : " << endl;
 cin >> Re; 
@@ -206,8 +208,8 @@ real nu=1/Re;
 
 {
 real Relu;
-cout << "starting  from mean flow in file BaseFlow.txt" << endl;
-ifstream cbin(ffdatadir+"BaseFlow.txt");
+cout << "starting  from mean flow in file MeanFlow_guess.txt" << endl;
+ifstream cbin(ffdatadir+"MeanFlow_guess.txt");
 cbin >> ubx[] >> Relu;
 if(Relu!=Re){ cout << "WARNING : Re not equal to that of the guess mean flow" << endl;};
 cout << "Drag force of guess mean flow : " << Drag(1/Re,ub) << endl;
@@ -218,7 +220,7 @@ cout << "Drag force of guess mean flow : " << Drag(1/Re,ub) << endl;
 
 {
 cout << "starting  from mode in file SelfConsistentMode_guess.txt" << endl;
-ifstream cbin(ffdatadir+"Eigenmode.txt");
+ifstream cbin(ffdatadir+"SelfConsistentMode_guess.txt");
 cbin >> u1x[] >> ReM >> sigmaM >> omegaM; 
 cout << " 			omega of the starting field = " << omegaM<< endl;
 cout << "           Fy of the starting field : " << Lift(1/Re,u1) << endl;

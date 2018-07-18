@@ -256,7 +256,7 @@ end
 
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S','sym','N','Ma',Ma); % type "S" because we require both direct and adjoint
-[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','L'); % Here to generate a starting point for the next chapter
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.0,'Normalization','L'); % Here to generate a starting point for the next chapter
 
 
 
@@ -299,7 +299,7 @@ if(exist('HB_completed')==1)
     disp('SC quasilinear model on the range [Rec , 100] already computed');
 else
     disp('SC quasilinear model on the range [Rec , 100]');
-Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
+Re_HB = [Rec 47.0 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
 
 
 
@@ -324,7 +324,7 @@ for Re = Re_HB(2:end)
     if(Re==60)
         figure();
        meanflow.xlim = [-2 4]; meanflow.ylim=[0,3];
-       plotFF(bf,'ux');
+       plotFF(meanflow,'ux');
 %       plotFF(meanflow,'ux');
        title('Mean flow at Re=60 (axial velocity)');
        box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
