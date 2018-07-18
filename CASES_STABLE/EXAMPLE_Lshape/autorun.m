@@ -1,18 +1,23 @@
 function value = autorun(isfigures);
+
 % Autorun function for StabFem. 
 % This function will produce sample results for the case EXAMPLE_Lshape
 %
 % USAGE : 
-% autorun(0) -> automatic check
+% autorun -> automatic check
 % autorun(1) -> produces the figures used for the manual
 
-
+if(nargin==0) 
+    isfigures=0; 
+end;
 value=0;
+
+
 run('../../SOURCES_MATLAB/SF_Start.m');ffdatadir = './';verbosity=0;
 
 % Generation of the mesh
 Ndensity =40;
-ffmesh=SF_Mesh('Lshape_Mesh.edp','Params',Ndensity)
+ffmesh=SF_Mesh('Lshape_Mesh.edp','Params',Ndensity);
 
 if(isfigures)
     mkdir FIGURES
@@ -22,7 +27,7 @@ if(isfigures)
 end;
 
 % importation and plotting of a real P1 field : temperature
-heatS=SF_Launch('Lshape_Steady.edp','Mesh',ffmesh)
+heatS=SF_Launch('Lshape_Steady.edp','Mesh',ffmesh);
 if(isfigures) 
     figure();plotFF(heatS,'T','title', 'Solution of the steady heat equation on a L-shaped domain'); 
     set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_T0','png');
@@ -30,7 +35,7 @@ if(isfigures)
 end;
 
 % importation and plotting of data not associated to a mesh : temperature along a line
-heatCut = importFFdata('Heat_1Dcut.ff2m')
+heatCut = importFFdata('Heat_1Dcut.ff2m');
 if(isfigures) figure();plot(heatCut.Xcut,heatCut.Tcut);
     title('Temperature along a line : T(x,y=0.25)') 
     set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_T0_Cut','png');

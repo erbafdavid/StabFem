@@ -7,9 +7,13 @@ function value = autorun(isfigures);
 %  - Harmonic Balance
 %
 % USAGE : 
-% autorun(0) -> automatic check (non-regression test). Result is the
+% autorun -> automatic check (non-regression test). Result is the
 % number of unsuccessful tests
 % autorun(1) -> produces the figures (in present case not yet any figures)
+
+if(nargin==0) 
+    isfigures=0; 
+end;
 
 %% Chapter 0 : reference values for non-regression tests
 np_REF = 2241;

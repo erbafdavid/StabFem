@@ -5,7 +5,9 @@ function value = autorun(isfigures);
 % USAGE : 
 % autorun(0) -> automatic check
 % autorun(1) -> produces the figures used for the manual
-
+if(nargin==0) 
+    isfigures=0; 
+end;
 %%
 close all;
 run('../../SOURCES_MATLAB/SF_Start.m');
