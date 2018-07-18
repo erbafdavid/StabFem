@@ -163,9 +163,9 @@ else
     disp('COMPUTING STABILITY BRANCH')
 
 % LOOP OVER RE FOR BASEFLOW + EIGENMODE
-Re_LIN = [40 : 2: 100];
-bf=SF_BaseFlow(bf,'Re',40,'Mach',Ma,'ncores',1,'type','NEW');
-[ev,em] = SF_Stability(bf,'shift',-.035+.678i,'nev',1,'type','D','sym','N','Ma',Ma);
+Re_LIN = [46 : 2: 100];
+bf=SF_BaseFlow(bf,'Re',46,'Mach',Ma,'ncores',1,'type','NEW');
+[ev,em] = SF_Stability(bf,'shift',.0+.729i,'nev',1,'type','D','sym','N','Ma',Ma);
 
 Fx_LIN = []; Lx_LIN = [];lambda_LIN=[];
     for Re = Re_LIN
@@ -183,7 +183,7 @@ end
 %%% CHAPTER 3b : figures
 
 figure(20);
-plot(Re_LIN,real(lambda_LIN),'b+-');
+plot(Re_LIN(1:10),real(lambda_LIN),'b+-');
 xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -245,7 +245,7 @@ if(exist('Rec')==1)
 else 
 %%% DETERMINATION OF THE INSTABILITY THRESHOLD
 disp('COMPUTING INSTABILITY THRESHOLD');
-bf=SF_BaseFlow(bf,'Re',50,'Ma',Ma);
+bf=SF_BaseFlow(bf,'Re',47,'Ma',Ma);
 [ev,em] = SF_Stability(bf,'shift',+.73i,'nev',1,'type','D','sym','N','Ma',Ma);
 [bf,em]=SF_FindThreshold(bf,em);
 Rec = bf.Re;  Fxc = bf.Fx; 
@@ -256,7 +256,7 @@ end
 
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S','sym','N','Ma',Ma); % type "S" because we require both direct and adjoint
-[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','V'); % Here to generate a starting point for the next chapter
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','L'); % Here to generate a starting point for the next chapter
 
 
 
@@ -322,8 +322,9 @@ for Re = Re_HB(2:end)
     Fy_HB = [Fy_HB mode.Fy];
     
     if(Re==60)
+        figure();
        meanflow.xlim = [-2 4]; meanflow.ylim=[0,3];
-       plotFF(meanflow,'ux','contour','on','levels',[0 0]);
+       plotFF(bf,'ux');
 %       plotFF(meanflow,'ux');
        title('Mean flow at Re=60 (axial velocity)');
        box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -341,8 +342,6 @@ plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');
 hold on;
 plot(Re_WNL,omega_WNL/(2*pi),'g--','LineWidth',2);hold on;
 plot(Re_HB,omega_HB/(2*pi),'r+-','LineWidth',2);
-plot(Re_HB2,omega_HB2/(2*pi),'r+-','LineWidth',2);
-plot(Re_HB,omega_HB/(2*pi),'b+-','LineWidth',2);
 plot(Rec,Omegac/2/pi,'ro');
 xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -377,7 +376,6 @@ saveas(gca,'Cylinder_Lx_Re_HB',figureformat);
 figure(24);hold off;
 plot(Re_WNL,abs(Fy_WNL),'g--','LineWidth',2);
 hold on;
-plot(Re_HB2,real(Fy_HB2),'r+-','LineWidth',2);
 plot(Re_HB,real(Fy_HB),'b+-','LineWidth',2);
 %title('Harmonic Balance results');
 xlabel('Re');  ylabel('Fy')
@@ -389,8 +387,7 @@ saveas(gca,'Cylinder_Cy_Re_SC',figureformat);
 figure(25);hold off;
 plot(Re_WNL,A_WNL,'g--','LineWidth',2);
 hold on;
-plot(Re_HB2,Aenergy_HB2,'r+-','LineWidth',2);
-plot(Re_HB,1.25*Aenergy_HB,'b+-','LineWidth',2);
+plot(Re_HB,Aenergy_HB,'b+-','LineWidth',2);
 %title('Harmonic Balance results');
 xlabel('Re');ylabel('A_E')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio; set(gcf,'Position',pos); % resize aspect ratio
