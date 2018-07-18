@@ -4,7 +4,7 @@ run('../../SOURCES_MATLAB/SF_Start.m');verbosity = 10;
 figureformat='png'; AspectRatio = 0.56; % for figures
 
 type = 'S';
-bf = CYLINDER_MESHGENERATION(type); 
+bf = SmartMesh_Cylinder(type); 
     % here use 'S' for mesh M2 (converged results for all quantities except for A_E , but much faster
     % or 'D' for mesh M4 (converged results for all quantities, but much
     % slower)

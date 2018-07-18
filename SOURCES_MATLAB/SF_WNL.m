@@ -44,10 +44,10 @@ parse(p, varargin{:});
 
 if (strcmp(baseflow.mesh.problemtype, 'AxiXR') == 1)
     
-    if (strcmp(ffdatadir, './DATA_FREEFEM_BIRDCALL_ERCOFTAC') == 0) % in future we should manage this in a better way
-        solvercommand = [ff, ' ', ffdir, 'WeaklyNonLinear_Axi.edp'];
+    if (strcmp(ffdatadir, './DATA_SF_BIRDCALL_ERCOFTAC/') == 0) % in future we should manage this in a better way
+        solvercommand = [ff, ' ', ffdir, 'WeaklyNonLinear_Axi.edp']
     else
-        solvercommand = [ff, ' ', ffdir, 'WeaklyNonLinear_BirdCall.edp'];
+        solvercommand = [ff, ' ', ffdir, 'WeaklyNonLinear_BirdCall.edp']
     end
     
 end
