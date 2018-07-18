@@ -1,8 +1,17 @@
+function value = autorun(isfigures);
+% Autorun function for StabFem. 
+% This function will produce sample results for the case EXAMPLE_Lshape
+%
+% USAGE : 
+% autorun(0) -> automatic check
+% autorun(1) -> produces the figures used for the manual
+
 %%
 close all;
-run('../SOURCES_MATLAB/SF_Start.m');
+run('../../SOURCES_MATLAB/SF_Start.m');
 system('mkdir FIGURES');
-figureformat = 'png';
+figureformat = 'png';verbosity=0;
+value = 0;
 %% CHAPTER 0 : creation of initial mesh for cylindrical bridge, L=4
 
 L = 4;
@@ -10,28 +19,63 @@ density=20;
  %creation of an initial mesh (with volume corresponding to coalescence of two spherical caps) 
 ffmesh = SF_Mesh('MeshInit_Bridge.edp','Params',[0 L density]);
 V = pi*L/2*(1+L^2/12);
-ffmesh = SF_Mesh_Deform(ffmesh,'V',V);
+gamma = 1;
+rhog = 0;
+ffmesh = SF_Mesh_Deform(ffmesh,'V',V,'typestart','pined','typeend','pined','gamma',gamma,'rhog',rhog);
 
-Vol0 = ffmesh.Vol; 
+
+disp('##### autorun test 1 :  deforming the mesh with prescrived volume')
+P0 = ffmesh.P0;
+P0_REF = 0.9699;
+error1 = abs(P0/P0_REF-1)
+if(error1>1e-3) 
+    value = value+1 
+end
+
+
+if(isfigures)
 figure(1);hold off;
-plot(ffmesh.xsurf,ffmesh.ysurf); hold
+plot(ffmesh.xsurf,ffmesh.ysurf); hold on;
+end
 
 %% CHAPTER 1 : Eigenvalue computation for m=0 and m=1 FOR A CYLINDRICAL BRIDGE
 [evm0,emm0] =  SF_Stability(ffmesh,'nev',10,'m',0,'sort','SIA');
 [evm1,emm1] =  SF_Stability(ffmesh,'nev',10,'m',1,'sort','SIA');
 
-%%% PLOT RESULTS
+
+ev_m0a = evm0(4);
+ev_m0s = evm0(6);
+ev_m1s = evm1(2);
+ev_m1a = evm1(4);
+
+% previously computed reference values
+ev_m0a_REF =   0.0000 + 0.8158i;
+ev_m0s_REF =   0.0000 + 2.2418i;
+ev_m1s_REF =   0.0000 + 0.7490i;
+ev_m1a_REF =   0.0000 + 1.7644i;
+
+
+
+disp('##### autorun test 2 :  eigenvalues of the four simplest modes (m=0 and m=1)')
+
+error2 = abs(ev_m0a/ev_m0a_REF-1)+abs(ev_m0s/ev_m0s_REF-1)+abs(ev_m1s/ev_m1s_REF-1)+abs(ev_m1a/ev_m1a_REF-1)
+if(error1>1e-3) 
+    value = value+1 
+end
+
+if(isfigures)
+%% PLOT RESULTS
 figure(2);
 plot(imag(evm0),real(evm0),'ro',imag(evm1),real(evm1),'bo');
 title('Cylindrical bridge, L= 4 : spectra for m=0 (red) and m=1 (blue)');
 xlabel('\omega_r');ylabel('\omega_i');
 
 figure(3); hold off;
-plot(ffmesh.S0,emm0(3).eta);hold on;
-plot(ffmesh.S0,emm0(5).eta);
+plot(ffmesh.S0,real(emm0(3).eta));hold on;
+plot(ffmesh.S0,real(emm0(5).eta));
 % note that for m=0 the two first modes are spurious, so we take modes 3 and 5
-plot(ffmesh.S0,emm1(1).eta);
-plot(ffmesh.S0,emm1(3).eta);
+plot(ffmesh.S0,real(emm1(1).eta));
+plot(ffmesh.S0,real(emm1(3).eta));
 % on the other hand for m=1 the first modes are regular
 title('Cylindrical bridge, L= 4 : structure of the four simplest modes eta(s) ');
 legend('m=0,a','m=0,s','m=1,s','m=1,a');
@@ -40,39 +84,39 @@ legend('m=0,a','m=0,s','m=1,s','m=1,a');
 figure(4);
 subplot(1,4,1);plotFF(emm0(3),'phi.im','title','Mode m=0,a');
 hold on;E=0.15/max(abs(emm0(3).eta));
-plot(ffmesh.xsurf+E*emm0(3).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm0(3).eta.*ffmesh.N0z,'r');hold off;
+plot(ffmesh.xsurf+E*real(emm0(3).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm0(3).eta).*ffmesh.N0z,'r');hold off;
 subplot(1,4,2);plotFF(emm0(5),'phi.im','title','Mode m=0,s');
 hold on;E=0.15/max(abs(emm0(5).eta));
-plot(ffmesh.xsurf+E*emm0(5).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm0(5).eta.*ffmesh.N0z,'r');hold off;
+plot(ffmesh.xsurf+E*real(emm0(5).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm0(5).eta).*ffmesh.N0z,'r');hold off;
 subplot(1,4,3);plotFF(emm1(1),'phi.im','title','Mode m=1,s');
 E=0.15/max(abs(emm1(1).eta));
-hold on;plot(ffmesh.xsurf+E*emm1(1).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm1(1).eta.*ffmesh.N0z,'r');
+hold on;plot(ffmesh.xsurf+E*real(emm1(1).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm1(1).eta).*ffmesh.N0z,'r');
 subplot(1,4,4);plotFF(emm1(3),'phi.im','title','Mode m=1,a');
 E=0.15/max(abs(emm1(3).eta));
-hold on;plot(ffmesh.xsurf+E*emm1(3).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm1(3).eta.*ffmesh.N0z,'r');
+hold on;plot(ffmesh.xsurf+E*real(emm1(3).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm1(3).eta).*ffmesh.N0z,'r');
 pos = get(gcf,'Position'); pos(3)=pos(4)*2.6;set(gcf,'Position',pos); % resize aspect ratio
 %set(gca,'FontSize', 14);
 saveas(gcf,'FIGURES/Bridges_NV_Eigenmodes_phi_cyl_L3_5',figureformat);
-pause;
+pause(1);
 
 
 figure(5); hold on;
 E=0.15/max(abs(emm0(3).eta));
-plot(ffmesh.xsurf+E*emm0(3).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm0(3).eta.*ffmesh.N0z,'b');
+plot(ffmesh.xsurf+E*real(emm0(3).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm0(3).eta).*ffmesh.N0z,'b');
 E=0.15/max(abs(emm0(5).eta));
-plot(ffmesh.xsurf+E*emm0(5).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm0(5).eta.*ffmesh.N0z,'r');
+plot(ffmesh.xsurf+E*real(emm0(5).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm0(5).eta).*ffmesh.N0z,'r');
 E=0.15/max(abs(emm1(1).eta));
-plot(ffmesh.xsurf+E*emm1(1).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm1(1).eta.*ffmesh.N0z,'g');
+plot(ffmesh.xsurf+E*real(emm1(1).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm1(1).eta).*ffmesh.N0z,'g');
 E=0.15/max(abs(emm1(3).eta));
-plot(ffmesh.xsurf+E*emm1(3).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm1(3).eta.*ffmesh.N0z,'c');
+plot(ffmesh.xsurf+E*real(emm1(3).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm1(3).eta).*ffmesh.N0z,'c');
 E=0.15/max(abs(emm0(3).eta));
-plot(-ffmesh.xsurf-E*emm0(3).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm0(3).eta.*ffmesh.N0z,'b');
+plot(-ffmesh.xsurf-E*real(emm0(3).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm0(3).eta).*ffmesh.N0z,'b');
 E=0.15/max(abs(emm0(5).eta));
-plot(-ffmesh.xsurf-E*emm0(5).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm0(5).eta.*ffmesh.N0z,'r');
+plot(-ffmesh.xsurf-E*real(emm0(5).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm0(5).eta).*ffmesh.N0z,'r');
 E=0.15/max(abs(emm1(1).eta));
-plot(-ffmesh.xsurf+E*emm1(1).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm1(1).eta.*ffmesh.N0z,'g');
+plot(-ffmesh.xsurf+E*real(emm1(1).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm1(1).eta).*ffmesh.N0z,'g');
 E=0.15/max(abs(emm1(3).eta));
-plot(-ffmesh.xsurf+E*emm1(3).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm1(3).eta.*ffmesh.N0z,'c');
+plot(-ffmesh.xsurf+E*real(emm1(3).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(emm1(3).eta).*ffmesh.N0z,'c');
 % draw mean shape, end limits and axis
 plot(ffmesh.xsurf,ffmesh.ysurf,'k');
 plot(-ffmesh.xsurf,ffmesh.ysurf,'k');
@@ -89,7 +133,7 @@ pause(0.1);
 
 %%
 if(1==1)
- CHAPTER 2 : Construction of equilibrium shape and stability
+ %CHAPTER 2 : Construction of equilibrium shape and stability
 %%%%% calculations for a family of bridge shapes with L=4 and variable volume and pressure
 
 % CHAPTER 2a : First loop in the interval [0.85,1] (decreasing values)
@@ -297,4 +341,5 @@ box on; pos = get(gcf,'Position'); pos(4)=pos(3)*1;set(gcf,'Position',pos); % re
 set(gca,'FontSize', 14);
 saveas(gca,'FIGURES/Bridges_NV_L3_5_coal_omegaL',figureformat);
 
-
+end
+end

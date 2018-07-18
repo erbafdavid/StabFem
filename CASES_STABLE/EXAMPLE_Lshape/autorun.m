@@ -40,25 +40,27 @@ end;
 critere1 = heatCut.Tcut(50);
 critere1REF = 0.034019400000000;
 
-ERROR = abs(critere1-critere1REF)
-
-if(ERROR>1e-3)
+disp('##### autorun test 1 : Steady temperature at a given point');
+error1 = abs(critere1-critere1REF)
+if(error1>1e-3)
     value = value+1
 end
 
 % importation and plotting of a complex P1 field : temperature for unsteady problem
-heatU=SF_Launch('Lshape_Unsteady.edp','Params',100,'Mesh',ffmesh,'DataFile','Heat_Unsteady.ff2m')
+heatU=SF_Launch('Lshape_Unsteady.edp','Params',100,'Mesh',ffmesh,'DataFile','Heat_Unsteady.ff2m');
 if(isfigures) 
     figure();plotFF(heatU,'Tc.re','title',['Ti: real(colors) part']) 
     set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_Tc','png');
 end
 
+
 critere2 = max(imag(heatU.Tc));
 critere2REF = 0.506614000000000;
 
-ERROR = abs(critere2-critere2REF)
+disp('##### autorun test 2 : Unsteady temperature at a given point');
+error2 = abs(critere2-critere2REF)
 
-if(ERROR>1e-3)
+if(error2>1e-3)
     value = value+1
 end
 

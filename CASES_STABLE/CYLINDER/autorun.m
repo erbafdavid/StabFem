@@ -41,12 +41,12 @@ Fx2_HB2_REF = 2.3529e-06 - 4.4469e-06i;
 run('../../SOURCES_MATLAB/SF_Start.m');verbosity=0;
 
 type = 'S';
-bf = CYLINDER_MESHGENERATION(type); 
+bf = SmartMesh_Cylinder(type); 
 % here use 'S' for mesh M2 (converged results for all quantities except for A_E , but much faster
 % or 'D' for mesh M4 (converged results for all quantities, but much slower)
 value = 0;
-disp('autorun : mesh and BASE FLOW');
-error1 = abs(bf.Fx-Fx_REF)+abs(bf.mesh.np-np_REF)
+disp('##### autorun test 1 : mesh and BASE FLOW');
+error1 = abs(bf.Fx/Fx_REF-1)+abs(bf.mesh.np-np_REF)
 if(error1>1e-3) 
     value = value+1 
 end
@@ -55,11 +55,11 @@ end
 %%  CHAPTER 2 : linear mode for Re=50
 
 
-disp('autorun : LINEAR MODE');
+disp('##### autorun test 2 : LINEAR MODE');
 bf=SF_BaseFlow(bf,'Re',50);
 [ev,em] = SF_Stability(bf,'shift',+.75i,'nev',1,'type','S');
 
-error2 = abs(ev-ev_REF)
+error2 = abs(ev/ev_REF-1)
 if(error2>1e-3) 
     value = value+1 
 end
@@ -67,21 +67,21 @@ end
 %%  CHAPTER 3 : determining instability threshold
 
 
-disp('autorun : COMPUTING INSTABILITY THRESHOLD');
+disp('###### autorun test 3 : COMPUTING INSTABILITY THRESHOLD');
 [bf,em]=SF_FindThreshold(bf,em);
 
 Rec = bf.Re;
 Lxc=bf.Lx;    
 Omegac=imag(em.lambda);
 
-error3 = abs(Rec-Rec_REF)+abs(Lxc-Lxc_REF)+abs(Omegac-Omegac_REF)
+error3 = abs(Rec/Rec_REF-1)+abs(Lxc/Lxc_REF-1)+abs(Omegac/Omegac_REF-1)
 if(error3>1e-3) 
     value = value+1
 end
 
 
 %% Chapter 4 : solve WNL model and uses it to generate a guess for Res (just above the threshold)
-disp('autorun : WNL');
+disp('##### autorun test 4 : WNL');
 
 Res = 47;
 [ev,em] = SF_Stability(bf,'shift',ev,'nev',1,'type','S'); % type S = direct+adjoint (adjoint is needed for WNL)
@@ -102,7 +102,7 @@ end
 
 
 
-    disp(' ');disp('###### autorun : HB1 #######');disp(' ');
+    disp(' ');disp('###### autorun test 5 : HB1 #######');disp(' ');
     [meanflow,mode] = SF_HB1(meanflow,mode,'Re',Res);
     Lx_HB = meanflow.Lx;
     Fx_HB = meanflow.Fx;
@@ -110,7 +110,7 @@ end
     Aenergy_HB  = mode.AEnergy;
     Fy_HB = mode.Fy;
     
-error5 = abs(Lx_HB-Lx_HB_REF)+abs(Fx_HB-Fx_HB_REF)+abs(omega_HB-omega_HB_REF)+abs(Aenergy_HB-Aenergy_HB_REF)+abs(Fy_HB-Fy_HB_REF)
+error5 = abs(Lx_HB/Lx_HB_REF-1)+abs(Fx_HB/Fx_HB_REF-1)+abs(omega_HB/omega_HB_REF-1)+abs(Aenergy_HB/Aenergy_HB_REF-1)+abs(Fy_HB/Fy_HB_REF-1)
 if(error5>1e-3) 
     value = value+1
 end
@@ -119,6 +119,7 @@ end
 
 %% CHAPTER 6 : HARMONIC BALANCE WITH ORDER 2 
 
+ disp(' ');disp('###### autorun test 6 : HB2 #######');disp(' ');
 
 Re = 47;
 [meanflow,mode,mode2] = SF_HB2(meanflow,mode,mode2,'Re',Re);
@@ -129,7 +130,7 @@ Re = 47;
     Fy_HB2 = mode.Fy;
     Fx2_HB2 = mode2.Fx;
     
-error6 = abs(Lx_HB2-Lx_HB2_REF)+abs(Fx_HB2-Fx_HB2_REF)+abs(omega_HB2-omega_HB2_REF)+abs(Aenergy_HB2-Aenergy_HB2_REF)+abs(Fy_HB2-Fy_HB2_REF)
+error6 = abs(Lx_HB2/Lx_HB2_REF-1)+abs(Fx_HB2/Fx_HB2_REF-1)+abs(omega_HB2/omega_HB2_REF-1)+abs(Aenergy_HB2/Aenergy_HB2_REF-1)+abs(Fy_HB2/Fy_HB2_REF-1)
 if(error6>1e-3) 
     value = value+1
 end
