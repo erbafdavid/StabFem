@@ -47,7 +47,7 @@ real AreaMesh = 2*pi*int1d(th,2)(x);
 			file << "real gamma real rhog real Uref real nu "; /* physical parameters (also written in BaseFlow file) */
 			file << " P1surf xsurf P1surf ysurf P1surf S0 P1surf N0r P1surf N0z P1surf K0a P1surf K0b" << endl;
 			file << Nsurface+1  << endl;
-			file << K0 << endl << VolMesh << endl << AreaMesh << endl << abs(yPointSurf(Nsurface)-yPointSurf(0)) << endl;
+			file << PP0 << endl << VolMesh << endl << AreaMesh << endl << abs(yPointSurf(Nsurface)-yPointSurf(0)) << endl;
 			file << 1 << endl << dpdz << endl << 0 << endl << 0 << endl;
 			file << endl;
 			for(int ksurf=Nsurface;ksurf>-1;ksurf--) { file << xPointSurf(ksurf) << endl;} file << endl;

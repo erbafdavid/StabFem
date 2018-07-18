@@ -14,11 +14,11 @@ include "Macros_StabFem.edp"
 cout << "Construction du Maillage initial 'guess' " << endl << endl; 
 
 
-cout << " Type de geometrie : (0 = cylindre ; 1 = portion de sphere ; 2 = portion de sinusoide ; 3 = portion d'ellipse)" << endl;
+
 //cin >> typegeom;
 typegeom = 0;
 
-cout << " ENTREZ La longueur L ?" << endl;
+cout << " ENTREZ La hauter H ?" << endl;
 cin  >> LL;
 
 
@@ -66,12 +66,14 @@ border SurfDrop(t=1,0){y=0;x=t;label=2;};
 
 //plot(SurfDrop(d)+Wall((d-1))+Wallbis(1)+Axe(LL*(d-1))+Axebis(1)+Fond(d),wait = 1);
 
-MeshInt = buildmesh(SurfDrop(d)+Wall(LL*(d-1)/10)+Wallbis(1)+Axe(LL*((d-1)/10))+Axebis(1)+Fond(d/10)); // Attention modif sauvage
+MeshInt = buildmesh(SurfDrop(d)+Wall(LL*(d-1)/5)+Wallbis(1)+Axe(LL*((d-1)/5))+Axebis(1)+Fond(d/5)); // Attention modif sauvage
 
 
 
 
 mesh th = MeshInt;
+
+plot(th,wait=1);
 
 
 //SAVE MESH TO FILE
@@ -93,9 +95,11 @@ savemesh(th,ffdatadir+"mesh.msh");
 
 // SECOND AUXILIARY FILE mesh.ff2m
 { 
-mesh Shempty=emptymesh(th); 
-real K0 = 2/R;real dpdz = 0;	
-include "Macros_Geometrie_Surface.edp";
+//mesh Shempty=th; 
+real PP0 = 2/R;real dpdz = 0;real gamma=1;	
+//include "Macros_Geometrie_Surface.edp";
+mesh thsurface = th;
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp";
 
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
 CalcGeomSurf;
@@ -108,8 +112,8 @@ SFWriteMesh(ffdatadir+"mesh_guess.ff2m",th)
 {
 			ofstream file2("SF_Geom.edp"); 
 			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
-            file2 << " real SFGeomRbridge = 1 ;" << endl ;
-            file2 << " real SFGeomLbridge = " << LL <<  " ;" << endl ;
+            file2 << " real SFGeomvessel = 1 ;" << endl ;
+            file2 << " real SFGeomLvessel = " << LL <<  " ;" << endl ;
             file2 << " real SFGeomGAMMA = " << 0 <<  " ;" << endl ;
 
 }

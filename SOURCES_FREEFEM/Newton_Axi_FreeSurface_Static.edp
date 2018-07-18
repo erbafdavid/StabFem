@@ -2,31 +2,28 @@
 
 // README :
 // This file is adapted from "Newton_FormePont_V.edp" from "LiquidBridges++_V1.3".
-// Rapidly adapted by DF in december 2017 but it should be rationalised a lot !
-
-
-
-verbosity = 0;
-
+// Has been updated by N. Achour & D. Fabre in July 2018
 
 
 
 // Calcul de la forme d'equilibre d'un pont liquide axisymetrique
 
-
-// Parametres :
-real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueur (eviter de changer !)
-
-// La forme d'equilibre correspond a  K0 = constante
+// La forme d'equilibre correspond a  PP0 = constante
 // La methode consiste a deformer iterativement la forme 
 // de la surface jusqu'a aboutir a cet equilibre.
 
-// Remarque : la forme est parametree par la courbure K0, donc la methode ne
-// marche pas au voisinage d'un extremum de K0... 
+// Remarque : la forme est parametree par la pression de reference PP0, donc la methode ne
+// marche pas au voisinage d'un extremum de PP0... 
 // (dans ce cas utiliser Newton_FormePont_Volume)
 
 // La forme initiale est lue dans le fichier "MeshBridge_guess.msh". 
 
+
+
+verbosity = 0;
+
+// Parametres :
+real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueur (eviter de changer !)
 
 
 ////////////////////////////////////////////////////////////////
@@ -38,28 +35,31 @@ real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueu
 include "SF_Geom.edp";
 include "Macros_StabFem.edp"
 
-mesh th=readmesh(ffdatadir+"mesh_guess.msh");
-mesh Shempty=emptymesh(th); 	// Maillage 'surface'
-//mesh Shempty=th;
-real K0 = 1; // guess
-real K1;
+/*mesh th=readmesh(ffdatadir+"mesh_guess.msh");
+mesh Shempty=emptymesh(th); 	// Maillage 'surface'*/
+mesh th=readmesh(ffdatadir+"mesh.msh");
+mesh thsurface;
+if(typesurfacemesh=="plain") 
+{
+thsurface = th; 	// Maillage 'surface'
+};
+if(typesurfacemesh=="empty") 
+{
+thsurface = emptymesh(th); 	// Maillage 'surface'
+};
+//mesh Shempty=thsurface;
+real PP0 = 1; // guess
+real PP1;
 real dpdz;
+real gamma ; // tension de surface (parametre pas encore utilisé dans cette version du programme mais a integrer proprement
+string typestart; // possibilites : "pined", "axis", "plane", "angle"
+string typeend;    // possibilites : "pined", "axis", "plane", "angle"
+//typestart="pined";
+//typeend="pined";
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 
-include "Macros_Geometrie_Surface.edp"
 
 
-// Calcul des normales et des courbures
-CalcGeomSurf;
-
-// Plots
-//ExtendC;
-//plot(K0ext,[N0r,N0z],fill=1,value=1,wait=0,cmm="Normales de la forme initiale et Courbure K0 prolongee dans le plan");
-// plot(K0ext,fill=1,value=1,wait=0,cmm="Courbure K0 prolongee dans le plan");
-
-SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
-real Zmin = yPointSurf(0);
-real Zmax = yPointSurf(Nsurface);
-real L = Zmax-Zmin;
 
 
 string typecont;
@@ -75,30 +75,50 @@ if(typecont=="V")
 {
 cout << " ENTREZ LA VALEUR DU VOLUME RECHERCHE ?" << endl;
 cin >> VolObj;
-cout << "==> Volume reduit = " << VolObj/(pi*L) << endl;
+//cout << "==> Volume reduit = " << VolObj/(pi*L) << endl;
 
 VolObj = VolObj/(2*pi);
 // Warning the "volume" used in the code is actually volume/(2 pi) ; to be rationalised someday
 }
 else if(typecont=="P")
 {
-cout << " ENTREZ LA VALEUR DE LA Courbure ?" << endl;
-cin >> K0;
-cout << "==> Courbure = " << K0 << endl;
+cout << " ENTREZ LA VALEUR DE LA pression de reference ?" << endl;
+cin >> PP0;
+cout << "==> Courbure = " << PP0 << endl;
 }
 
-
-real gamma ; // tension de surface (parametre pas encore utilisé dans cette version du programme mais a integrer proprement
 cout << "ENTREZ LA VALEUR DE LA TENSION DE SURFACE ?" << endl;
 cin >> gamma ;
-
-gamma = 1; // A virer quand ca sera fait proprement !
+//gamma = 1; // A virer quand ca sera fait proprement ! => CalcDefVol
 
 
 cout << " ENTREZ LE PARAMETRE DE GRAVITE rho g  " << endl;
 cin >> dpdz;
 cout << "==> dpdz = " << dpdz << endl;
 
+cout << "ENTREZ typestart (pined, axis, plane or angle) : "<< endl;
+cin >> typestart;
+cout << "ENTREZ typeend (pined, axis, plane) : "<< endl;
+cin >> typeend;
+
+
+/////////////////////////////////////
+// Calcul de la geometrie initiale
+///////////////////////////////////////
+
+
+// Calcul des normales et des courbures
+CalcGeomSurf;
+
+// Plots
+//ExtendC;
+//plot(K0ext,[N0r,N0z],fill=1,value=1,wait=0,cmm="Normales de la forme initiale et Courbure K0 prolongee dans le plan");
+// plot(K0ext,fill=1,value=1,wait=0,cmm="Courbure K0 prolongee dans le plan");
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+real Zmin = yPointSurf(0);
+real Zmax = yPointSurf(Nsurface);
+real L = Zmax-Zmin;
 
 ////////////////////////////////////////////////////////////////
 //
@@ -112,18 +132,19 @@ cout << "==> dpdz = " << dpdz << endl;
 real Res=1;
 int Itmax = 30;
 
+//Res = 0;
 
-for(int i = 0; (i<Itmax)&(Res>1e-9);i++)
+for(int i = 0; (i<Itmax)&(Res>1e-7);i++)
 {
 
 // Calcul de la deformation de surface 
 
 if(typecont=="V")
 {
-CalcEtaV(etaNewton,K1,VolObj);
-cout << " Modif courbure : K1 = " << K1 << endl;
-K0 = K0+K1;
-cout << " Nouvelle courbure : K0 : " << K0 << endl;
+CalcEtaV(etaNewton,PP1,VolObj);
+cout << " Modif pression : PP1 = " << PP1 << endl;
+PP0 = PP0+PP1;
+cout << " Nouvelle pression : PP0 : " << PP0 << endl;
 }
 else if(typecont=="P")
 {
@@ -135,28 +156,39 @@ cout << "ERROR : typecont should only be V or P (S not implemented yet)" << endl
 exit(10);
 };
 
-ExtendEta; plot(etaext,fill=1,value=1,wait=0,cmm="eta ext"); //(pour visualisation)
+ExtendEta; plot(etaext,fill=1,value=1,wait=1,cmm="eta ext"); //(pour visualisation)
 
 // Calcul d'un champ de deplacement du maillage 
+
+
 CalcDef;
-plot([urdef,uzdef],fill=1,value=1,cmm="champ de deformation calcule iteration "+i,wait=1);
+plot([ur,uz],fill=1,value=1,cmm="champ de deformation calcule iteration "+i,wait=1);
 
 // Deplacement du maillage
-th = movemesh(th,[x+urdef,y+uzdef]);
-plot(th,Shempty,cmm="Deformation maillage iteration "+i,wait=1);
+th = movemesh(th,[x+ur,y+uz]);
+plot(th,thsurface,cmm="Deformation maillage iteration "+i,wait=1);
 real NewVolume = int2d(th)(x);
 cout << "NewVolume = " << NewVolume << endl; 
 //Shempty = emptymesh(th);
-Shempty = movemesh(Shempty,[x+urdef,y+uzdef]);
+//Shempty = movemesh(Shempty,[x+urdef,y+uzdef]);
+thsurface = th;
+// warning : ca ne marche qu'en mode "plain"... 
+
 
 // Recalcul des normales et courbures
 CalcGeomSurf;
 ExtendC;
-K0ext = K0ext-(K0-dpdz*y);
+K0ext = K0ext-(PP0-dpdz*y);
+IFMACRO(FREEFEMPLOTS,YES)
 plot(K0ext,fill=1,value=1,cmm="Erreur courbure iteration "+i,wait=1);
-Res = int1d(Shempty,2)( (K0a+K0b-(K0-dpdz*y))^2 );
-cout << " iteration " << i << " : Res = " << Res << " Volume = " << NewVolume <<  " K1 = " << K1 
-<< " K0 : " << K0 <<  endl; 
+ENDIFMACRO
+//Res = int1d(Shempty,2)( (K0a+K0b-(K0-dpdz*y))^2 );
+Res = int1d(thsurface,2)(abs(x)*(gamma*(K0a+K0b)-(PP0-dpdz*y))^2);
+cout << " iteration " << i << " : Res = " << Res << " Volume = " << NewVolume <<  " PP1 = " << PP1 
+<< " PP0 : " << PP0 <<  endl; 
+
+cout << " Statistique sur geometrie" << endl;
+//cout << " Max(eta) :" << etaNewton[].max << endl;
 
 }
 //  ----------------------------------------------------------------------------------------------------
