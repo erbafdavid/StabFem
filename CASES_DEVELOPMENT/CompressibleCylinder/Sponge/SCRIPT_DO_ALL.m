@@ -182,14 +182,14 @@ end
 
 %%% CHAPTER 3b : figures
 
-figure(20);
-plot(Re_LIN(1:10),real(lambda_LIN),'b+-');
+figure();
+plot(Re_LIN,real(lambda_LIN),'b+-');
 xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Sigma_Re',figureformat);
 
-figure(21);hold off;
+figure();hold off;
 plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');
 xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio

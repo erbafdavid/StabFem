@@ -63,9 +63,9 @@ bf = SF_Init('Mesh_Cylinder.edp',[xinfm,xinfv,yinf]);
 bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW');
 bf=SF_AdaptMesh(bf,'Hmax',10);
 bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_AdaptMesh(1,bf,'Hmax',10);
+bf=SF_AdaptMesh(bf,'Hmax',10);
 [evD,emD] = SF_Stability(bf,'shift',+ Omegac*i,'nev',1,'type','D','sym','A','Ma',Ma);
-bf=SF_AdaptMesh(2,bf,emD,'Hmax',10);
+bf=SF_AdaptMesh(bf,emD,'Hmax',10);
         
 % WNL analysis - This is only to verify that WNL works well with CM
 bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
