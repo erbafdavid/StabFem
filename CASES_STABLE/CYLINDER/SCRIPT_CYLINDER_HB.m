@@ -1,15 +1,15 @@
 %  Instability of the wake of a cylinder with STABFEM  
 %
 %  this script demonstrates the way to perform HARMONIC BALANCE
-%  for the wake of a cylinder in the range Re = [46.7 - 100].
+%  for the wake of a cylinder in the range Re = [46.7 - 200].
 
 
 %% ##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
-run('../SOURCES_MATLAB/SF_Start.m');verbosity=10;
+run('../../SOURCES_MATLAB/SF_Start.m');verbosity=10;
 figureformat='png'; AspectRatio = 0.56; % for figures
 
-type = 'S';
-bf = CYLINDER_MESHGENERATION(type); 
+type = 'D';
+bf = SmartMesh_Cylinder(type); 
     % here use 'S' for mesh M2 (converged results for all quantities except for A_E , but much faster
     % or 'D' for mesh M4 (converged results for all quantities, but much
     % slower)
@@ -43,8 +43,8 @@ Res = 47;
 
 
 
-disp('HB1 model (or SC model) on the range [Rec , 100]');
-Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
+disp('HB1 model (or SC model) on the range [Rec , 200]');
+Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100 110:10:200 ];
 Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
 
 %bf=SF_BaseFlow(bf,'Re',Res);
@@ -69,8 +69,8 @@ end
 Rec = bf.Re;  Fxc = bf.Fx; 
 Lxc=bf.Lx;    Omegac=imag(em.lambda);
 [wnl,meanflow,mode,mode2] = SF_WNL(bf,em,'Retest',Res); % Here to generate a starting point for the next chapter
-[meanflow,mode,mode2] = SF_HarmonicBalance_Ordre2(meanflow,mode,mode2);
-Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
+[meanflow,mode,mode2] = SF_HB2(meanflow,mode,mode2);
+Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100 110:10:200];
 Lx_HB2 = [Lxc]; Fx_HB2 = [Fxc]; omega_HB2 = [Omegac]; Aenergy_HB2  = [0]; Fy_HB2 = [0];Fx2_HB2 = [0];
 
 for Re = Re_HB(2:end)
@@ -154,7 +154,7 @@ xlabel('Re');ylabel('A_E')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 legend('WNL','HB-1','HB-2','Location','south');
-saveas(gca,'FIGURES/Cylinder_Energy_Re_HB2',figureformat);
+saveas(gca,['FIGURES/Cylinder_Energy_Re_HB2_',type],figureformat);
 
 pause(0.1);
 

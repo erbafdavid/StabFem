@@ -37,7 +37,6 @@ if (isstruct(p.Results.Mesh))
     mydisp(5, 'Mesh passed as structure');
     ffmesh = p.Results.Mesh;
     %system(['cp ' p.Results.Mesh.namefile ' mesh.msh'])
-    p.Results.Mesh.filename
     mycp(p.Results.Mesh.filename, 'mesh.msh')
 end
 

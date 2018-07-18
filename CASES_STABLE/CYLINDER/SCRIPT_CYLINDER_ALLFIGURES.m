@@ -14,7 +14,7 @@
 
 clear all;
 close all;
-run('../SOURCES_MATLAB/SF_Start.m');
+run('../../SOURCES_MATLAB/SF_Start.m');
 figureformat='png'; AspectRatio = 0.56; % for figures
 system('mkdir FIGURES');
 

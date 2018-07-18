@@ -39,7 +39,7 @@ if (numvarargs == 2 && strcmp(lower(varargin{1}), 'params'))
     Params = varargin{2};
 end
 
-myrm([ffdatadir, 'BASEFLOWS/*']);
+myrm([ffdatadir, 'MESHES/*']);
 
 
 if ((p.Results.Params) == NaN)
@@ -56,10 +56,10 @@ error = 'ERROR : SF_Mesh not working ! \n Possible causes : \n 1/ your "ff" vari
 mysystem(command, error);
 
 % copy the mesh in directory ffdatadir
-mesh.filename = [ffdatadir, 'mesh.msh'];
-mycp('mesh.msh', mesh.filename);
-mycp('mesh.ff2m', [ffdatadir, 'mesh.ff2m']);
-mycp('SF_Init.ff2m', [ffdatadir, 'SF_Init.ff2m']);
+%mesh.filename = [ffdatadir, 'mesh.msh'];
+%mycp('mesh.msh', mesh.filename);
+%mycp('mesh.ff2m', [ffdatadir, 'mesh.ff2m']);
+%mycp('SF_Init.ff2m', [ffdatadir, 'SF_Init.ff2m']);
 
 mesh = importFFmesh([ffdatadir, 'mesh.msh']);
 

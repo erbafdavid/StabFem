@@ -35,7 +35,7 @@ The results are given in figure \ref{Lshape_Figures}.
 
 \begin{figure*}[t]
 \small
-\lstinputlisting{../EXAMPLE_Lshape/SCRIPT_Lshape.m}
+\lstinputlisting{../../CASES_STABLE/EXAMPLE_Lshape/SCRIPT_Lshape.m}
  \normalsize
 \caption{
 Matlab program \keys{SCRIPT\_Lshape.m})}
@@ -44,8 +44,8 @@ Matlab program \keys{SCRIPT\_Lshape.m})}
 
 
 \begin{figure*}[t]
-\includegraphics[width = .45 \linewidth]{../EXAMPLE_Lshape/FIGURES/Lshape_T0.png}
-\includegraphics[width = .45 \linewidth]{../EXAMPLE_Lshape/FIGURES/Lshape_T0_Cut.png}
+\includegraphics[width = .45 \linewidth]{../../CASES_STABLE/EXAMPLE_Lshape/FIGURES/Lshape_T0.png}
+\includegraphics[width = .45 \linewidth]{../../CASES_STABLE/EXAMPLE_Lshape/FIGURES/Lshape_T0_Cut.png}
 \caption{Solution for the steady hrat equation in a L-shape domain : $(a)$ Temperature field $T(x,y)$. 
 $(b)$ Temperature $T(x,0.25)$ along a horizontal line. }
 \label{Lshape_Figures}
@@ -53,7 +53,7 @@ $(b)$ Temperature $T(x,0.25)$ along a horizontal line. }
 
 \begin{figure*}[t]
 \small
-\lstinputlisting{../EXAMPLE_Lshape/Lshape_Mesh.edp}
+\lstinputlisting{../../CASES_STABLE/EXAMPLE_Lshape/Lshape_Mesh.edp}
  \normalsize
 \caption{
 FreeFem++ program \keys{Lshape\_Mesh.edp})}
@@ -63,7 +63,7 @@ FreeFem++ program \keys{Lshape\_Mesh.edp})}
 
 \begin{figure*}[t]
 \small
-\lstinputlisting{../EXAMPLE_Lshape/Lshape_Steady.edp}
+\lstinputlisting{../../CASES_STABLE/EXAMPLE_Lshape/Lshape_Steady.edp}
 \normalsize
 \caption{
 FreeFem++ program \keys{Lshape\_Steady.edp})}
@@ -105,7 +105,7 @@ Basically this function does the following operations :
 This file is the one created by the FreeFem program in lines 14-22 of the Freefem program \ref{Lshape_Steady.edp}.
 
 Looking inside the file \keys{Data.ff2m}, the header (i.e.  first four lines) is as follows :
-\lstinputlisting[linerange={1-4}]{../EXAMPLE_Lshape/Data.ff2m}, 
+\lstinputlisting[linerange={1-4}]{../../CASES_STABLE/EXAMPLE_Lshape/Data.ff2m}, 
 meaning that this files contains a P1 mesh-organised field called 'T'.
 
 \item Return the data as a matlab {\em structure} object called {\sf heatS}.
@@ -124,7 +124,7 @@ This is done by the generic driver function \keys{importFFdata.m} invoked at lin
 Here, besides the file Data.edp previously imported, our program has generated a second data file called \keys{Heat\_1Dcut.ff2m}.
 %This file is the one created by the FreeFem program in lines 14-22 of the Freefem program \ref{Lshape_Steady.edp}.
 The header of this file is as follows :
-\lstinputlisting[linerange={1-5}]{../EXAMPLE_Lshape/Heat_1Dcut.ff2m}, 
+\lstinputlisting[linerange={1-5}]{../../CASES_STABLE/EXAMPLE_Lshape/Heat_1Dcut.ff2m}, 
 meaning that this files contains two vectors of dimension 101 called X and T.
 
 
@@ -146,10 +146,10 @@ The \keys{importFFdata.m} functions is the core of the interface, and is actuall
 
 %File \keys{Heat\_1Dcut.ff2m}
 
-%\lstinputlisting[linerange={1-5}]{../EXAMPLE_Lshape/Heat_1Dcut.ff2m}
+%\lstinputlisting[linerange={1-5}]{../../CASES_STABLE/EXAMPLE_Lshape/Heat_1Dcut.ff2m}
 
 
-%\lstinputlisting{../EXAMPLE_Lshape/ExecutionExample}
+%\lstinputlisting{../../CASES_STABLE/EXAMPLE_Lshape/ExecutionExample}
 
 \subsection{Explanations of the \texttt{.ff2m} exchange format}
 

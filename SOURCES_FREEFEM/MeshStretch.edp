@@ -3,6 +3,7 @@
 // README :
 // This little program is used to stretch the mesh in both X and Y directions
 
+// WARNING : should be merged with SplitMesh
 
 verbosity = 0;
 
@@ -20,10 +21,14 @@ include "Macros_StabFem.edp";
 mesh th=readmesh(ffdatadir+"mesh_guess.msh");
 //mesh Shempty=emptymesh(th); 	// Maillage 'surface'
 mesh Shempty=th;
-real K0 = 1; // guess
-real K1;
+real PP0 = 1; // guess
+real PP1;
 real dpdz;
-include "Macros_Geometrie_Surface.edp";
+real gamma=0;
+mesh thsurface=th; 
+string typestart = "pined";//"pined";//
+string typeend = "pined";
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp";
 
 cout << "Stretching mesh :" << endl;
 real Xfactor, Yfactor;

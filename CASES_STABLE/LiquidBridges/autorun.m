@@ -1,8 +1,19 @@
+function value = autorun(isfigures);
+% Autorun function for StabFem. 
+% This function will produce sample results for the case EXAMPLE_Lshape
+%
+% USAGE : 
+% autorun(0) -> automatic check
+% autorun(1) -> produces the figures used for the manual
+if(nargin==0) 
+    isfigures=0; 
+end;
 %%
 close all;
 run('../../SOURCES_MATLAB/SF_Start.m');
 system('mkdir FIGURES');
-figureformat = 'png';
+figureformat = 'png';verbosity=0;
+value = 0;
 %% CHAPTER 0 : creation of initial mesh for cylindrical bridge, L=4
 
 L = 4;
@@ -14,15 +25,48 @@ gamma = 1;
 rhog = 0;
 ffmesh = SF_Mesh_Deform(ffmesh,'V',V,'typestart','pined','typeend','pined','gamma',gamma,'rhog',rhog);
 
-Vol0 = ffmesh.Vol; 
+
+disp('##### autorun test 1 :  deforming the mesh with prescrived volume')
+P0 = ffmesh.P0;
+P0_REF = 0.9699;
+error1 = abs(P0/P0_REF-1)
+if(error1>1e-3) 
+    value = value+1 
+end
+
+
+if(isfigures)
 figure(1);hold off;
-plot(ffmesh.xsurf,ffmesh.ysurf); hold
+plot(ffmesh.xsurf,ffmesh.ysurf); hold on;
+end
 
 %% CHAPTER 1 : Eigenvalue computation for m=0 and m=1 FOR A CYLINDRICAL BRIDGE
 [evm0,emm0] =  SF_Stability(ffmesh,'nev',10,'m',0,'sort','SIA');
 [evm1,emm1] =  SF_Stability(ffmesh,'nev',10,'m',1,'sort','SIA');
 
-%%% PLOT RESULTS
+
+ev_m0a = evm0(4);
+ev_m0s = evm0(6);
+ev_m1s = evm1(2);
+ev_m1a = evm1(4);
+
+% previously computed reference values
+ev_m0a_REF =   0.0000 + 0.8158i;
+ev_m0s_REF =   0.0000 + 2.2418i;
+ev_m1s_REF =   0.0000 + 0.7490i;
+ev_m1a_REF =   0.0000 + 1.7644i;
+
+
+
+disp('##### autorun test 2 :  eigenvalues of the four simplest modes (m=0 and m=1)')
+
+error2 = abs(ev_m0a/ev_m0a_REF-1)+abs(ev_m0s/ev_m0s_REF-1)+abs(ev_m1s/ev_m1s_REF-1)+abs(ev_m1a/ev_m1a_REF-1)
+if(error1>1e-3) 
+    value = value+1 
+end
+
+if(isfigures)
+%% PLOT RESULTS
 figure(2);
 plot(imag(evm0),real(evm0),'ro',imag(evm1),real(evm1),'bo');
 title('Cylindrical bridge, L= 4 : spectra for m=0 (red) and m=1 (blue)');
@@ -55,7 +99,7 @@ hold on;plot(ffmesh.xsurf+E*real(emm1(3).eta).*ffmesh.N0r,ffmesh.ysurf+E*real(em
 pos = get(gcf,'Position'); pos(3)=pos(4)*2.6;set(gcf,'Position',pos); % resize aspect ratio
 %set(gca,'FontSize', 14);
 saveas(gcf,'FIGURES/Bridges_NV_Eigenmodes_phi_cyl_L3_5',figureformat);
-pause;
+pause(1);
 
 
 figure(5); hold on;
@@ -299,4 +343,5 @@ box on; pos = get(gcf,'Position'); pos(4)=pos(3)*1;set(gcf,'Position',pos); % re
 set(gca,'FontSize', 14);
 saveas(gca,'FIGURES/Bridges_NV_L3_5_coal_omegaL',figureformat);
 
-
+end
+end

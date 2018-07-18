@@ -1,2 +1,5 @@
-This code is a version of 2D compressible solver. 
-It has implemented 2 methods to resolve boundary conditions: Sponge region and Complex mapping.
+
+
+This code is a minimal version for stability of comnpressible cartesian configuration. 
+In particular the code is solving the compressible Navier Stokes equations around a Cylinder.
+Other refe can be found in ....

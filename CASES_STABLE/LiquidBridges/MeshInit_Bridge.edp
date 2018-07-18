@@ -5,8 +5,8 @@ int d=10;
 int typegeom;
 
 
-real K0, dpdz,gamma;
-K0 = 1;dpdz = 0;gamma =1;
+real PP0, dpdz,gamma;
+PP0 = 1;dpdz = 0;gamma =1;
 
 include "Macros_StabFem.edp"
 
@@ -103,9 +103,10 @@ savemesh(th,ffdatadir+"mesh.msh");
 
 // SECOND AUXILIARY FILE mesh.ff2m
 { 
-mesh Shempty=emptymesh(th); 
-	
-include "Macros_Geometrie_Surface.edp";
+mesh thsurface=th; 
+string typestart = "pined";//"pined";//
+string typeend = "pined";	
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp";
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
 CalcGeomSurf;
 SFWriteMesh(ffdatadir+"mesh.ff2m",th)

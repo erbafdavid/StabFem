@@ -1,5 +1,5 @@
 close all;
-run('../SOURCES_MATLAB/SF_Start.m');
+run('../../SOURCES_MATLAB/SF_Start.m');
 system('mkdir FIGURES');
 figureformat = 'png';
 %% CHAPTER 0 : creation of initial mesh sessile drops

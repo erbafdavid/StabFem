@@ -64,7 +64,7 @@ solvercommand = ['echo ', num2str(p.Results.Re), ' | ', ff, ' ', ffdir, 'Harmoni
 status = mysystem(solvercommand);
 
 
-disp(['#### HARMOPNIC BALANCE CALCULATION COMPLETED with Re = ', num2str(p.Results.Re)]);
+mydisp(1,['#### HARMOPNIC BALANCE CALCULATION COMPLETED with Re = ', num2str(p.Results.Re)]);
 meanflow = importFFdata(meanflow.mesh, 'MeanFlow.ff2m');
 mode = importFFdata(meanflow.mesh, 'SelfConsistentMode.ff2m');
 mode2 = importFFdata(meanflow.mesh, 'SecondHarmonicMode.ff2m');
@@ -73,7 +73,7 @@ if (meanflow.iter < 0)
     error('ERROR in SF_HarmonicBalance : Newton iteration did not converge')
 end
 
-disp(['#### omega =  ', num2str(imag(mode.lambda))]);
+mydisp(1,['#### omega =  ', num2str(imag(mode.lambda))]);
 %disp(['#### A =  ' num2str(mode.A) ]);
 
 
