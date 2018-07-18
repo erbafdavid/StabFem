@@ -27,7 +27,9 @@ real RADIUS=0.5;         /////// Cylinder Radius
 
 
 n=.5;                 
-ns=50; 
+real nsTE=50;
+real nsLE=75; 
+real thick=0.12, c0=0.296375, c1=0.12635, c2=0.35195, c3=0.283775, c4=0.10185;
 
 cout << " Generation of an initial mesh for a 2D cylinder" << endl;
 cout << " Enter the dimensions xmin, xmax, ymax ? " << endl; 
@@ -46,7 +48,10 @@ cout << "Xmin = " << xinlet << " ; Xmax = " << xoutlet << " ; ymax = " << yside 
 /////////////////////////////////////////////////////////////////////////////////
 // cylinder center is in (0,0)
 
-border cylinder(t=0,pi){ x=RADIUS*cos(t);y=RADIUS*sin(t);label=2;}
+border airfoilTE(t=2*RADIUS,0.4*RADIUS){ x=t-RADIUS;y=(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
+border airfoilLE2(t=0.4*RADIUS,0.01*RADIUS){ x=t-RADIUS;y=(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
+border airfoilLE1(t=0.01*RADIUS,0){ x=t-RADIUS;y=(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
+
 //border cylref(t=0,2*pi){ x=(RADIUS+RR)*cos(t);y=(RADIUS+RR)*sin(t);label=999;}
 
 border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=1;}
@@ -65,7 +70,8 @@ border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=3;} // label 3 
 //cout << "toto" << endl;
 //plot(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)+cylinder(-ns));
 
-mesh th=buildmesh(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)+cylinder(-ns));
+mesh th=buildmesh(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)
+				  +airfoilTE(-nsTE)+airfoilLE2(-nsLE)+airfoilLE1(-nsLE));
 
 //plot(th,wait=0);
 //cout << "tata" << endl;
