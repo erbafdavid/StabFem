@@ -2,7 +2,7 @@
 
 clear all;
 % close all;
-run('../../SOURCES_MATLAB/SF_Start.m');
+run('../../../SOURCES_MATLAB/SF_Start.m');
 figureformat='png'; AspectRatio = 0.56; % for figures
 tinit = tic;
 verbosity=20;
@@ -56,35 +56,33 @@ Rec = 46.94
 
 bf = SF_Init('Mesh_NACA0012.edp',[xinfm,xinfv,yinf]);
 bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_Adapt(bf,'Hmax',5);
 bf=SF_BaseFlow(bf,'Re',50,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_Adapt(bf,'Hmax',5);
 bf=SF_BaseFlow(bf,'Re',50,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_Adapt(bf,'Hmax',5);
 bf=SF_BaseFlow(bf,'Re',100,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_Adapt(bf,'Hmax',5);
 bf=SF_BaseFlow(bf,'Re',500,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_Adapt(bf,'Hmax',5);
 bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',5);
+bf=SF_Adapt(bf,'Hmax',5);
 bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1,'InterpError',5e-3);
+bf=SF_Adapt(bf,'Hmax',1,'InterpError',5e-3);
 bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1,'InterpError',5e-3);
+bf=SF_Adapt(bf,'Hmax',1,'InterpError',5e-3);
 bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',1.0,'InterpError',1e-3);
+bf=SF_Adapt(bf,'Hmax',1,'InterpError',1e-3);
 bf=SF_BaseFlow(bf,'Re',1500,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',3e-3);
+bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',1e-3);
 bf=SF_BaseFlow(bf,'Re',2000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',3e-3);
-bf=SF_BaseFlow(bf,'Re',2000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',2e-3);
+bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',1e-3);
 bf=SF_BaseFlow(bf,'Re',5000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',2e-3);
+bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',1e-3);
 bf=SF_BaseFlow(bf,'Re',5000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',1e-3);
+bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',5e-4);
 bf=SF_BaseFlow(bf,'Re',10000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(1,bf,'typeField1','CxP2P2P1P1P1','Hmax',0.5,'InterpError',5e-4);
+bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',3e-4);
 
 
 figure();
