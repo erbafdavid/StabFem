@@ -16,23 +16,24 @@ clear all;
 run('../../../SOURCES_MATLAB/SF_Start.m');
 figureformat='png'; AspectRatio = 0.56; % for figures
 tinit = tic;
+verbosity=20;
 
 % parameters for mesh creation 
 % Outer Domain 
-xinfm=-60.; xinfv=110.; yinf=60.;
+xinfm=-40.; xinfv=80.; yinf=40.;
 % Inner domain
 x1m=-2.5; x1v=10.; y1=2.5;
 % Middle domain
-x2m=-10.;x2v=60.;y2=10;
+x2m=-10.;x2v=30.;y2=10;
 % Sponge extension
 ls=300.0; 
 % Refinement parameters
 n=1.8; % Vertical density of the outer domain
 ncil=100; % Refinement density around the cylinder
-n1=10; % Density in the inner domain
-n2=4; % Density in the middle domain
-ns=0.2; % Density in the outer domain
-nsponge=.2; % density in the sponge region
+n1=7; % Density in the inner domain
+n2=3; % Density in the middle domain
+ns=0.15; % Density in the outer domain
+nsponge=.15; % density in the sponge region
 
 %Compressibility to create a mesh 
 Ma = 0.1
