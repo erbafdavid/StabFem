@@ -46,7 +46,7 @@ real R; // echelle de longueur (rayon pour un pont liquide)
 real dpdz; // parametre de gravite
 real GAMMA; // circulation pour cas polygones tournants
 
-include "../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 
 
 

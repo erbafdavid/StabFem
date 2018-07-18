@@ -15,10 +15,12 @@ global ff ffdir ffdatadir sfdir verbosity
 
 %%% check which parameters are transmitted to varargin (Mode 1)
 p = inputParser;
-addParameter(p, 'gamma', 1, @isnumeric); % Surface tension
-addParameter(p, 'rhog', 0, @isnumeric); % gravity parameter
-addParameter(p, 'V', -1, @isnumeric); % Volume (for liquid bridge)
-addParameter(p, 'P', -1, @isnumeric); % Pressure (for liquid bridge)
+   addParameter(p,'gamma',1,@isnumeric); % Surface tension
+   addParameter(p,'rhog',0,@isnumeric); % gravity parameter
+   addParameter(p,'V',-1,@isnumeric); % Volume 
+   addParameter(p,'P',1,@isnumeric); % Pressure 
+   addParameter(p,'typestart','pined',@ischar); % 
+   addParameter(p,'typeend','pined',@ischar); % 
 
 parse(p, varargin{:});
 
@@ -26,14 +28,14 @@ switch (ffmesh.problemtype)
     
     case ('3DFreeSurfaceStatic')
         
-        if (p.Results.V ~= -1) % V-controled mode
-            mydisp(1, '## Deforming MESH For STATIC FREE SURFACE PROBLEM (V-controled)');
-            parameterstring = [' " V ', num2str(p.Results.V), ' ', num2str(p.Results.gamma), ' ', num2str(p.Results.rhog), ' " '];
-            solvercommand = ['echo ', parameterstring, ' | ', ff, ' ', ffdir, 'Newton_Axi_FreeSurface_Static.edp'];
-        elseif (p.Results.P ~= -1) % P-controled mode
-            mydisp(1, '## Deforming MESH For STATIC FREE SURFACE PROBLEM (P-controled)');
-            parameterstring = [' " P ', num2str(p.Results.P), ' ', num2str(p.Results.gamma), ' ', num2str(p.Results.rhog), ' " '];
-            solvercommand = ['echo ', parameterstring, ' | ', ff, ' ', ffdir, 'Newton_Axi_FreeSurface_Static.edp'];
+        if(p.Results.V~=-1)% V-controled mode
+            mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (V-controled)'); 
+            parameterstring = [' " V ',num2str(p.Results.V),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' ',p.Results.typestart,' ',p.Results.typeend,' " '];
+            solvercommand = ['echo ',parameterstring, ' | ',ff,' ',ffdir,'Newton_Axi_FreeSurface_Static.edp'];
+        elseif(p.Results.P~=-1)% P-controled mode
+            mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (P-controled)'); 
+            parameterstring = [' " P ',num2str(p.Results.P),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' ',p.Results.typestart,' ',p.Results.typeend,' " '];
+            solvercommand = ['echo ',parameterstring, ' | ',ff,' ',ffdir,'Newton_Axi_FreeSurface_Static.edp'];
         end
 end
 

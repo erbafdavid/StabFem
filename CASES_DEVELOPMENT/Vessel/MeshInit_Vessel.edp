@@ -108,8 +108,8 @@ SFWriteMesh(ffdatadir+"mesh_guess.ff2m",th)
 {
 			ofstream file2("SF_Geom.edp"); 
 			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
-            file2 << " real SFGeomRbridge = 1 ;" << endl ;
-            file2 << " real SFGeomLbridge = " << LL <<  " ;" << endl ;
+            file2 << " real SFGeomvessel = 1 ;" << endl ;
+            file2 << " real SFGeomLvessel = " << LL <<  " ;" << endl ;
             file2 << " real SFGeomGAMMA = " << 0 <<  " ;" << endl ;
 
 }
