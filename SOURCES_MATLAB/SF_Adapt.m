@@ -121,6 +121,17 @@ else % Adaptation to base flow + mode (or other specified field)
             command = ['echo Sensitivity | ', ff, ' ', ffdir, 'Adapt_Mode.edp'];
             mycp([ffdatadir, 'Sensitivity.txt'], [ffdatadir, 'AdaptField.txt']);
         end
+    elseif(strcmp(baseflow.mesh.problemtype,'AxiXRPOROUS')==1)
+        if(strcmp(eigenmode.type,'D')==1)
+            command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+            mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'AdaptField.txt']);
+        elseif(strcmp(eigenmode.type,'A')==1)
+             command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+             mycp([ffdatadir 'EigenmodeA.txt'],[ffdatadir 'AdaptField.txt']);
+        else %if(strcmp(eigenmode.type,'S')==1)
+             command = ['echo Sensitivity | ',ff,' ',ffdir,'Adapt_Mode.edp'];
+             mycp([ffdatadir 'Sensitivity.txt'],[ffdatadir 'AdaptField.txt']);
+        end
         
         % elseif(..) for possible other drivers
     end

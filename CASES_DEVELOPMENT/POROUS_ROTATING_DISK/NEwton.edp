@@ -185,7 +185,7 @@
 					- 2*nu*S2(x,y)*(D(0,du):D(0,v))
 					-IsInObject(x,y)*nu*(1/Da)*(dux*vx+dur*vr+duphi*vphi)
 				)*y)
-		- int1d(th,91,92,93)((D(0,du)*[N.x,N.y,0])'*[vx,vr,vphi])
+		- int1d(th,91,92,93)(S2(x,y)*((D(0,du)*[N.x,N.y,0])'*[vx,vr,vphi])*y)
 		+ int2d(th)(
 				(	vp*div(0,up)
 					- .5*S1(x,y)*Conv(0,up,0,up,v)
@@ -193,14 +193,13 @@
 					- 2*nu*S2(x,y)*(D(0,up):D(0,v))
 					- IsInObject(x,y)*nu*(1/Da)*(upx*vx+upr*vr+(upphi-Omegax*y)*vphi)
 				)*y)
-		- int1d(th,91,92,93)((D(0,u)*[N.x,N.y,0])'*[vx,vr,vphi])
+		- int1d(th,91,92,93)(S2(x,y)*((D(0,u)*[N.x,N.y,0])'*[vx,vr,vphi])*y)
 		+ BoundaryconditionsBaseFlow(du,up,v);
-    
     
 /* Paramètres de l'algorithme de Newton  */          
 	real tolerance = 2e-12;
 	real ener = 10;
-	int Nitermax = 30;
+	int Nitermax = 20;
 	int iter = 0;
 	
 /* Algorithme de Newton  */
@@ -213,7 +212,7 @@
 			ux[] = ux[]+dux[];
         
 			IFMACRO(FreeFemPlot,Yes)
-				plot(dux,wait=0,value=false,nbiso=50,fill=1,cmm="dux");
+				plot(dux,wait=0,value=false,nbiso=50,fill=1,cmm="dux - Re="+int(Re)+" - It="+int(iter)+".");
 			ENDIFMACRO
 			
 			real enerl2=dux[].l2;
@@ -263,15 +262,15 @@
 		
 		IFMACRO(FreeFemPlot,Yes)
 			plot(upsi,wait=1,value=false,nbiso=50,fill=0,cmm="Lignes courant");
-			plot(ux,wait=1,value=false,nbiso=50,fill=1,cmm="final Ux");
-			plot(ur,wait=1,value=false,nbiso=50,fill=1,cmm="final Ur");
-			plot(uphi,wait=1,value=false,nbiso=50,fill=1,cmm="final Uphi");
+			plot(ux,wait=1,value=true,nbiso=50,fill=1,cmm="final Ux");
+			plot(ur,wait=1,value=true,nbiso=50,fill=1,cmm="final Ur");
+			plot(uphi,wait=1,value=true,nbiso=50,fill=1,cmm="final Uphi");
 		ENDIFMACRO
 		  
 		Mh uphiphi = uphi;
 		cout << "Uphi max : " << uphi[].max;
 		
 		IFMACRO(FreeFemPlot,Yes)
-			plot(up,wait=1,value=false,nbiso=50,fill=1,cmm="final P");
+			plot(up,wait=1,value=true,nbiso=50,fill=1,cmm="final P");
 		ENDIFMACRO
 		};

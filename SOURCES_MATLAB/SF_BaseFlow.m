@@ -78,7 +78,7 @@ else DarcyDefault = 0;
 end
 addParameter(p, 'Darcy', DarcyDefault, @isnumeric); % For porous body
 
-if (isfield(baseflow, 'Porosity')) PorosityDefault = baseflow.PorosityDefault;
+if (isfield(baseflow, 'Porosity')) PorosityDefault = baseflow.Porosity;
 else PorosityDefault = 0.95;
 end
 addParameter(p, 'Porosity', PorosityDefault, @isnumeric); % For porous body too
@@ -109,7 +109,7 @@ switch (baseflow.mesh.problemtype)
     case ('AxiXRPOROUS') % axisymmetric WITH SWIRL
         mydisp(1, '## Entering SF_BaseFlow (axisymmetric case WITH SWIRL)');
         solvercommand = ['echo ', num2str(Re), ' ', num2str(p.Results.Omegax), ' ', num2str(p.Results.Darcy), ' ', num2str(p.Results.Porosity), ' | ', ff, ' ', ffdir, 'Newton_AxiSWIRL.edp']
-        filename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re), '_Omega', num2str(p.Results.Omegax), '_Da', num2str(p.Results.Darcy), '_Por', num2str(p.Results.Porosity)];
+        filename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re), '_Omega', num2str(p.Results.Omegax), '_Da', num2str(p.Results.Darcy), '_Por', num2str(p.Results.Porosity)]
         
     case ('2D')
         mydisp(1, '## Entering SF_BaseFlow (2D INCOMPRESSIBLE)');
@@ -181,5 +181,5 @@ else
     mydisp(1, ['      ### Base flow recovered from previous computation for Re = ', num2str(Re)]);
 end
 
-mydisp(2, '### END FUNCTION SF_STABILITY ');
+mydisp(2, '### END FUNCTION SF_BASEFLOW ');
 end

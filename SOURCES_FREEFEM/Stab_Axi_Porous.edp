@@ -46,9 +46,13 @@ include "Macros_StabFem.edp";
 
 
 
-	real Re,Porosity;                  
+	real Re,Omegax,Da,Porosity;                  
 	cout << " Enter Reynolds :   " << endl; 
 	cin  >> Re;
+	cout << " Enter Omega :   " << endl; 
+	cin  >> Omegax;
+	cout << " Enter Darcy :   " << endl; 
+	cin  >> Da;
 	cout << " Enter Porosity :   " << endl; 
 	cin  >> Porosity;
 
@@ -160,32 +164,54 @@ macro Conv(ima,ua,imb,ub,v) (
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-varf   LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
-   int2d(th)( 
-   			(-2*nu*(D(1i*m,u):D(-1i*m,v))
-             + up*vp*(eps) 
-             + up*div(-1i*m,v)
-             + div(1i*m,u)*vp
-             - Conv(1i*m,u,0,Ub,v)
-             -1/Porosity*IsInObject(x,y)*(ux*vx+ur*vr+uphi*vphi)
-             +eps*vp*up
-             )*y
-             )
- + int2d(th)( -shift*(ux*vx+ur*vr+uphi*vphi)*y )
- + BoundaryconditionsStability(u,v,m);
+/* 	varf LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
+		int2d(th)(
+			(	-2*nu*(D(1i*m,u):D(-1i*m,v)) //
+				+ up*vp*(eps) 
+				+ up*div(-1i*m,v) //
+				+ div(1i*m,u)*vp //
+				- Conv(1i*m,u,0,Ub,v) //
+				-1/Porosity*IsInObject(x,y)*(ux*vx+ur*vr+uphi*vphi)
+				+eps*vp*up
+				)*y)
+		+ int2d(th)( -shift*(ux*vx+ur*vr+uphi*vphi)*y )
+		+ BoundaryconditionsStability(u,v,m);
+
+	varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
+		int2d(th)( 
+   			(	-2*nu*(D(1i*m,u):D(-1i*m,v))
+				+ up*vp*(eps) 
+				+ up*div(-1i*m,v)
+				+ div(1i*m,u)*vp
+				- Conv(-1i*m,v,0,Ub,u)
+				+eps*vp*up
+				)*y)
+		+ int2d(th)( -conj(shift)*(ux*vx+ur*vr+uphi*vphi)*y ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
+		+ BoundaryconditionsStability(u,v,m);  */
+		
+	varf LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
+		int2d(th)(
+			(	div(1i*m,u)*vp
+				- S1(x,y)*Conv(1i*m,u,0,Ub,v)
+				+ up*div(-1i*m,v)
+				- 2*nu*S2(x,y)*(D(1i*m,u):D(-1i*m,v))
+				- IsInObject(x,y)*nu*(1/Da)*(ux*vx+ur*vr+uphi*vphi)
+				+ up*vp*(eps)
+				)*y)
+		+ int2d(th)( -shift*(ux*vx+ur*vr+uphi*vphi)*y )
+		+ BoundaryconditionsStability(u,v,m);
  
-varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
-   int2d(th)( 
-   			(-2*nu*(D(1i*m,u):D(-1i*m,v))
-             + up*vp*(eps) 
-             + up*div(-1i*m,v)
-             + div(1i*m,u)*vp
-             - Conv(-1i*m,v,0,Ub,u)
-             +eps*vp*up
-             )*y
-             )
- + int2d(th)( -conj(shift)*(ux*vx+ur*vr+uphi*vphi)*y ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
- + BoundaryconditionsStability(u,v,m); 
+	varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
+		int2d(th)( 
+   			(	div(1i*m,u)*vp
+				- S1(x,y)*Conv(-1i*m,v,0,Ub,u)
+				+ up*div(-1i*m,v)
+				- 2*nu*S2(x,y)*(D(1i*m,u):D(-1i*m,v))
+				- IsInObject(x,y)*nu*(1/Da)*(ux*vx+ur*vr+uphi*vphi)
+				+ up*vp*(eps)
+				)*y)
+		+ int2d(th)( -conj(shift)*(ux*vx+ur*vr+uphi*vphi)*y ) // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
+		+ BoundaryconditionsStability(u,v,m);
 
 
 

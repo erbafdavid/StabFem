@@ -46,6 +46,9 @@
 	verbosity = 0;
 	
 	mesh th = readmesh(ffdatadir+"mesh.msh");
+	IFMACRO(FREEFEMPLOTS,YES)
+		plot(th,wait=0);
+	ENDIFMACRO
 
 /*  ------------------
 		Espaces EF 
@@ -75,7 +78,6 @@
 	
 	cout << " Entrer le Nombre de Reynolds :" << endl;
     cin >>  Re;
-	
     cout << " Entrer le taux de rotation :" << endl;
     cin >>  Omegax;
 	
@@ -85,7 +87,7 @@
     cout << " Entrer la porosite du disque :" << endl;
     cin >>  Porosity;
 		// if(Porosity==0){Porosity=1e-30;};
-
+		
 /*  ---------------------------
 		Dimensions Baseflow 
     --------------------------- */
@@ -158,52 +160,25 @@
 		Résolution de Navier-Stokes 
     ----------------------------------- */
 
-/* Système linéarisé 1 
-	problem NewtonIter([dux,dur,duphi,dup],[vx,vr,vphi,vp]) =
-		int2d(th)(
-				(	-2*nu*(D(0,du):D(0,v))
-					+ vp*div(0,du) 
-					+ div(0,v)*dup
-					-Conv(0,up,0,du,v)
-					-1/Porosity*IsInObject(x,y)*(dux*vx+dur*vr+duphi*vphi)
-				)*y)
-		+ int2d(th)(
-				(	-2*nu*(D(0,up):D(0,v))
-					+ vp*div(0,up)
-					+ div(0,v)*upp
-					-.5*Conv(0,up,0,up,v)
-					-1/Porosity*IsInObject(x,y)*(upx*vx+upr*vr+(upphi-Omegax*y)*vphi)
-				)*y)
-		+ BoundaryconditionsBaseFlow(du,up,v); */
-
-/* Système linéarisé 2 */
+/* Système linéarisé */
 	problem NewtonIter([dux,dur,duphi,dup],[vx,vr,vphi,vp]) =
 		int2d(th)(
 				(	vp*div(0,du)
-					- S1(x,y)*Conv(0,up,0,du,v) // Fluide
-					// - S1p(x,y)*Conv(0,up,0,du,v) // Poreux
-					// - Conv(0,up,0,du,v)
+					- S1(x,y)*Conv(0,up,0,du,v)
 					+ dup*div(0,v)
-					- 2*nu*S2(x,y)*(D(0,du):D(0,v)) // Fluide
-					// - 2*nu*S2p(x,y)*(D(0,du):D(0,v)) // Poreux
-					// - 2*nu*(D(0,du):D(0,v))
-					-IsInObject(x,y)*nu*(1/Da)*(dux*vx+dur*vr+duphi*vphi) //Da
+					- 2*nu*S2(x,y)*(D(0,du):D(0,v))
+					-IsInObject(x,y)*nu*(1/Da)*(dux*vx+dur*vr+duphi*vphi)
 				)*y)
-		- int1d(th,91,92,93)((D(0,du)*[N.x,N.y,0])'*[vx,vr,vphi])
+		- int1d(th,91,92,93)((1/Porosity-1)*((D(0,du)*[N.x,N.y,0])'*[vx,vr,vphi])*y)
 		+ int2d(th)(
 				(	vp*div(0,up)
-					- .5*S1(x,y)*Conv(0,up,0,up,v) // Fluide
-					// - .5*S1p(x,y)*Conv(0,up,0,up,v) // Poreux
-					// - .5*Conv(0,up,0,up,v)
+					- .5*S1(x,y)*Conv(0,up,0,up,v)
 					+ upp*div(0,v)
-					- 2*nu*S2(x,y)*(D(0,up):D(0,v)) // Fluide
-					// - 2*nu*S2p(x,y)*(D(0,up):D(0,v)) // Poreux
-					// - 2*nu*(D(0,up):D(0,v))
+					- 2*nu*S2(x,y)*(D(0,up):D(0,v))
 					- IsInObject(x,y)*nu*(1/Da)*(upx*vx+upr*vr+(upphi-Omegax*y)*vphi)
 				)*y)
-		- int1d(th,91,92,93)((D(0,u)*[N.x,N.y,0])'*[vx,vr,vphi])
+		- int1d(th,91,92,93)((1/Porosity-1)*((D(0,u)*[N.x,N.y,0])'*[vx,vr,vphi])*y)
 		+ BoundaryconditionsBaseFlow(du,up,v);
-    
     
 /* Paramètres de l'algorithme de Newton  */          
 	real tolerance = 2e-12;
@@ -220,13 +195,13 @@
 			
 			ux[] = ux[]+dux[];
         
-			IFMACRO(FreeFemPlot,Yes)
-				plot(dux,wait=0,value=false,nbiso=50,fill=1,cmm="dux");
-			ENDIFMACRO
-			
 			real enerl2=dux[].l2;
 			ener = sqrt(int2d(th)(dux^2+dur^2+duphi^2)/th.area);
 			cout << " iter = "<< iter+1 << "   Re = " << Re << " res = " << ener << " ; res l2 = " << enerl2 << endl;
+			
+			IFMACRO(FREEFEMPLOTS,YES)
+				plot(dux,wait=0,value=false,nbiso=50,fill=1,cmm="dux - Re="+int(Re)+" - It="+int(iter+1)+" - Res="+real(ener)+".");
+			ENDIFMACRO
 			
 			iter++;
 		} ;
@@ -235,17 +210,17 @@
 		Fonction de courant 
     --------------------------- */		
 	
-	Mh rot;
+/* 	Mh vort;
 	Xh upsi,vpsi;
 	
-	//rot = dx(ub2)-dy(ub1);
+	vort = (dy(ux)-dx(ur)); // vorticity
 		
 	solve Courant(upsi,vpsi) =
 		int2d(th)(1/y*(dx(upsi)*dx(vpsi)+dy(upsi)*dy(vpsi)))
 		//+ on(12,upsi=0)
 		+ on(1,upsi=-Uinfx*(y^2/2))
 		+ on(3,upsi=-Uinfx*(y^2/2))
-		+ on(21,21,23,6,upsi=0);
+		+ on(21,21,23,6,upsi=0); */
 
 /*  ----------------------------
 		Sortie des résultats 
@@ -256,7 +231,7 @@
 		{
 		cout << " NEWTON ITERATION FAILED" << endl;
 		exec("rm "+ffdatadir+"BaseFlow.txt");
-		SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",-1,Da,Porosity,Omegax);
+		SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",-1);
 		}
 /* Si convergence */
 	else
@@ -267,19 +242,26 @@
 		}; 
 		exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt");
 		
-		SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",iter,Da,Porosity,Omegax); // file in .ff2ml format for StabFem driver
+		SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",iter); // file in .ff2ml format for StabFem driver
+		{
+			ofstream Vitesssss(ffdatadir+"PROFILS/Uaxis_Re"+int(Re)+"_Da"+real(Da)+".txt");
+			for(real xaxis=(SFGeomHdisk/2); xaxis<SFGeomXmax; xaxis=xaxis+0.01*1)
+				{
+				Vitesssss << xaxis << " " << ux(xaxis,0) << endl;
+				};
+		}
 		
-		IFMACRO(FreeFemPlot,Yes)
-			plot(upsi,wait=1,value=false,nbiso=50,fill=0,cmm="Lignes courant");
-			plot(ux,wait=1,value=false,nbiso=50,fill=1,cmm="final Ux");
-			plot(ur,wait=1,value=false,nbiso=50,fill=1,cmm="final Ur");
-			plot(uphi,wait=1,value=false,nbiso=50,fill=1,cmm="final Uphi");
+		IFMACRO(FREEFEMPLOTS,YES)
+			/* plot(upsi,wait=1,value=false,nbiso=100,fill=0,cmm="Lignes courant - Re="+real(Re)+" - Da="+real(Da)+" - eps="+real(Porosity)+" - Omega="+real(Omegax)+"."); */
+			plot(ux,wait=1,value=true,nbiso=50,fill=1,cmm="final Ux - Re="+real(Re)+" - Da="+real(Da)+" - eps="+real(Porosity)+" - Omega="+real(Omegax)+".");
+			plot(ur,wait=1,value=true,nbiso=50,fill=1,cmm="final Ur - Re="+real(Re)+" - Da="+real(Da)+" - eps="+real(Porosity)+" - Omega="+real(Omegax)+".");
+			plot(uphi,wait=1,value=true,nbiso=50,fill=1,cmm="final Uphi - Re="+real(Re)+" - Da="+real(Da)+" - eps="+real(Porosity)+" - Omega="+real(Omegax)+".");
 		ENDIFMACRO
 		  
 		Mh uphiphi = uphi;
 		cout << "Uphi max : " << uphi[].max;
 		
-		IFMACRO(FreeFemPlot,Yes)
-			plot(up,wait=1,value=false,nbiso=50,fill=1,cmm="final P");
+		IFMACRO(FREEFEMPLOTS,YES)
+			plot(up,wait=1,value=true,nbiso=50,fill=1,cmm="final P - Re="+real(Re)+" - Da="+real(Da)+" - eps="+real(Porosity)+" - Omega="+real(Omegax)+".");
 		ENDIFMACRO
 		};
