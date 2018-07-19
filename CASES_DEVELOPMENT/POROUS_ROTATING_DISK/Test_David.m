@@ -25,64 +25,14 @@ verbosity = 10;
 
 %% 1 - Génération MAILLAGE et BASEFLOW
 
-Rx = 3;
-
-% Géométrie
-Diametre = 1;
-Rayon = Diametre/2;
-Epaisseur = 1/(2*Rx);
-Xmin = -20*Rayon;
-Xmax = 100*Rayon;
-Ymax = 20*Rayon;
-
-bf = SF_Init('mesh_Disk.edp',[Diametre Epaisseur Xmin Xmax Ymax]);
-
-% Plot mesh initial
-figure;
-plotFF(baseflow,'mesh','Title','Maillage initial du domaine de calcul');
-xlabel('x');ylabel('r');
-hold on;fill(boxx,boxy,'y','FaceAlpha', 0.3);hold off;
-
-% Creation et vidange de PROFILS/
-if (exist([ffdatadir, 'PROFILS']) ~= 7)
-    mymake([ffdatadir, 'PROFILS/']);
+if(exist('WORK/MESHES/mesh_adapt_Re150.txt')==2)
+    disp('Mesh/BF already available');
+    ffmesh = importFFmesh('./WORK/MESHES/mesh_adapt_Re150.msh');
+    baseflow = importFFdata(ffmesh,'./WORK/MESHES/BaseFlow_adapt_Re150.txt');
 else
-    myrm([ffdatadir, 'PROFILS/*']);
+    disp('creating/adapting Mesh/BF') 
+     baseflow = SmartMesh_Porous_Rotating_Disk;
 end
-
-%% 2 - Génération du BASEFLOW - Re = 150
-
-% Paramètres de calcul
-Omega = 0.;
-Darcy = 1e-6;
-Porosite = 0.95;
-
-% Baseflow Re=150
-bf = SF_BaseFlow(bf,'Re',10,'Omegax',Omega,'Darcy',Darcy,'Porosity',Porosite);
-bf = SF_BaseFlow(bf,'Re',50);
-bf = SF_BaseFlow(bf,'Re',70);
-bf = SF_Adapt(bf,'Hmin',1e-5,'Hmax',5);
-bf = SF_BaseFlow(bf,'Re',80);
-bf = SF_BaseFlow(bf,'Re',100);
-bf = SF_BaseFlow(bf,'Re',130);
-bf = SF_Adapt(bf,'Hmin',1e-5,'Hmax',5);
-bf = SF_BaseFlow(bf,'Re',150);
-bf = SF_Adapt(bf,'Hmin',1e-5,'Hmax',5);
-bf = SF_Adapt(bf,'Hmin',1e-5,'Hmax',5);
-
-%% 3 - Spectrum exploration #1 
-
-% first exploration for m=1
-
-ff = 'FreeFem++ -v 0';
-
-m = 1;
-
-EV = [0.0084-0.7142i 0.0478 0.0084+0.7142i];
-type = 'S'; % essayer S ou D
-[EV(1),em] = SF_Stability(bf,'m',m,'shift',EV(1),'nev',1,'type',type);
-
-bf = SF_Adapt(bf,em,'Hmin',1e-5,'Hmax',5);
 
 %clf(figure(100));
 [ev1,em1] = SF_Stability(baseflow,'m',m,'shift',EV(1),'nev',10,'PlotSpectrum','yes');

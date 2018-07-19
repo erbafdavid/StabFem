@@ -109,7 +109,7 @@ switch (baseflow.mesh.problemtype)
     case ('AxiXRPOROUS') % axisymmetric WITH SWIRL
         mydisp(1, '## Entering SF_BaseFlow (axisymmetric case WITH SWIRL)');
         solvercommand = ['echo ', num2str(Re), ' ', num2str(p.Results.Omegax), ' ', num2str(p.Results.Darcy), ' ', num2str(p.Results.Porosity), ' | ', ff, ' ', ffdir, 'Newton_AxiSWIRL.edp']
-        filename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re), '_Omega', num2str(p.Results.Omegax), '_Da', num2str(p.Results.Darcy), '_Por', num2str(p.Results.Porosity)]
+        filename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re), '_Omega', num2str(p.Results.Omegax), '_Da', num2str(p.Results.Darcy), '_Por', num2str(p.Results.Porosity)];
         
     case ('2D')
         mydisp(1, '## Entering SF_BaseFlow (2D INCOMPRESSIBLE)');
