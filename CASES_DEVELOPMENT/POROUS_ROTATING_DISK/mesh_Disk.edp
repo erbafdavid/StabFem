@@ -74,12 +74,21 @@
 	border obs1(t=0.,rayon){x=-ep/2; y=t ;label=91;};
 	border obs2(t=-ep/2,ep/2){x=t; y=rayon;label=92;};
 	border obs3(t=rayon,0){x=+ep/2; y=t; label=93;};
-
+	
+/* Cylindre (sans axe symétrie) */
+	border ghost1(t=0.1*rayon,rayon*1.2){x=-ep/2*2; y=t ;label=94;};
+	border ghost2(t=-ep/2*2,ep/2*2){x=t; y=rayon*1.2;label=95;};
+	border ghost3(t=rayon*1.2,0.1*rayon){x=+ep/2*2; y=t; label=96;};
+	
 /* Bords du domaine */	
 	border out(t=0,SFGeomRmax){x=SFGeomXmax; y=t; label=3; };
 	border lat(t=SFGeomXmax,SFGeomXmin){x=t; y=SFGeomRmax;label=3;};              
 	border in(t=SFGeomRmax,0){x=SFGeomXmin; y=t;label=1;};
 
+/* Maillage */
+	border zoom1(t=0,2*pi){x=0.8*cos(t);y=(SFGeomRdisk)+0.8*sin(t);label=12;};
+
+//2 0.1667 -20 50 20
 /* -----------------
 		MAILLAGE 
     ----------------- */
@@ -88,18 +97,37 @@
 	int nd = 1;
 	int nb = 100;            
 
+/* 	IFMACRO(FreeFemPlot,Yes)
+ 	plot(aint(nb*ep)
+		+ obs1(-rayon*nb)
+		+ obs2(-ep*nb)
+		+ obs3(-rayon*nb)
+		+ ghost1(-rayon*nb)
+		+ ghost2(-ep*nb)
+		+ ghost3(-rayon*nb)
+		+ a1(nd*(-ep/2-SFGeomXmin))
+		+ a2(nd*(SFGeomXmax-ep/2))
+		+ out(SFGeomRmax*nd)
+		+ in(SFGeomRmax*nd)
+		+ lat((SFGeomXmax-SFGeomXmin)*nd),
+		wait=1); 
+	ENDIFMACRO */
+	
 /* Construction domaine */
-	mesh th = buildmesh(aint(nb*ep)
-						+ obs1(-rayon*nb)
+	mesh th = buildmesh(aint(nb*ep*2)
+						+ obs1(-rayon*nb*2)
 						+ obs2(-ep*nb)
 						+ obs3(-rayon*nb)
+						/* + ghost1(-rayon*nb/5)
+						+ ghost2(-ep*nb/5)
+						+ ghost3(-rayon*nb/5) */
 						+ a1(nd*(-ep/2-SFGeomXmin))
 						+ a2(nd*(SFGeomXmax-ep/2))
 						+ out(SFGeomRmax*nd)
-						+ in(SFGeomRmax*nd)
-						+ lat((SFGeomXmax-SFGeomXmin)*nd));
-	
-	IFMACRO(FreeFemPlot,Yes)
+						+ lat((SFGeomXmax-SFGeomXmin)*nd)
+						+ in(SFGeomRmax*nd));
+						
+	IFMACRO(FREEFEMPLOTS,YES)
 		plot(th,wait=1);
 	ENDIFMACRO
 
@@ -151,7 +179,7 @@
 	femp2 upsi=0;
 	
 	real Re = 0;
-	real Da = 0;
+	real Da = 0.1;
 	real nu = 1; // these two are useless at this stage but required in the macros 
         
 /* Save in txt format (for FreeFem) */
@@ -163,7 +191,7 @@
       	
 /* Save in ff2m format (for StabFem) */
 	IFMACRO(!Da)
-		macro Da 0//EOM
+		macro Da 0.1//EOM
 	ENDIFMACRO
 	
 	IFMACRO(!Porosity)
@@ -174,4 +202,4 @@
 		macro Omegax 0//EOM
 	ENDIFMACRO
 
-	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0,Da,Porosity,Omegax);
+	SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);

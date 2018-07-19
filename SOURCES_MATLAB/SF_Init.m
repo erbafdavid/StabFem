@@ -18,21 +18,21 @@
 function baseflow = SF_Init(meshfile, parameters)
 global ff ffdir ffdatadir sfdir verbosity
 
-% Cr?ation et vidange du WORK/
+% Creation et vidange du WORK/
 if (exist(ffdatadir) ~= 7 && exist(ffdatadir) ~= 5)
     mymake(ffdatadir);
 else
     myrm([ffdatadir, '*.txt ', ffdatadir, '*.ff2m ', ffdatadir, '*.msh ']);
 end
 
-% Cr?ation et vidange de BASEFLOWS/
+% Creation et vidange de BASEFLOWS/
 if (exist([ffdatadir, 'BASEFLOWS']) ~= 7)
     mymake([ffdatadir, 'BASEFLOWS/']);
 else
     myrm([ffdatadir, 'BASEFLOWS/*']);
 end
 
-% Cr?ation et vidange de BASEFLOWS/
+% Creation et vidange de BASEFLOWS/
 if (exist([ffdatadir, 'MESHES']) ~= 7)
     mymake([ffdatadir, 'MESHES/']);
 else
@@ -40,7 +40,7 @@ else
 end
 
 
-% Ex?cution du maillage
+% Execution du maillage
 if (nargin == 1)
     command = [ff, ' ', meshfile];
 else
