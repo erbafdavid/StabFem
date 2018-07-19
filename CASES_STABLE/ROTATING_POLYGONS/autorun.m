@@ -42,28 +42,28 @@ n=1;
 plotFF(emm3(n),'phi.im','xlim',[0 1],'ylim',[0 .5]);hold on;
 hold on;E=0.05/max(abs(emm3(n).eta));
 plot(ffmesh.xsurf+E*emm3(n).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm3(n).eta.*ffmesh.N0z,'r');
-title(['Mode C0 : omega = ',num2str(evm3(n))])
+title(['Mode G0 : omega = ',num2str(evm3(n))])
 hold off;
 subplot(2,2,2);
 n=3;
 plotFF(emm3(n),'phi.im','xlim',[0 1],'ylim',[0 .5]);hold on;
 hold on;E=0.05/max(abs(emm3(n).eta));
 plot(ffmesh.xsurf+E*emm3(n).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm3(n).eta.*ffmesh.N0z,'r');
-title(['Mode C1 : omega = ',num2str(evm3(n))])
+title(['Mode G1 : omega = ',num2str(evm3(n))])
 hold off;
 subplot(2,2,3);
 n=2;
 plotFF(emm3(n),'phi.im','xlim',[0 1],'ylim',[0 .5]);hold on;
 hold on;E=0.05/max(abs(emm3(n).eta));
 plot(ffmesh.xsurf+E*emm3(n).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm3(n).eta.*ffmesh.N0z,'r');
-title(['Mode G0 : omega = ',num2str(evm3(n))]);xlim([.2 1]);ylim([0 .5]);
+title(['Mode C0 : omega = ',num2str(evm3(n))]);xlim([.2 1]);ylim([0 .5]);
 hold off;
 subplot(2,2,4)
 n=4;
 plotFF(emm3(n),'phi.im','xlim',[0 1],'ylim',[0 .5]);hold on;
 hold on;E=0.05/max(abs(emm3(n).eta));
 plot(ffmesh.xsurf+E*emm3(n).eta.*ffmesh.N0r,ffmesh.ysurf+E*emm3(n).eta.*ffmesh.N0z,'r');
-title(['Mode G1 : omega = ',num2str(evm3(n))]);
+title(['Mode C1 : omega = ',num2str(evm3(n))]);
 hold off;
 box on; pos = get(gcf,'Position'); pos(3)=pos(4)*1.5;set(gcf,'Position',pos); % resize aspect ratio
 saveas(gca,'FIGURES/POLYGONS_modes',figureformat);
@@ -71,15 +71,15 @@ saveas(gca,'FIGURES/POLYGONS_modes',figureformat);
 pause(0.1);
 
 
-figure(20);
-title('A few free surface shapes for potential vortex');hold on;
-
 %% CHAPTER 2a : loop for xi = [.25 , .35] by increasing values
 ffmesh = SF_Mesh('Mesh_PotentialVortex.edp','Params',[a .25 density]);
 evm3 =  SF_Stability(ffmesh,'gamma',gamma,'nev',20,'m',3,'shift',3i); % without cont for initiating branches
 
 tabxi = .25:.0025:.35;
 tabEVm3 = [];
+figure(20);
+title('A few free surface shapes for potential vortex');hold on;
+
 for xi = tabxi
     ffmesh = SF_Mesh('Mesh_PotentialVortex.edp','Params',[a xi density]);
     figure(20);plot(ffmesh.xsurf,ffmesh.ysurf); hold on;pause(0.1);
@@ -99,7 +99,7 @@ for num=1:8
     plot(tabxi,real(tabEVm3(num,:)),'b-','LineWidth',2);
 end
 
-pause;
+pause(0.1);
 
 
 %% CHAPTER 2b : loop for xi = [.35 , .7] by increasing values

@@ -262,7 +262,7 @@ for(int k=0;k<nbboundaryelements;k++)
 	if(thsurface.be(k).label==2) 
 	{
 	if (ksurf==0){IndexPointSurf(ksurf) = thsurface.be(k)[0];}
-	else{if(IndexPointSurf(ksurf) !=thsurface.be(k)[0]){cout << "WARNING probleme numeration de la surface !" << endl;}}
+	else{if(IndexPointSurf(ksurf) !=thsurface.be(k)[0]){/*cout << "WARNING probleme numeration de la surface !" << endl*/ ; }}
 	IndexPointSurf(ksurf+1) = thsurface.be(k)[1];	
 	ksurf++;
 	}

@@ -1,91 +1,117 @@
 
-function [meanflow, mode, mode2] = SF_HB2(meanflow, mode, mode2, varargin)
-% StabFem wrapper for Harmonic Balance order 2
-%
-% usage : [meanflow,mode,mode2] = SF_HB1(meanflow,mode,mode2,[Param1, Value1,...])
-%
-% first argument is either a "baseflow" or 'meanflow"
-% second argument is either an "eigenmode" or a "selfconsistentmode".
-% third argument is a 'SecondHarmonicMode'.
-%
-% Parameters include :
-%
-%   Re :        Reynolds number (specify only if it differs from the one of base flow, which is not usual)
-%
-%  Copyright D. Fabre, 2018
-
-
-%%% management of optionnal parameters
-p = inputParser;
-addParameter(p, 'Re', meanflow.Re, @isnumeric);
-%    addParameter(p,'Aguess',-1,@isnumeric);
-%    addParameter(p,'Fyguess',-1,@isnumeric);
-%    addParameter(p,'omegaguess',imag(mode.lambda));
-%    addParameter(p,'sigma',0);
-%    addParameter(p,'Cyguess',-1,@isnumeric);
-parse(p, varargin{:});
+function [meanflow, mode, mode2] = SF_HB2(varargin)
+%> StabFem wrapper for Harmonic Balance order 2
+%>
+%> usage : 
+%> 1. [meanflow,mode,mode2] = SF_HB1(meanflow,mode,mode2,'Re',Re)
+%>
+%> 2. [meanflow,mode,mode2] = SF_HB1(meanflow,mode,'Re',Re)
+%>                    (variant to start from HB1 results)
+%>
+%> first argument is either a "baseflow" or 'meanflow"
+%> second argument is either an "eigenmode" or a "selfconsistentmode".
+%> third argument is a 'SecondHarmonicMode'.
+%>
+%> Parameters include :
+%>
+%>   Re :        Reynolds number (specify only if it differs from the one of base flow, which is not usual)
+%>
+%>  Copyright D. Fabre, 2018
 
 
 global ff ffdir ffdatadir sfdir verbosity
 
-% if(meanflow.datatype=='BaseFlow')
-%     disp('### Self Consistent  : with guess from BaseFlow/Eigenmode');
-%     system(['cp ',ffdatadir, 'BaseFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
-%     system(['cp ',ffdatadir, 'Eigenmode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);
-
-% % elseif(meanflow.datatype=='MeanFlow')
-%    disp('### Self Consistent : with guess from MeanFlow/SCMode');
-%    system(['cp ',ffdatadir, 'MeanFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
-%    system(['cp ',ffdatadir, 'SelfConsistentMode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);
-%    system(['cp ',ffdatadir, 'SecondHarmonicMode.txt ',ffdatadir, 'SecondHarmonicMode_guess.txt']);
-
-% else
-%     error('wrong type of field for Harmonic balance');
-% end
-
-% % if(p.Results.Fyguess~=-1)
-%       disp(['starting with guess Lift force : ' num2str(p.Results.Fyguess) ]);
-%      solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
-%                   ' L ' num2str(p.Results.Fyguess) ' | ' ff ' '  ffdir 'SelfConsistentDirect_2D.edp'];
-%  elseif(p.Results.Aguess~=-1)
-%       disp(['starting with guess amplitude (Energy) ' num2str(p.Results.Aguess) ]);
-%      solvercommand = ['echo ' num2str(p.Results.Re)  ' ' num2str(p.Results.omegaguess) ' ' num2str(p.Results.sigma)...
-%                  ' E ' num2str(p.Results.Aguess) ' | ' ff ' '  ffdir 'SelfConsistentDirect_2D.edp'];
-% else
-
-mycp(meanflow.filename, [ffdatadir, 'MeanFlow_guess.txt']);
-mycp(mode.filename, [ffdatadir, 'SelfConsistentMode_guess.txt']);
-mycp(mode2.filename, [ffdatadir, 'SecondHarmonicMode_guess.txt']);
-
-solvercommand = ['echo ', num2str(p.Results.Re), ' | ', ff, ' ', ffdir, 'HarmonicBalance_Order2_2D.edp'];
-% end
+%%% management of optionnal parameters
+meanflow = varargin{1};
+mode = varargin{2};
+if(isstruct(varargin{3}))
+    mode2 = varargin{3};
+    vararginopt = {varargin{4:end}};
+else
+    mode2 = -1;
+    vararginopt = {varargin{3:end}};
+end
+p = inputParser;
+addParameter(p, 'Re', meanflow.Re, @isnumeric);
+addParameter(p, 'specialmode', 'normal');
+parse(p, vararginopt{:});
 
 
-status = mysystem(solvercommand);
 
 
-mydisp(1,['#### HARMOPNIC BALANCE CALCULATION COMPLETED with Re = ', num2str(p.Results.Re)]);
-meanflow = importFFdata(meanflow.mesh, 'MeanFlow.ff2m');
-mode = importFFdata(meanflow.mesh, 'SelfConsistentMode.ff2m');
-mode2 = importFFdata(meanflow.mesh, 'SecondHarmonicMode.ff2m');
+%%% definition of the solvercommand string and file names
 
-if (meanflow.iter < 0)
-    error('ERROR in SF_HarmonicBalance : Newton iteration did not converge')
+switch (meanflow.mesh.problemtype)
+    
+    case('2D')
+        solvercommand = ['echo ', num2str(p.Results.Re), ' | ', ff, ' ', ffdir, 'HarmonicBalance_Order2_2D.edp'];        
+        Re = p.Results.Re;
+        filenameBase = [ffdatadir 'MEANFLOWS/MeanFlow_Re' num2str(Re)];
+        filenameHB1 = [ffdatadir 'MEANFLOWS/Harmonic1_Re' num2str(Re)];
+        filenameHB2 = [ffdatadir 'MEANFLOWS/Harmonic2_Re' num2str(Re)];
+        
+        % case("your case...")
+        % add your case here !
+        
+    case default
+        error(['Error in SF_HB2 : your case ', meanflow.mesh.problemtype 'is not yet implemented....'])
+        
 end
 
-mydisp(1,['#### omega =  ', num2str(imag(mode.lambda))]);
-%disp(['#### A =  ' num2str(mode.A) ]);
-
-
+if(exist([filenameBase '.txt'])==2)&&(exist([filenameHB1 '.txt'])==2)&&(exist([filenameHB2 '.txt'])==2)&&(strcmp(p.Results.specialmode,'NEW')==0)
+    
+    %%% Recover results from a previous calculation
+    mydisp(1,['#### HB2 CALCULATION for Re = ' num2str(Re) ' seems to be previously done... recover files ...' ]);
+    meanflow = importFFdata(meanflow.mesh,[filenameBase '.ff2m']);
+    mode = importFFdata(meanflow.mesh,[filenameHB1 '.ff2m']);
+    mode2 = importFFdata(meanflow.mesh,[filenameHB2 '.ff2m']);
+    
+else
+    
+    %%% position input files for the freefem solver...
+    mycp(meanflow.filename, [ffdatadir, 'MeanFlow_guess.txt']);
+    mycp(mode.filename, [ffdatadir, 'SelfConsistentMode_guess.txt']);
+    if(isstruct(mode2))
+        mycp(mode2.filename, [ffdatadir, 'SecondHarmonicMode_guess.txt']);
+    else
+        myrm([ffdatadir, 'SecondHarmonicMode_guess.txt']);
+    end
+    %%% Lanch the FreeFem solver
+    mydisp(1,['#### LAUNCHING Harmonic-Balance (HB2) CALCULATION for Re = ', num2str(p.Results.Re) ' ...' ]);
+    status = mysystem(solvercommand);
+   
+    
+     if (status==1)
+         error('ERROR in SF_HB2 : Freefem program failed to run  !')
+     elseif (status==2)
+        meanflow.iter = -1; mode.iter = -1;mode2.iter = -1;
+        if(verbosity>1)
+            error('ERROR in SF_HB2 : Newton iteration did not converge !')
+        else
+            disp('ERROR in SF_HB2 : Newton iteration did not converge !')
+        end
+        
+     elseif(status==0)
+        
+        mydisp(1,['#### HB2 CALCULATION COMPLETED with Re = ', num2str(p.Results.Re)]);
+        mydisp(1,['#### omega =  ', num2str(imag(mode.lambda))]);
+        
+        %%% Copies the output files into "stable" names and imports them
+        mycp([ffdatadir, 'MeanFlow.txt'],[filenameBase '.txt']);
+        mycp([ffdatadir, 'MeanFlow.ff2m'],[filenameBase '.ff2m']);
+        [filenameBase '.ff2m']
+        meanflow = importFFdata(meanflow.mesh,[filenameBase '.ff2m']);
+        
+        mycp([ffdatadir, 'SelfConsistentMode.txt'],[filenameHB1 '.txt']);
+        mycp([ffdatadir, 'SelfConsistentMode.ff2m'],[filenameHB1 '.ff2m']);
+        mode = importFFdata(meanflow.mesh,[filenameHB1 '.ff2m']);
+        
+        mycp([ffdatadir, 'SecondHarmonicMode.txt'],[filenameHB2 '.txt']);
+        mycp([ffdatadir, 'SecondHarmonicMode.ff2m'],[filenameHB2 '.ff2m']);
+        mode2 = importFFdata(meanflow.mesh,[filenameHB2 '.ff2m']);
+        
+     else
+         error(['ERROR in SF_HB2 : return code of the FF solver is ',value]);
+     end
+    
 end
-
-%if(nargout>0)
-%system('cp MeanFlow.txt MeanFlow_guess.txt');
-%system('cp chbase_threshold.txt Self_guess.txt');
-%end
-
-
-%if(nargout>1)
-%eigenmode=eigenmodeT;
-%system('cp Eigenmode_threshold.txt Eigenmode_guess.txt');
-%end

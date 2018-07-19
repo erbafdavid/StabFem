@@ -1,12 +1,18 @@
 
 
-function [bf]= SCRIPT_CYLINDER_MESHGENERATION(type)
+function [bf]= SCRIPT_CYLINDER_MESHGENERATION(type,dimensions)
 % THIS little functions generates and adapts a mesh for the wake of a cylinder.
 % Adaptation type is either 'S' (mesh M2) or 'D' (mesh M4).
 
+if(varargin==0)
+    type='S';
+end
 
+if(varargin<2)
+    dimensions = [-40 80 40];
+end
     
-bf=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
+bf=SF_Init('Mesh_Cylinder.edp',dimensions);
 bf=SF_BaseFlow(bf,'Re',1);
 bf=SF_BaseFlow(bf,'Re',10);
 bf=SF_BaseFlow(bf,'Re',60);

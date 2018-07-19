@@ -1,14 +1,13 @@
 
+%% First we compute a piece of the linear branch
 
 guess2 = -0.0229848+5.39569i
-
-
-
-Re_Range = [400 408 409 410 420 430 440 450];
+Re_Range = [390 400 404 405 410 420 430 440 450];
   
  %if(exist('DP0_Branch')==0)% to save time if already computed
      DP0_Branch = [];
-     EVW = [];  
+     EVW = []; 
+     bf=SF_BaseFlow(bf,'Re',Re_Range(1));
     [ev,em] = SF_Stability(bf,'m',0,'shift',guess2,'nev',1);
     for Re = Re_Range
         bf=SF_BaseFlow(bf,'Re',Re);
@@ -19,39 +18,34 @@ Re_Range = [400 408 409 410 420 430 440 450];
     end
  %end
  
- figure(3);
+    figure(3);
     plot(Re_Range,DP0_Branch);
     title('Pressure drop across the whistle as function of Re');
-    
-
-%    if(exist('EV2')==0)
-%        EV2 = SF_Stability_LoopRe(bf,Re_Range,0,guess2,1,'Branch2.dat');
-%    end
-
-    
+     
     figure(4);
     subplot(2,1,1);
-    plot(Re_Range,real(EV2),'-*b');%,Re_Range,real(EV1),'-*g')
+    plot(Re_Range,real(EVW),'-*b');%,Re_Range,real(EV1),'-*g')
     title('growth rate Re(sigma) vs. Reynolds ; mode 1 (red) and mode 2 (blue)')
     subplot(2,1,2);
-    plot(Re_Range,imag(EV2)/(2*pi),'-*b');%,Re_Range,imag(EV3)/(2*pi),'-*g')%,Re_Range,imag(EVI),'-*r')
+    plot(Re_Range,imag(EVW)/(2*pi),'-*b');%,Re_Range,imag(EV3)/(2*pi),'-*g')%,Re_Range,imag(EVI),'-*r')
     title('Strouhal vs. Reynolds');
     
     
 
 pause(0.1);
 
-%%% WEAKLY NONLINEAR ANALYSIS AT THE THRESHOLD
+%% WEAKLY NONLINEAR ANALYSIS AT THE THRESHOLD
 
 
-Rec = 408.56;
+Rec = 404.26;
+omegac = 5.39;
 bf = SF_BaseFlow(bf,'Re',Rec)
 
 %if(exist('emA')==0)
     bf = SF_BaseFlow(bf,'Re',Rec)
-    [ev,em] = SF_Stability(bf,'Re',Rec,'m',0,'shift',5.39374i,'nev',1,'type','S');
+    [ev,em] = SF_Stability(bf,'Re',Rec,'m',0,'shift',omegac*1i,'nev',1,'type','S');
     %bf.sensitivity = abs(em.ux1).*abs(emA.ux1)+abs(em.ur1).*abs(emA.ur1);
-    plotFF(bf,'sensitivity');
+    plotFF(em,'sensitivity');
 %end
 %if(exist('wnl')==0)
     wnl = SF_WNL(bf)

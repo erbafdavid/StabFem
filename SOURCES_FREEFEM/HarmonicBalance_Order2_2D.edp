@@ -173,11 +173,11 @@ cout << " --> sigma1 = " << sigma1 << endl;
 
 // 2nd Harmonic 
 
-//int check=exec("head -1 "+ffdatadir+"SecondHarmonicMode_guess.txt");
-//cout << "Check :"<<  check<< endl;
-string secondharmonicguess="yes";
+int check=exec("head -1 "+ffdatadir+"SecondHarmonicMode_guess.txt");
+cout << "Check if guess for second harmonic is present :"<<  check<< endl;
+//string secondharmonicguess;
 
-if(secondharmonicguess=="yes")
+if(check==0)
 {
 cout << "starting  from mode in file SecondHarmonicMode_guess.txt" << endl;
 ifstream cbin(ffdatadir+"SecondHarmonicMode_guess.txt");
@@ -557,6 +557,7 @@ cout << " LU-ing matrix... done" << endl;
 	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omegaM+sigma1,"HarmonicMode",-1);
 	cout << endl << endl << "#####################################################################@" << endl << endl;
 	cout << " Newton Loop DIVERGED " << endl;	
+	exit(2);
 	}
 	
 	else

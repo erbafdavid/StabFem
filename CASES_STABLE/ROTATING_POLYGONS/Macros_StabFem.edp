@@ -47,13 +47,13 @@ real AreaMesh = 2*pi*int1d(th,2)(x);
 			file << K0 << endl << VolMesh << endl << AreaMesh << endl << abs(yPointSurf(Nsurface)-yPointSurf(0)) << endl;
 			file << 1 << endl << dpdz << endl << 0 << endl << 0 << endl;
 			file << endl;
-			for(int ksurf=Nsurface;ksurf>-1;ksurf--) { file << xPointSurf(ksurf) << endl;} file << endl;
-			for(int ksurf=Nsurface;ksurf>-1;ksurf--) { file << yPointSurf(ksurf) << endl;} file << endl;
-			for(int ksurf=Nsurface;ksurf>-1;ksurf--) { file << S0PointSurf(ksurf) << endl;} file << endl;
-			for(int ksurf=Nsurface;ksurf>-1;ksurf--) { file << N0r(xPointSurf(ksurf), yPointSurf(ksurf) ) << endl;} file << endl;
-			for(int ksurf=Nsurface;ksurf>-1;ksurf--) { file << N0z(xPointSurf(ksurf), yPointSurf(ksurf) ) << endl;} file << endl;
-			for(int ksurf=Nsurface;ksurf>-1;ksurf--) { file << K0aPointSurf(ksurf) << endl;} file << endl;			
-			for(int ksurf=Nsurface;ksurf>-1;ksurf--) { file << K0bPointSurf(ksurf) << endl;} file << endl;
+			for(int ksurf=0;ksurf<Nsurface+1;ksurf++) { file << xPointSurf(ksurf) << endl;} file << endl;
+			for(int ksurf=0;ksurf<Nsurface+1;ksurf++) { file << yPointSurf(ksurf) << endl;} file << endl;
+			for(int ksurf=0;ksurf<Nsurface+1;ksurf++) { file << S0PointSurf(ksurf) << endl;} file << endl;
+			for(int ksurf=0;ksurf<Nsurface+1;ksurf++) { file << N0r(xPointSurf(ksurf), yPointSurf(ksurf) ) << endl;} file << endl;
+			for(int ksurf=0;ksurf<Nsurface+1;ksurf++) { file << N0z(xPointSurf(ksurf), yPointSurf(ksurf) ) << endl;} file << endl;
+			for(int ksurf=0;ksurf<Nsurface+1;ksurf++) { file << K0aPointSurf(ksurf) << endl;} file << endl;			
+			for(int ksurf=0;ksurf<Nsurface+1;ksurf++) { file << K0bPointSurf(ksurf) << endl;} file << endl;
 }
 //EOM
 
@@ -100,7 +100,7 @@ macro SFWriteModePotential(namefile,MODE,ev)
 	for(int j=0; j<ModePhiforfile[].n ; j++) file << real(urforfile[][j]) << endl << imag(urforfile[][j]) << endl;	
 	for(int j=0; j<ModePhiforfile[].n ; j++) file << real(uzforfile[][j]) << endl << imag(uzforfile[][j]) << endl;		
 	file << endl;
-	for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
+	for(int ksurf=0;ksurf<Nsurface+1;ksurf++) 
 	     { file << real(ModeEtaforfile(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl ;
 	       file << imag(ModeEtaforfile(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl;
    	     };
@@ -137,7 +137,7 @@ macro SFWriteMode(namefile,MODE,ev)
 	       file << imag(Etaforfile(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl; 
    	     };
 	file << endl;
-		for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
+		for(int ksurf=0;ksurf<Nsurface+1;ksurf++) 
 	     { file << real(K1forfile(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl;
 	       file << imag(K1forfile(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl; 
    	     };

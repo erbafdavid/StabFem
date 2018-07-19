@@ -121,17 +121,6 @@ else % Adaptation to base flow + mode (or other specified field)
             command = ['echo Sensitivity | ', ff, ' ', ffdir, 'Adapt_Mode.edp'];
             mycp([ffdatadir, 'Sensitivity.txt'], [ffdatadir, 'AdaptField.txt']);
         end
-    elseif(strcmp(baseflow.mesh.problemtype,'AxiXRPOROUS')==1)
-        if(strcmp(eigenmode.type,'D')==1)
-            command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
-            mycp([ffdatadir 'Eigenmode.txt'],[ffdatadir 'AdaptField.txt']);
-        elseif(strcmp(eigenmode.type,'A')==1)
-             command = ['echo UVWP | ',ff,' ',ffdir,'Adapt_Mode.edp'];
-             mycp([ffdatadir 'EigenmodeA.txt'],[ffdatadir 'AdaptField.txt']);
-        else %if(strcmp(eigenmode.type,'S')==1)
-             command = ['echo Sensitivity | ',ff,' ',ffdir,'Adapt_Mode.edp'];
-             mycp([ffdatadir 'Sensitivity.txt'],[ffdatadir 'AdaptField.txt']);
-        end
         
         % elseif(..) for possible other drivers
     end
@@ -174,7 +163,7 @@ if (baseflowNew.iter > 0)
     baseflow = baseflowNew;
     
     % Store adapted mesh/base flow in directory "MESHES"
-    baseflow.mesh.namefile = [ffdatadir, 'MESHES/mesh_adapt_Re', num2str(baseflow.Re), '.msh'];
+    baseflow.mesh.filename = [ffdatadir, 'MESHES/mesh_adapt_Re', num2str(baseflow.Re), '.msh'];
     mycp([ffdatadir, 'mesh.msh'], [ffdatadir, 'MESHES/mesh_adapt_Re', num2str(baseflow.Re), '.msh']);
     mycp([ffdatadir, 'mesh.ff2m'], [ffdatadir, 'MESHES/mesh_adapt_Re', num2str(baseflow.Re), '.ff2m']);
     mycp([ffdatadir, 'BaseFlow.txt'], [ffdatadir, 'MESHES/BaseFlow_adapt_Re', num2str(baseflow.Re), '.txt']);
@@ -185,7 +174,7 @@ if (baseflowNew.iter > 0)
     myrm([ffdatadir, 'BASEFLOWS/BaseFlow*']);
     mycp([ffdatadir, 'BaseFlow.txt'], [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(baseflow.Re), '.txt']);
     mycp([ffdatadir, 'BaseFlow.ff2m'], [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(baseflow.Re), '.ff2m']);
-    baseflow.namefile = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(baseflow.Re), '.txt'];
+    baseflow.filename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(baseflow.Re), '.txt'];
     
     % in case requested, recompute the eigenmode as well
     % NB IN FUTURE VERSIONS IT IS NOT RECOMMENDED ANY MORE TO RECOMPUTE

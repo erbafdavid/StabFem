@@ -1,46 +1,36 @@
 
 %% CHAPTER O : initialisations
 
-run('../SOURCES_MATLAB/SF_Start.m');
+run('../../SOURCES_MATLAB/SF_Start.m');
 verbosity=10;
 ffdatadir = './DATA_SF_BIRDCALL_ERCOFTAC/';
+close all;
 
 %% Chapter 1 : generation of a mesh
 
-Re = 1000; % Reference value for the robust mesh generation
-
-    disp('computing base flow and adapting mesh')
-
-disp('generating base flow and mesh')
-bf = SF_Init('Mesh_BirdCall.edp'); %% this is the mesh from Benjamin/Raffaele
-%figure();plotFF(bf,'mesh','xlim',[-1 5],'ylim',[0 4]);
-ReTab = [10 100 200 300 400 600 700 800 900 1000]
-for Re = ReTab
-    bf = SF_BaseFlow(bf,'Re',Re);
-    if(Re>100) 
-        bf = SF_Adapt(bf,'Hmax',.5);
-    end
+if(exist('./DATA_SF_BIRDCALL_ERCOFTAC/MESHES/BaseFlow_adapt_Re1000.txt')==2)
+    disp('BaseFlow already computed : recovering it')
+    ffmesh = importFFmesh('./DATA_SF_BIRDCALL_ERCOFTAC/MESHES/mesh_adapt_Re1000.msh')
+    bf = importFFdata(ffmesh,'./DATA_SF_BIRDCALL_ERCOFTAC/MESHES/BaseFlow_adapt_Re1000.ff2m')
+else
+    bf = SmartMesh_BirdCall;
 end
 
  
-[ev,em] = SF_Stability(bf,'m',0,'shift',0.9 + 5.76i,'nev',1,'type','D');
-bf=SF_Adapt(bf,em,'Hmax',.5); 
-[ev,em] = SF_Stability(bf,'m',0,'shift',0.9 + 5.76i,'nev',1,'type','D');
-bf=SF_Adapt(bf,em,'Hmax',.5); 
-
-
 %% Chapter 1b : figures
 
 figure();plotFF(bf,'mesh','xlim',[-1 5],'ylim',[0 4]);
 figure();plotFF(bf,'ux','xlim',[-1 5],'ylim',[0 4]); 
 
 %% 1C : spectrum exploration
-ev = SF_Stability(bf,'m',0,'shift',2 + 5i,'nev',20,'type','D');
-figure();plot(real(ev),imag(ev),'xr');title('spectrum for Re=1000');hold on;
-ev = SF_Stability(bf,'m',0,'shift',2 + 9i,'nev',20,'type','D');
-plot(real(ev),imag(ev),'xr');title('spectrum for Re=1000');hold on;
+%ev = SF_Stability(bf,'m',0,'shift',2 + 5i,'nev',20,'type','D');
+%figure();plot(real(ev),imag(ev),'xr');title('spectrum for Re=1000');hold on;
+%ev = SF_Stability(bf,'m',0,'shift',2 + 9i,'nev',20,'type','D');
+%plot(real(ev),imag(ev),'xr');title('spectrum for Re=1000');hold on;
 
 %% CHAPTER 2 : stability branches
+
+if(exist('data.mat')==0)
 
 % first one  
 % Benjamin :    0.4837 + 3.5115i (St = 0.55) 
@@ -70,18 +60,22 @@ guess4 = 0.178 + 10.256i;
 
 Re_Range1=[1000:-50:150];Re_Range2=Re_Range1;Re_Range3=Re_Range1;Re_Range4=Re_Range1;
 Re_Range4=[1000:-50:600];
-EV1 = []; EV2 = []; EV3 = []; EV4 = [];
+EV1 = []; EV2 = []; EV3 = []; EV4 = [];DeltaP = [];
 
 bf = SF_BaseFlow(bf,'Re',1000);
 ev = SF_Stability(bf,'m',0,'shift',guess1,'nev',1);
 for Re = Re_Range1    
     bf = SF_BaseFlow(bf,'Re',Re);
     [ev,em] = SF_Stability(bf,'m',0,'shift','cont','nev',1);
-    if(em.iter~=-1) EV1 = [EV1 ev];
-        else break; 
+    if(em.iter~=-1) 
+        EV1 = [EV1 ev];
+        DeltaP = [DeltaP bf.Pup];
+    else
+        break;
     end;
 end
 Re_Range1 = Re_Range1(1:length(EV1));
+DeltaP = DeltaP(1:length(EV1));
 
 
 bf = SF_BaseFlow(bf,'Re',1000);
@@ -116,28 +110,29 @@ for Re = Re_Range4
     end;
 end
 Re_Range4 = Re_Range4(1:length(EV4));
-
-
-
-%% save
+% save
 save('data.mat','Re_Range1','Re_Range2','Re_Range3','Re_Range4','EV1','EV2','EV3','EV4');
 
-%% chapter 2b : figures
-%load('data.mat');
+else
 
-    figure;
+load('data.mat');
+end
+
+%% chapter 2b : figures
+
+    figure(10);
     subplot(2,1,1);
-    plot(Re_Range1,real(EV1),'-*b',Re_Range2,real(EV2),'-*r',Re_Range3,real(EV3),'-*g',Re_Range4,real(EV4),'-*c');
+    plot(Re_Range1,real(EV1),'-*b',Re_Range2,real(EV2),'-*r',Re_Range3,real(EV3),'-*g',Re_Range4,real(EV4),'-*c');ylim([0 1]);
     title('growth rate Re(sigma) vs. Reynolds');
     subplot(2,1,2);
     plot(Re_Range1,imag(EV1)/(2*pi),'-*b',Re_Range2,imag(EV2)/(2*pi),'-*r',Re_Range3,imag(EV3)/(2*pi),'-*g',Re_Range4,imag(EV4)/2/pi,'-*c');
     title('Strouhal vs. Reynolds');
 
-%%
-%    figure;
-%    subplot(2,1,1);
-%    plot(Re_Range1,real(EV1),'-*b',Re_Range2,real(EV2),'-*r');
-%    title('growth rate Re(sigma) vs. Reynolds');
-%    subplot(2,1,2);
-%    plot(Re_Range1,imag(EV1)/(2*pi),'-*b',Re_Range2,imag(EV2)/(2*pi),'-*r');
-%    title('Strouhal vs. Reynolds');
+    figure(11);
+    plot(Re_Range1,DeltaP,'-b');
+    title('Pressure drop coefficient across the whistle');
+    
+    figure(12);
+    plot(Re_Range1,real(EV1),'-*b',Re_Range2,real(EV2),'-*r',Re_Range3,real(EV3),'-*g',Re_Range4,real(EV4),'-*c');ylim([0 1]);
+    title('growth rate Re(sigma) vs. Reynolds');
+

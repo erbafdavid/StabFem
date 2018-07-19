@@ -30,11 +30,11 @@ switch (ffmesh.problemtype)
         
         if(p.Results.V~=-1)% V-controled mode
             mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (V-controled)'); 
-            parameterstring = ['  V ',num2str(p.Results.V),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' ',p.Results.typestart,' ',p.Results.typeend,'  '];
+            parameterstring = [' " V ',num2str(p.Results.V),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' ',p.Results.typestart,' ',p.Results.typeend,' " '];
             solvercommand = ['echo ',parameterstring, ' | ',ff,' ',ffdir,'Newton_Axi_FreeSurface_Static.edp'];
         elseif(p.Results.P~=-1)% P-controled mode
             mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (P-controled)'); 
-            parameterstring = ['  P ',num2str(p.Results.P),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' ',p.Results.typestart,' ',p.Results.typeend,'  '];
+            parameterstring = [' " P ',num2str(p.Results.P),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' ',p.Results.typestart,' ',p.Results.typeend,' " '];
             solvercommand = ['echo ',parameterstring, ' | ',ff,' ',ffdir,'Newton_Axi_FreeSurface_Static.edp'];
         end
 end
@@ -43,10 +43,10 @@ end
 error = 'ERROR : SF_BaseFlow_MoveMesh computation aborted';
 mysystem(solvercommand, error); %needed to generate .ff2m file
 
-if (exist([ffdatadir, 'BaseFlow.txt']) ~= 2)
-    error('ERROR in SF_BaseFlow_MoveMesh : Newton did not converge');
-end
-
+%if (exist([ffdatadir, 'BaseFlow.txt']) ~= 2)
+%    error('ERROR in SF_BaseFlow_MoveMesh : Newton did not converge');
+%end
+% Trouver autre chose pour critere de non convergence...
 
 ffmeshNew = importFFmesh('mesh.msh');
 
