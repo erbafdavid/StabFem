@@ -10,7 +10,8 @@
 - The graphical interface has been modified to replace pdetools/pdeplots by the alternative (and freeware) ffpdeplot, 
 - Compatibility with Octave is now supported ! Test-cases "EXAMPLE_Lshape", "CYLINDER" and "ROTATING_POLYGONS" are successful. (a few points still may have to be fixed in other cases) 
 - Compatibility with windows 10 is now (check test-cases "EXAMPPLES_Lshape", "CYLINDER" and "POROUSDISK")
-- DNS will soon be possible with StabFem :)
+- DNS is now possible within StabFem :)
+
 
 ## General description of the project
 
