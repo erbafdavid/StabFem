@@ -35,9 +35,9 @@ Xmin = -20*Rayon;
 Xmax = 100*Rayon;
 Ymax = 20*Rayon;
 
+global boxx boxy;
 boxx = [-Epaisseur/2, Epaisseur/2, Epaisseur/2, -Epaisseur/2, -Epaisseur/2];
 boxy = [0, 0, Rayon, Rayon, 0];
-
 baseflow = SF_Init('mesh_Disk.edp',[Diametre Epaisseur Xmin Xmax Ymax]);
 
 % Plot mesh initial
@@ -78,8 +78,6 @@ baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 % first exploration for m=1
 m=1;
 
-%ff = 'FreeFem++ -v 0';
-
 EVm1 = [0.0092-0.7141i 0.0478 0.0092+0.7141i];
 type = 'D'; % essayer S ou D
 [EVm1(1),em] = SF_Stability(baseflow,'m',1,'shift',EVm1(1),'nev',1,'type',type);
@@ -113,6 +111,8 @@ lambda1_LIN=[];
         lambda1_LIN = [lambda1_LIN ev1];
     end
 
+[ReCIm1,evIm1,emIm1,baseflow] = ReCritique(baseflow,Re_LIN1,lambda1_LIN,m,1);
+
 figure();
 subplot(2,1,1);
     hold on;
@@ -143,6 +143,8 @@ lambda2_LIN=[];
         [ev2,em2] = SF_Stability(baseflow,'nev',1,'shift','cont');
         lambda2_LIN = [lambda2_LIN ev2];
     end
+    
+[ReCSm1,evSm1,emSm1,baseflow] = ReCritique(baseflow,Re_LIN2,lambda2_LIN,m,1)
 
 figure();
 subplot(2,1,1);
@@ -209,6 +211,8 @@ lambda1_LIN=[];
         [ev1,em1] = SF_Stability(baseflow,'m',2,'shift',ev1,'nev',1);
         lambda1_LIN = [lambda1_LIN ev1];
     end
+    
+[ReCIm2,evIm2,emIm2,baseflow] = ReCritique(baseflow,Re_LIN1,lambda1_LIN,m,1)
 
 figure();
 subplot(2,1,1);
@@ -240,6 +244,8 @@ lambda2_LIN=[];
         [ev2,em2] = SF_Stability(baseflow,'m',2,'shift',ev2,'nev',1);
         lambda2_LIN = [lambda2_LIN ev2];
     end
+    
+[ReCSm2,evSm2,emSm2,baseflow] = ReCritique(baseflow,Re_LIN2,lambda2_LIN,m,1)
 
 figure();
 subplot(2,1,1);
@@ -258,6 +264,16 @@ subplot(2,1,2);
     title(['Fréquence d''oscillation pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
     saveas(gca,['.\Resultats\VP\Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax) '__' num2str(vp)],figureformat);
     hold off;
+
+%##################################################"
+%% RESULTATS
+
+Da = Darcy;
+Om = Omega;
+Rec = [ReCIm1 ReCSm1];% ReCIm2 ReCSm1];
+EVc = [evIm1 evSm1];% evIm2 evSm2];
+
+save(['.\Resultats\VP\X3_Da' num2str(Da) '_Om' num2str(Om)],'Da','Om','Rec','EVc');
 
 %##################################################"
 toc;
