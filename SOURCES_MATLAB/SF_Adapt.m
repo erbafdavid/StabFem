@@ -176,6 +176,10 @@ if (baseflowNew.iter > 0)
     mycp([ffdatadir, 'BaseFlow.ff2m'], [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(baseflow.Re), '.ff2m']);
     baseflow.filename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(baseflow.Re), '.txt'];
     
+    % cleaning 'MEANFLOWS' and 'DNSFIELDS' as well
+    myrm([ffdatadir, 'DNSFIELDS/BaseFlow*']);
+    myrm([ffdatadir, 'MEANFLOWS/BaseFlow*']);
+    
     % in case requested, recompute the eigenmode as well
     % NB IN FUTURE VERSIONS IT IS NOT RECOMMENDED ANY MORE TO RECOMPUTE
     % EIGENMODES IN AN AUTOMATICAL WAY....
