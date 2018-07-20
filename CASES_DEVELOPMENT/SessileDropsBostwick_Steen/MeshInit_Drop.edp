@@ -12,6 +12,8 @@ string typestart = "pined";//"angle";//
 string typeend = "axis";
 
 
+real PP0, dpdz,gamma;
+PP0 = 1;dpdz = 0;gamma =1;
 cout << "Construction du Maillage initial 'guess' " << endl << endl; 
 
 
@@ -100,10 +102,10 @@ savemesh(MeshInt,ffdatadir+"mesh.msh");
 
 // SECOND AUXILIARY FILE mesh.ff2m
 { 
-mesh Shempty=emptymesh(MeshInt); 
-real K0 = 2/Rdrop;real dpdz = 0;	
-//include "Macros_Geometrie_Surface.edp";
-include "MG.edp";
+mesh thsurface=th; 
+real PP0 = 2/Rdrop;real dpdz = 0;	
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp";
+//include "MG.edp";
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
 CalcGeomSurf;
 SFWriteMesh(ffdatadir+"mesh.ff2m",th)

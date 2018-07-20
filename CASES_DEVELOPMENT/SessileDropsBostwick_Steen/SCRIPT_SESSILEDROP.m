@@ -14,7 +14,10 @@ ffmesh = SF_Mesh('MeshInit_Drop.edp','Params',[R theta density]);
 %% CHAPTER 1 : Eigenvalue computation for m=0 and m=1 FOR A Sessile drop
 [evm0,emm0] =  SF_Stability(ffmesh,'nev',10,'m',0,'sort','SIA','typestart','pined','typeend','axis');
 [evm1,emm1] =  SF_Stability(ffmesh,'nev',10,'m',1,'sort','SIA','typestart','pined','typeend','axis');
-
+figure();
+plotFF(emm0(3),'mesh');
+hold on
+plot(ffmesh.xsurf,ffmesh.ysurf);hold on;quiver(ffmesh.xsurf,ffmesh.ysurf,ffmesh.N0r,ffmesh.N0z);
 
 %%% PLOT RESULTS
 figure(2);
@@ -121,3 +124,7 @@ area(-ffmesh.xsurf+E*real(emm1(3).eta).*ffmesh.N0r,ffmesh.ysurf-E*real(emm1(3).e
 plot([ffmesh.xsurf(end), -ffmesh.xsurf(end)],[ffmesh.ysurf(end), ffmesh.ysurf(end)],'k','LineWidth',3);
 title('Mode m=1,k=3')
 saveas(gcf,'FIGURES/SessileDrops_subplot_Eigenmodes_eta',figureformat);
+
+
+
+
