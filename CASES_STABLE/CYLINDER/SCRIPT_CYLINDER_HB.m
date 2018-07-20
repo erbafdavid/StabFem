@@ -6,7 +6,7 @@
 
 
 %% ##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
-run('../../SOURCES_MATLAB/SF_Start.m');verbosity=10;
+run('../../SOURCES_MATLAB/SF_Start.m');verbosity=1;
 figureformat='png'; AspectRatio = 0.56; % for figures
 mkdir('RESULTS');
 
@@ -64,14 +64,15 @@ end
 
 
 %% Chapter 6 : figures;
+close all;
 
 figure(21);hold off;
 plot(LINres.Re,imag(LINres.lambda)/(2*pi),'b+-');
 hold on;
 
 plot(HBres.Re,HBres.omega/(2*pi),'r+-','LineWidth',2);
-plot(HB2res.Re,HBres.omega/(2*pi),'co-','LineWidth',2);
-plot(Rec,Omegac/2/pi,'ro');
+plot(HB2res.Re,HB2res.omega/(2*pi),'b-','LineWidth',2);
+%plot(Rec,Omegac/2/pi,'ro');
 xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -83,10 +84,10 @@ plot(LINres.Re,LINres.Fx,'b+-');
 hold on;
 %plot(Re_WNL,Fx_WNL,'g--','LineWidth',2);hold on;
 plot(HBres.Re,HBres.Fx0,'r+-','LineWidth',2);
-plot(HB2res.Re,HB2res.Fx0,'co-','LineWidth',2);
+plot(HB2res.Re,HB2res.Fx0,'b-','LineWidth',2);
 plot(HB2res.Re,HB2res.Fx0+abs(HB2res.Fx2),'c:','LineWidth',2);
 plot(HB2res.Re,HB2res.Fx0-abs(HB2res.Fx2),'c:','LineWidth',2);
-plot(Rec,Fxc,'ro')
+%plot(Rec,Fxc,'ro')
 xlabel('Re');ylabel('Fx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -97,8 +98,8 @@ figure(23);hold off;
 plot(LINres.Re,LINres.Lx,'b+-');
 hold on;
 plot(HBres.Re,HBres.Lx,'r+-','LineWidth',2);
-plot(HB2res.Re,HB2res.Lx,'co-','LineWidth',2);
-plot(Rec,Lxc,'ro','LineWidth',2);
+plot(HB2res.Re,HB2res.Lx,'b-','LineWidth',2);
+%plot(Rec,Lxc,'ro','LineWidth',2);
 xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -109,7 +110,7 @@ figure(24);hold off;
 %plot(Re_WNL,Fy_WNL,'g--','LineWidth',2);
 hold on;
 plot(HBres.Re,real(HBres.Fy),'r+-','LineWidth',2);
-plot(HB2res.Re,real(HB2res.Fy),'co-','LineWidth',2);
+plot(HB2res.Re,real(HB2res.Fy),'b-','LineWidth',2);
 %title('Harmonic Balance results');
 xlabel('Re');ylabel('Fy')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -121,7 +122,7 @@ figure(25);hold off;
 %plot(Re_WNL,A_WNL,'g--','LineWidth',2);
 hold on;
 plot(HBres.Re,HBres.Aenergy,'r+-','LineWidth',2);
-plot(HB2res.Re,HB2res.Aenergy,'co-','LineWidth',2);
+plot(HB2res.Re,HB2res.Aenergy,'b-','LineWidth',2);
 %title('Harmonic Balance results');
 xlabel('Re');ylabel('A_E')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio

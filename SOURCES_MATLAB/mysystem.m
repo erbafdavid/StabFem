@@ -32,7 +32,11 @@ if (verbosity < 10) % quiet mode
     if (status ~= 0) && (status ~= 141) && (status ~= 13) && (strcmp(errormessage, 'skip') == 0)
         % NB if successful matlab retunrs 0, Octave returns 141, sometimes 13
         result
-        error(errormessage);
+        if(verbosity<2)
+            disp(errormessage);
+        else
+            error(errormessage);
+        end
     end
 else % verbose mode
     disp('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$');
