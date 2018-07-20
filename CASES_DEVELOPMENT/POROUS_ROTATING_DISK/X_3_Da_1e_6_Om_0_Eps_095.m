@@ -35,7 +35,10 @@ Xmin = -20*Rayon;
 Xmax = 100*Rayon;
 Ymax = 20*Rayon;
 
-bf = SF_Init('mesh_Disk.edp',[Diametre Epaisseur Xmin Xmax Ymax]);
+boxx = [-Epaisseur/2, Epaisseur/2, Epaisseur/2, -Epaisseur/2, -Epaisseur/2];
+boxy = [0, 0, Rayon, Rayon, 0];
+
+baseflow = SF_Init('mesh_Disk.edp',[Diametre Epaisseur Xmin Xmax Ymax]);
 
 % Plot mesh initial
 figure;
@@ -58,36 +61,35 @@ Darcy = 1e-6;
 Porosite = 0.95;
 
 % Baseflow Re=150
-bf = SF_BaseFlow(bf,'Re',10,'Omegax',Omega,'Darcy',Darcy,'Porosity',Porosite);
-bf = SF_BaseFlow(bf,'Re',50);
-bf = SF_BaseFlow(bf,'Re',70);
-bf = SF_Adapt(bf,'Hmin',1e-5,'Hmax',5);
-bf = SF_BaseFlow(bf,'Re',80);
-bf = SF_BaseFlow(bf,'Re',100);
-bf = SF_BaseFlow(bf,'Re',130);
-bf = SF_Adapt(bf,'Hmin',1e-5,'Hmax',5);
-bf = SF_BaseFlow(bf,'Re',150);
-bf = SF_Adapt(bf,'Hmin',1e-5,'Hmax',5);
-bf = SF_Adapt(bf,'Hmin',1e-5,'Hmax',5);
+baseflow = SF_BaseFlow(baseflow,'Re',10,'Omegax',Omega,'Darcy',Darcy,'Porosity',Porosite);
+baseflow = SF_BaseFlow(baseflow,'Re',50);
+baseflow = SF_BaseFlow(baseflow,'Re',70);
+baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
+baseflow = SF_BaseFlow(baseflow,'Re',80);
+baseflow = SF_BaseFlow(baseflow,'Re',100);
+baseflow = SF_BaseFlow(baseflow,'Re',130);
+baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
+baseflow = SF_BaseFlow(baseflow,'Re',150);
+baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
+baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 
 %% 3 - Spectrum exploration #1 
 
 % first exploration for m=1
+m=1;
 
-ff = 'FreeFem++ -v 0';
+%ff = 'FreeFem++ -v 0';
 
-m = 1;
+EVm1 = [0.0092-0.7141i 0.0478 0.0092+0.7141i];
+type = 'D'; % essayer S ou D
+[EVm1(1),em] = SF_Stability(baseflow,'m',1,'shift',EVm1(1),'nev',1,'type',type);
 
-EV = [0.0084-0.7142i 0.0478 0.0084+0.7142i];
-type = 'S'; % essayer S ou D
-[EV(1),em] = SF_Stability(bf,'m',m,'shift',EV(1),'nev',1,'type',type);
+baseflow = SF_Adapt(baseflow,em,'Hmin',1e-5,'Hmax',5);
 
-bf = SF_Adapt(bf,em,'Hmin',1e-5,'Hmax',5);
-
-%clf(figure(100));
-[ev1,em1] = SF_Stability(baseflow,'m',m,'shift',EV(1),'nev',10,'PlotSpectrum','yes');
-[ev2,em2] = SF_Stability(baseflow,'m',m,'shift',EV(2),'nev',10,'PlotSpectrum','yes');
-[ev3,em3] = SF_Stability(baseflow,'m',m,'shift',conj(EV(1)),'nev',10,'PlotSpectrum','yes');
+clf(figure(100));
+[ev1,em1] = SF_Stability(baseflow,'m',1,'shift',EVm1(1),'nev',10,'PlotSpectrum','yes');
+[ev2,em2] = SF_Stability(baseflow,'m',1,'shift',EVm1(2),'nev',10,'PlotSpectrum','yes');
+[ev3,em3] = SF_Stability(baseflow,'m',1,'shift',conj(EVm1(1)),'nev',10,'PlotSpectrum','yes');
 
 figure;
 plot(real(ev1),imag(ev1),'+',real(ev2),imag(ev2),'+',real(ev3),imag(ev3),'+');
@@ -139,6 +141,103 @@ lambda2_LIN=[];
     for Re = Re_LIN2
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
         [ev2,em2] = SF_Stability(baseflow,'nev',1,'shift','cont');
+        lambda2_LIN = [lambda2_LIN ev2];
+    end
+
+figure();
+subplot(2,1,1);
+    hold on;
+    ax = gca;
+    ax.XAxisLocation = 'origin';
+    plot(Re_LIN2,real(lambda2_LIN),'bx-');
+    xlabel('Re');ylabel('\sigma_r');
+    title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
+    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
+    hold off;
+subplot(2,1,2);
+    hold on;
+    plot(Re_LIN2,imag(lambda2_LIN),'rx-');
+    xlabel('Re');ylabel('\sigma_i');
+    title(['Fréquence d''oscillation pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
+    saveas(gca,['.\Resultats\VP\Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax) '__' num2str(vp)],figureformat);
+    hold off;
+
+%% 5 - BASEFLOW - Re = 255
+
+baseflow = SF_BaseFlow(baseflow,'Re',180);
+baseflow = SF_BaseFlow(baseflow,'Re',200);
+baseflow = SF_BaseFlow(baseflow,'Re',225);
+baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
+baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
+
+%% 6 - Spectrum exploration #2 
+
+% second exploration for m=2
+m = 2;
+ff = 'FreeFem++ -nw -v 0';
+
+EVm2 = [0.1056-0.7942i 0.0869 0.1056+0.7942i];
+type = 'D'; % essayer S ou D
+[EVm2(1),em] = SF_Stability(baseflow,'m',2,'shift',EVm2(1),'nev',1,'type',type);
+
+baseflow = SF_Adapt(baseflow,em,'Hmin',1e-5,'Hmax',5);
+
+clf(figure(100));
+[ev1,em1] = SF_Stability(baseflow,'m',2,'shift',EVm2(1),'nev',10,'PlotSpectrum','yes');
+[ev2,em2] = SF_Stability(baseflow,'m',2,'shift',EVm2(2),'nev',10,'PlotSpectrum','yes');
+[ev3,em3] = SF_Stability(baseflow,'m',2,'shift',conj(EVm2(1)),'nev',10,'PlotSpectrum','yes');
+
+figure;
+plot(real(ev1),imag(ev1),'+',real(ev2),imag(ev2),'+',real(ev3),imag(ev3),'+');
+title(['Spectrum for m=' num2str(m) ' - Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)])
+xlabel('\sigma_r');
+ylabel('\sigma_i');
+%% 7 - Sability curves #2
+
+vp = 0;
+
+% Mode instationnaire
+vp = vp+1;
+Re_LIN1 = [225 : -1 : 215];
+baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN1(1));
+[ev1,em1] = SF_Stability(baseflow,'m',2,'shift',ev1(1),'nev',1);
+baseflow = SF_Adapt(baseflow,em1,'Hmin',1e-5);
+lambda1_LIN=[];
+    for Re = Re_LIN1
+        baseflow = SF_BaseFlow(baseflow,'Re',Re);
+%         [ev1,em1] = SF_Stability(baseflow,'nev',1,'shift','cont');
+        [ev1,em1] = SF_Stability(baseflow,'m',2,'shift',ev1,'nev',1);
+        lambda1_LIN = [lambda1_LIN ev1];
+    end
+
+figure();
+subplot(2,1,1);
+    hold on;
+    ax = gca;
+    ax.XAxisLocation = 'origin';
+    plot(Re_LIN1,real(lambda1_LIN),'bx-');
+    xlabel('Re');ylabel('\sigma_r');
+    title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
+    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
+    hold off;
+subplot(2,1,2);
+    hold on;
+    plot(Re_LIN1,imag(lambda1_LIN),'rx-');
+    xlabel('Re');ylabel('\sigma_i');
+    title(['Fréquence d''oscillation pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
+    saveas(gca,['.\Resultats\VP\Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax) '__' num2str(vp)],figureformat);
+    hold off;
+
+% Mode stationnaire
+vp = vp+1;
+Re_LIN2 = [235 : -1 : 225];
+baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN2(1));
+[ev2,em2] = SF_Stability(baseflow,'m',2,'shift',ev2(1),'nev',1);
+baseflow = SF_Adapt(baseflow,em2,'Hmin',1e-5);
+lambda2_LIN=[];
+    for Re = Re_LIN2
+        baseflow = SF_BaseFlow(baseflow,'Re',Re);
+        [ev2,em2] = SF_Stability(baseflow,'m',2,'shift',ev2,'nev',1);
         lambda2_LIN = [lambda2_LIN ev2];
     end
 
