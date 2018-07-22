@@ -177,8 +177,8 @@ if (baseflowNew.iter > 0)
     baseflow.filename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(baseflow.Re), '.txt'];
     
     % cleaning 'MEANFLOWS' and 'DNSFIELDS' as well
-    myrm([ffdatadir, 'DNSFIELDS/BaseFlow*']);
-    myrm([ffdatadir, 'MEANFLOWS/BaseFlow*']);
+    myrm([ffdatadir, 'DNSFIELDS/*']);
+    myrm([ffdatadir, 'MEANFLOWS/*']);
     
     % in case requested, recompute the eigenmode as well
     % NB IN FUTURE VERSIONS IT IS NOT RECOMMENDED ANY MORE TO RECOMPUTE

@@ -326,7 +326,11 @@ end
          disp(['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         end
         if(eigenvectors.iter<0) 
-            error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1)']);
+            if(verbosity>1)
+                error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1). If you want to continue your loops despite this error (confident mode) use verbosity=1 ']);
+            else
+                disp([' WARNING : simple shift-invert iteration failed ; continuing despite of this. If you want to produce an error (secure mode) use verbosity>1.']);
+            end
         end   
     elseif(p.Results.nev>1&&p.Results.type=='D')
     eigenvectors=[];

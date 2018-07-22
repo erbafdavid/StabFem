@@ -92,6 +92,32 @@ for i = istart:nargin
         end
     end
     
+    if (isfield(pdestruct,'datatype')&&(strcmp(lower(pdestruct.datatype),'timestatistics')==1))
+    %% the data file is a time series (most likely coming from DNS)
+    indexdata = 1;
+    Ndata = 0;
+    
+    for ifield = 1:numfields
+        typefield = description{1}{2 * ifield - 1};
+        namefield = description{1}{2 * ifield};
+            switch (typefield)
+            case ('real')
+                value = data(:,indexdata);
+                indexdata = indexdata + 1;
+                pdestruct = setfield(pdestruct, namefield, value);
+                mydisp(15, ['      Function importFFdata : reading real field in TimeStatistics data']);
+  
+            %case ('complex')
+            
+             case(default)
+                    error('wrong type of data in file !')
+        end
+    end
+    
+    
+    else    
+    %% the data is a usual file
+    
     
     %determines the kind of numerical data to be read in the file,
     % and checks if the number of numerical data is consistent
@@ -194,7 +220,7 @@ for i = istart:nargin
                 mydisp(15, ['      Function importFFdata : reading P1surfC field : ', namefield, ' (dimension = ', num2str(nsurf), ' )']);
         end
     end
-    
+    end
     
     mydisp(2, ['  END FUNCTION  importFFdata.m']);
     

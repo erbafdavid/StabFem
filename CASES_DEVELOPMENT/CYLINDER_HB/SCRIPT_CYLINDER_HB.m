@@ -23,10 +23,11 @@ end
 
 
 %% chapter 2 : linear / BF results
-Re_TAB = [40 :10 : 200];
+
 
 if(exist('RESULTS/LINresS.mat')==0)
-    LINres = Linear_LoopRe(bf,0.75i-.1,Re_TAB);
+    Re_TAB = [40 42 44 46 48 50 55 60 :10 : 200];
+    LINres = Linear_LoopRe(bf,0.72i-.03,Re_TAB);
     save('RESULTS/LINresS.mat','LINres');
 else
     load('RESULTS/LINresS.mat');
@@ -65,9 +66,13 @@ end
 
 %% Chapter 6 : figures;
 close all;
-
+load('RESULTS/HB2resS.mat');
+load('RESULTS/HBresS.mat');
+load('RESULTS/LINresS.mat');
+figureformat='png'; AspectRatio = .8; % for figures
+ 
 figure(21);hold off;
-plot(LINres.Re,imag(LINres.lambda)/(2*pi),'b+-');
+plot(LINres.Re,imag(LINres.lambda)/(2*pi),'k+-');
 hold on;
 
 plot(HBres.Re,HBres.omega/(2*pi),'r+-','LineWidth',2);
@@ -77,25 +82,25 @@ xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 legend('Linear','HB-1','HB-2','Location','northwest');
-saveas(gca,'FIGURES/Cylinder_Strouhal_HBres.Re2',figureformat);
+saveas(gca,'FIGURES/Cylinder_Strouhal_HB12',figureformat);
 
 figure(22);hold off;
-plot(LINres.Re,LINres.Fx,'b+-');
+plot(LINres.Re,LINres.Fx,'k+-');
 hold on;
 %plot(Re_WNL,Fx_WNL,'g--','LineWidth',2);hold on;
 plot(HBres.Re,HBres.Fx0,'r+-','LineWidth',2);
 plot(HB2res.Re,HB2res.Fx0,'b-','LineWidth',2);
-plot(HB2res.Re,HB2res.Fx0+abs(HB2res.Fx2),'c:','LineWidth',2);
-plot(HB2res.Re,HB2res.Fx0-abs(HB2res.Fx2),'c:','LineWidth',2);
+plot(HB2res.Re,HB2res.Fx0+abs(HB2res.Fx2),'b:');
+plot(HB2res.Re,HB2res.Fx0-abs(HB2res.Fx2),'b:');
 %plot(Rec,Fxc,'ro')
 xlabel('Re');ylabel('Fx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('HB-1','HB-2','Location','south');
-saveas(gca,'FIGURES/Cylinder_Fx_HBres.Re2',figureformat);
+legend('BF','HB-1','HB-2','Location','south');
+saveas(gca,'FIGURES/Cylinder_Fx_HB12',figureformat);
 
 figure(23);hold off;
-plot(LINres.Re,LINres.Lx,'b+-');
+plot(LINres.Re,LINres.Lx,'k-');
 hold on;
 plot(HBres.Re,HBres.Lx,'r+-','LineWidth',2);
 plot(HB2res.Re,HB2res.Lx,'b-','LineWidth',2);
@@ -103,8 +108,9 @@ plot(HB2res.Re,HB2res.Lx,'b-','LineWidth',2);
 xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
+ylim([0 6])
 legend('BF','HB-1','HB-2','Location','northwest');
-saveas(gca,'FIGURES/Cylinder_Lx_HBres.Re2',figureformat);
+saveas(gca,'FIGURES/Cylinder_Lx_HB12',figureformat);
 
 figure(24);hold off;
 %plot(Re_WNL,Fy_WNL,'g--','LineWidth',2);
@@ -116,7 +122,7 @@ xlabel('Re');ylabel('Fy')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 legend('HB-1','HB-2','Location','south');
-saveas(gca,'FIGURES/Cylinder_Fy_HBres.Re2',figureformat);
+saveas(gca,'FIGURES/Cylinder_Fy_HB12',figureformat);
 
 figure(25);hold off;
 %plot(Re_WNL,A_WNL,'g--','LineWidth',2);
@@ -128,7 +134,7 @@ xlabel('Re');ylabel('A_E')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 legend('HB-1','HB-2','Location','south');
-saveas(gca,['FIGURES/Cylinder_Energy_HBres.Re2_',type],figureformat);
+saveas(gca,['FIGURES/Cylinder_Energy_HB12',type],figureformat);
 
 pause(0.1);
 
