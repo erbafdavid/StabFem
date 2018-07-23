@@ -50,7 +50,7 @@ hold on;fill(boxx,boxy,'y','FaceAlpha', 0.3);hold off;
 % Plot ux
 figure;
 baseflow.xlabel=('x');baseflow.ylabel=('r');
-plotFF(baseflow,'ux','Contour','on','CLevels',[0,1],'Title',['Champ de vitesse u_x pour Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)]);
+plotFF(baseflow,'ux','Contour','on','CLevels',[0,1e-50],'Title',['Champ de vitesse u_x pour Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)]);
 hold on;plot(boxx, boxy, 'w-');hold off;
 
 % Plot ur

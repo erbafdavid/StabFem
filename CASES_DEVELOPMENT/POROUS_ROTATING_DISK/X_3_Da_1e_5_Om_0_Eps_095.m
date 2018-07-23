@@ -2,7 +2,7 @@
 %  STAGE IMFT                                        Adrien Rouviere
 %
 %           -- ÉCOULEMENT AUTOUR D'UN DISQUE POREUX --
-%          -- X = 3 / Da = 1e-6 / Om = 0 / Eps = 0.95 --
+%          -- X = 3 / Da = 1e-5 / Om = 0 / Eps = 0.95 --
 %                                                   
 %#####################################################################
 
@@ -38,6 +38,7 @@ Ymax = 20*Rayon;
 global boxx boxy;
 boxx = [-Epaisseur/2, Epaisseur/2, Epaisseur/2, -Epaisseur/2, -Epaisseur/2];
 boxy = [0, 0, Rayon, Rayon, 0];
+
 baseflow = SF_Init('mesh_Disk.edp',[Diametre Epaisseur Xmin Xmax Ymax]);
 
 % Plot mesh initial
@@ -57,7 +58,7 @@ end
 
 % Paramètres de calcul
 Omega = 0.;
-Darcy = 1e-6;
+Darcy = 1e-5;
 Porosite = 0.95;
 
 % Baseflow Re=150
@@ -71,14 +72,14 @@ baseflow = SF_BaseFlow(baseflow,'Re',130);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 baseflow = SF_BaseFlow(baseflow,'Re',150);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
-baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
+% baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 
 %% 3 - Spectrum exploration #1 
 
 % first exploration for m=1
-m=1;
+m = 1;
 
-EVm1 = [0.0092-0.7141i 0.0478 0.0092+0.7141i];
+EVm1 = [0.0133-0.7157i 0.0513 0.0133+0.7157i];
 type = 'D'; % essayer S ou D
 [EVm1(1),em] = SF_Stability(baseflow,'m',1,'shift',EVm1(1),'nev',1,'type',type);
 
@@ -108,7 +109,8 @@ baseflow = SF_Adapt(baseflow,em1,'Hmin',1e-5);
 lambda1_LIN=[];
     for Re = Re_LIN1
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev1,em1] = SF_Stability(baseflow,'nev',1,'shift','cont');
+%         [ev1,em1] = SF_Stability(baseflow,'nev',1,'shift','cont');
+        [ev1,em1] = SF_Stability(baseflow,'m',1,'shift',ev1,'nev',1);
         lambda1_LIN = [lambda1_LIN ev1];
     end
 
@@ -141,7 +143,8 @@ baseflow = SF_Adapt(baseflow,em2,'Hmin',1e-5);
 lambda2_LIN=[];
     for Re = Re_LIN2
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        [ev2,em2] = SF_Stability(baseflow,'nev',1,'shift','cont');
+%         [ev2,em2] = SF_Stability(baseflow,'nev',1,'shift','cont');
+        [ev2,em2] = SF_Stability(baseflow,'m',1,'shift',ev2,'nev',1);
         lambda2_LIN = [lambda2_LIN ev2];
     end
     
@@ -171,16 +174,15 @@ baseflow = SF_BaseFlow(baseflow);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 baseflow = SF_BaseFlow(baseflow,'Re',180);
 baseflow = SF_BaseFlow(baseflow,'Re',200);
-baseflow = SF_BaseFlow(baseflow,'Re',225);
+baseflow = SF_BaseFlow(baseflow,'Re',230);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 
 %% 6 - Spectrum exploration #2 
 
 % second exploration for m=2
 m = 2;
-ff = 'FreeFem++ -nw -v 0';
 
-EVm2 = [0.1056-0.7942i 0.0869 0.1056+0.7942i];
+EVm2 = [0.0397-0.7949i 0.0139 0.0397+0.7949i];
 type = 'D'; % essayer S ou D
 [EVm2(1),em] = SF_Stability(baseflow,'m',2,'shift',EVm2(1),'nev',1,'type',type);
 
@@ -189,31 +191,31 @@ baseflow = SF_Adapt(baseflow,em,'Hmin',1e-5,'Hmax',5);
 clf(figure(100));
 [ev1,em1] = SF_Stability(baseflow,'m',2,'shift',EVm2(1),'nev',10,'PlotSpectrum','yes');
 [ev2,em2] = SF_Stability(baseflow,'m',2,'shift',EVm2(2),'nev',10,'PlotSpectrum','yes');
-[ev3,em3] = SF_Stability(baseflow,'m',2,'shift',conj(EVm2(1)),'nev',10,'PlotSpectrum','yes');
+[ev3,em3] = SF_Stability(baseflow,'m',2,'shift',conj(ev1(1)),'nev',10,'PlotSpectrum','yes');
 
 figure;
 plot(real(ev1),imag(ev1),'+',real(ev2),imag(ev2),'+',real(ev3),imag(ev3),'+');
 title(['Spectrum for m=' num2str(m) ' - Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)])
 xlabel('\sigma_r');
 ylabel('\sigma_i');
+
 %% 7 - Sability curves #2
 
 vp = 0;
 
 % Mode instationnaire
 vp = vp+1;
-Re_LIN1 = [225 : -1 : 215];
+Re_LIN1 = [220 : -0.5 : 215];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN1(1));
 [ev1,em1] = SF_Stability(baseflow,'m',2,'shift',ev1(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em1,'Hmin',1e-5);
 lambda1_LIN=[];
     for Re = Re_LIN1
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-%         [ev1,em1] = SF_Stability(baseflow,'nev',1,'shift','cont');
         [ev1,em1] = SF_Stability(baseflow,'m',2,'shift',ev1,'nev',1);
         lambda1_LIN = [lambda1_LIN ev1];
     end
-    
+
 [ReCIm2,evIm2,emIm2,baseflow] = ReCritique(baseflow,Re_LIN1,lambda1_LIN,m,1);
 
 figure();
@@ -236,7 +238,7 @@ subplot(2,1,2);
 
 % Mode stationnaire
 vp = vp+1;
-Re_LIN2 = [235 : -1 : 225];
+Re_LIN2 = [230 : -1 : 225];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN2(1));
 [ev2,em2] = SF_Stability(baseflow,'m',2,'shift',ev2(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em2,'Hmin',1e-5);
