@@ -173,7 +173,7 @@ baseflow = SF_Adapt(baseflow,'Hmin',1e-4,'Hmax',5);
 baseflow = SF_BaseFlow(baseflow,'Re',180);
 baseflow = SF_BaseFlow(baseflow,'Re',200);
 baseflow = SF_BaseFlow(baseflow,'Re',230);
-baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
+baseflow = SF_Adapt(baseflow,'Hmin',1e-4,'Hmax',5);
 baseflow = SF_BaseFlow(baseflow,'Re',240);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 
@@ -182,23 +182,23 @@ baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 % second exploration for m=2
 m = 2;
 
-% EVm2 = [0.0023-0.7417i 0.0091 0.0023+0.7417i];
-% type = 'D'; % essayer S ou D
-% [EVm2(1),em] = SF_Stability(baseflow,'m',2,'shift',EVm2(1),'nev',1,'type',type);
-% 
-% baseflow = SF_Adapt(baseflow,em,'Hmin',1e-5,'Hmax',5);
-% 
-% clf(figure(100));
-% [ev1,em1] = SF_Stability(baseflow,'m',2,'shift',EVm2(1),'nev',10,'PlotSpectrum','yes');
-% [ev2,em2] = SF_Stability(baseflow,'m',2,'shift',EVm2(2),'nev',10,'PlotSpectrum','yes');
-% [ev3,em3] = SF_Stability(baseflow,'m',2,'shift',conj(ev1(1)),'nev',10,'PlotSpectrum','yes');
-% 
-% figure;
-% plot(real(ev1),imag(ev1),'+',real(ev2),imag(ev2),'+',real(ev3),imag(ev3),'+');
-% title(['Spectrum for m=' num2str(m) ' - Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)])
-% xlabel('\sigma_r');
-% ylabel('\sigma_i');
-% 
+EVm2 = [0.0160-0.7394i 0.0087 0.0160+0.7394i];
+type = 'D'; % essayer S ou D
+[EVm2(1),em] = SF_Stability(baseflow,'m',2,'shift',EVm2(1),'nev',1,'type',type);
+
+baseflow = SF_Adapt(baseflow,em,'Hmin',1e-5,'Hmax',5);
+
+clf(figure(100));
+[ev1,em1] = SF_Stability(baseflow,'m',2,'shift',EVm2(1),'nev',10,'PlotSpectrum','yes');
+[ev2,em2] = SF_Stability(baseflow,'m',2,'shift',EVm2(2),'nev',10,'PlotSpectrum','yes');
+[ev3,em3] = SF_Stability(baseflow,'m',2,'shift',conj(ev1(1)),'nev',10,'PlotSpectrum','yes');
+
+figure;
+plot(real(ev1),imag(ev1),'+',real(ev2),imag(ev2),'+',real(ev3),imag(ev3),'+');
+title(['Spectrum for m=' num2str(m) ' - Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)])
+xlabel('\sigma_r');
+ylabel('\sigma_i');
+
 %% 7 - Sability curves #2
 
 vp = 0;
@@ -269,15 +269,15 @@ subplot(2,1,2);
     saveas(gca,['.\Resultats\VP\Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax) '__' num2str(vp)],figureformat);
     hold off;
 
-% %##################################################"
-% %% RESULTATS
-% 
-% Da = Darcy;
-% Om = Omega;
-% Rec = [ReCIm1 ReCSm1];% ReCIm2 ReCSm1];
-% EVc = [evIm1 evSm1];% evIm2 evSm2];
-% 
-% save(['.\Resultats\VP\X3_Da' num2str(Da) '_Om' num2str(Om) '.mat'],'Da','Om','Rec','EVc');
-% 
-% %##################################################"
-% toc;
+%##################################################"
+%% RESULTATS
+
+Da = Darcy;
+Om = Omega;
+Rec = [ReCIm1 ReCSm1];% ReCIm2 ReCSm1];
+EVc = [evIm1 evSm1];% evIm2 evSm2];
+
+save(['.\Resultats\VP\X3_Da' num2str(Da) '_Om' num2str(Om) '.mat'],'Da','Om','Rec','EVc');
+
+%##################################################"
+toc;
