@@ -15,22 +15,22 @@
 
 % Plot EV_ux
 figure;
-plotFF(em,'ux1','title',['Champ de vitesse u_x pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','parula');
+plotFF(em,'ux1','title',['Champ de vitesse u_x pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','jet');
 hold on;plot(boxx, boxy, 'w-');hold off;
 
 % Plot EV_uy
 figure;
-plotFF(em,'uy1','title',['Champ de vitesse u_y pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','parula');
+plotFF(em,'uy1','title',['Champ de vitesse u_y pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','jet');
 hold on;plot(boxx, boxy, 'w-');hold off;
 
 % Plot EV_p
 figure;
-plotFF(em,'p1','title',['Champ de pression P pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','parula');
+plotFF(em,'p1','title',['Champ de pression P pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','jet');
 hold on;plot(boxx, boxy, 'w-');hold off;
 
 % Plot EV_Vort
 figure;
-plotFF(em,'vort1','title',['Champ de vorticité \omega pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','parula');
+plotFF(em,'vort1','title',['Champ de vorticité \omega pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','jet');
 hold on;plot(boxx, boxy, 'w-');hold off;
 
 figure;
