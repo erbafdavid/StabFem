@@ -75,7 +75,7 @@ for Ref = Re
             disp('***********  ECRITURE  ***********')
             disp(' ')
             disp([' Itération n° ' num2str(length(Lx)) '/' num2str(length(Darcy))])
-            Lx(Rei,Dai) = baseflow.Lx;
+            Lx(Rei,Dai) = baseflow.Lxx;
             Lx(end)
             Fx(Rei,Dai) = baseflow.Fx;
             Fx(end)
