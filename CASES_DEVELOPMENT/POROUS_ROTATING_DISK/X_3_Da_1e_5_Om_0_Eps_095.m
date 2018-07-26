@@ -72,7 +72,6 @@ baseflow = SF_BaseFlow(baseflow,'Re',130);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 baseflow = SF_BaseFlow(baseflow,'Re',150);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
-% baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
 
 %% 3 - Spectrum exploration #1 
 
@@ -102,14 +101,13 @@ vp = 0;
 
 % Mode instationnaire
 vp = vp+1;
-Re_LIN1 = [150 : -0.5 : 145];
+Re_LIN1 = [150 : -0.5 : 143];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN1(1));
 [ev1,em1] = SF_Stability(baseflow,'m',1,'shift',ev1(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em1,'Hmin',1e-5);
 lambda1_LIN=[];
     for Re = Re_LIN1
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-%         [ev1,em1] = SF_Stability(baseflow,'nev',1,'shift','cont');
         [ev1,em1] = SF_Stability(baseflow,'m',1,'shift',ev1,'nev',1);
         lambda1_LIN = [lambda1_LIN ev1];
     end
@@ -124,7 +122,6 @@ subplot(2,1,1);
     plot(Re_LIN1,real(lambda1_LIN),'bx-');
     xlabel('Re');ylabel('\sigma_r');
     title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
-    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
     hold off;
 subplot(2,1,2);
     hold on;
@@ -136,14 +133,13 @@ subplot(2,1,2);
 
 % Mode stationnaire
 vp = vp+1;
-Re_LIN2 = [140 : -0.5 : 135];
+Re_LIN2 = [140 : -0.5 : 134];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN2(1));
 [ev2,em2] = SF_Stability(baseflow,'m',1,'shift',ev2(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em2,'Hmin',1e-5);
 lambda2_LIN=[];
     for Re = Re_LIN2
         baseflow = SF_BaseFlow(baseflow,'Re',Re);
-%         [ev2,em2] = SF_Stability(baseflow,'nev',1,'shift','cont');
         [ev2,em2] = SF_Stability(baseflow,'m',1,'shift',ev2,'nev',1);
         lambda2_LIN = [lambda2_LIN ev2];
     end
@@ -158,7 +154,6 @@ subplot(2,1,1);
     plot(Re_LIN2,real(lambda2_LIN),'bx-');
     xlabel('Re');ylabel('\sigma_r');
     title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
-    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
     hold off;
 subplot(2,1,2);
     hold on;
@@ -168,7 +163,7 @@ subplot(2,1,2);
     saveas(gca,['.\Resultats\VP\Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax) '__' num2str(vp)],figureformat);
     hold off;
 
-%% 5 - BASEFLOW - Re = 255
+%% 5 - BASEFLOW - Re = 230
 
 baseflow = SF_BaseFlow(baseflow);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',5);
@@ -205,7 +200,7 @@ vp = 0;
 
 % Mode instationnaire
 vp = vp+1;
-Re_LIN1 = [220 : -0.5 : 215];
+Re_LIN1 = [220 : -0.5 : 214];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN1(1));
 [ev1,em1] = SF_Stability(baseflow,'m',2,'shift',ev1(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em1,'Hmin',1e-5);
@@ -226,7 +221,6 @@ subplot(2,1,1);
     plot(Re_LIN1,real(lambda1_LIN),'bx-');
     xlabel('Re');ylabel('\sigma_r');
     title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
-    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
     hold off;
 subplot(2,1,2);
     hold on;
@@ -238,7 +232,7 @@ subplot(2,1,2);
 
 % Mode stationnaire
 vp = vp+1;
-Re_LIN2 = [230 : -1 : 225];
+Re_LIN2 = [230 : -0.5 : 223];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN2(1));
 [ev2,em2] = SF_Stability(baseflow,'m',2,'shift',ev2(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em2,'Hmin',1e-5);
@@ -259,7 +253,6 @@ subplot(2,1,1);
     plot(Re_LIN2,real(lambda2_LIN),'bx-');
     xlabel('Re');ylabel('\sigma_r');
     title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
-    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
     hold off;
 subplot(2,1,2);
     hold on;
@@ -274,10 +267,11 @@ subplot(2,1,2);
 
 Da = Darcy;
 Om = Omega;
-Rec = [ReCIm1 ReCSm1];% ReCIm2 ReCSm1];
-EVc = [evIm1 evSm1];% evIm2 evSm2];
+m = [1 1 2 2];
+Rec = [ReCIm1 ReCSm1 ReCIm2 ReCSm1];
+EVc = [evIm1 evSm1 evIm2 evSm2];
 
-save(['.\Resultats\VP\X3_Da' num2str(Da) '_Om' num2str(Om) '.mat'],'Da','Om','Rec','EVc');
+save(['.\Resultats\VP\X3_Da' num2str(Da) '_Om' num2str(Om) '.mat'],'Da','Om','m','Rec','EVc');
 
 %##################################################"
 toc;

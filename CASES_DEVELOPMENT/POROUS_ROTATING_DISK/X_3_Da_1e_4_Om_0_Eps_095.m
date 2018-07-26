@@ -41,12 +41,6 @@ boxy = [0, 0, Rayon, Rayon, 0];
 
 baseflow = SF_Init('mesh_Disk.edp',[Diametre Epaisseur Xmin Xmax Ymax]);
 
-% Plot mesh initial
-figure;
-plotFF(baseflow,'mesh','Title','Maillage initial du domaine de calcul');
-xlabel('x');ylabel('r');
-hold on;fill(boxx,boxy,'y','FaceAlpha', 0.3);hold off;
-
 % Creation et vidange de PROFILS/
 if (exist([ffdatadir, 'PROFILS']) ~= 7)
     mymake([ffdatadir, 'PROFILS/']);
@@ -54,7 +48,7 @@ else
     myrm([ffdatadir, 'PROFILS/*']);
 end
 
-%% 2 - Génération du BASEFLOW - Re = 150
+%% 2 - Génération du BASEFLOW - Re = 155
 
 % Paramètres de calcul
 Omega = 0.;
@@ -102,7 +96,7 @@ vp = 0;
 
 % Mode instationnaire
 vp = vp+1;
-Re_LIN1 = [154 : -1 : 149];
+Re_LIN1 = [153 : -0.5 : 147];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN1(1));
 [ev1,em1] = SF_Stability(baseflow,'m',1,'shift',ev1(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em1,'Hmin',1e-5,'Hmax',5);
@@ -123,7 +117,6 @@ subplot(2,1,1);
     plot(Re_LIN1,real(lambda1_LIN),'bx-');
     xlabel('Re');ylabel('\sigma_r');
     title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
-    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
     hold off;
 subplot(2,1,2);
     hold on;
@@ -135,7 +128,7 @@ subplot(2,1,2);
 
 % Mode stationnaire
 vp = vp+1;
-Re_LIN2 = [147 : -1 : 142];
+Re_LIN2 = [146 : -0.5 : 140];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN2(1));
 [ev2,em2] = SF_Stability(baseflow,'m',1,'shift',ev2(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em2,'Hmin',1e-5);
@@ -156,7 +149,6 @@ subplot(2,1,1);
     plot(Re_LIN2,real(lambda2_LIN),'bx-');
     xlabel('Re');ylabel('\sigma_r');
     title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
-    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
     hold off;
 subplot(2,1,2);
     hold on;
@@ -166,7 +158,7 @@ subplot(2,1,2);
     saveas(gca,['.\Resultats\VP\Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax) '__' num2str(vp)],figureformat);
     hold off;
 
-%% 5 - BASEFLOW - Re = 255
+%% 5 - BASEFLOW - Re = 240
 
 % baseflow = SF_BaseFlow(baseflow);
 baseflow = SF_Adapt(baseflow,'Hmin',1e-4,'Hmax',5);
@@ -226,7 +218,6 @@ subplot(2,1,1);
     plot(Re_LIN1,real(lambda1_LIN),'bx-');
     xlabel('Re');ylabel('\sigma_r');
     title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
-    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
     hold off;
 subplot(2,1,2);
     hold on;
@@ -238,7 +229,7 @@ subplot(2,1,2);
 
 % Mode stationnaire
 vp = vp+1;
-Re_LIN2 = [239 : -0.5 : 234];
+Re_LIN2 = [239 : -0.5 : 233];
 baseflow=SF_BaseFlow(baseflow,'Re',Re_LIN2(1));
 [ev2,em2] = SF_Stability(baseflow,'m',2,'shift',ev2(1),'nev',1);
 baseflow = SF_Adapt(baseflow,em2,'Hmin',1e-5);
@@ -259,7 +250,6 @@ subplot(2,1,1);
     plot(Re_LIN2,real(lambda2_LIN),'bx-');
     xlabel('Re');ylabel('\sigma_r');
     title(['Taux d''amplification pour Re=' num2str(baseflow.Re) ' - Da=' num2str(baseflow.Darcy) ' - \Omega=' num2str(baseflow.Omegax) ', \epsilon=' num2str(baseflow.Porosity)]);
-    %saveas(gca,['.\Resultats\VP\TA_Re_' num2str(baseflow.Re) '_Da_' num2str(baseflow.Darcy) '_Om_' num2str(baseflow.Omegax)],figureformat);
     hold off;
 subplot(2,1,2);
     hold on;
@@ -274,10 +264,11 @@ subplot(2,1,2);
 
 Da = Darcy;
 Om = Omega;
-Rec = [ReCIm1 ReCSm1];% ReCIm2 ReCSm1];
-EVc = [evIm1 evSm1];% evIm2 evSm2];
+m = [1 1 2 2];
+Rec = [ReCIm1 ReCSm1 ReCIm2 ReCSm1];
+EVc = [evIm1 evSm1 evIm2 evSm2];
 
-save(['.\Resultats\VP\X3_Da' num2str(Da) '_Om' num2str(Om) '.mat'],'Da','Om','Rec','EVc');
+save(['.\Resultats\VP\X3_Da' num2str(Da) '_Om' num2str(Om) '.mat'],'Da','Om','m','Rec','EVc');
 
 %##################################################"
 toc;

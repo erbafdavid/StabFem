@@ -191,7 +191,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
                     file << "datatype " << typeFlow << " datastoragemode ReP2P2P2P1 " << endl;
 					file << "real Re P1 ux P1 ur P1 uphi P1 p P1 vort real iter " ;
 				ENDIFMACRO
-				string PostProcessBaseFlowDescription = "real Fx real Lx real Mx real Darcy real Porosity real Omegax real Flux1 real Flux2 real Flux3"; /* customizable output */ 
+				string PostProcessBaseFlowDescription = "real Fx real Lx real Lxx real Mx real Darcy real Porosity real Omegax real Flux1 real Flux2 real Flux3"; /* customizable output */ 
 				file << PostProcessBaseFlowDescription << endl << endl ; 
 				file << Re << endl;	
 					for (int j=0;j<ut[].n ; j++) file << ut[][j] << endl;
@@ -212,7 +212,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 				real Lx, Uap, Uav;
 				if(iter>0)
 				{
-					real dx = 0.01;real Uav = -2e-10;real Uap=-1e-10;int ix;
+					real dx = 0.001;real Uav = -2e-10;real Uap=-1e-10;int ix;
 					for(ix=1;ix<20000;ix++)
 						{   
 						Uap = ut((SFGeomHdisk/2)+ix*dx,0);
@@ -229,6 +229,32 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 				}
 				cout << "#    Lx = " << Lx << endl << endl; 
 				file << Lx << endl;
+				/* mesure de la longueur de recirculation V2 */
+				real Lxx, U1, U2;
+				if(iter>0)
+				{
+					real dx = 0.001;real U1 = -2e-10;real U2=-1e-10;int ix;int ch=1;
+					real x2,x1;
+					for(ix=1;ix<20000;ix++)
+						{
+						x2 = ix*dx;
+						U2 = ut((SFGeomHdisk/2)+ix*dx,0);
+						if(U2*U1<0 && ch!=0)
+							{
+								x1 = x2;
+								--ch;
+							}
+						else if(U2*U1<0 && ch==0){break;};
+						U1 = U2;	
+						}
+					Lxx = x2-x1;
+				}
+				else
+				{
+					Lxx = 0;
+				}
+				cout << "#    Lxx = " << Lxx << endl << endl; 
+				file << Lxx << endl;
 				IFMACRO(ncomponentsBF,3)
 					real Mx = CoupleX(u) ;
 					cout << "#    Cx =  " << Mx << endl; /* factor 2 because Fx = 1/2 Cx */
