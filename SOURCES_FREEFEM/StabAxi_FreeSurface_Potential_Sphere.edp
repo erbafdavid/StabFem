@@ -17,62 +17,64 @@
 // Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
 
 
-include "Macros_StabFem.edp"
+include "Macros_StabFem.edp" // Macros to Write Files
 
 verbosity=0;
 
 real zero=0;
-// constantes physiques 
-//real g=0;       // Gravity field
-real gamma=1;	  // Surface Tension
-real R=1;
-real dpdz;
-real MASS=1e-8;
 
+// Physical Parameters
+ 
+real gamma=1;	  // Surface Tension
+real R=1;	  // Jet Radius
+real dpdz;	  // Gravity Field 0
+real MASS=1e-8;	  // Sphere Inertia 0+
+
+// Surface Tension equal to 1
 cout << "ENTREZ LA TENSION DE SURFACE GAMMA : "<< endl;
 cin >> gamma;
 if(gamma != 1){ 
 	// TO BE MODIFIED !
 	cout << "WARNING : PROGRAM HAS TO BE ADAPTED FOR GAMMA ~= 1"<< endl; 
 	exit(-1);
-	} ;
+	} ; 
 
-
+// No Gravity
 cout << "ENTREZ LE PARAMETRE DE GRAVITE dp/dz = rho g : "<< endl;
 cin >> dpdz;
 
 
-// Parametres du calcul
-int m;  // Nombre d'onde
+// Numerical Parameters
+real shiftr=0.6;
+real shifti=0.6;
+
+int m;  // Wave number
 
 cout << " ENTREZ Le nombre d'onde m ?" << endl;
 cin >> m;
 cout << "==> Calcul des valeurs propres pour m = " << m << endl;
 
-	
-	real shiftr,shifti;	
+	// Shift
 	cout << " Enter SHIFT (re,im) :   " << endl; 
 	cin  >> shiftr >> shifti;
 	complex shift = 1i*shifti+shiftr;
-
+	
+	// Symmetry
 	string symmetry;
 	cout << " Symmetry properties ?? (A, S or N)" << endl;
 	cin >> symmetry;
 
+	// Problem to solve (D)
 	string iadjoint; // 0 for direct ; 1 for adjoint
 	cout << " Direct (D), Adjoint (A), or both+sensitivity (S) ?" << endl;
 	cin >> iadjoint;	
-
+	
+	// Number of eigenvalues to compute 1
 	int nev;
 	nev=1;
-
 	cout << " Enter nev ? (will use simple shift-invert if nev = 1)" << endl;
 	cin >> nev ;
 	int ncv = 4*nev;   ///// Krylov Basis
-
-	//string formulation;
-	//cout << "Formulation ?  [ A -> Absolute velocity in relative frame] [ R -> Relative velocity in relative frame]"<< endl; 
-	//cin >> formulation;
 	
 	cout << " ### PARAMETERS SELECTED : " << endl;
 	cout << " shift = " << shift << endl;
@@ -86,34 +88,39 @@ cout << "==> Calcul des valeurs propres pour m = " << m << endl;
 	cout << " nev = " << nev << endl;
 	
 
-
 ////////////////////////////////////////////////////////////////
 //
 // MAILLAGE ET GEOMETRIE INITIAUX
 //
 ////////////////////////////////////////////////////////////////
 
+// MESH READING (data generated previously by MeshInit_BridgeSphere.edp in SF_Init.m
 
 mesh th=readmesh(ffdatadir+"mesh.msh");
 //mesh th=th; //autre nom possible...
 mesh Shempty=emptymesh(th); 	// Maillage 'surface'
+
 real L, K0, Vol, Area;
 
+// MACROS FOR CURVATURE NORMAL AND TANGENTIAL VECTOR, SURFACE NUMBERING, CALCGEOMSURF, ETC
 include "Macros_Geometrie_Surface.edp"
 
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
-// Calcul des normales et des courbures
+
+// COMPUTE NORMAL AND CURVATURE
 CalcGeomSurf;
 
-
-fespace Xh(th,P1);
+// FUNCTIONAL SPACE : VhxVh for PHI and ETA, Xh for Vb and Xb
 fespace VhxVh(th,[P1,P1]);
+fespace Xh(th,P1);
 
-VhxVh [phi,eta],[q,v];
+VhxVh<complex> [phi,eta],[q,v];
 
 real RegEta = 1e-8;
 
-// CONSTRUCTION DES MATRICES
+// CONSTRUCTION DES MATRICES (WEAK FORMULATION) 
+
+//MATRIX AFLUID
 
 varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v] instead
 // Laplacian	  
@@ -136,6 +143,7 @@ varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v]
 //+ on(6,phi=0.0); //NE MARCHE PAS
 ;
 
+//MATRIX BFLUID
 
 varf b([phi,eta],[q,v]) = 
         int1d(th,2)(eta*v*x)
@@ -150,7 +158,7 @@ varf b([phi,eta],[q,v]) =
 ////////////////////////////////////////////////////
 
 //MATRICE OF THE FLUID PROBLEM
-matrix<complex> Afluid = a(VhxVh,VhxVh,solver=UMFPACK); 
+matrix<complex> Afluid = a(VhxVh,VhxVh,solver=sparsesolver); 
 matrix<complex> Bfluid = b(VhxVh,VhxVh,solver=GMRES,eps=1e-20);
 
 //FORCE FLUID ON SPHERE, COMMENTS : p=-rho*dphi/dt=-omega*phi
@@ -158,24 +166,15 @@ varf bfluidvb([q,v],[phi,eta]) = int1d(th,6)(-2*N.y*phi);
 complex[int] BFluidVB = bfluidvb(0,VhxVh);
 
 //KINEMATIC CONDITIONS, COMMENTS : NO BASEFLOW => NO FLATTENING
+complex[int] BVbFluid(phi[].n);
 varf bvbfluid([phi,eta],[q,v]) = int2d(th)(0*v);
-complex[int] BVbFluid = bvbfluid(0,VhxVh);
+BVbFluid = bvbfluid(0,VhxVh);
 
-complex[int] AVbFluid(phi[].n);
-//if(formulation=="A")
-//{
-	varf avbfluid([phi,eta],[q,v]) = int1d(th,6)(N.y*v);  
-	AVbFluid = avbfluid(0,VhxVh);
-//};
-//éo
-//if(formulation=="R")
-//{
-//	varf avbfluid([phi,eta],[q,v]) = int1d(Th,6)(0)
-//	- int2d(Th)(0);  
-//		AVbFluid = avbfluid(0,VhxVh);
-//};
+complex[int] AVbFluid(phi[].n); //absolute referential
+varf avbfluid([phi,eta],[q,v]) = int1d(th,6)(N.y*v);  
+AVbFluid = avbfluid(0,VhxVh);
 
-//COUPLED SYSTEM
+//COUPLED SYSTEM : A*X=i*omega*B*X, with: X=[[phi,eta],Xb,Vb]'
 matrix<complex> A = [
 		[Afluid,AVbFluid,0],
 		[0,0,0],
@@ -288,50 +287,32 @@ J'ai aussi une autre chose qui pose problème,  		uy1 = u2 ;
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
 
 else
 
-/// SIMPLE SHIFT-INVERT IF ONLY ONE MODE IS RESQUESTED
+//// SIMPLE SHIFT-INVERT METHOD IF ONLY ONE MODE IS RESQUESTED
 {
+
 VhxVh<complex> [phi0,eta0],[phidirect,etadirect],[phiadjoint,etaadjoint]; 
-
-
 [phi0,eta0] = [1,1];
-//int testCB = exec("ls Eigenmode_guess.txt");
-//    	if (testCB!=0)
-//		{
-//		cout << "no file Eigenmode_guess.txt : starting from arbitrary initial condition" << endl;
-//		[phi0,eta0] = [1,1];
-//		} 
-//		else
-//		{
-//		cout << "starting shift/invert from mode in file Eigenmode_guess.txt" << endl;
-//		ifstream cbin("Eigenmode_guess.txt");
-//		cbin >> phi0[];
-//		};
 
 // selection of the computation to be performed : direct, adjoint or both
 		
 int directadjointA,directadjointB;
-
-	directadjointA = 1; directadjointB=1;
-	cout << "Shift-invert algorithm for DIRECT problem" << endl;
+directadjointA = 1; directadjointB=1;
+cout << "Shift-invert algorithm for DIRECT problem" << endl;
 	
-	
-
-// LOOP TO SELECT WHICH COMPUTATION WILL BE DONE 
+	// LOOP TO SELECT WHICH COMPUTATION WILL BE DONE 
 	for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoint++)	
 	{
 
-		cout << " Constructing operator for DIRECT problem ..." << endl;
-		//OP=LNSE(XXMh,XXMh,solver=sparsesolver);
-		shiftOP = shift;
-		cout << " solving DIRECT problem ..." << endl;
-
+	cout << " Constructing operator for DIRECT problem ..." << endl;
+	//OP=LNSE(XXMh,XXMh,solver=sparsesolver);
+	shiftOP = shift;
+	cout << " solving DIRECT problem ..." << endl;
 
 	int itmax = 100;
 	complex sigma0 = 1e6;
@@ -339,7 +320,7 @@ int directadjointA,directadjointB;
 	real errmax=1e-6;
 	complex sigma;
 	
-//	varf brhs([u1,u2,p],[v1,v2,q]) = int2d(Th)( (u10*v1+u20*v2) );
+	//varf brhs([u1,u2,p],[v1,v2,q]) = int2d(Th)( (u10*v1+u20*v2) );
 	set(OP,solver=sparsesolver);  //// factorize matrix
 
 	complex Vb0=0; complex Xb0=0;
@@ -374,30 +355,35 @@ int directadjointA,directadjointB;
 	};
 	/// END ITERATION LOOP	
 
- 	// renormalization by MAXIMUM
+ 	// normalization by MAXIMUM
  	Xh NormU = sqrt(abs(Vb)^2);
 	phi[] = 1/NormU[].max*phi[];
 	Vb = 1/NormU[].max*Vb;
 	Xb = 1/NormU[].max*Xb;
 	 
 	if(i<itmax)
-	// post-processing if iteration was successful
+	// POST-PROCESSING if iteration was successful
 	{	
+
+		//eigenvalue computed
+
+		cout << " ### VP Calculees :" << endl;
 		real sigmar = real(sigma) ; real sigmai = imag(sigma);
+
 		string namefile,namefileFF,descriptionFF;
 
-    		ofstream file("Eigenvalues.txt");
+    		ofstream file("Spectrum.txt");
     		file << sigmar << " " << sigmai << " " << real(shift) << " " << imag(shift) << endl;
     		namefile="Eigenmode.txt";
     		namefileFF="Eigenmode.ff2m";
     		descriptionFF="complex sigma complex shift int iter P1c phi P1surfc eta complex Vb complex Xb"; //problem???
-
-    {
-    ofstream file(namefile);
-  	file << phi[] ;	
-   	file << endl
-   	<< endl << sigmar << "   " << sigmai  << endl;
-    }
+	
+		//{
+		//ofstream file(namefile);
+		//file << phi[] ;	
+		//file << endl
+		//<< endl << sigmar << "   " << sigmai  << endl;
+		//}
     
 	fespace p1(th,P1); 
 	p1 xx,yy;
@@ -405,26 +391,25 @@ int directadjointA,directadjointB;
 	yy=y;
 	p1<complex> phi,eta;
 
- 		 cout << "Writing eigenmode in file " << namefileFF << endl;
- 		 ofstream fileFF(namefileFF);
- 		 fileFF << "### Data generated by Freefem++ ; " << endl;
-    	 fileFF << "EigenMode" << endl;
-    	 fileFF << "Format :" << endl;
-	     fileFF << descriptionFF << endl << endl ; 
-		 fileFF << real(sigma) << " " << imag(sigma)  
+		cout << "Writing eigenmode in file " << namefileFF << endl;
+		ofstream fileFF(namefileFF);
+		fileFF << "### Data generated by Freefem++ ; " << endl;
+		fileFF << "EigenMode" << endl;
+		fileFF << "Format :" << endl;
+		fileFF << descriptionFF << endl << endl ; 
+		fileFF << real(sigma) << " " << imag(sigma)  
 		 << " " << shiftr << " " << shifti << " " << i << endl << endl;
 		for (int j=0;j<phi[].n ; j++) fileFF << real(phi[][j]) << " " << imag(phi[][j]) << endl;
 		fileFF << endl;
 		for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
-	     	{ fileFF << real(eta(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl ;
-		fileFF << imag(eta(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl; 
+	     	{ fileFF << real(eta(xPointSurf(ksurf), yPointSurf(ksurf) )) << imag(eta(xPointSurf(ksurf), yPointSurf(ksurf) )) << endl; 
 		};
 		fileFF << endl;
 		fileFF << real(Vb) << " " << imag(Vb) << endl;
 		fileFF << real(Xb) << " " << imag(Xb) << endl;
 		fileFF << endl;
 
-cout << " Vb : " << 		Vb << endl;
+cout << " Vb : " << Vb << endl;
 p1 realphi = real(phi);
 plot(realphi,fill=1,value=1);
 	
@@ -454,13 +439,9 @@ else // case iteration failed
 };
 
 
-//if (testCB==0)
-//		{
-//		exec("rm Eigenmode_guess.txt");// to be sure this file is not reused unless explicitly requested
-//		};
-
-
 }; //end of loop for direct/adjoint/selection
 
 // end of selection of mutliple mode (krylov) / single mode (simple shift-invert)
 };
+
+

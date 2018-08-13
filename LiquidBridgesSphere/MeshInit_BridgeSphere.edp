@@ -27,7 +27,7 @@ cin  >> VP;
 cout << " ENTREZ La densite du maillage ?" << endl;
 cin  >> d;
 
-
+//JET WITHOUT PARTICLE
 //border Side1(t=0,R){y=0;x=t;label=3;};
 //border Axe1(t=LL,LL/2+RP){y = t ; x = 0;label=1;};
 //border Axe2(t=LL/2-RP,0){y = t ; x = 0;label=1;};
@@ -42,6 +42,7 @@ cin  >> d;
 //th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe1(LL/2*d)+Axe2(LL/2*d));
 //};
 
+//JET WITH 1 PARTICLE
 border Side1(t=0,R){y=0;x=t;label=3;};
 border Axe1(t=LL,LL/2+RP){y = t ; x = 0;label=1;};
 border Sph(t=pi,0){y=LL/2-RP*cos(t); x=RP*sin(t); label=6;};
@@ -61,15 +62,9 @@ th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe1((LL-RP)/2*d)+Sph(3.
 
 cout << "==> Longueur = " << LL << endl;
 cout << "==> Densite = " << d << endl;
-
-
 plot(th,wait=1);
 
-
-
-
 //SAVE MESH TO FILE
-
 savemesh(th,ffdatadir+"mesh_guess.msh");
 savemesh(th,ffdatadir+"mesh.msh");
 
@@ -84,13 +79,9 @@ savemesh(th,ffdatadir+"mesh.msh");
 			file << R  << endl << LL  << endl << RP << endl;
 }
 
-
-
-
 // SECOND AUXILIARY FILE mesh.ff2m
-{ https://www.linkedin.com/jobs/?trk=jobs_chrome_home
+{
 mesh Shempty=emptymesh(th); 	
-
 
 include "Macros_Geometrie_Surface.edp";
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
@@ -99,10 +90,7 @@ CalcGeomSurf;
 SFWriteMesh(ffdatadir+"mesh.ff2m",th)
 }
 
-
 exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_guess.ff2m");
-
-
 
 //// CREATION OF A BASE FLOW FILE
 //// (this is a	static problem so there is actually no base flow. However the file is created to ensure the right functioning of StabFem	

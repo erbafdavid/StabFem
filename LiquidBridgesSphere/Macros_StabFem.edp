@@ -11,8 +11,6 @@
 /// macro SFWriteBaseFlow
 /// macro SFWriteMode
 /// 
-
-
 /// The following case is for the 2D cylinder and include the additional macros
 /// required to compute lift and drag forces : Trainee(ux,uy,p,symmetry) and Portance(ux,uy,p,symmetry)
 

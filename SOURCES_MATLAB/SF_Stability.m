@@ -145,7 +145,7 @@ switch baseflow.mesh.problemtype
         % argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(10) ' " '];
         argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
                             ' ' p.Results.type ' ' num2str(p.Results.nev) ' ' num2str(p.Results.m) ' " ']; 
-        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential_Try.edp'];
+        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential_Sphere.edp'];
         status = mysystem(solvercommand);     
             
     % case(...)    

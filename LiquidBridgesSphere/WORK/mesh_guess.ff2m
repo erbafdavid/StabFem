@@ -4,7 +4,7 @@ Format :
 int nsurf real P0 real Vol real Area real gamma real rhog real Uref real nu  P1surf xsurf P1surf ysurf P1surf S0 P1surf N0r P1surf N0z P1surf K0a P1surf K0b
 445
 1
-13.4342
+13.9536
 27.9156
 1
 0

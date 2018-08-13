@@ -183,7 +183,7 @@ else if(i<Nval&&evi[i]==evi[i+1])
     
 // Post-traitement MODES
 if (i<Nmodes)
-   {	
+   {
    	{
    	ofstream FileTXT(ffdatadir+"Eigenmode"+(i+1)+".txt");
    	FileTXT << eVphi[i][];
