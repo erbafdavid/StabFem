@@ -42,7 +42,7 @@ bool fplot=false;
 int comp=0;
 
 
-real Re,Ma;
+real Re,Reans,Ma;
 
 if(mpirank==0)
 {
@@ -90,6 +90,7 @@ broadcast(processor(0),th);
 
 real TOLLERANCENewton=1e-9;  /// tollerance of newton loop
 int NITERATIONNEWTLOOP=40;  //////////////  Max number of ITERATIONs --> Newton loop
+real TOLLERANCEDiv = 20.0; // Tolerance to reset initial condition due to divergence of the Newton method.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 fespace XH2(th,P2);
@@ -106,8 +107,15 @@ XXxxxH<complex> def(du,dp,dT,drho);
 XXxxxH<complex> def(Ub,Pb,Tb,Rhob);
 XXxxxH<complex> def(Urif,Prif,Trif,Rhorif)=[1.0,0.0,1.0,1.0,1.0];
 
+{
+ifstream file(ffdatadir+"BaseFlow_guess.txt");
+file >> Ubx[];
+file >> Reans;
+};
 
-Ubx[]=Urifx[];
+cout << "$$ Newton for Re = " << Re << endl;	
+cout << "$$ Reynolds of the initial condition : " << Reans << endl;
+
 
 // Define complex mapping or Sponge
 include "MethodSel.edp"
@@ -189,7 +197,11 @@ int contout=0;
 		}
 	      Ubx[]+=dux[];
 	      i++;	    
-	      
+	    if(ener > TOLLERANCEDiv && i <= 5)
+	    {
+	    	cout << "Initial condition has been reseted" << endl;
+	    	Ubx[] = Urifx[];
+	    }
 	     }// end of NEWTON LOOP
 	     
 	     /// NEXT IS PLOT AND POSTPROCESS

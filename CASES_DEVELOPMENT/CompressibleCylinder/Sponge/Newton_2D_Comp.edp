@@ -45,7 +45,7 @@ bool fplot=false;
 int comp=0;
 
 
-real Re,Ma;
+real Re,Reans,Ma;
 
 if(mpirank==0)
 {
@@ -115,7 +115,15 @@ XXxxxH def(du,dp,dT,drho);
 XXxxxH def(Ub,Pb,Tb,Rhob);
 XXxxxH def(Urif,Prif,Trif,Rhorif)=[1.0,0.0,1.0,1.0,1.0];
 
-Ubx[]=Urifx[];
+{
+ifstream file(ffdatadir+"BaseFlow_guess.txt");
+file >> Ubx[];
+file >> Reans;
+};
+
+cout << "$$ Newton for Re = " << Re << endl;	
+cout << "$$ Reynolds of the initial condition : " << Reans << endl;
+
 
 XH2 AMPFORCE;
 //M=1.0;
@@ -134,7 +142,8 @@ AMPFORCE=AmpSponge(Ma);
   +on(bcoutflow,dux=1.0-Ubx,duy=0.0-Uby,dT=1.-Tb,drho=1.-Rhob)
   +on(bcwall,dux=0.0-Ubx,duy=0.0-Uby);
 
-varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank)(rhos*(drho*div(Ub)+Rhob*div(du)+ugradf(Ub,drho)+ugradf(du,Rhob)) 
+varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=
+								int2d(th,mpirank)(rhos*(drho*div(Ub)+Rhob*div(du)+ugradf(Ub,drho)+ugradf(du,Rhob)) 
 								       //mass equation
 								       -dp/(gamma*Ma^2)*div(us)+2.0/Re*(Strain(du):Grad(us))-2.0/(3.0*Re)*(div(du)*div(us))+Rhob*termnonlinear(du,Ub,us)+drho*termnonlinear(Ub,Ub,us)+Rhob*termnonlinear(Ub,du,us)
 								       //momentum

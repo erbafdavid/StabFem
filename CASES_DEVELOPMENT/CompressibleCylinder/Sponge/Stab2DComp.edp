@@ -310,7 +310,7 @@ int k=EigenValue(OP,B,sigma=shiftOP,value=ev,vector=eux,tol=1e-6,maxit=0,ncv=ncv
        fileVP1 << real(ev[i]) << " " << imag(ev[i]) << " " << Re << " " << 0 << " " << real(shift) << " " << imag(shift) << endl;
        	cout << " Eigenvalue : " << i+1 << "  : " << ev[i] << endl;
 
- 		 if(iadjoint=="D"){namefile=ffdatadir+"Eigenmode"+(i+1);}
+ 		 if(iadjoint==0){namefile=ffdatadir+"Eigenmode"+(i+1);}
  		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
  		 {ofstream fileMode(namefile+".txt");
  		  fileMode << eux[i][]; 

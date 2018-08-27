@@ -84,9 +84,10 @@ savemesh(th,ffdatadir+"mesh.msh");
 			file <<  RADIUS  << endl << xinlet << endl << xoutlet << endl << yside  << endl;
 }
 
-
+	cout << "Saving" << endl;
 // SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
-	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th);
+	cout << "Mesh Saved" << endl;
 
 
 
@@ -115,13 +116,7 @@ savemesh(th,ffdatadir+"mesh.msh");
 	    file <<  endl << 0 << endl;
       	}
       	
-// Save in ff2m format (for StabFem)	    
+// Save in ff2m format (for StabFem)
+		 cout << "Saving" << endl;
 	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
-
-
-
-
-
-
-
-
+	     cout << "Base flow saved" << endl;

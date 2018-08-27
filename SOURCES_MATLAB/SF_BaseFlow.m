@@ -83,7 +83,7 @@ else PorosityDefault = 0.95;
 end
 addParameter(p, 'Porosity', PorosityDefault, @isnumeric); % For porous body too
 
-addParameter(p, 'type', 'Normal', @ischar); % mode type
+addParameter(p, 'type', 'Normal', @ischar); % mode typeResults
 addParameter(p, 'ncores', 1, @isnumeric); % number of cores to launch in parallel
 
 parse(p, varargin{:});

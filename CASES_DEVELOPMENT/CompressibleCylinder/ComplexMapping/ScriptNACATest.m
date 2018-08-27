@@ -11,24 +11,24 @@ verbosity=20;
 
 % parameters for mesh creation 
 % Outer Domain 
-xinfm=-35.; xinfv=70.; yinf=35;
+yinf=35; xinfm=-yinf; xinfv=70.; 
 alpha = 0.0;
 method = 'CM';
-symm = 1;
-symmEig = 0;
+symm = 2;
+symmEig = 2;
 
-BoxXpCoeff = 20;
-BoxXnCoeff = -20;
-BoxYpCoeff = 20;
+BoxXpCoeff = 1.5;
+BoxXnCoeff = -1.6;
+BoxYpCoeff = 1.4;
 LaXpCoeff = 1.01;
-LaXnCoeff = 1.1;
+LaXnCoeff = 1.01;
 LaYpCoeff = 1.01;
 LcXpCoeff = 0.7;
-LcXnCoeff = 0.7;
-LcYpCoeff = 0.7;
-gcXpCoeff = 0.0;
-gcXnCoeff = 1.0;
-gcYpCoeff = 0.0;
+LcXnCoeff = 0.8;
+LcYpCoeff = 0.6;
+gcXpCoeff = -0.5;
+gcXnCoeff = 0.5;
+gcYpCoeff = -0.5;
 
 
 mysystem(['echo "xinfm= ' num2str(xinfm) '; xinfv= ' num2str(xinfv) ...
@@ -55,38 +55,41 @@ Omegac = 0.7272
 Rec = 46.94
 
 bf = SF_Init('Mesh_NACA0012.edp',[xinfm,xinfv,yinf]);
-bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_BaseFlow(bf,'Re',50,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_BaseFlow(bf,'Re',50,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_BaseFlow(bf,'Re',100,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_BaseFlow(bf,'Re',500,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',1,'InterpError',5e-3);
-bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',1,'InterpError',5e-3);
-bf=SF_BaseFlow(bf,'Re',1000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',1,'InterpError',1e-3);
-bf=SF_BaseFlow(bf,'Re',1500,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',1e-3);
-bf=SF_BaseFlow(bf,'Re',2000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',1e-3);
-bf=SF_BaseFlow(bf,'Re',5000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',1e-3);
-bf=SF_BaseFlow(bf,'Re',5000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',5e-4);
-bf=SF_BaseFlow(bf,'Re',10000,'Mach',Ma,'ncores',1,'type','NEW');
-bf=SF_Adapt(bf,'Hmax',0.5,'InterpError',3e-4);
+Re_Mesh = [1000:1000:9000]
+for Re=Re_Mesh(5:end)
+    bf=SF_BaseFlow(bf,'Re',Re,'Mach',Ma,'ncores',1,'type','NEW');
+    bf=SF_AdaptMesh(bf,'Hmax',1,'InterpError',5e-3);
+    bf=SF_AdaptMesh(bf,'Hmax',1,'InterpError',5e-3);
+end
+
+Re_Mesh = [28000:1000:30000]
+for Re=Re_Mesh(1:end)
+    bf=SF_BaseFlow(bf,'Re',Re,'Mach',Ma,'ncores',1,'type','NEW');
+    bf=SF_AdaptMesh(bf,'Hmax',1);
+    bf=SF_AdaptMesh(bf,'Hmax',1);
+end
+
+Sigma = [0.0:0.05:-0.06]
+Omega = [0.01:0.1:50]
+OmegaL = []
+SigmaL = []
+emL = []
+for sigma=Sigma
+    for omega=Omega
+        [ev,em] = SF_Stability(bf,'shift',sigma+omega*i,'nev',1,'type','D','sym','N','Ma',Ma);
+        if (iter < 150 && iter ~= -1)
+            SigmaL = [SigmaL,real(ev)];
+            OmegaL = [OmegaL,imag(ev)];
+            emL = [em, emL];
+        end
+    end
+end
+[evD,emD] = SF_Stability(bf,'shift',-0.1+0.1*i,'nev',10,'type','D','sym','N','Ma',Ma);
+
 
 
 figure();
-% plot the base flow for Re = 60
+% plot the base flow
 bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
 plotFF(bf,'ux');
 %plotFF(bf,'ux');

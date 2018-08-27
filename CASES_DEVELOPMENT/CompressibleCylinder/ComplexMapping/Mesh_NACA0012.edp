@@ -11,7 +11,6 @@
 /////
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
-
 include "Macros_StabFem.edp";
 //string ffdatadir = "./WORK/";
 
@@ -22,59 +21,72 @@ include "Macros_StabFem.edp";
 
 
 
-real RADIUS=0.5;         /////// Cylinder Radius
+real RADIUS=0.5;         /////// Airfoil "Radius" (As it would be done with conformal mapping)
  
 
 
-n=.5;                 
-real nsTE=50;
-real nsLE=75; 
+n=0.4;  
+real nFine = 10;   
+real nFineHor = 3;  
+real nFineVer = 5; 
+real nFineVerBox = 10;
+real nFineHorBox = 10;         
+real nsTE=100;
+real nsLE=50; 
 real thick=0.12, c0=0.296375, c1=0.12635, c2=0.35195, c3=0.283775, c4=0.10185;
+real h = 2.0;
+real lp = 2.0;
+real ln = 1.3;
 
 cout << " Generation of an initial mesh for a 2D cylinder" << endl;
 cout << " Enter the dimensions xmin, xmax, ymax ? " << endl; 
-
-//real xinlet=-20.;     
-//real xoutlet=40.; 
-//real yside=20.;       
+   
 real xinlet , xoutlet,yside ;
 
 cin >> xinlet >> xoutlet >> yside ;
 cout << "Xmin = " << xinlet << " ; Xmax = " << xoutlet << " ; ymax = " << yside << endl;  
 
+xinlet += yside; // Because we add it in the mesh
+xoutlet -= yside; // Because we add it in the mesh
 /////////////////////////////////////////////////////////////////////////////////
 //int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
                          /////// label for boundary conditions  
 /////////////////////////////////////////////////////////////////////////////////
-// cylinder center is in (0,0)
+// airfoil center is in (0,0)
 
-border airfoilTE(t=2*RADIUS,0.4*RADIUS){ x=t-RADIUS;y=(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
-border airfoilLE2(t=0.4*RADIUS,0.01*RADIUS){ x=t-RADIUS;y=(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
-border airfoilLE1(t=0.01*RADIUS,0){ x=t-RADIUS;y=(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
+border airfoilUSTE(t=0.05*RADIUS,2*RADIUS){ x=t-RADIUS;y=(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
+border airfoilUSLE(t=0,0.05*RADIUS){ x=t-RADIUS;y=(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
+
+border airfoilLSTE(t=0.05*RADIUS,2*RADIUS){ x=t-RADIUS;y=-(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
+border airfoilLSLE(t=0,0.05*RADIUS){ x=t-RADIUS;y=-(thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=2;}
+border boxVerXn(t=-1,1){ x=-ln*RADIUS-RADIUS;y=t;label=100;}
+
+border airfoilUSTEB(t=0.05*RADIUS,2*RADIUS){ x=t-RADIUS;y=(10*thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=100;}
+border airfoilUSLEB(t=0,0.05*RADIUS){ x=t-RADIUS;y=(10*thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=100;}
+
+border airfoilLSTEB(t=0.05*RADIUS,2*RADIUS){ x=t-RADIUS;y=-(10*thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=100;}
+border airfoilLSLEB(t=0,0.05*RADIUS){ x=t-RADIUS;y=-(10*thick/0.2)*(c0*sqrt(t) - c1*t - c2*t^2 + c3*t^3 - c4*t^4);label=100;}
 
 //border cylref(t=0,2*pi){ x=(RADIUS+RR)*cos(t);y=(RADIUS+RR)*sin(t);label=999;}
+border inlet(t=pi/2,3*pi/2){ x=xinlet+yside*cos(t);y=yside*sin(t);label=1;}
 
-border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=1;}
-border axis1(t=0,1){ x=xinlet+(-RADIUS-xinlet)*t;y=0;label=6;}
-border axis2(t=0,1){ x=RADIUS+(xoutlet-RADIUS)*t;y=0;label=6;}
-border outlet(t=0,1){ x=xoutlet;y=yside*t;label=3;}
+border latinf(t=0,1){ x=xinlet+(xoutlet-xinlet)*t;y=-yside;label=3;}
+
+
+border outlet1(t=-pi/2,-pi/256){ x=xoutlet+yside*cos(t);y=yside*sin(t);label=3;}
+border outlet2(t=-pi/256,pi/256){ x=xoutlet+yside*cos(t);y=yside*sin(t);label=3;}
+border outlet3(t=pi/256,pi/2){ x=xoutlet+yside*cos(t);y=yside*sin(t);label=3;}
+
+
 border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=3;} // label 3 : same conditions as at outlet
 
 
 
-/////////////////////////////////////////////////////////////////////////////////
-// plot(inlet(10)+latinf(10)+outlet(10)+latsup(10)+cylref(10)+cylinder(10)+a1(10)+a2(10)+a3(10)+a4(10));
-                         /////// Just to check the borders
-/////////////////////////////////////////////////////////////////////////////////
 // Build a mesh 
-//cout << "toto" << endl;
-//plot(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)+cylinder(-ns));
-
-mesh th=buildmesh(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)
-				  +airfoilTE(-nsTE)+airfoilLE2(-nsLE)+airfoilLE1(-nsLE));
-
-//plot(th,wait=0);
-//cout << "tata" << endl;
+mesh th=buildmesh(inlet(2*yside*n)+latinf((xoutlet-xinlet)*n)
+				  +outlet1(2*yside*n)+outlet2(2*yside)+outlet3(2*yside*n)
+				  +latsup((xoutlet-xinlet)*n)
+				  +airfoilUSTE(nsTE)+airfoilUSLE(nsLE)+airfoilLSLE(-nsLE)+airfoilLSTE(-nsTE));
 
 // SAVE THE MESH in mesh.msh file 
 savemesh(th,ffdatadir+"mesh.msh");
@@ -110,8 +122,8 @@ savemesh(th,ffdatadir+"mesh.msh");
 
 // CREATE A guess for the base flow (here starting from zero works very well)
  	fespace femp1(th,P1);
-	fespace femp2xfemp2xfemp1(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
-        femp2xfemp2xfemp1 [ux,uy,up,utemp,uro]=[1.0,0.0,1.0,1.0,1.0];
+	fespace femp2xfemp2xfemp1xfemp1xfemp1(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
+        femp2xfemp2xfemp1xfemp1xfemp1 [ux,uy,up,utemp,uro]=[1.0,0.0,1.0,1.0,1.0];
         real Re = 0;real nu=1; real Ma = 0.01; real gamma = 1.4; // these three are useless at this stage but required in the macros 
         
 // Save in txt format (for FreeFem)        

@@ -1,4 +1,4 @@
-function [Field1New,Field2New,Field3New] = SF_Adapt(varargin)
+function [Field1New,Field2New,Field3New] = SF_AdaptMesh(varargin)
 % 
 % This is part of StabFem Project, version 2.1, D. Fabre, July 2017
 % Generalized in July 2018, J. Sierra.
@@ -30,6 +30,57 @@ function [Field1New,Field2New,Field3New] = SF_Adapt(varargin)
 %
 %
 % Version 2.2 by J. Sierra, 16 july 2018
+
+
+%> @file SOURCES_MATLAB/SF_AdaptMesh.m
+%> @brief StabFem wrapper for mesh adaption based on some FreeFem fields
+%>
+%> @param[in] Field_i: Field used to generate a mesh adaptation
+%> @param[in] varargin: list of parameters and associated values
+%> @param[out] Field_iNew: Interpolated fields in the new mesh
+%>
+%> usage: <code>[Field1New,Field2New,Field3New] = SF_Adapt(Field1,{Field2},
+%          {Field3},{TypeField1},{TypeField2},{TypeField3},'Hmax',5,...) </code>
+%>
+%> Note: Parameters between {} are optional
+%> 
+%> This wrapper will launch the Newton FreeFem++ program of the corresponding
+%>  case. Nota Bene: if baseflow was already created, it is simply copied from
+%>  the "BASEFLOW" directory (unless specified otherwise by parameter 'Type').
+%>
+%> List of valid parameters:
+%>   - <code>Re</code>          Reynolds number
+%>   - <code>Ma</code>          Mach number (for compressible cases)
+%>   - <code>Omegax</code>      Rotation rate (for swirling axisymetric or 2D body)
+%>   - <code>Darcy</code>       Darcy number (for cases with porous body)
+%>   - <code>Porosity</code> \t\t    Porosity (for cases with porous body)
+%>   - <code>Type</code>
+%>      - <code>'Normal'</code> (default) ;
+%>      - <code>'NEW'</code> to force new computation ;
+%>      - <code>'POSTADAPT'</code> for recomputing baseflow after mesh adaptation ;
+%>      - <code>'PREV'</code> if connection was lost (obsolete ?)
+%>   - <code>ncores</code>      Number of cores (for parallel computations)
+%>
+%> SF IMPLEMENTATION:
+%> Depending on set parameters, this wrapper will select and launch one of the
+%>  following FreeFem++ solvers:
+%>       'Newton_Axi.edp'
+%>       'Newton_AxiSWIRL.edp'
+%>       'Newton_2D.edp'
+%>       'Newton_2D_Comp.edp'
+%>
+%> Nota Bene: if for some reason the mesh/baseflow compatibility was lost, use
+%>  <CODE>SF_BaseFlow(baseflow,'Re',Re,'type','PREV')</CODE> to reconstruct the structure and
+%>  relocate files correctly. Similarly, to force recomputation even if files exist,
+%>  (for instance, just after adaptmesh), use <code>SF_BaseFlow(baseflow,'Re',Re,'type','NEW')</code>.
+%>
+%> This syntax allows to do <CODE>baseflow=SF_BaseFlow(baseflow)</CODE> which is useful
+%>  for instance to recomputed the baseflow after mesh adaptation.
+%>
+%> @author David Fabre
+%> @date 2017-2018
+%> @copyright GNU Public License
+
 
 global ff ffdir ffdatadir sfdir verbosity
 
@@ -114,6 +165,7 @@ elseif(nFields==2)
 elseif(nFields==1)
     command = ['echo ',Field1.datastoragemode,' ','None',' ',...
                'None',' ','| ',ff,' ',ffdir,'AdaptMesh.edp']; 
+end
 error = 'ERROR : FreeFem adaptmesh aborted';
 % Launch FreeFem
 mysystem(command,error);
