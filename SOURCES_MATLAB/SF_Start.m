@@ -23,7 +23,8 @@ if (isunix)
 end
 if (ismac)
     ff = '/usr/local/bin/FreeFem++ -v 0';
-    ffMPI = '/usr/local/bin/ff-mpirun';    
+    ffMPI = '/usr/local/ff++/openmpi-2.1/3.60/bin/FreeFem++-mpi -v 0';
+%    ffMPI = '/usr/local/bin/FreeFem++-mpi -v 0';    
     % NB normally this is where the FreeFem++ executable should be on a mac.
     % If not the case, either do a symbolic link (recommended) or replace with
     % the right one. option "-nw" is better to discard the ff++ graphical output.
@@ -70,11 +71,10 @@ if(exist([ffdatadir 'BASEFLOWS'])~=7)
     mymake([ffdatadir 'BASEFLOWS']);
 end
 if(exist([ffdatadir 'MEANFLOWS'])~=7)
-    mymake([ffdatadir 'MEANFLOWS'])
+    mymake([ffdatadir 'MEANFLOWS']);
 end
-exist([ffdatadir 'DNSFIELDS'])
 if(exist([ffdatadir 'DNSFIELDS'])~=7)
-    mymake([ffdatadir 'DNSFIELDS'])
+    mymake([ffdatadir 'DNSFIELDS']);
 end
 
 

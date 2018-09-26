@@ -1,7 +1,7 @@
 //
-//  PROGRAM Stab_2D.edp
+//  PROGRAM Stab_Axi.edp
 //	
-//	Performs the linear stability analysis of a 2D flow
+//	Performs the linear stability analysis of an Axisymmetric flow
 //   
 //
 //  INPUT PARAMETERS (from keyboard or pipe) :
@@ -57,7 +57,7 @@ include "Macros_StabFem.edp";
 	int m;
 	cout << "$$ Wavenumber ? " << endl;
 	cin >> m;
-	string iadjoint; // 0 for direct ; 1 for adjoint
+	string iadjoint; 
 	cout << " Direct (D), Adjoint (A), or both+sensitivity (S) ?" << endl;
 	cin >> iadjoint;	
 
@@ -486,4 +486,4 @@ cout << "$$ Computation of sensitivity after direct and adjoint" << endl;
 
 };
 
-//cout << "$$ SUCCESSFULLY LEAVING Stab2D.edp " << endl;
+//cout << "$$ SUCCESSFULLY LEAVING Stab_Axi.edp " << endl;

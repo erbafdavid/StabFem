@@ -222,10 +222,22 @@ if ~isempty(xyrawdata)
             N = sqrt(nt);
             M = N;
         end
-        ymin = min(min(ydata));
-        ymax = max(max(ydata));
-        xmin = min(min(xdata));
-        xmax = max(max(xdata));
+        %Modif David
+        if(ischar(plotylim))
+            ymin = min(min(ydata));
+            ymax = max(max(ydata));
+        else
+            ymin = plotylim(1);
+            ymax = plotylim(2);
+        end
+        if(ischar(plotxlim))
+            xmin = min(min(xdata));
+            xmax = max(max(xdata));
+        else
+            xmin = plotxlim(1);
+            xmax = plotxlim(2);
+        end
+        %End Modif David
         x = linspace(xmin, xmax, N);
         y = linspace(ymin, ymax, M);
         [X, Y] = meshgrid(x, y);

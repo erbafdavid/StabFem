@@ -46,7 +46,7 @@ fprintf(fid, tec_description2);
 
 
 for i = 1:np
-    fprintf(fid, descriptor, [femstruct.mesh.points(:, i)', tec_DATA(i, :)]);
+    fprintf(fid, descriptor, [femstruct.mesh.points(1:2, i)', tec_DATA(i, :)]);
     %fprintf(fid,tec_DATA(i,:));
 end
 
@@ -58,6 +58,9 @@ end
 %fwrite(fid,femstruct.mesh.tri(:,1:3)');
 
 fclose(fid);
+
+system(['source ~/.bashrc ; tec360 ' namefile]);% does not work on mac ??? 
+
 disp('END PROGRAM exportFF_tecplot');
 end
 

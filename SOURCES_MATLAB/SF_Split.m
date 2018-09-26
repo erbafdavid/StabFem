@@ -41,7 +41,8 @@ switch (flowfield.datatype)
         mydisp(1, 'FUNCTION SF_Split : splitting mesh and recomputing base flow');
         mycp(flowfield.mesh.filename, [ffdatadir, 'mesh.msh']);
         mycp(flowfield.filename, [ffdatadir, 'FlowFieldToAdapt1.txt']);
-        optionstring = [' ', num2str(p.Results.nsplit), ' 1 ', flowfield.datastoragemode, ' '];
+        [dumb,storagemode,nscalars] = fileparts(flowfield.datastoragemode); % this is to extract two parts of datastoragemode, e.g. P2P2P1.1
+        optionstring = [' ', num2str(p.Results.nsplit), ' 1 ', storagemode, ' ' , nscalars(2:end) , ' '];
     case default
         error('ERROR IN FUNCTION SF_Split : data type not recognised');
 end

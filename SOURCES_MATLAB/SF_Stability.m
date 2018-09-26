@@ -105,6 +105,9 @@ persistent eigenvaluesPrev % for sort of type 'cont'
     addParameter(p,'rhog',rhogDefault);
     if(isfield(baseflow,'nu')) nuDefault = baseflow.nu ;else nuDefault = 0; end;
     addParameter(p,'nu',nuDefault);
+    
+    addParameter(p,'typestart','pined');
+    addParameter(p,'typeend','pined');
    
   %parameters for the eigenvalue solver
    addParameter(p,'shift',1+1i);
@@ -152,7 +155,21 @@ switch ffmesh.problemtype
                           ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ];
      solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi.edp'];
      status = mysystem(solvercommand);
-        
+
+     case ('AxiXRCOMPLEX') 
+         
+     mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+     mydisp(1,['      ### USING Axisymmetric Solver WITH COMPLEX MAPPING']);
+     argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ...
+                          ' ' num2str(real(p.Results.m)) ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ' ];
+     if(imag(p.Results.m)==0)
+        solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'Stab_Axi_COMPLEX.edp'];
+     else
+         mydisp(1,'### TRICK ### m imaginary ; we use the alternative solver for m=0'); 
+         solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'Stab_Axi_COMPLEX_m0.edp'];
+     end
+     
+     status = mysystem(solvercommand);
         
     case('AxiXRPOROUS')
     
@@ -232,7 +249,7 @@ switch ffmesh.problemtype
         % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
         if(p.Results.nu==0)
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE POTENTIAL : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
-        argumentstring = ['  ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(p.Results.nev)  ' ' num2str(imag(p.Results.shift)) ' '];
+        argumentstring = ['  ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' p.Results.typestart ' ' p.Results.typeend  ' ' num2str(p.Results.m) ' ' num2str(p.Results.nev)  ' ' num2str(imag(p.Results.shift)) ' '];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
         status = mysystem(solvercommand);     
         else
@@ -249,7 +266,7 @@ switch ffmesh.problemtype
     case default
         error(['Error in SF_Stability : "problemtype =',ffmesh.problemtype,'  not possible or not yet implemented !'])
 end
-    
+
 
 if(status~=0&&status~=141) 
      %result 
@@ -266,6 +283,7 @@ if (p.Results.type=='D')
 else
     rawData1 = importdata([ffdatadir 'Spectrum.txt']);
 end
+
 EVr = rawData1(:,1);
 EVi = rawData1(:,2); 
 eigenvalues = EVr+1i*EVi;

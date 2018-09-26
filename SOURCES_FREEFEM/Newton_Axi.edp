@@ -1,6 +1,6 @@
 //
-//  PROGRAM Newton_2D.edp
-//  computation of 2D base flow [ux,uy](x,y)
+//  PROGRAM Newton_Axi.edp
+//  computation of an axisymmetric base flow [ux,uy](x,y)
 //   
 //
 //  INPUT PARAMETERS (from keyboard or pipe) :

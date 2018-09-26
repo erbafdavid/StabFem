@@ -57,7 +57,7 @@ for i = istart:nargin
     mydisp(2, ['      FUNCTION  importFFdata.m : reading file ', fileToRead]);
     data = rawData1.data;
     
-    if (np > 0 && i == istart)
+    if (np > 0) %% && i == istart) DAVID
         % file contains mesh-related data and is likely associated to a .txt
         % file containing plain freefem data
         [filepath, name, ext] = fileparts(fileToRead);

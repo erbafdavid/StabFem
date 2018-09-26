@@ -1,0 +1,550 @@
+//
+//  PROGRAM Stab_Axi_Complex.edp
+//	
+//	Performs the linear stability analysis of an axisymmetric base flow USING COMPLEX MAPPING
+//
+//   IMPORTANT NOTICE : this program requires SLEPC to work in Arnoldi mode (multiple eigenvalues)
+//	 if SLEPC is not installed you can still work in shift-invert mode (i.e. nev=1)
+// 
+//  The parameters of the complex mapping (ParamMap###) are defined in a file "Param_Mapping.edp" 
+// 
+//
+//  INPUT PARAMETERS (from keyboard or pipe) :
+//   	Re , shift(Re,im) , m,  Type (D,A or S), nev 
+//
+//   this solver will use either Arnoldi (if nev>1) or simple Shift-invert (if nev=1)
+//
+//	INPUT FILES :
+//		BaseFlow.txt	-> base flow 
+// 		mesh.msh 			->  mesh in Freefem format
+//  OUTPUT FILES :
+//	single-mode calculation :
+//		Eigenmode.txt   (txt format for FreeFem)
+//      Eigenmode.ff2m  (ff2m format for stabfem)
+// 		EigenmodeA.txt  ADJOINT  (txt format for FreeFem)
+//      EigenmodeA.ff2m ADJOINT  (ff2m format for stabfem)
+//      Sensitivity.txt 
+//		Sensitivity.ff2m
+//
+// multiple-mode calculation :
+//  	Eigenmode##.txt   (txt format for FreeFem)
+//      Eigenmode##.ff2m  (ff2m format for stabfem)
+//
+// in all modes :
+//		Spectrum.txt -> All computed Eigenvalues
+//
+// 
+// 	ERROR MANAGEMENT : 
+//      if Newton iteration diverges, Eigenmode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
+//
+
+cout << "$$$$ ENTERING Stab_Axi_COMPLEX.edp " << endl << "$$" << endl; 
+
+
+//load "MUMPS_seq"        ////////  load sparsesolver 
+include "SF_Geom.edp";   
+include "Param_Mapping.edp";
+include "Macros_StabFem.edp";
+
+IFMACRO(EIGENSOLVER,SLEPC)
+load "PETSc-complex"
+load "SLEPc-complex"                    
+macro partitioner()metis// 
+macro dimension(      )2// 
+include "macro_ddm.idp"                 
+ENDIFMACRO
+
+/////////////////////////////////////////////////////////////////////////////////
+//////////////////----->             parameters         <-----///////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
+	cout << "$$ ENTERING Stab_Axi_COMPLEX.edp " << endl << "$$" << endl; 
+	
+	real Re;                  
+	cout << "$$ Enter Reynolds :   " << endl; 
+	cin  >> Re;
+	real nu=1.0/Re;  
+	real shiftr,shifti;	
+	cout << "$$ Enter SHIFT (re,im) :   " << endl; 
+	cin  >> shiftr >> shifti;
+	complex shift = 1i*shifti+shiftr;
+	int m;
+	cout << "$$ Wavenumber ? " << endl;
+	cin >> m;
+	
+	string iadjoint; 
+	cout << " Direct (D), Adjoint (A), or both+sensitivity (S) ?" << endl;
+	cin >> iadjoint;	
+
+
+	int nev;
+    cout << "$$ Enter nev ? (will use simple shift-invert if nev = 1)" << endl;
+    cin >> nev ;
+	int ncv = 4*nev;   ///// Krylov Basis
+
+	
+	cout << "$$ ### PARAMETERS SELECTED : " << endl;
+	cout << "$$ Re = " << Re<< endl;
+	cout << "$$ shift = " << shift << endl;
+	cout << "$$ wavenumber m = " << m << endl;
+	
+	
+	if (iadjoint =="D") {cout << "$$ DIRECT PROBLEM" << endl;}
+		else if (iadjoint =="A") {cout << "$$ ADJOINT PROBLEM" << endl;}
+		else if (iadjoint =="S") {cout << "$$ DIRECT+ADJOINT PROBLEM INCLUDING SENSITIVITY" << endl;}
+		else {cout << "$$ ERROR WHEN SELECTING PROBLEM TYPE" << endl;};
+	
+	cout << "$$ nev = " << nev << endl;
+	
+	
+
+
+
+mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
+
+
+fespace Xh(th,P2);             ////// f.e. space for vel.
+fespace Mh(th,P1);            ////// f.e. space for pressure
+fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
+fespace XXXMh(th,[P2,P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
+XXXMh<complex> [ux,ur,uphi,up];                 ///////  -> unknown for the Navier-Stokes problem
+XXXMh [vx,vr,vphi,vp];                 ///////  -> test for Navier-Stokes
+XXXMh<complex> [Ubx,Ubr,Ubphi,Ubp];          ///////  -> Base Flow
+XXMh<complex> [Ubaxix,Ubaxir,Ubaxip];          ///////  -> Base Flow (in case we start with a 2-component one)
+
+
+
+
+
+real eps = 1e-12; // desingularisation term for matrix B, useful with some solvers
+
+macro div(im,u) (dX(u#x)+dY(u#r)+u#r/Rphys(y,ParamMap)+im/Rphys(y,ParamMap)*u#phi)// macro for divergence 
+macro Grad(im,u) [
+			[dX(u#x), dY(u#x),  im/Rphys(y,ParamMap)*u#x ], 
+			[dX(u#r), dY(u#r),  im/Rphys(y,ParamMap)*u#r-u#phi/Rphys(y,ParamMap)],
+			[dX(u#phi),dY(u#phi), im/Rphys(y,ParamMap)*u#phi+u#r/Rphys(y,ParamMap) ]
+			] // macro for vecocity gradient tensor
+macro D(im,u) [	
+				[dX(u#x), 				.5*(dX(u#r)+dY(u#x)),  .5*(im/Rphys(y,ParamMap)*u#x+dX(u#phi)) ], 
+				[.5*(dX(u#r)+dY(u#x)), 	dY(u#r),				.5*(im/Rphys(y,ParamMap)*u#r-u#phi/Rphys(y,ParamMap)+dY(u#phi))],
+				[.5*(im/Rphys(y,ParamMap)*u#x+dX(u#phi)),  .5*(im/Rphys(y,ParamMap)*u#r-u#phi/Rphys(y,ParamMap)+dY(u#phi)), im/Rphys(y,ParamMap)*u#phi+u#r/Rphys(y,ParamMap)]
+				] // macro for rate-of-deformation tensor
+macro Conv(ima,ua,imb,ub,v) ( 
+              (Grad(ima,ua)*[ub#x,ub#r,ub#phi] + Grad(imb,ub)*[ua#x,ua#r,ua#phi])'*[v#x,v#r,v#phi]
+              			) // macro for mutual convection operator
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+///////////  Load baseflow   ////////////////////////////////////////////////////
+		int NdimUVP = Ubaxix[].n;
+    	int NdimUVWP = Ubx[].n;
+    	int NdimBaseFlow;
+    	real Reans;
+    	{
+          ifstream file(ffdatadir+"BaseFlow.txt");
+          file >> NdimBaseFlow ;
+    	}
+		
+		if(NdimBaseFlow == NdimUVP) 
+		{
+        cout << "$$ Ndim = " << NdimUVP << " : reading UVP baseflow " << endl;
+        ifstream file(ffdatadir+"BaseFlow.txt");
+        file >> Ubaxix[];
+        [Ubx,Ubr,Ubphi,Ubp] = [Ubaxix,Ubaxir,0,Ubaxip];
+		file >> Reans;
+        }
+        else if(NdimBaseFlow == NdimUVWP) 
+        {
+        cout << "$$ Ndim = " << NdimUVWP << " : reading UVWP baseflow " << endl;
+        ifstream file(ffdatadir+"BaseFlow.txt");
+        file >> Ubx[]; 
+		file >> Reans;
+        }
+        else 
+        {
+        cout << "$$ Error : Wrong dimension For BaseFlow_guess.txt file" << endl;
+        };
+	if(Reans!=Re) 
+	{
+		cout << "$$ Warning : Re differs from the one of the read base flow (Reans = " +Reans+" ); is that really what you mean ???" << endl;
+	};
+
+/////////////////////////////////////////////////////////////////////////////////
+//////// varf for generalized eigenvalue problem: 
+
+////////////////////////////////////////////////////////////////////////////////////
+
+varf   LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
+   int2d(th)( 
+   			(-2*nu*(D(1i*m,u):D(-1i*m,v))
+             + up*vp*(eps) 
+             + up*div(-1i*m,v)
+             + div(1i*m,u)*vp
+             - Conv(1i*m,u,0,Ub,v)
+             +eps*vp*up
+             )*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap))
+             )
+ + int2d(th)( -shift*(ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) )
+ + BoundaryconditionsStability(u,v,m);
+ 
+varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
+   int2d(th)( 
+   			(-2*nu*(D(1i*m,u):D(-1i*m,v))
+             + up*vp*(eps) 
+             + up*div(-1i*m,v)
+             + div(1i*m,u)*vp
+             - Conv(-1i*m,v,0,Ub,u)
+             +eps*vp*up
+             )*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap))
+             )
+ + int2d(th)( -conj(shift)*(ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
+ // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
+ + BoundaryconditionsStability(u,v,m); 
+
+
+
+
+////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
+	varf b([ux,ur,uphi,up],[vx,vr,vphi,vp]) = int2d(th)( (ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) );
+		matrix<complex> B= b(XXXMh,XXXMh,solver=CG);  //////// see freefem++doc.pdf for the solver 
+////////////////////////////////////////////////////////////////////////////////////
+
+matrix<complex> OP,OPA;
+complex shiftOP,shiftOPA;
+
+
+
+if(nev>1)
+/// SOLUTION AND POSTPROCESSING FOR NEV>1 (built-in eigenvalue solver)
+
+{
+cout << "$$ Building matrices..." ;
+////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
+if(iadjoint=="D")
+{   OP=LNSE(XXXMh,XXXMh);//,solver=sparsesolver); 
+    shiftOP = shift; 
+}
+else if(iadjoint=="A")
+{   OP=LNSEadjoint(XXXMh,XXXMh);//,solver=sparsesolver); 
+    shiftOP = conj(shift); 
+}
+else if(iadjoint=="S") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; };
+cout << "$$ ... done !" << endl;
+////////////////////////////////////////////////////////////////////////////////////
+
+
+//// SOLVER ////
+
+complex[int] ev(nev);                     ////// vector to store eigenvalues
+XXXMh<complex> [int] [eux,eur,euphi,eup](nev);   ////// vector to store EIGENVECTORS 
+
+///////////////////// CALL TO ARPACK++ ////////////////////////////////// //////////
+
+IFMACRO(EIGENSOLVER,ARPACK)
+int k=EigenValue(OP,B,sigma=shiftOP,value=ev,vector=eux,tol=1e-6,maxit=0,ncv=ncv);    //Arpack call
+if(iadjoint=="A") { ev = conj(ev); } ;
+ENDIFMACRO
+////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////// OR CALL TO SLEPC ////////////////////////////////// //////////
+
+IFMACRO(EIGENSOLVER,SLEPC)
+	/***************************************/
+	/*      Build distributed matrices     */
+	/***************************************/
+	int[int] arrayIntersection;                 // Rank of neighborings subdomains
+    int[int][int] restrictionIntersection(0);   // Local-to-neighbors renumbering
+    real[int] D1(OP.n);
+    D1.resize(OP.n);
+    D1 = 1;
+	dmatrix<complex> DistA(OP, arrayIntersection, restrictionIntersection, D1, clean = true);
+	dmatrix<complex> DistB(DistA, B, clean = true);
+
+	string ssparams =            /* Parameters for the distributed EigenValue solver */
+	  " -eps_nev " + nev       + /* Number of eigenvalues */
+	  " -eps_type krylovschur" +
+	  /*" -eps_interval -0.2,0.05" + */
+	  " -eps_target " + shiftOP +
+	  /*" -eps_harmonic " + */
+	  " -st_type cayley "     +
+	  /*" -st_type cayley_antishift "     +
+	  " -st_pc_type cholesky " +
+	  " -st_pc_factor_mat_solver_type superlu_dist " +
+	  " -st_ksp_type preonly " +
+	  " -mat_superlu_dist_rowperm NATURAL " +*/
+	  " -st_pc_type lu "       +
+	  " -st_pc_factor_mat_solver_package mumps" +
+	  " -eps_view"             +
+	  " -eps_gen_non_hermitian"      /* The problem is generalized non hermitian */
+	;
+
+	/* ///////////////////// CALL TO SLEPC /////////////////////////////////////////////////// */
+	int k = zeigensolver
+	(DistA,              /* matrix OP = A − sigma*B */
+	 DistB,              
+	 vectors = eux, /* Array to store the FEM-EigenFunctions*/
+	 values  = ev, /* Array to store the EigenValues */
+	 sparams = ssparams  /* Parameters for the distributed EigenValue solver */
+	);
+
+	k=min(k,nev); /* some time the number of converged eigen value can be greater than Nev; */
+ENDIFMACRO
+////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+	string namefile;
+    namefile=ffdatadir+"Spectrum.txt";
+    ofstream fileVP1(namefile); 
+	
+	for (int i=0;i<nev;i++)
+	{
+       fileVP1 << real(ev[i]) << " " << imag(ev[i]) << " " << Re << " " << 0 << " " << real(shift) << " " << imag(shift) << endl;
+       	cout << "$$ valeur propre : " << i+1 << "  : " << ev[i] << endl;
+
+ 		 if(iadjoint=="D"){namefile=ffdatadir+"Eigenmode"+(i+1);}
+ 		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
+ 		 {ofstream fileMode(namefile+".txt");
+ 		  ux[] = eux[i][];
+ 		  fileMode << ux[]; 
+ 		  fileMode << endl << endl << Re << endl << endl << real(ev[i]) << "   " << imag(ev[i])  << endl;
+ 		  }
+ 		 cout << "$$ Writing eigenmode in file " << namefile << endl;
+ 		 SFWriteMode(namefile+".ff2m",u,ev[i],shift,m,"EigenModeD",1);	 // MACRO DEFINED in StabFem_Macros.edp
+ 		 
+ 	};
+}
+
+////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+else
+
+/// SIMPLE SHIFT-INVERT IF ONLY ONE MODE IS RESQUESTED
+{
+XXXMh<complex> [ux0,ur0,uphi0,p0],[uxdirect,urdirect,uphidirect,pdirect],[uxadjoint,uradjoint,uphiadjoint,padjoint]; 
+
+int testCB = exec("ls "+ffdatadir+"Eigenmode_guess.txt");
+    	if (testCB!=0)
+		{
+		cout << "$$ No file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
+		[ux0,ur0,uphi0,p0] = [1,0,0,0];
+		} 
+		else
+		{
+		cout << "$$ Starting shift/invert from mode in file Eigenmode_guess.txt" << endl;
+		ifstream cbin(ffdatadir+"Eigenmode_guess.txt");
+		cbin >> ux0[];
+		};
+
+
+// selection of the computation to be performed : direct, adjoint or both
+		
+int directadjointA,directadjointB;
+if(iadjoint=="D")
+	{
+	directadjointA = 1; directadjointB=1;
+	cout << "$$ Shift-invert algorithm for DIRECT problem" << endl;
+	}
+else if(iadjoint=="A")
+	{
+	directadjointA = 2; directadjointB=2;
+	cout << "$$ Shift-invert algorithm for ADJOINT problem" << endl;
+	}
+else if(iadjoint=="S")
+	{
+	directadjointA = 1; directadjointB=2;
+	cout << "$$ Shift-invert algorithm for BOTH DIRECT AND ADJOINT problem" << endl;
+	};
+	
+
+// LOOP TO SELECT WHICH COMPUTATION WILL BE DONE 
+	for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoint++)	
+	{
+
+	if(directadjoint==1)
+	{
+		cout << "$$ Constructing operator for DIRECT problem ..." << endl;
+		OP=LNSE(XXXMh,XXXMh,solver=sparsesolver);
+		shiftOP = shift;
+		cout << "$$ solving DIRECT problem ..." << endl;
+	}
+	else if(directadjoint==2)
+	{
+		cout << "$$ Constructing operator for ADJOINT problem ..." << endl;
+		OP=LNSEadjoint(XXXMh,XXXMh,solver=sparsesolver);
+		shiftOP = conj(shift);
+		cout << "$$ Solving ADJOINT problem ..." << endl;
+	};
+
+
+	int itmax = 150;
+	complex lambda0 = 1e6;
+	real err = 1e6;
+	real errmax=1e-6;
+	complex lambda;
+	
+	varf brhs([ux,ur,uphi,p],[vx,vr,vphi,q]) = int2d(th)( (ux0*vx+ur0*vr+uphi0*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) );
+	set(OP,solver=sparsesolver);  //// factorize matrix
+	
+	/// ITERATION LOOP
+	int iter;
+	for (iter=0; ((err>errmax)&&(iter<itmax)); iter++)
+	{
+		//	complex[int] rhs = B*ux0[];
+    	complex[int] rhs= brhs(0,XXXMh);  
+		complex[int] w = OP^-1*rhs;
+		ux[] = w;
+	
+		complex XnXn1 = int2d(th)((ux0*ux+ur0*ur+uphi0*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+		complex Xn1Xn1 =  int2d(th)((ux*ux+ur*ur+uphi*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+		complex GG = Xn1Xn1/XnXn1;
+		// at each step the inverse shifted eigenval. is approximated by <X_{n+1}, Y> / <X_n, Y>
+		//      ( the choice Y = X_{n+1} is convenient but we could choose something else )
+		lambda = shiftOP+1/GG;
+		err = abs(lambda-lambda0);
+		
+		
+		cout << "$$ iteration " << iter+1 << " : " << endl;	
+			cout << " GG = " << GG << endl;
+			cout << " XnXn1 = " << XnXn1 << endl;
+			cout << " Xn1Xn1 = " << Xn1Xn1 << endl;
+		cout << "$$ Estimated eigenvalue lambda = " << lambda << endl;	
+	
+		ux0[] = 1/sqrt(abs(Xn1Xn1))*ux[];
+		lambda0 = lambda;
+	};
+	/// END ITERATION LOOP	
+	
+	if(directadjoint==2){lambda=conj(lambda);};
+ 	// renormalization by MAXIMUM
+ 	Xh NormU = sqrt(abs(ux)^2+abs(ur)^2+abs(uphi)^2);
+	ux[] = 1/NormU[].max*ux[];
+	
+	
+	string namefile,namefileFF,descriptionFF,typeDA; 
+	if(iter<itmax)
+	
+	// post-processing if iteration was successful
+	{	
+		real lambdar = real(lambda) ; real lambdai = imag(lambda);
+    	if(directadjoint==1)
+    	{
+    		ofstream fileVP(ffdatadir+"Spectrum.txt");
+    		fileVP << lambdar << " " << lambdai << " " << Re <<  " " << real(shift) << " " << imag(shift) << endl;
+    		namefile=ffdatadir+"Eigenmode.txt";
+    		namefileFF=ffdatadir+"Eigenmode.ff2m";
+    		typeDA = "D";
+    		uxdirect[]=ux[];
+    	};
+    	
+    	if(directadjoint==2)
+    	{
+    		ofstream fileVP(ffdatadir+"Spectrum.txt");
+           	fileVP << lambdar << " " << lambdai << " " << Re << " " << real(shift) << " " << imag(shift) << endl;
+    		namefile=ffdatadir+"EigenmodeA.txt";
+    		namefileFF=ffdatadir+"EigenmodeA.ff2m";	
+    		typeDA = "A";
+    		uxadjoint[]=ux[];
+    	};
+    
+    // write outpout in .txt format (for freefem)
+    {
+    ofstream file(namefile);
+  	file << ux[] ;	
+   	file << endl << endl << Re << endl
+   	<< endl << lambdar << "   " << lambdai  << endl;
+    }
+
+    // write output in .dff.2m format (for StabFem)
+	SFWriteMode(namefileFF,u,lambda,shift,m,"EigenMode"+typeDA,iter);	 // MACRO DEFINED in StabFem_Macros.edp
+	
+	} // end of post processing of simple shift-invert case
+else // case iteration failed
+{
+	cout << "$$ ERROR : shift-invert iteration failed ; shift is probably wrong" << endl;
+	SFWriteMode(namefileFF,u,lambda,shift,m,"EigenMode"+typeDA,-1);	 // MACRO DEFINED in StabFem_Macros.edp
+
+};
+
+if (testCB==0)
+		{
+		//exec("rm "+ffdatadir+"Eigenmode_guess.txt");// to be sure this file is not reused unless explicitly requested
+		exec("rm Eigenmode_guess.txt");
+		};
+
+
+}; //end of loop for direct/adjoint/selection
+
+if(iadjoint=="S")
+//
+{
+cout << "$$ Computation of sensitivity after direct and adjoint" << endl;
+
+//	cout << "STAT" << uxdirect(2.5,.5) << " " << uxadjoint(2.5,.5) << " " << uydirect(2.5,.5) << " " << uyadjoint(2.5,.5) << endl ;
+
+	fespace p2(th,P2);fespace p1(th,P1);
+	p2 sensitivity = sqrt(abs(uxadjoint)^2+abs(uradjoint)^2+abs(uphiadjoint)^2) * sqrt(abs(uxdirect)^2+abs(urdirect)^2+abs(uphidirect)^2);
+	// at this stage [ux,uy,p] is the last computed, namely the adjoint eigenmode
+	real norm = sensitivity[].max;
+	sensitivity=1/norm*sensitivity;
+		
+	string namefile,namefileFF;
+    namefile=ffdatadir+"Sensitivity.txt";
+    {
+    ofstream file(namefile);
+  	file << sensitivity[] ;	
+    }    
+    namefileFF=ffdatadir+"Sensitivity.ff2m";
+	p1 xx,yy,sensitivityP1;
+	xx=x;
+	yy=y;
+    sensitivityP1 = sensitivity;
+         {
+         ofstream fileFF(namefileFF);
+         fileFF << "### Data generated by Freefem++ ; " << endl;
+         fileFF << "Sensitivity" << endl;
+    	 fileFF << "Format :" << endl;
+	     fileFF << "P1 sensitivity" << endl << endl ;
+		 for (int j=0;j<sensitivityP1[].n ; j++) fileFF << sensitivityP1[][j] << endl;
+         };
+
+
+
+}; // end of selection of mutliple mode (krylov) / single mode (simple shift-invert)
+
+
+
+};
+
+cout << "$$$$ LEAVING Stab_Axi_COMPLEX.edp " << endl << "$$" << endl; 
+
+
+//cout << "$$ SUCCESSFULLY LEAVING Stab2D.edp " << endl;

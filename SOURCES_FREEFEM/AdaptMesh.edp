@@ -1,0 +1,368 @@
+//
+//  PROGRAM AdaptMesh.edp 
+//   
+// Usage : FreeFem++ AdaptMesh.edp 
+//
+//  INPUT PARAMETERS : Nfields Datastoragemode1 Nscalar1 [Datastoragemode2 Nscalar2...]
+//   Datastoragemode is e.g. ReP2P2P1 for 2D flowfield (real storage mode)
+//   Nscalar1 is number of scalars at the end of file, e.g. Re which is written at the last line in most baseflow files 
+//				(these scalars are not used for adaptation but recopied in post-adaptation files)
+//
+//	INPUT FILES :
+// 		mesh.msh ->  mesh in Freefem format
+//		[FlowFieldToAdapt1.txt -> First flowfield to interpolate on new mesh]
+//		[FlowFieldToAdapt2.txt -> Second flowfield to interpolate on new mesh]
+//      [ ... ]
+//
+//  OUTPUT FILES :
+//		mesh_adapt.msh -> New mesh
+//		mesh_adapt.ff2m -> associated mesh information file
+//		[FlowFieldAdapted1.txt -> First flowfield interpolated on new mesh]
+//		[FlowFieldAdapted2.txt -> Second flowfield interpolated on new mesh]
+//      [ ... ]
+//
+//  NB : 1/ program can work up to nfields = 8 (8 real fields, or 4 complex).
+//		 2/ type of data currently handled comprises P2P2P1 (2D), P2P2P2P1 (3D), P2P2P1P1P1 (2D-compressible), P2P2P2P1P1P1 (3D-compressible), P2 (e.g. sensitivity), ...
+//		 2/ After the data the files may contain a number "scalarnumber" of real scalars 
+//					(for instance baseflows will contain a single scalar (scalarnumber=1) : Re, eigenmodes will contain eigenvalues (2 reals with scalarnumber=2), etc...)
+//			Such scalars are simply rewritten at the end of files as is.
+//
+//
+// 	ERROR MANAGEMENT : 
+//
+//  This is part of the StabFem project distributed under gnu licence, Copyright D. Fabre et al., 
+//
+//  Redesigned in September 2018
+//
+
+
+	verbosity = 0;
+	include "Macros_StabFem.edp";
+
+
+
+
+// Input parameters
+string typemeshmanipulation;
+int nsplit, nfields;
+int nfieldsmax = 8;
+int nscalarmax = 100;
+string[int] datastoragemode(nfieldsmax);
+int[int] scalarnumber(nfieldsmax);
+real[int,int] scalars(nfieldsmax,nscalarmax);
+
+cout << "$$ ###################################" << endl;
+cout << endl << "$$       ADAPTMESH.edp        " << endl; 
+cout << endl << "$$ ###################################" << endl << endl;
+
+
+cout << "$$ Enter nfields (number of fields to be used for adaptation)" << endl;
+cin >> nfields ;
+
+for(int i = 0;i<nfields;i++)
+    {
+    cout << "$$ Enter storage mode of field number " << i  << " ? (string like ReP2P2P1, etc...)" << endl;
+    cin >> datastoragemode[i] ;
+    cout << "$$ Enter number of real scalars writtend at the end of file for field number "<< i  << " ?  (e.g. 1 for a base flow if Re is written at the end..)" << endl;
+     cin >> scalarnumber[i] ; 
+    };
+cout << endl << "$$ Adapting mesh to " << nfields << " flowfields" ;
+
+cout << endl << endl;
+	
+// READ MESH 
+	mesh th=readmesh(ffdatadir+"mesh.msh");
+	mesh thold = th;
+	int nvprev = th.nv;
+
+    cout << endl << "$$#### Mesh information BEFORE ADAPT :" << endl;  
+    cout << "$$#### Number of vertices    " << th.nv <<  endl;	
+
+
+	real Nbvx	= 50000.;		//maximun number of vertices
+	real Thetamax	= 1e-3;			//minimum corner angle in degree
+	real Verbosity	= 1; // warning : must be integer !
+	bool Splitpbedge= false;
+// NB ALL OTHER PARAMETERS ARE NOW WRITTEN IN THIS FILE :
+	include "Param_Adaptmesh.edp";
+
+
+// Declaration of possible data types 
+
+    fespace p2(th,P2);   
+    fespace p1(th,P1);
+    fespace p0(th,P0);
+    fespace p2xp2xp1(th,[P2,P2,P1]);
+    fespace p2xp2xp2(th,[P2,P2,P2]);
+    fespace p2xp2xp2xp1(th,[P2,P2,P2,P1]);
+    fespace p2xp2xp1xp1xp1(th,[P2,P2,P1,P1,P1]);
+    fespace p2xp2xp2xp1xp1xp1(th,[P2,P2,P2,P1,P1,P1]);
+
+// All flowfields will be converted to the most general format p2xp2xp2xp1xp1xp1<complex> for reprojection after adaptation
+    p2xp2xp2xp1xp1xp1<complex>[int] [FTAx,FTAy,FTAz,FTAp,FTAr,FTAT](nfieldsmax);
+
+    p2xp2xp2[int] [ADFTAx,ADFTAy,ADFTAz](2*nfieldsmax); 
+    // this one is for the fields which will be used in adaptation (we usually only use the 2 or 3 components of the velocity because there is a limitation to max 4 components)
+    
+//    p2xp2xp2xp1xp1xp1<complex> [FTAIx,FTAIy,FTAIz,FTAIp,FTAIr,FTAIT];
+
+   
+
+	
+/// LECTURE OF FIELDS TO ADAPT
+int nfieldsR = 0;
+for(int i=0;i<nfields;i++) 
+    {
+    cout << "$$ Lecture of flowfield number " << i+1<< " with structure " <<   datastoragemode[i] << " + " << scalarnumber(i) << endl;
+    ifstream file(ffdatadir+"FlowFieldToAdapt"+(i+1)+".txt");
+    
+    if(datastoragemode[i]=="ReP2P2P1")
+	   {
+          p2xp2xp1 [uBx,uBy,uBp]; 
+          file >> uBx[]; 
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+           cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx*(1+0i),uBy*(1+0i),(0+0i),uBp*(1+0i),(0+0i),(0+0i)];
+          //          ADFTAx[nfieldsR][] = [uBx,uBy,0];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [uBx,uBy,0];
+          nfieldsR++;
+		}
+    else if(datastoragemode[i]=="ReP2P2P2P1")
+		{
+          p2xp2xp2xp1 [uBx,uBy,uBz,uBp]; 
+          file >> uBx[]; 
+         for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+         cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx*(1+0i),uBy*(1+0i),uBz*(1+0i),uBp*(1+0i),(0+0i),(0+0i)];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [uBx,uBy,uBz];
+          nfieldsR++;
+		}
+    else if(datastoragemode[i]=="ReP2P2P1P1P1")
+		{
+          p2xp2xp1xp1xp1 [uBx,uBy,uBp,uBrho,uBT]; 
+          file >> uBx[];   
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx*(1+0i),uBy*(1+0i),(0+0i),uBp*(1+0i),uBrho*(1+0i),uBT*(1+0i)];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [uBx,uBy,0];
+          nfields++;
+		}
+
+     else if(datastoragemode[i]=="ReP2P2P2P1P1P1")
+		{
+          p2xp2xp2xp1xp1xp1 [uBx,uBy,uBz,uBp,uBrho,uBT]; 
+          file >> uBx[];   
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};   
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	       
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx*(1+0i),uBy*(1+0i),uBz*(1+0i),uBp*(1+0i),uBrho*(1+0i),uBT*(1+0i)];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [uBx,uBy,0];
+          nfieldsR++;
+		} 
+	 else if(datastoragemode[i]=="CxP2P2P1")
+	   {
+          p2xp2xp1<complex> [uBx,uBy,uBp]; 
+          file >> uBx[]; 
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx,uBy,(0+0i),uBp,(0+0i),(0+0i)];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),0];nfieldsR++;
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),0];nfieldsR++;
+		}	
+	 else if(datastoragemode[i]=="ReP2")
+	   {
+          p2 uBx;
+          file >> uBx[]; 
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx*(1+0i),(1+0i),(0+0i),(1+0i),(0+0i),(0+0i)];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [uBx,0,0];
+          nfieldsR++;
+		}
+
+		
+// else if ... 
+/// add your needed case here !
+
+    else
+       {
+        cout << "$$ ERROR in AdaptMesh : wrong type of storage mode : " << datastoragemode[i] << endl;   
+        exit(-1);
+       };
+       cout << "$$	Auxiliary SCALARS associated to this field : " << endl << "$$    " ;
+	  for(int j =0;j<scalarnumber(i);j++){ cout << scalars(i,j) << " " ;};
+	  cout << endl;
+    };
+
+
+///
+/// declaration of new mesh(es)
+///       
+
+mesh thnew;	
+//mesh thbis;
+fespace p2xp2xp2xp1xp1xp1N(thnew,[P2,P2,P2,P1,P1,P1]);
+//fespace p2xp2xp2xp1xp1xp1B(thnew,[P2,P2,P2,P1,P1,P1]);
+p2xp2xp2xp1xp1xp1N<complex> [FTANx,FTANy,FTANz,FTANp,FTANr,FTANT];  
+//p2xp2xp2xp1xp1xp1B<complex> [FTABx,FTABy,FTABz,FTABp,FTABr,FTABT];  
+
+///
+/// ADAPTING MESH
+///       
+
+
+if(nfieldsR==1)
+{
+thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
+}
+else if(nfieldsR==2)
+{
+thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],[ADFTAx[1],ADFTAy[1],ADFTAz[1]],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
+}
+else if(nfieldsR==3)
+{
+thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],[ADFTAx[1],ADFTAy[1],ADFTAz[1]],[ADFTAx[2],ADFTAy[2],ADFTAz[2]],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
+}
+else if(nfieldsR==4)
+{
+thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],[ADFTAx[1],ADFTAy[1],ADFTAz[1]],[ADFTAx[2],ADFTAy[2],ADFTAz[2]],
+					 [ADFTAx[3],ADFTAy[3],ADFTAz[3]],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
+}
+else if(nfieldsR==5)
+{
+thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],[ADFTAx[1],ADFTAy[1],ADFTAz[1]],[ADFTAx[2],ADFTAy[2],ADFTAz[2]],
+					 [ADFTAx[3],ADFTAy[3],ADFTAz[3]],[ADFTAx[4],ADFTAy[4],ADFTAz[4]],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
+}
+else if(nfieldsR==6)
+{
+thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],[ADFTAx[1],ADFTAy[1],ADFTAz[1]],[ADFTAx[2],ADFTAy[2],ADFTAz[2]],
+					 [ADFTAx[3],ADFTAy[3],ADFTAz[3]],[ADFTAx[4],ADFTAy[4],ADFTAz[4]],[ADFTAx[5],ADFTAy[5],ADFTAz[5]],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
+}
+else if(nfieldsR==7)
+{
+thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],[ADFTAx[1],ADFTAy[1],ADFTAz[1]],[ADFTAx[2],ADFTAy[2],ADFTAz[2]],
+					 [ADFTAx[3],ADFTAy[3],ADFTAz[3]],[ADFTAx[4],ADFTAy[4],ADFTAz[4]],[ADFTAx[5],ADFTAy[5],ADFTAz[5]],
+					 [ADFTAx[6],ADFTAy[6],ADFTAz[6]],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
+}
+else if(nfieldsR==8)
+{
+thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],[ADFTAx[1],ADFTAy[1],ADFTAz[1]],[ADFTAx[2],ADFTAy[2],ADFTAz[2]],
+					 [ADFTAx[3],ADFTAy[3],ADFTAz[3]],[ADFTAx[4],ADFTAy[4],ADFTAz[4]],[ADFTAx[5],ADFTAy[5],ADFTAz[5]],
+					 [ADFTAx[7],ADFTAy[7],ADFTAz[7]],[ADFTAx[6],ADFTAy[6],ADFTAz[6]],
+						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
+						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
+};
+
+
+
+    cout << endl << "$$#### Mesh information AFTER ADAPT :" << endl;  
+    cout << "$$#### Number of vertices    " << thnew.nv <<  endl;	
+
+IFMACRO(FREEFEMPLOTS,YES)		
+	plot(thold,wait=1);
+	plot(thnew,wait=1);
+ENDIFMACRO
+
+//return(10);
+
+cout << endl << "$$#### Mesh information AFTER ADAPT :" << endl;  
+        cout << "$$#### Number of vertices    " << thnew.nv <<  endl;
+	   // cout << "$$### Dimension of matrices " << vB[].n << endl << endl;
+
+
+	savemesh(thnew,ffdatadir+"mesh_adapt.msh");
+	SFWriteMesh(ffdatadir+"mesh_adapt.ff2m",thnew);
+
+//savemesh(thnew,ffdatadir+"mesh.msh");
+//	SFWriteMesh(ffdatadir+"mesh.ff2m",thnew);
+
+///	
+/// INTERPOLATE FLOW FIELDS AND SAVE TO FILE
+///
+
+	
+
+    fespace p2N(thnew,P2);   
+    fespace p1N(thnew,P1);
+    fespace p0N(thnew,P0);
+ 	fespace p2xp2xp1N(thnew,[P2,P2,P1]);
+ 	fespace p2xp2xp2xp1N(thnew,[P2,P2,P2,P1]);
+    fespace p2xp2xp1xp1xp1N(thnew,[P2,P2,P1,P1,P1]);  
+
+for(int i=0;i<nfields;i++) 
+    {
+    cout << "$$ Interpolating and writing flowfield number " << i+1<< " with structure " <<   datastoragemode[i] << "." << scalarnumber(i) << endl;
+    ofstream U(ffdatadir+"FlowFieldAdapted"+(i+1)+".txt");
+
+	
+	
+    if(datastoragemode[i]=="ReP2P2P1")
+	   {
+	   	  p2xp2xp1N [uBNx,uBNy,UBNp]=[real(FTAx[i]),real(FTAy[i]),real(FTAp[i])];        
+          U << uBNx[];
+          U << endl; 
+          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+		}
+    else if(datastoragemode[i]=="ReP2P2P2P1")
+        {
+          p2xp2xp2xp1N [uBNx,uBNy,UBNz,UBNp]=[real(FTAx[i]),real(FTAy[i]),real(FTAz[i]),real(FTAp[i])]; 
+          U << uBNx[]; 
+          U << endl;
+          for(int j =0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+        }
+    else if(datastoragemode[i]=="ReP2P2P1P1P1")
+        {
+          p2xp2xp1xp1xp1N [uBNx,uBNy,uBNp,uBNrho,uBNT]=[real(FTAx[i]),real(FTAy[i]),real(FTAp[i]),real(FTAr[i]),real(FTAT[i])];
+          U << uBNx[]; 
+           U << endl;
+           for(int j =0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+           cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+        }
+    else if(datastoragemode[i]=="ReP2P2P2P1P1P1")
+        {
+          p2xp2xp2xp1xp1xp1N [uBNx,uBNy,uBNz,uBNp,uBNrho,uBNT]=[real(FTAx[i]),real(FTAy[i]),real(FTAz[i]),real(FTAp[i]),real(FTAr[i]),real(FTAT[i])];
+          U << uBNx[];
+           U << endl; 
+          for(int j =0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+        }
+    else if(datastoragemode[i]=="CxP2P2P1")
+	   {
+	   	  p2xp2xp1N<complex> [uBNx,uBNy,UBNp]=[FTAx[i],FTAy[i],FTAp[i]];        
+          U << uBNx[];
+          U << endl; 
+          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+		}
+	else if(datastoragemode[i]=="ReP2P2P1")
+	   {
+	   	  p2N uBNx=real(FTAx[i]);        
+          U << uBNx[];
+          U << endl; 
+          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+		}
+   }
+
+cout << "$$ FreeFem : Successfully Leaving function   SplitMesh.edp   "  <<  endl;
+
+   
+
+
+
+
