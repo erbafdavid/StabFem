@@ -47,11 +47,11 @@ include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
 
 IFMACRO(EIGENSOLVER,SLEPC)
-load "PETSc-complex"
-load "SLEPc-complex"                    
+load "../../../../../../../home/jsagg/StabFem/SOURCES_OTHER/PETSc-complex"                             // PETSc plugin
+load "../../../../../../../home/jsagg/StabFem/SOURCES_OTHER/SLEPc-complex"                             // SLEPc plugin
 macro partitioner()metis// 
 macro dimension(      )2// 
-include "macro_ddm.idp"                 
+include "/home/jsagg/StabFem/SOURCES_OTHER/macro_ddm.idp"                  // Additional DDM functions
 ENDIFMACRO
 
 /////////////////////////////////////////////////////////////////////////////////
