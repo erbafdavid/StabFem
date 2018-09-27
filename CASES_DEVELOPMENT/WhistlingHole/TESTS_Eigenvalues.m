@@ -33,9 +33,9 @@ evG1 = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20)
 % SECOND test : USING solver  Stab_Axi_COMPLEX_m0.edp adapted from Raffaele's sources
 % note that this solver is switched on by the "trick" m = 0+1i...
 % nev = 20 => Slepc solver
-ev = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20)
+ev = SF_Stability(bf,'shift',-2.1i,'m',0+1i,'nev',20)
 % nev = 1 => shift-invert solver
-ev1 = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20)
+ev1 = SF_Stability(bf,'shift',-2.1i,'m',0+1i,'nev',20)
 
 scatter(real(evG), imag(evG),'MarkerEdgeColor',[0 .5 .5],...
               'MarkerFaceColor',[0 .7 .7],...
