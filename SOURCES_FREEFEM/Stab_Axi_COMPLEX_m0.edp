@@ -188,7 +188,11 @@ real eps = 1e-12; // desingularisation term for matrix B, useful with some solve
 //	fin declaration
 
 
-
+complex shiftSave = shift;
+/// SLEPC DOES NOT NEED TO BE SHIFTED WHEN OPERATORS ARE BUILT
+IFMACRO(EIGENSOLVER,SLEPC)
+    shift = 0;
+ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
 	varf b([ux,ur,up],[vr,vx,q]) =  int2d(th) (Rphys(y,ParamMap)*(vx*ux+vr*ur)*1/(Hy(y,ParamMap)*Hx(x,ParamMap)));
@@ -209,9 +213,9 @@ if(nev>1)
 cout << "$$ Building matrices..." ;
 ////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
 if(iadjoint=="D")
-{ OP=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = shift; }
+{ OP=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = shiftSave; }
 else if(iadjoint=="A")
-{ OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
+{ OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shiftSave); }
 else if(iadjoint=="S") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; };
 cout << "$$ ... done !" << endl;
 ////////////////////////////////////////////////////////////////////////////////////
@@ -274,6 +278,11 @@ IFMACRO(EIGENSOLVER,SLEPC)
 
 	k=min(k,nev); // some time the number of converged eigen value
 	              // can be greater than Nev;
+ENDIFMACRO
+
+/// ONCE WE FINISH WE RECOVER THE SHIFT
+IFMACRO(EIGENSOLVER,SLEPC)
+    shift = shiftSave;
 ENDIFMACRO
 ////////////////////////////////////////////////////////////////////////////////////
 

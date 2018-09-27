@@ -204,12 +204,15 @@ varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
  // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
  + BoundaryconditionsStability(u,v,m); 
 
-
-
+complex shiftSave = shift;
+/// SLEPC DOES NOT NEED TO BE SHIFTED WHEN OPERATORS ARE BUILT
+IFMACRO(EIGENSOLVER,SLEPC)
+    shift = 0;
+ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
 	varf b([ux,ur,uphi,up],[vx,vr,vphi,vp]) = int2d(th)( (ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) );
-		matrix<complex> B= b(XXXMh,XXXMh,solver=CG);  //////// see freefem++doc.pdf for the solver 
+	matrix<complex> B= b(XXXMh,XXXMh,solver=CG);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
 matrix<complex> OP,OPA;
@@ -225,11 +228,11 @@ cout << "$$ Building matrices..." ;
 ////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
 if(iadjoint=="D")
 {   OP=LNSE(XXXMh,XXXMh);//,solver=sparsesolver); 
-    shiftOP = shift; 
+    shiftOP = shiftSave; 
 }
 else if(iadjoint=="A")
 {   OP=LNSEadjoint(XXXMh,XXXMh);//,solver=sparsesolver); 
-    shiftOP = conj(shift); 
+    shiftOP = conj(shiftSave); 
 }
 else if(iadjoint=="S") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; };
 cout << "$$ ... done !" << endl;
@@ -292,6 +295,11 @@ IFMACRO(EIGENSOLVER,SLEPC)
 	);
 
 	k=min(k,nev); /* some time the number of converged eigen value can be greater than Nev; */
+ENDIFMACRO
+
+/// ONCE WE FINISH WE RECOVER THE SHIFT
+IFMACRO(EIGENSOLVER,SLEPC)
+    shift = shiftSave;
 ENDIFMACRO
 ////////////////////////////////////////////////////////////////////////////////////
 
