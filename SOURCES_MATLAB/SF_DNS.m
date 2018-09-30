@@ -21,6 +21,8 @@ function [DNSstats,DNSfields] = SF_DNS(varargin)
 
 global ff ffdir ffdatadir sfdir verbosity
 
+mkdir('./WORK/DNSFIELDS/');
+
 startfield = varargin{1};
 ffmesh = startfield.mesh;
 vararginopt = {varargin{2:end}};
@@ -36,13 +38,14 @@ addParameter(p, 'iout', 100);
 addParameter(p, 'iplot', 50);
 parse(p, vararginopt{:});
 
-startfield.datatype
+startfield.datatype;
 
 switch(startfield.datatype)
     case {'BaseFlow','Meanflow'} 
         rep = 0
         mydisp(1, ['FUNCTION SF_DNS : starting from BF / MF (reset it = 0)']);
          mycp(startfield.filename, [ffdatadir, 'dnsfield_start.txt']);
+         myrm([ffdatadir,'dns_Stats_Re',num2str(p.Results.Re),'.ff2m'])
     case 'DNSField'
         rep = startfield.it
         mydisp(1, ['FUNCTION SF_DNS : starting from previous DNS result with it = ', num2str(rep)]);

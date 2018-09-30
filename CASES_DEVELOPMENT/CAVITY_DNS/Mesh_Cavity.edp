@@ -1,0 +1,144 @@
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////
+///// 
+/////                              MESH GENERATOR for a cylinder
+/////
+/////             This file creates a mesh and an initial base flow for the "StabFem" program.
+/////
+/////             input parameters : Xmin Xmax Ymax
+/////  			  
+/////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+include "Macros_StabFem.edp";
+//string ffdatadir = "./WORK/";
+
+// load "iovtk"                       /// load library to write in vtk format
+// load "BinaryIO"                 ////load libary to write the solution in binary form
+// load "BinaryIO_64"
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+/////                             Parametri geometria                       //////
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+int n=4;// era 9
+real xinlet=-1.2, xoutlet=2.5, yinf=0.5; // x dell'inlet, xoutlet, y superiore
+//real x2m=-4.8,x2v=4.8,y2=0.7;
+real profcavity=1.;
+real largcavity=1.0;
+real innoslip=-0.4,endnoslip=1.75;
+real cutincav=-0.2;
+real hcutin=0.15;
+int ncavity=33,hh=11;  // 33 hh=11
+int ns=3;
+
+
+//int bcinlet=1,bcoutlet=3,bcnoslip=5,bcinfcondfirst=2,bcinfty=4;
+
+
+//real str=0.25;//parametro stretching vicino i bordi(varia da 0 a 0.499999)
+int jjk=10;
+
+// dominio esterno
+border inlet(t=0,1){ x=xinlet;y=yinf*(1-t);label=1;}
+border latinfone(t=0,1){ x=xinlet+(innoslip-xinlet)*t;y=0;label=4;}
+border latinfonenoslip(t=0,1){ x=innoslip*(1-t);y=0;label=21;}
+
+//cavity
+border leftcav(t=0,1){ x=0;y=cutincav*t;label=22;}
+border leftcavtwo(t=0,1){ x=0;y=cutincav-(profcavity+cutincav)*t;label=22;}
+
+border lowercav(t=0,1){ x=largcavity*t;y=-profcavity;label=23;}
+
+border rightcav(t=0,1){ x=largcavity;y=-profcavity+(profcavity+cutincav)*t;label=24;}
+border rightcavtwo(t=0,1){ x=largcavity;y=cutincav*(1-t);label=24;}
+
+
+border latinftwonoslip(t=0,1){ x=largcavity+(endnoslip-largcavity)*t;y=0;label=25;}
+//////
+border a(t=0,1){ x=endnoslip;y=hcutin*t;label=239;}
+border aa(t=0,1){ x=endnoslip-(endnoslip-innoslip)*t;y=hcutin;label=239;}
+border aaa(t=0,1){ x=innoslip;y=hcutin*(1-t);label=239;}
+border bbb(t=0,1){ x=largcavity*t;y=cutincav;label=239;}
+/////
+border latinftwo(t=0,1){ x=endnoslip+(xoutlet-endnoslip)*t;y=0;label=4;}
+border outlet(t=0,1){ x=xoutlet;y=yinf*t;label=3;}
+border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yinf;label=4;}
+
+
+//mesh th=buildmesh(inlet(1.4*yinf*n*ns)+latinfone(0.7*(xoutlet-xinlet)*n*ns)+latinfonenoslip(0.8*(xoutlet-xinlet)*n*ns)+leftcav(ncavity)+leftcavtwo(ncavity)+lowercav(ncavity)+rightcav(ncavity)+rightcavtwo(3*ncavity)+latinftwonoslip(4*(xoutlet-xinlet)*n*ns)+latinftwo((xoutlet-xinlet)*n*ns)+outlet(1.5*yinf*n*ns)+latsup(3*(xoutlet-xinlet)*n*ns)+a(hh*0.6)+aa(hh*10)+aaa(0.7*hh)+bbb(hh*5));
+
+//26000 triangoli
+//sotto ok -----> questo sotto è flussobase_28000
+//mesh th=buildmesh(inlet(30)+latinfone(150)+latinfonenoslip(270)+leftcav(40)+leftcavtwo(40)+lowercav(50)+rightcav(40)+rightcavtwo(70)+latinftwonoslip(270)+latinftwo(90)+outlet(50)+latsup(200)+a(100)+aa(250)+aaa(45)+bbb(250));
+real d=0.3;
+mesh th=buildmesh(inlet(30*d)+latinfone(150*d)+latinfonenoslip(270*d)+leftcav(40*d)+leftcavtwo(40*d)+lowercav(50*d)+rightcav(40*d)+rightcavtwo(70*d)+latinftwonoslip(270*d)+latinftwo(90*d)+outlet(50*d)+latsup(200*d)+a(100*d)+aa(250*d)+aaa(45*d)+bbb(250*d));
+////////
+//mesh th=buildmesh(inlet(20)+latinfone(35)+latinfonenoslip(20)+leftcav(20)+leftcavtwo(30)+lowercav(40)+rightcav(30)+rightcavtwo(20)+latinftwonoslip(50)+latinftwo(20)+outlet(20)+latsup(130)+a(13)+aa(90)+aaa(13)+bbb(40));
+
+
+
+//mesh th=buildmesh(inlet(40)+latinfone(90)+latinfonenoslip(100)+leftcav(40)+leftcavtwo(55)+lowercav(65)+rightcav(55)+rightcavtwo(60)
+//+latinftwonoslip(170)+latinftwo(85)+outlet(40)+latsup(420)+a(30)+aa(290)+aaa(35)+bbb(140));
+
+//plot(th,wait=0);
+
+
+
+
+// SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+			file << "2D" << endl;
+			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "real xinlet " << endl;
+			file <<  xinlet  << endl;
+}
+
+// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
+}
+
+
+
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+ 		fespace femp1(th,P1);
+        fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+        femp2xfemp2xfemp1 [ux,uy,up]=[0,0,0];
+        real Re = 0;real nu=1; // these two are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+      	{
+      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+	    file << ux[] << endl;
+	    file <<  endl << 0 << endl;
+      	}
+      	
+// Save in ff2m format (for StabFem)	    
+	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
+	     
+
+
+
+
+
+
+

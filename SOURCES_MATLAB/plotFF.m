@@ -71,7 +71,8 @@ function handle = plotFF(FFdata, varargin);
 %                       FreeFem++ point data | FreeFem++ triangle data
 %      'FGridParam'  Number of grid points used for quiver plot
 %                       'auto' (default) | [N,M]
-
+%       'symmetry'  symmetry property of the flow to plot
+%                       'no' (default) | 'YS' (symmetric w.r.t. Y axis) | 'YA' (antisymmetric w.r.t. Y axis) | 'XS' | 'XA'              
 
 global ff ffdir ffdatadir sfdir verbosity
 
@@ -79,15 +80,15 @@ global ff ffdir ffdatadir sfdir verbosity
 %handle = gcf;
 
 
-if (mod(nargin, 2) == 1) % plot mesh in single-entry mode
+if (mod(nargin, 2) == 1) % plot mesh in single-entry mode : mesh
     mesh = FFdata;
     varargin = {varargin{:}, 'mesh', 'on'};
     mydisp(15, ['launching ffpeplot with the following options :']);
     if (verbosity >= 15)
-        varargin
+        varargin;
     end;
     ffpdeplot(mesh.points, mesh.seg, mesh.tri, varargin{:});
-else
+else % plot mesh in single-entry mode : data
     mesh = FFdata.mesh;
     field1 = varargin{1};
     varargin = {varargin{2:end}};
@@ -115,87 +116,48 @@ else
         else
             data = field1;
         end
-        
-        % same check for the data to plot using contours
-        %    if(any(cellfun(@(x) isequal(lower(x), 'contour'), varargin)))
-        %        iii = find(strcmp(varargin,'contour'));
-        %        field1 = varargin{iii+1};
-        %        if(~isnumeric(field1))
-        %            [dumb,field,suffix] = fileparts(field1); % to extract the suffix
-        %            if(strcmp(suffix,'.im')==1)
-        %                dataL = imag(getfield(FFdata,field));
-        %            else
-        %                dataL = real(getfield(FFdata,field));
-        %            end
-        %        varargin{iii+1} = dataL;
-        %        end
-        %    end
-        
-        %if( (any(cellfun(@(x) isequal(lower(x), 'colormap'), varargin))==0) )
-        %    varargin={varargin{:} ,'ColorMap','parula'}; % default colormap set to parula
-        %end
-        
-        %if( any(cellfun(@(x) isequal(lower(x), 'mesh'), varargin))==0)
-        %    varargin={varargin{:} ,'Mesh','off'};
-        %end
-        
-        %if(length(colorrange)==2)
-        %    data = min(max(data,colorrange(1)),colorrange(2)); % ecretage des donnees
-        %end
-        
-        ffpdeplot(FFdata.mesh.points, FFdata.mesh.seg, FFdata.mesh.tri, 'xydata', data, varargin{:});
-        
-        mydisp(15, ['launching ffpeplot with the following options :']);
+
+         mydisp(15, ['launching ffpeplot with the following options :']);
         if (verbosity >= 15)
             varargin
         end;
-        %pdeplot(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri,'xydata',data,varargin{:});
-        % axis equal;
-        %if(any(strcmp('plottitle',fieldnames(FFdata))))
-        %    title(FFdata.plottitle)
-        %end
         
-        
-    end
+        ffpdeplot(FFdata.mesh.points, FFdata.mesh.seg, FFdata.mesh.tri, 'xydata', data, varargin{:});
+
     
-    % plot mesh
-    % axes1 = axes('Parent',handle);
-    % box(axes1,'off');
-    % hold(axes1,'all');
-    %xlabel('x');ylabel('r');
-    % if(any(strcmp('plottitle',fieldnames(FFdata))))
-    %    title(FFdata.plottitle)
-    % end
-    
-    
-    %if(length(mesh.seg)==1) % to construct the 'seg' structure necessary for ploting mesh
-    %    FFdata.mesh=importFFmesh('mesh.msh','seg');
-    %end
-    
-    %pdemesh(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri) ;
-    %axis equal;
-    %end
-    
-    
-    % This should be removed in some future, as this as this is now done differently
-    % if(any(strcmp('plottitle',fieldnames(FFdata))))
-    %     title(FFdata.plottitle)
-    % end
-    % if(any(strcmp('xlim',fieldnames(FFdata))))
-    %     xlim(axes1,FFdata.xlim);
-    % elseif ( any(strcmp('mesh',fieldnames(FFdata))) && any(strcmp('xlim',fieldnames(FFdata.mesh))) )
-    %     xlim(axes1,FFdata.mesh.xlim);
-    % end
-    % if(any(strcmp('ylim',fieldnames(FFdata))))
-    %     ylim(axes1,FFdata.ylim);
-    % elseif ( any(strcmp('mesh',fieldnames(FFdata))) && any(strcmp('ylim',fieldnames(FFdata.mesh))) )
-    %     ylim(axes1,FFdata.mesh.ylim);
-    % end
-    
-    %axis equal;
-    
+%%% SYMMETRIZATION OF THE PLOT
+
+% first chech if 'symmetry' is part of the parameters and recovers it
+symmetry = 'no';
+for i=1:nargin-2
+    varargin{i}
+    if(strcmp(varargin{i},'symmetry'))
+        symmetry = varargin{i+1}
+    end    
 end
 
-%pdemesh(FFdata.mesh.points,FFdata.mesh.seg,FFdata.mesh.tri) ;
-%axis equal;
-%end
+if(strcmp(symmetry,'no'))
+        mydisp(15,'No symmetry');
+else    
+  pointsS = FFdata.mesh.points;
+  switch(symmetry)
+    case('XS')
+        pointsS(2,:) = -pointsS(2,:);dataS = data;
+    case('XA')
+       pointsS(2,:) = -pointsS(2,:);dataS = -data;
+    case('YS')
+        pointsS(1,:) = -pointsS(1,:);dataS = data;
+    case('YA')
+        pointsS(1,:) = -pointsS(1,:);dataS = -data;   
+    end
+  
+  hold on;
+    ffpdeplot(pointsS, FFdata.mesh.seg, FFdata.mesh.tri, 'xydata', data, varargin{:});
+    hold off;
+end
+
+end
+
+end
+
+end

@@ -20,12 +20,22 @@ include "Macros_StabFem.edp";
 
 mesh th=readmesh(ffdatadir+"mesh_guess.msh");
 //mesh Shempty=emptymesh(th); 	// Maillage 'surface'
-mesh Shempty=th;
+//mesh Shempty=th;
+mesh thsurface;
+if(typesurfacemesh=="plain") 
+{
+thsurface = th; 	// Maillage 'surface'
+};
+if(typesurfacemesh=="empty") 
+{
+thsurface = emptymesh(th); 	// Maillage 'surface'
+};
+
+
 real PP0 = 1; // guess
 real PP1;
 real dpdz;
 real gamma=0;
-mesh thsurface=th; 
 string typestart = "pined";//"pined";//
 string typeend = "pined";
 include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp";
@@ -45,16 +55,23 @@ cout << "==> Strecting factors : " << Xfactor << " ; " << Yfactor << endl << end
 
 // Deplacement du maillage
 th = movemesh(th,[x*Xfactor,y*Yfactor]);
-Shempty=th;
+
+if(typesurfacemesh=="plain") 
+{
+thsurface = th; 	// Maillage 'surface'
+};
+if(typesurfacemesh=="empty") 
+{
+thsurface = emptymesh(th); 	// Maillage 'surface'
+};
+
 
 IFMACRO(FREEFEMPLOTS,YES)
-plot(th,Shempty,cmm="Deformation maillage iteration "+i,wait=1);
+plot(th,Shempty,cmm="Deformation maillage "+i,wait=1);
 ENDIFMACRO
 
 real NewVolume = int2d(th)(x);
 cout << "NewVolume = " << NewVolume << endl; 
-Shempty = emptymesh(th);
-
 
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
 CalcGeomSurf;

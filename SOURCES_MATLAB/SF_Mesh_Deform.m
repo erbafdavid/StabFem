@@ -21,8 +21,14 @@ p = inputParser;
    addParameter(p,'P',1,@isnumeric); % Pressure 
    addParameter(p,'typestart','pined',@ischar); % 
    addParameter(p,'typeend','pined',@ischar); % 
-
+   addParameter(p,'GAMMABAR',0,@isnumeric);
 parse(p, varargin{:});
+
+if(p.Results.GAMMABAR~=0)
+    error('ERROR : GAMMABAR (rotation) not yet fully implemented... Newton_Axi_FreeSurface_Static.edp should be revised');
+end
+
+mycp(ffmesh.filename, [ffdatadir, 'mesh_guess.msh']); % position mesh file
 
 switch (ffmesh.problemtype)
     
@@ -30,18 +36,20 @@ switch (ffmesh.problemtype)
         
         if(p.Results.V~=-1)% V-controled mode
             mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (V-controled)'); 
-            parameterstring = [' " V ',num2str(p.Results.V),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' ',p.Results.typestart,' ',p.Results.typeend,' " '];
+            parameterstring = [' " V ',num2str(p.Results.V),' ',num2str(p.Results.gamma),...
+                ' ',num2str(p.Results.rhog),' ',num2str(p.Results.GAMMABAR),'  ',p.Results.typestart,' ',p.Results.typeend,' " '];
             solvercommand = ['echo ',parameterstring, ' | ',ff,' ',ffdir,'Newton_Axi_FreeSurface_Static.edp'];
         elseif(p.Results.P~=-1)% P-controled mode
             mydisp(1,'## Deforming MESH For STATIC FREE SURFACE PROBLEM (P-controled)'); 
-            parameterstring = [' " P ',num2str(p.Results.P),' ',num2str(p.Results.gamma),' ',num2str(p.Results.rhog),' ',p.Results.typestart,' ',p.Results.typeend,' " '];
+            parameterstring = [' " P ',num2str(p.Results.P),' ',num2str(p.Results.gamma),...
+                ' ',num2str(p.Results.rhog),' ',num2str(p.Results.GAMMABAR),' ',p.Results.typestart,' ',p.Results.typeend,' " '];
             solvercommand = ['echo ',parameterstring, ' | ',ff,' ',ffdir,'Newton_Axi_FreeSurface_Static.edp'];
         end
 end
 
 
-error = 'ERROR : SF_BaseFlow_MoveMesh computation aborted';
-mysystem(solvercommand, error); %needed to generate .ff2m file
+errormessage = 'ERROR : SF_BaseFlow_MoveMesh computation aborted';
+mysystem(solvercommand, errormessage); %needed to generate .ff2m file
 
 %if (exist([ffdatadir, 'BaseFlow.txt']) ~= 2)
 %    error('ERROR in SF_BaseFlow_MoveMesh : Newton did not converge');

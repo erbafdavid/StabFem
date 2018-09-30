@@ -17,7 +17,8 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 %   DAMPING :   For spring-mounted object
 %   gamma :     Surface tension (for free-surface problems)
 %   rhog :      gravity parameter (for free-surface problems)
-%   nu :        viscosity (for free-surface problelms)
+%   nu :        viscosity (for free-surface problems)
+%   alpha :      parameter modelling at contact line (linear model of Miles & Hocking ) 
 %   sym :       Symmetry condition for a 2D problem 
 %               (set to 'S' for symmetric, 'A' for antisymmetric, or 'N' if no symmetry plane is present)
 %   shift :     shift for shift-invert algorithm.
@@ -105,7 +106,10 @@ persistent eigenvaluesPrev % for sort of type 'cont'
     addParameter(p,'rhog',rhogDefault);
     if(isfield(baseflow,'nu')) nuDefault = baseflow.nu ;else nuDefault = 0; end;
     addParameter(p,'nu',nuDefault);
-    
+    if(isfield(baseflow,'beta')) alphaDefault = baseflow.alpha ;else alphaDefault = 0; end;
+    addParameter(p,'alpha',alphaDefault);
+    if(isfield(baseflow,'GammaBAR')) GammaBARDefault = baseflow.GammaBar ;else GammaBARDefault = 0; end;
+    addParameter(p,'GammaBAR',GammaBARDefault);
     addParameter(p,'typestart','pined');
     addParameter(p,'typeend','pined');
    
@@ -249,7 +253,10 @@ switch ffmesh.problemtype
         % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
         if(p.Results.nu==0)
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE POTENTIAL : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
-        argumentstring = ['  ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' p.Results.typestart ' ' p.Results.typeend  ' ' num2str(p.Results.m) ' ' num2str(p.Results.nev)  ' ' num2str(imag(p.Results.shift)) ' '];
+        argumentstring = ['  ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.GammaBAR) ' '...
+        num2str(p.Results.nu) ' ' num2str(p.Results.alpha) ' ' ...
+        p.Results.typestart ' ' p.Results.typeend  ' ' num2str(p.Results.m) ' '... 
+        num2str(p.Results.nev)  ' ' num2str(real(p.Results.shift)) ' ' num2str(imag(p.Results.shift)) ' '];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
         status = mysystem(solvercommand);     
         else
@@ -381,7 +388,7 @@ end
         for ind = 1:length(eigenvalues)
             h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
             %%%%  plotting command for eigenmodes and callback function
-            tt=['eigenmodeP= importFFdata(baseflow.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
+            tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
       'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
       ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; figure();plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
 %   tt=['eigenmodeP= importFFdata(baseflow.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
