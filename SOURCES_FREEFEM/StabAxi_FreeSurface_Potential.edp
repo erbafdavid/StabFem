@@ -7,15 +7,15 @@
 //  Computation of the eigenvalues and eigenvectors for oscillations of a liquid bridge
 //  (inviscid theory)
 // ----------------------------------------
-// the problem is potential : u = i grad (phi) (mind the "i" factor !) 
-// PROBLEM : find $\omega$ and $[phi,eta]$  such that
+// the problem is potential : u = grad (phi) 
+// PROBLEM : find $\lambda$ and $[phi,eta]$  such that
 // 	$$ \Delta \phi = 0 $$ inside the domain
-// 	$$ \omega \phi = \gamma (-(K0a^2+K0b^2) \eta - \partial^2 \eta / \partial s^2 + m^2/r^2 \eta $$ on the free surface
-// 	$$ \omega \eta = grad \phi \dot n $$ on the free surface 
+// 	$$ \lambda \phi = - \gamma (-(K0a^2+K0b^2) \eta - \partial^2 \eta / \partial s^2 + m^2/r^2 \eta $$ on the free surface
+// 	$$ \lambda \eta = grad \phi \dot n $$ on the free surface 
 // 
 //-----------------------------------------
 
-// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
+// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'Ã  la surface
 
 
 ////////////////////////////////////////////////////////////////
@@ -26,6 +26,16 @@
 
 include "SF_Geom.edp"; 
 include "Macros_StabFem.edp"
+
+IFMACRO(EIGENSOLVER,SLEPC)
+load "PETSc-complex"
+load "SLEPc-complex"                    
+macro partitioner()metis// 
+macro dimension(      )2// 
+include "macro_ddm.idp"                 
+ENDIFMACRO
+
+
 
 mesh th=readmesh(ffdatadir+"mesh.msh");
 mesh thsurface;
@@ -45,6 +55,8 @@ real gamma; // tension de surface
 real R; // echelle de longueur (rayon pour un pont liquide)
 real dpdz; // parametre de gravite
 real GAMMA; // circulation pour cas polygones tournants
+real nu; // viscosity FOR VISCOUS POTENTIAL CASE 
+real alphaMILES; // parametre alpha pour dissipation a la linge triple (Miles, Hocking)
 string typestart; // possibilites : "pined", "axis", "plane", "angle"
 string typeend;    // possibilites : "pined", "axis", "plane", "angle"
 
@@ -54,45 +66,58 @@ include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 
 
 
-cout << "ENTREZ LA TENSION DE SURFACE gamma : "<< endl;
-cin >> gamma;
+cout << "%% ENTREZ LA TENSION DE SURFACE gamma : ";
+cin  >> gamma;
+cout << gamma << endl;
 
+cout << "%% ENTREZ LE PARAMETRE DE GRAVITE dp/dz = rho g : ";
+cin  >> dpdz;
+cout << dpdz << endl;
 
-cout << "ENTREZ LE PARAMETRE DE GRAVITE dp/dz = rho g : "<< endl;
-cin >> dpdz;
+cout << "%% ENTREZ LA CIRCULATION GAMMA : ";
+cin  >> GAMMA;
+cout << GAMMA << endl;
 
-//cout << "ENTREZ LA CIRCULATION GAMMA : "<< endl;
-//cin >> GAMMA;
-GAMMA = SFGeomGAMMA; // PARAMETER PICKED FROM "SF_Geom.edp"
-cout << "GAMMA = " << GAMMA << endl;
+GAMMA = SFGeomGAMMA; // PARAMETER PICKED FROM "SF_Geom.edp" ; this is to be removed very soon !
+
+cout << "%% ENTREZ LA VISCOSITE NU (pour approximation ecoulement visqueux potentiel) : " ;
+cin  >> nu;
+cout << nu << endl;
+
+cout << "%% ENTREZ LE PARAMETRE alpha de dissipation a la ligne triple (modele lineaire de MILES & HOCKING)  " ;
+cin  >> alphaMILES;
+cout << alphaMILES << endl;
 
 // Parametres du calcul
 int m;  // Nombre d'onde
 
 
 
-cout << "ENTREZ typestart (pined, axis, plane or angle) : "<< endl;
+cout << "%% ENTREZ typestart (pined, axis, plane, angle, angleV) : ";
 cin >> typestart;
-cout << "ENTREZ typeend (pined, axis, plane) : "<< endl;
+cout << typestart << endl;
+cout << "%% ENTREZ typeend (pined, axis, plane) : ";
 cin >> typeend;
+cout << typeend << endl;
 
-
-cout << " ENTREZ Le nombre d'onde m ?" << endl;
+cout << "%% ENTREZ Le nombre d'onde m ?";
 cin >> m;
-cout << "==> Calcul des valeurs propres pour m = " << m << endl;
+cout << m << endl;
 
 int nev;
-cout << " ENTREZ le nombre de modes a calculer " << endl;
+cout << "%% ENTREZ le nombre de modes a calculer : " ;
 cin >> nev;
-int Nval = nev;  // nb. de valeurs propres à calculer
-int Nmodes = nev; // nb. de vecteurs propres à post-traiter
+cout << nev << endl;
+int Nval = nev;  // nb. de valeurs propres Ã  calculer
+int Nmodes = nev; // nb. de vecteurs propres Ã  post-traiter
 
 
-real shift;
-cout << " ENTREZ le shift (here only imaginary part) : " << endl;
-cin >> shift;
-
-
+complex shift;
+real shiftr, shifti;
+cout << "%% ENTREZ le shift (real and imaginary part) : " ;
+cin >> shiftr >> shifti ;
+shift = shiftr+1i*shifti;
+cout << shift << endl << endl;
 
 
 
@@ -108,8 +133,8 @@ CalcGeomSurf;
 
 
 fespace VhxVh(th,[P1,P1]);
-VhxVh [phi,eta],[q,v]; // will be used for "composite" method
-Vh phiB,etaB,qB,vB,phiA,etaA,qA,vA; // will be used for"block" method 
+VhxVh<complex> [phi,eta],[q,v]; // will be used for "composite" method
+Vh<complex> phiB,etaB,qB,vB,phiA,etaA,qA,vA; // will be used for"block" method 
 
 real RegEta = 1e-8;
 
@@ -118,9 +143,15 @@ real RegEta = 1e-8;
 
 macro DPDR(r) (GAMMA/2/pi)^2*(1/r^3) //EOM THIS MACRO IS FOR ROTATING POLYGONS
 
+int isshift=1; 
+IFMACRO(EIGENSOLVER,SLEPC)
+isshift = 0; // WARNING the shift should be incorporated in the operator for simple shift-invert and Arpack, but not when using SLEPc !
+ENDIFMACRO
+
 
 // CONSTRUCTION DES MATRICES
-matrix A,B;
+matrix<complex> A,B;
+
 if(matrixconstruction=="composite")
 {
 varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v] instead
@@ -128,19 +159,19 @@ varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v]
 	  int2d(th)(  (dx(phi)*dx(v) + dy(phi)*dy(v)+(m^2+1e-8)*phi*v/(x^2+1e-30))*x  ) 
 	  		// desingularisation term necessary if m=0 ; don't know why
 // Curvature	  
-	+ int1d(th,2)(gamma*((Ds(eta))*(Ds(q))  -(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*x)
+	- int1d(th,2)(gamma*((Ds(eta))*(Ds(q))  -(K0a^2+K0b^2)*eta*q+m^2/(x^2+1e-30)*q*eta)*x) // this term has different sign in real setting 
 // gravity and centrifugal force
-	+int1d(th,2)(q*eta*(dpdz*N.y-DPDR(x)*N.x)*x)
+	- int1d(th,2)(q*eta*(dpdz*N.y-DPDR(x)*N.x)*x) // idem
 // convective terms if rotation is present
- 	+ int1d(th,2)(m*GAMMA/(2*pi*x^2)*(eta*v+q*phi)*x)
+ 	+ int1d(th,2)(-1i*m*GAMMA/(2*pi*x^2)*(eta*v+q*phi)*x)
 // shift 
-	- int1d(th,2)(shift*(eta*v+q*phi)*x)
+	- int1d(th,2)(isshift*shift*(eta*v+q*phi)*x)
 // Pour regulariser eta dans le volume	
 		+ int2d(th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*x) //  deuxieme idee : laplacien 
 // Conditions limites par penalisation
-+ int1d(th,1)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
-+ int1d(th,5)(1e30*eta*q*abs(x)*gamma) // pour ligne de contact fixee si gamma ne 0.
-+ int1d(th,1)(m*phi*v*1e30) // CL axe pour m different de 0
+//+ int1d(th,1)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
++ int1d(th,5,55)(1e30*eta*q*abs(x)*gamma*((typestart=="pined")||(typeend=="pined"))) // pour ligne de contact fixee si gamma ne 0.
++ int1d(th,1)((m!=0)*phi*v*1e30) // CL axe pour m different de 0
 ;
 
 varf b([phi,eta],[q,v]) = 
@@ -151,44 +182,48 @@ A= a(VhxVh,VhxVh,solver=UMFPACK);
 B= b(VhxVh,VhxVh,solver=GMRES,eps=1e-20); 
 
 }
+
+
 else if(matrixconstruction=="block")
 {
 // Nouvelle methode par blocs
 varf avphi(phiA,vA)=	  
 	  int2d(th)(  (dx(phiA)*dx(vA) + dy(phiA)*dy(vA)+(m^2+1e-8)*phiA*vA/(x^2+1e-30))*x ) 
-	+ int1d(th,1)(m*phiA*vA*1e30)
+	+ int1d(th,1)(abs(m)*phiA*vA*1e30)
 ;
 
 varf aqeta(etaA,qA)=
-	int1d(th,2)(gamma*((Ds(etaA))*(Ds(qA))-(K0a^2+K0b^2)*etaA*qA+m^2/(x^2+1e-30)*qA*etaA)*x)
-	+int1d(th,2)(qA*etaA*(dpdz*N.y-DPDR(x)*N.x)*x)
+	int1d(th,2)(-gamma*((Ds(etaA))*(Ds(qA))-(K0a^2+K0b^2)*etaA*qA+m^2/(x^2+1e-30)*qA*etaA)*x)
+	-int1d(th,2)(qA*etaA*(dpdz*N.y-DPDR(x)*N.x)*x)
 	+ int2d(th)((dx(qA)*dx(etaA)+dy(qA)*dy(etaA))*RegEta*x)
-	+ int1d(th,1,5)(1e30*etaA*qA*abs(x))
-	+ int1d(th,55)(etaA*qA*1e30*(typestart=="pined"))
+//	+ int1d(th,1,5)(1e30*etaA*qA*abs(x))
+	+ int1d(th,5,55)(1e30*etaA*qA*abs(x)*(gamma!=0)*((typestart=="pined")||(typeend=="pined"))) // pour ligne de contact fixee si gamma ne 0.
+//	+ int1d(th,55)(etaA*qA*1e30*(typestart=="pined"))
 ;
-// HERE WE SHOULD ALSO ADD THE ROTATION TERMS FOR POLYGONS
+
 varf aveta(etaA,vA)=
 	int2d(th)((dx(vA)*dx(etaA)+dy(vA)*dy(etaA))*1e-30*x)//
-	- int1d(th,2)(shift*(etaA*vA)*x)
-	+ int1d(th,2)(m*GAMMA/(2*pi*x^2)*(etaA*vA)*x);
+	- int1d(th,2)(isshift*shift*(etaA*vA)*x)
+	+ int1d(th,2)(-1i*m*GAMMA/(2*pi*x^2)*(etaA*vA)*x);
+
 varf aqphi(phiA,qA)=
 	int2d(th)( 1e-30*(dx(phiA)*dx(qA) + dy(phiA)*dy(qA))*x) //
-	- int1d(th,2)(shift*(qA*phiA)*x)
- 	+ int1d(th,2)(m*GAMMA/(2*pi*x^2)*(qA*phiA)*x);
+	- int1d(th,2)(isshift*shift*(qA*phiA)*x)
+ 	+ int1d(th,2)(-1i*m*GAMMA/(2*pi*x^2)*(qA*phiA)*x);
 
-matrix Avphi = avphi(Vh,Vh,solver=UMFPACK);
-matrix Aqphi = aqphi(Vh,Vh,solver=UMFPACK);
-matrix Aqeta = aqeta(Vh,Vh,solver=UMFPACK); 
-matrix Aveta = aveta(Vh,Vh,solver=UMFPACK); 
+matrix<complex> Avphi = avphi(Vh,Vh,solver=UMFPACK);
+matrix<complex> Aqphi = aqphi(Vh,Vh,solver=UMFPACK);
+matrix<complex> Aqeta = aqeta(Vh,Vh,solver=UMFPACK); 
+matrix<complex> Aveta = aveta(Vh,Vh,solver=UMFPACK); 
 
 // Modify the coefficient of the first point along the surface for "natural conditions"
-Aqeta(IndexPointSurf(0),IndexPointSurf(0)) = Aqeta(IndexPointSurf(0),IndexPointSurf(0))
-                                            +gamma*(1/tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0)*(typestart=="angle");
-
+if(typestart=="angle")
+	{Aqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*(1/tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0);};
+if(typestart=="angleV")
+	{Aqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*(tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0);};
 
 A = [[Aqphi,Aqeta],[Avphi,Aveta]];
 set(A,solver =UMFPACK);
-
 
 // Construction de la matrice B
 // Nouvelle methode par blocs
@@ -197,10 +232,26 @@ varf bqphi(phiB,qB) =
 
 varf bveta(etaB,vB) = 
         int1d(th,2)(etaB*vB*x);
+        
+varf bqeta(etaB,qB) = int1d(th,2)(0*etaB*qB);        
+        
 
-matrix Bqphi = bqphi(Vh,Vh,solver=GMRES,eps=1e-20); 
-matrix Bveta = bveta(Vh,Vh,solver=GMRES,eps=1e-20); 
-B = [[Bqphi,0],[0,Bveta]];
+matrix<complex> Bqphi = bqphi(Vh,Vh,solver=GMRES,eps=1e-20); 
+matrix<complex> Bveta = bveta(Vh,Vh,solver=GMRES,eps=1e-20); 
+
+
+matrix<complex> Bqeta = bqeta(Vh,Vh,solver=GMRES,eps=1e-20); 
+
+// Modify the coefficient of the first point along the surface for Miles & Hocking term
+if(typestart=="angle")
+	{Bqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*alphaMILES/sin(alphaPointSurf(0))*xPointSurf(0);};
+if(typestart=="angleV")
+    {Bqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*alphaMILES/cos(alphaPointSurf(0))*xPointSurf(0);};
+
+
+
+
+B = [[Bqphi,Bqeta],[0,Bveta]];
 set(B,solver =GMRES);
 };
 
@@ -214,19 +265,65 @@ set(B,solver =GMRES);
 /////////////////////////////////////////////////////
 
 
-real[int] evr(nev),evi(nev); // to store nev eigein value
-VhxVh[int] [eVphi,eVeta](nev);   // to store nev eigen vector
-real[int,int] EVV(A.n,nev);
+complex[int] ev(nev); // to store nev eigein value
+VhxVh<complex>[int] [eVphi,eVeta](nev);   // to store nev eigen vector
+complex[int,int] EVV(A.n,nev);
 
-int k=EigenValue(A,B,sym=false,sigma=shift,value=evr,ivalue=evi,vector=eVphi,tol=1e-10,maxit=0,ncv=0);
+///////////////////// CALL TO ARPACK++ ////////////////////////////////// //////////
 
-/*
-//int nev=Nval;  // number of computed eigen valeu close to sigma
-real[int] evr(Nval+1),evi(Nval+1); // to store nev eigein values
-//VhxVh[int] [eVphi,eVeta](Nval+1);   // to store nev eigen vectors
-real[int,int] EVV(A.n,nev);
 
-int k=EigenValue(A,B,sym=false,sigma=shift,value=evr,ivalue=evi,vector=EVV,tol=1e-10,maxit=0,ncv=0);*/
+
+IFMACRO(EIGENSOLVER,ARPACK)
+int k=EigenValue(A,B,sigma=shift,value=ev,vector=eVphi,tol=1e-10,maxit=0,ncv=0);
+ENDIFMACRO
+////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////// OR CALL TO SLEPC ////////////////////////////////// //////////
+
+IFMACRO(EIGENSOLVER,SLEPC)
+	/***************************************/
+	/*      Build distributed matrices     */
+	/***************************************/
+	int[int] arrayIntersection;                 // Rank of neighborings subdomains
+    int[int][int] restrictionIntersection(0);   // Local-to-neighbors renumbering
+    real[int] D1(A.n);
+    D1.resize(A.n);
+    D1 = 1;
+	dmatrix<complex> DistA(A, arrayIntersection, restrictionIntersection, D1, clean = true);
+	dmatrix<complex> DistB(DistA, B, clean = true);
+
+	string ssparams =            /* Parameters for the distributed EigenValue solver */
+	  " -eps_nev " + nev       + /* Number of eigenvalues */
+	  " -eps_type krylovschur" +
+	  /*" -eps_interval -0.2,0.05" + */
+	  " -eps_target " + shift +
+	  /*" -eps_harmonic " + */
+	  " -st_type cayley "     +
+	  /*" -st_type cayley_antishift "     +
+	  " -st_pc_type cholesky " +
+	  " -st_pc_factor_mat_solver_type superlu_dist " +
+	  " -st_ksp_type preonly " +
+	  " -mat_superlu_dist_rowperm NATURAL " +*/
+	  " -st_pc_type lu "       +
+	  " -st_pc_factor_mat_solver_package mumps" +
+	  " -eps_view"             +
+	  " -eps_gen_non_hermitian"      /* The problem is generalized non hermitian */
+	;
+
+	/* ///////////////////// CALL TO SLEPC /////////////////////////////////////////////////// */
+	int k = zeigensolver
+	(DistA,              /* matrix OP = A âˆ’ sigma*B */
+	 DistB,              
+	 vectors = eVphi, /* Array to store the FEM-EigenFunctions*/
+	 values  = ev, /* Array to store the EigenValues */
+	 sparams = ssparams  /* Parameters for the distributed EigenValue solver */
+	);
+
+	k=min(k,nev); /* some time the number of converged eigen value can be greater than Nev; */
+ENDIFMACRO
+////////////////////////////////////////////////////////////////////////////////////
+
 
 
 
@@ -245,52 +342,49 @@ EV.scientific;
 
 Vh<complex> ModeAphi,ModeAeta;
 VhxVh<complex> [Modecphi,Modeceta];
-Vh Modebphi,Modebeta;
+Vh<complex> Modebphi,Modebeta;
 complex lambda;
-
-
 
 
 for (int i=0;i<Nval;i++)
 {
-//if(evi[i] == 0)
-// real eigenvalue -> purely oscillating mode
+cout << ev[i] << endl;
+};
 
-lambda = 1i*evr[i];
+
+for (int i=0;i<Nval;i++)
+{
+lambda = ev[i];
 if(matrixconstruction=="composite")
  {	
-   //Modephi[] = EVV(:,nev);
-   [Modecphi,Modeceta] = [1i*eVphi[i],(1.+0i)*eVeta[i]];
-   //ModeAPhi = ModePhi;
-   //ModeAeta = Modeeta;
+   [Modecphi,Modeceta] = [eVphi[i],eVeta[i]];
  }
 else if(matrixconstruction=="block")
 	{
-  //[ModeAPhi[],ModaAeta[]] = EVV(:,nev);
-	real[int] EVVV(A.n);
+	complex[int] EVVV(A.n);
 	EVVV = eVphi[i][]; 
-	[Modebphi[],Modebeta[]] = EVVV;//(:,i);
-	[Modecphi,Modeceta]=[Modebphi*1i,Modebeta*(1+1e-30i)];
+	[Modebphi[],Modebeta[]] = EVVV;
+	[Modecphi,Modeceta]=[Modebphi,Modebeta];
 	};
 
-//VhxVh<complex> [Modedphi,Modedeta]=[Modebphi*(1+1e-30i),Modebeta*(1+1e-30i)];
-// TO ADAPT IF A ENCOUNTERING A COMPLEX PAIR
-//	}
-//else if(i>0&&abs(evi[i])==abs(evi[abs(i-1)])) // abs is to prevent a bug 
-//	{// pair of complex eigenvalues with previous one
-//	lambda = 1i*evr[i]+evi[i-1];
-//	[Modephi,Modeeta] = [1i*eVphi[i]+eVphi[i-1],eVeta[i]-1i*eVeta[i-1]];
-//	}
-//else if(i<Nval&&abs(evi[i])==abs(evi[i+1])) 
-//	{// pair of complex eigenvalues with next one
-//	lambda = 1i*evr[i]+evi[i+1];
-//	[Modephi,Modeeta] = [1i*eVphi[i]-eVphi[i+1],eVeta[i]-1i*eVeta[i+1]];
-//	};
 
+// Normalisation of the modes
+        complex norm;
+        {
+        Vh<complex> etaTEMP=Modeceta;
+        real[int] Xx = etaTEMP[].re;
+        real[int] Yy = etaTEMP[].im;
+        real[int] etaRAD  = Xx.*Xx;
+               etaRAD += Yy.*Yy;
+        etaRAD = sqrt(etaRAD);
+        int Imax = etaRAD.imax;
+        norm =  etaTEMP[][Imax];
+        }
+		[Modecphi,Modeceta] = [Modecphi/norm,Modeceta/norm];
 
 {
   cout << " VP numero " <<  i<< " : " << real(lambda) << "+i"<<imag(lambda) <<  endl;
-  EV << -evi[i] << "  "<< evr[i] << " " << L << "  " << PP0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
+  EV << real(lambda) << " " << imag(lambda) << " " << L << "  " << PP0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
 }; 
   
     
@@ -304,8 +398,9 @@ if (i<Nmodes)
    	FileTXT << endl << endl << lambda << endl;
    	}
    SFWriteModePotential(ffdatadir+"Eigenmode"+(i+1)+".ff2m",Modec,lambda);
-   IFMACRO(FREEFEM,YES)
-   plot(eVphi[i],cmm="Mode "+i+" ; omega = "+evi[i]+" ; sigma = "+evr[i],wait=1,fill=1);
+   IFMACRO(FREEFEMPLOTS,YES)
+   Vh imagphi = imag(eVphi[i]);
+   plot(imagphi,cmm="Mode "+i+" ; omega = "+imag(ev[i])+" ; sigma = "+real(ev[i]),wait=1,fill=1);
    ENDIFMACRO    	
    };
 }	

@@ -127,7 +127,7 @@ end
     contourplt, cgridparam, ccolor, contourrawdata, isolevels, contourstyle, ...
     setcolormap, showcolbar, colorbartitle, colorrange, ...
     plottitle, plotxlim, plotylim, plotzlim, axisaspect, ...
-    flowdata, fgridparam] = vararginval{:};
+    flowdata, fgridparam,symmetry] = vararginval{:};
 
 %newplot checks the values of the NextPlot properties and takes the
 %appropriate action based on these values
@@ -306,7 +306,11 @@ if ~isempty(xyrawdata)
     if (isnumeric(colorrange))
         caxis(colorrange);
     else
+        if(strcmp(symmetry,'YA')||strcmp(symmetry,'XA')) % david's modif
+            caxis([-max(max(abs(cdata))), max(max(abs(cdata)))]); % range for an antisymmetric plot    
+        else
         caxis([min(min(cdata)), max(max(cdata))]);
+        end
     end
     if strcmpi(showcolbar, 'on')
         hcb = colorbar;

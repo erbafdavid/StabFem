@@ -177,6 +177,12 @@ macro Conv(ima,ua,imb,ub,v) (
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+
+int isshift=1; 
+IFMACRO(EIGENSOLVER,SLEPC)
+if(nev>1) {isshift=0;}; // WARNING the shift should be incorporated in the operator for simple shift-invert and Arpack, but not when using SLEPc !
+ENDIFMACRO
+
 varf   LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
    int2d(th)( 
    			(-2*nu*(D(1i*m,u):D(-1i*m,v))
@@ -187,7 +193,7 @@ varf   LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
              +eps*vp*up
              )*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap))
              )
- + int2d(th)( -shift*(ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) )
+ + int2d(th)( -isshift*shift*(ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) )
  + BoundaryconditionsStability(u,v,m);
  
 varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
@@ -200,7 +206,7 @@ varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
              +eps*vp*up
              )*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap))
              )
- + int2d(th)( -conj(shift)*(ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
+ + int2d(th)( -isshift*conj(shift)*(ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
  // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
  + BoundaryconditionsStability(u,v,m); 
 
@@ -322,26 +328,6 @@ ENDIFMACRO
 
 ////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

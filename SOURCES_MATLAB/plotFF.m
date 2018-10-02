@@ -117,8 +117,8 @@ else % plot mesh in single-entry mode : data
             data = field1;
         end
 
-         mydisp(15, ['launching ffpeplot with the following options :']);
-        if (verbosity >= 15)
+         mydisp(20, ['launching ffpeplot with the following options :']);
+        if (verbosity >= 20)
             varargin
         end;
         
@@ -130,15 +130,15 @@ else % plot mesh in single-entry mode : data
 % first chech if 'symmetry' is part of the parameters and recovers it
 symmetry = 'no';
 for i=1:nargin-2
-    varargin{i}
     if(strcmp(varargin{i},'symmetry'))
-        symmetry = varargin{i+1}
+        symmetry = varargin{i+1};
     end    
 end
 
 if(strcmp(symmetry,'no'))
-        mydisp(15,'No symmetry');
-else    
+        mydisp(20,'No symmetry');
+else   
+     mydisp(20,['Symmetrizing the plot with option ',symmetry]);
   pointsS = FFdata.mesh.points;
   switch(symmetry)
     case('XS')
@@ -152,7 +152,7 @@ else
     end
   
   hold on;
-    ffpdeplot(pointsS, FFdata.mesh.seg, FFdata.mesh.tri, 'xydata', data, varargin{:});
+    ffpdeplot(pointsS, FFdata.mesh.seg, FFdata.mesh.tri, 'xydata', dataS, varargin{:});
     hold off;
 end
 

@@ -23,7 +23,7 @@ switch p.Results.symmetry
         h = [h; h1];
     case('YA')
         hold on; 
-        h1 = plot(-ffmesh.xsurf+real(E*eigenmode.eta).*ffmesh.N0r,ffmesh.ysurf+real(E*eigenmode.eta).*ffmesh.N0z,p.Results.style,'LineWidth',p.Results.LineWidth);
+        h1 = plot(-ffmesh.xsurf+real(E*eigenmode.eta).*ffmesh.N0r,ffmesh.ysurf-real(E*eigenmode.eta).*ffmesh.N0z,p.Results.style,'LineWidth',p.Results.LineWidth);
         h = [h; h1];
 end
 

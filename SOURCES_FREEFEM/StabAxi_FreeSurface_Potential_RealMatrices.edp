@@ -15,7 +15,7 @@
 // 
 //-----------------------------------------
 
-// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'Ã  la surface
+// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
 
 
 ////////////////////////////////////////////////////////////////
@@ -87,8 +87,8 @@ cout << "==> Calcul des valeurs propres pour m = " << m << endl;
 int nev;
 cout << " ENTREZ le nombre de modes a calculer " << endl;
 cin >> nev;
-int Nval = nev;  // nb. de valeurs propres Ã  calculer
-int Nmodes = nev; // nb. de vecteurs propres Ã  post-traiter
+int Nval = nev;  // nb. de valeurs propres à calculer
+int Nmodes = nev; // nb. de vecteurs propres à post-traiter
 
 
 real shift;
@@ -139,11 +139,11 @@ varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v]
 // shift 
 	- int1d(th,2)(shift*(eta*v+q*phi)*x)
 // Pour regulariser eta dans le volume	
-		+ int2d(th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*x) //  deuxieme idee : laplacien 
+		+ int2d(th)(1e-30*(dx(q)*dx(eta)+dy(q)*dy(eta))*x) //  deuxieme idee : laplacien 
 // Conditions limites par penalisation
-+ int1d(th,1)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
-+ int1d(th,5)(1e30*eta*q*abs(x)*gamma) // pour ligne de contact fixee si gamma ne 0.
-+ int1d(th,1)(m*phi*v*1e30) // CL axe pour m different de 0
+//+ int1d(th,1)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
++ int1d(th,5)(1e30*eta*q*abs(x)*(gamma!=0)*((typestart=="pined")||(typeend=="pined")))// pour ligne de contact fixee si gamma ne 0.
++ int1d(th,1)(phi*v*1e30*(m!=0)) // CL axe pour m different de 0
 ;
 
 varf b([phi,eta],[q,v]) = 
@@ -167,13 +167,14 @@ varf aqeta(etaA,qA)=
 	+int1d(th,2)(qA*etaA*(dpdz*N.y-DPDR(x)*N.x)*x)
 	+ int2d(th)((dx(qA)*dx(etaA)+dy(qA)*dy(etaA))*RegEta*x)
 	+ int1d(th,1,5)(1e30*etaA*qA*abs(x))
-	+ int1d(th,55)(etaA*qA*1e30*(typestart=="pined"))
+	+ int1d(th,55,5)(etaA*qA*1e30*(typestart=="pined"))
 ;
-// HERE WE SHOULD ALSO ADD THE ROTATION TERMS FOR POLYGONS
+
 varf aveta(etaA,vA)=
 	int2d(th)((dx(vA)*dx(etaA)+dy(vA)*dy(etaA))*1e-30*x)//
 	- int1d(th,2)(shift*(etaA*vA)*x)
 	+ int1d(th,2)(m*GAMMA/(2*pi*x^2)*(etaA*vA)*x);
+	
 varf aqphi(phiA,qA)=
 	int2d(th)( 1e-30*(dx(phiA)*dx(qA) + dy(phiA)*dy(qA))*x) //
 	- int1d(th,2)(shift*(qA*phiA)*x)
@@ -185,8 +186,7 @@ matrix Aqeta = aqeta(Vh,Vh,solver=UMFPACK);
 matrix Aveta = aveta(Vh,Vh,solver=UMFPACK); 
 
 // Modify the coefficient of the first point along the surface for "natural conditions"
-Aqeta(IndexPointSurf(0),IndexPointSurf(0)) = Aqeta(IndexPointSurf(0),IndexPointSurf(0))
-                                            +gamma*(1/tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0)*(typestart=="angle");
+Aqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*(1/tan(alphaPointSurf(0)+1e-20))*K0aPointSurf(0)*xPointSurf(0)*(typestart=="angle");
 
 
 A = [[Aqphi,Aqeta],[Avphi,Aveta]];
@@ -320,7 +320,7 @@ if (i<Nmodes)
    	FileTXT << endl << endl << lambda << endl;
    	}
    SFWriteModePotential(ffdatadir+"Eigenmode"+(i+1)+".ff2m",Modec,lambda);
-   IFMACRO(FREEFEM,YES)
+   IFMACRO(FREEFEMPLOTS,YES)
    plot(eVphi[i],cmm="Mode "+i+" ; omega = "+evi[i]+" ; sigma = "+evr[i],wait=1,fill=1);
    ENDIFMACRO    	
    };

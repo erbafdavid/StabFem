@@ -102,7 +102,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    % parameters for free-surface problems
     if(isfield(baseflow,'gamma')) gammaDefault = baseflow.gamma ;else gammaDefault = 0; end;
     addParameter(p,'gamma',gammaDefault,@isnumeric);
-    if(isfield(baseflow,'rhog')) rhogDefault = baseflow.gamma ;else rhogDefault = 0; end;
+    if(isfield(baseflow,'rhog')) rhogDefault = baseflow.rhog ;else rhogDefault = 0; end;
     addParameter(p,'rhog',rhogDefault);
     if(isfield(baseflow,'nu')) nuDefault = baseflow.nu ;else nuDefault = 0; end;
     addParameter(p,'nu',nuDefault);
@@ -257,7 +257,7 @@ switch ffmesh.problemtype
         num2str(p.Results.nu) ' ' num2str(p.Results.alpha) ' ' ...
         p.Results.typestart ' ' p.Results.typeend  ' ' num2str(p.Results.m) ' '... 
         num2str(p.Results.nev)  ' ' num2str(real(p.Results.shift)) ' ' num2str(imag(p.Results.shift)) ' '];
-        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
+        solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
         status = mysystem(solvercommand);     
         else
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE VISCOUS : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);

@@ -148,10 +148,11 @@ real eps = 1e-12; // desingularisation term for matrix B, useful with some solve
 
 /// declaration probleme
 ///  
-/// This solves (A - shift B) X_{n+1} = B X_n
-/// Here X_n is ux0[] and X_{n+1} is ux[] 
-///
-/// This problem converges to X_{n+1} = G X_n with G = 1/(sigma-shift)
+
+int isshift=1; 
+IFMACRO(EIGENSOLVER,SLEPC)
+if(nev>1) {isshift=0;}; // WARNING the shift should be incorporated in the operator for simple shift-invert and Arpack, but not when using SLEPc !
+ENDIFMACRO
 
 	varf LNSE([ux,ur,up],[vx,vr,q],eps=1e-16) = 
 	int2d(th)(
@@ -164,7 +165,7 @@ real eps = 1e-12; // desingularisation term for matrix B, useful with some solve
 	      + Rphys(y,ParamMap)*dX(ur)*dX(vr)+Rphys(y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(y,ParamMap)*ur*vr  )  
 	+ up*(Rphys(y,ParamMap)*dX(vx)+vr+Rphys(y,ParamMap)*dY(vr))
 	- q*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
-	-Rphys(y,ParamMap)*shift*(vx*ux+vr*ur)	
+	-Rphys(y,ParamMap)*isshift*shift*(vx*ux+vr*ur)	
 	)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
   	+ on(2,ux=0.,ur=0.)	
 	+ on(6,7,ur=0.);
@@ -181,7 +182,7 @@ real eps = 1e-12; // desingularisation term for matrix B, useful with some solve
 	      + Rphys(y,ParamMap)*dX(ur)*dX(vr)+Rphys(y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(y,ParamMap)*ur*vr  )  
 	+ up*(Rphys(y,ParamMap)*dX(vx)+vr+Rphys(y,ParamMap)*dY(vr))
 	- q*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
-	-Rphys(y,ParamMap)*shift*(vx*ux+vr*ur)	
+	-Rphys(y,ParamMap)*isshift*shift*(vx*ux+vr*ur)	
 	)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
   	+ on(2,vx=0.,vr=0.)	
 	+ on(6,7,vr=0.);
@@ -191,7 +192,7 @@ real eps = 1e-12; // desingularisation term for matrix B, useful with some solve
 
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
-	varf b([ux,ur,up],[vr,vx,q]) =  int2d(th) (Rphys(y,ParamMap)*(vx*ux+vr*ur)*1/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+	varf b([ux,ur,up],[vx,vr,q]) =  int2d(th) (Rphys(y,ParamMap)*(vx*ux+vr*ur)*1/(Hy(y,ParamMap)*Hx(x,ParamMap)));
 		matrix<complex> B= b(XXMh,XXMh,solver=CG);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
