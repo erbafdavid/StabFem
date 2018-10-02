@@ -16,11 +16,13 @@
 
 // FOR GOOD OPERATION THESE MACROS REQUIRE THE FOLLOWING VARIABLES :
 //string surfaceorder /// possibilities : "direct", "reverse" (use reverse to fit with matlab "meniscus" program);
-//string typestart // possibilites : "pined", "axis", "plane", "angle"
+//string typestart // possibilites : "pined", "axis", "plane", "angle", "angleH"
 //string typeend // possibilites : "pined", "axis", "plane", "angle"
 //int anglecut // position of the "cut" in the tan2 determination. 
-//
-
+// anglecut = 0 => alpha in [-pi,pi]		=> suited for rotating polygon 
+// anglecut = 1 => alpha in [-pi/2,3pi/2] 	=> suited for sessile drop,liquid bridge  
+// anglecut = 2 => alpha in [0,2pi]			=> suited for vessel
+// anglecut = 3 => alpta in [-3pi/2,pi/2] 	=> suited for hanging drop (?)
 
 
 
@@ -30,8 +32,9 @@
 //
 ////////////////////////////////////////////////////////////////
 
-
-
+int labelsurf = 2; // this will be changed to 8 very soon
+int labelaxis = 1; // this will be changed to 6 very soon
+int labelwall = 5; // this will be changed to 2 very soon
 
 fespace Wh1(thsurface,P1);
 Wh1 N0r,N0z,T0r,T0z,K0a,K0b,test,NormN;
@@ -82,15 +85,15 @@ macro Dn(u1)
 
 // Definitions des problemes pour calcul normale, courbure
 problem CalcN0r(N0r,test)=
-  int1d(thsurface,2,qfe=qf3pE)(N0r*test*x)
-  -int1d(thsurface,2,qfe=qf3pE)(N.x*test*x)
+  int1d(thsurface,labelsurf,qfe=qf3pE)(N0r*test*x)
+  -int1d(thsurface,labelsurf,qfe=qf3pE)(N.x*test*x)
   +int2d(thsurface)((dx(N0r)*dx(test)+dy(N0r)*dy(test))*1e-8*x);
   
 
 
 problem CalcN0z(N0z,test)=
-  int1d(thsurface,2,qfe=qf3pE)(N0z*test)
-  -int1d(thsurface,2,qfe=qf3pE)(N.y*test)
+  int1d(thsurface,labelsurf,qfe=qf3pE)(N0z*test)
+  -int1d(thsurface,labelsurf,qfe=qf3pE)(N.y*test)
   +int2d(thsurface)((dx(N0z)*dx(test)+dy(N0z)*dy(test))*1e-30);
  
 
@@ -104,9 +107,9 @@ problem CalcN0z(N0z,test)=
 // - int1d(thsurface,2,qfe=qf3pE)(Ds2(N0r,N0z)*test);
 
 problem CalcK0a(K0a,test)=
-   int1d(thsurface,2,qfe=qf3pE)(K0a*test)
+   int1d(thsurface,labelsurf,qfe=qf3pE)(K0a*test)
    +int2d(thsurface)((dx(K0a)*dx(test)+dy(K0a)*dy(test))*1e-30)
- - int1d(thsurface,2,qfe=qf3pE)(Ds2(N0r,N0z)*test)
+ - int1d(thsurface,labelsurf,qfe=qf3pE)(Ds2(N0r,N0z)*test)
  ;
 
 
@@ -114,9 +117,9 @@ problem CalcK0a(K0a,test)=
 
 
 problem CalcK0b(K0b,test)=
-   int1d(thsurface,2,qfe=qf3pE)(K0b*test)
+   int1d(thsurface,labelsurf,qfe=qf3pE)(K0b*test)
   +int2d(thsurface)((dx(K0b)*dx(test)+dy(K0b)*dy(test))*1e-30)
- - int1d(thsurface,2,qfe=qf3pE)(N0r/x*test);
+ - int1d(thsurface,labelsurf,qfe=qf3pE)(N0r/x*test);
 
 
 
@@ -129,8 +132,8 @@ problem CalcK0b(K0b,test)=
 macro CalcGeomSurfANS
 CalcN0r;
 CalcN0z;
-plot(N0r,wait=1,value=1);
-plot(N0z,wait=1,value=1);
+plot(N0r,wait=0,value=1);
+plot(N0z,wait=0,value=1);
 NormN = sqrt(N0r^2+N0z^2)+1e-10;
 N0r = N0r/NormN;
 N0z = N0z/NormN;
@@ -138,8 +141,8 @@ T0r = N0z;
 T0z = -N0r;
 CalcK0a;
 CalcK0b;
-plot(K0a,wait=1,value=1);
-plot(K0b,wait=1,value=1);
+plot(K0a,wait=0,value=1);
+plot(K0b,wait=0,value=1);
 cout << "max K0a : " << K0a[].max << " " << K0a[].min <<endl; 
 //EOM
 //
@@ -157,20 +160,20 @@ cout << "max K0a : " << K0a[].max << " " << K0a[].min <<endl;
 Vh K0ext,dK0ext;
 problem ExtendC(K0ext,dK0ext)=
     int2d(th)((dx(K0ext)*dx(dK0ext)+dy(K0ext)*dy(dK0ext))*1e-40)
-+on(2,K0ext=(K0a+K0b))
++on(labelsurf,K0ext=(K0a+K0b))
 //+on(1,5,6,K0ext=K0)
 ;
 
 // Calcul de la deformation de surface libre necessaire pour corriger la courbure du maillage (a pression imposee)
 Wh1 etaNewton ;
 problem CalcEta(etaNewton,test) 
-	= int1d(thsurface,2)((gamma*(K0a+K0b)-(PP0-dpdz*y))*test*abs(x)) /* 1ere integrale : RHS */ 
-        + int1d(thsurface,2)((gamma*(Ds(etaNewton))*(Ds(test))  -gamma*(K0a^2+K0b^2)*etaNewton*test +dpdz*etaNewton*test*N0z)*abs(x)) /* 2e integrale : matrice A */
+	= int1d(thsurface,labelsurf)((gamma*(K0a+K0b)-(PP0-dpdz*y))*test*abs(x)) /* 1ere integrale : RHS */ 
+        + int1d(thsurface,labelsurf)((gamma*(Ds(etaNewton))*(Ds(test))  -gamma*(K0a^2+K0b^2)*etaNewton*test +dpdz*etaNewton*test*N0z)*abs(x)) /* 2e integrale : matrice A */
         + int2d(thsurface)(1e-20*etaNewton*test) /* desingularisation */
         //+ on(1,5,55,6,etaNewton=0);
-	+ int1d(thsurface,5,55)(etaNewton*test*1e30*(typestart=="pined"))
-	+ int1d(thsurface,1)(etaNewton*test*1e30)
-	+ int1d(thsurface,5)(etaNewton*test*1e30*(typestart=="angle"));		    
+	+ int1d(thsurface,labelwall,55)(etaNewton*test*1e30*(typestart=="pined"))
+	+ int1d(thsurface,labelaxis)(etaNewton*test*1e30)
+	+ int1d(thsurface,labelwall)(etaNewton*test*1e30*(typestart=="angle"));		    
 
 		    
 		    
@@ -179,15 +182,15 @@ problem CalcEta(etaNewton,test)
 macro CalcEtaV(etaNewton,PP1,V)
 {
 varf MatEta(etaNewton,test) = 
-    int1d(thsurface,2)((gamma*(Ds(etaNewton))*(Ds(test))  -gamma*(K0a^2+K0b^2)*etaNewton*test+dpdz*etaNewton*test*N0z)*abs(x))
+    int1d(thsurface,labelsurf)((gamma*(Ds(etaNewton))*(Ds(test))  -gamma*(K0a^2+K0b^2)*etaNewton*test+dpdz*etaNewton*test*N0z)*abs(x))
   + int2d(thsurface)(1e-20*etaNewton*test)
-  + int1d(thsurface,5,55)(etaNewton*test*1e30*(typestart=="pined"))
-  + int1d(thsurface,1)(etaNewton*test*1e30)
-  + int1d(thsurface,5)(etaNewton*test*1e30*(typestart=="angle"));		 
+  + int1d(thsurface,labelwall,55)(etaNewton*test*1e30*(typestart=="pined"))
+  + int1d(thsurface,labelaxis)(etaNewton*test*1e30)
+  + int1d(thsurface,labelwall)(etaNewton*test*1e30*(typestart=="angle"));		 
 varf MatEtaRHS(etaNewton,test) = 
-	int1d(thsurface,2)(-(gamma*(K0a+K0b)-(PP0-dpdz*y))*test*abs(x));		    
-varf VecEta(etaNewton,test) = int1d(thsurface,2)(-test*abs(x));
-varf VecVol(etaNewton,test) = int1d(thsurface,2)(test*abs(x));
+	int1d(thsurface,labelsurf)(-(gamma*(K0a+K0b)-(PP0-dpdz*y))*test*abs(x));		    
+varf VecEta(etaNewton,test) = int1d(thsurface,labelsurf)(-test*abs(x));
+varf VecVol(etaNewton,test) = int1d(thsurface,labelsurf)(test*abs(x));
 matrix A11 = MatEta(Wh1,Wh1); 
 real[int] A12 = VecEta(0,Wh1); 
 real[int] A21p = VecVol(0,Wh1); 
@@ -211,7 +214,7 @@ etaNewton = etaNewton;
 Vh etaext;
 problem ExtendEta(etaext,dK0ext) =
     int2d(th)((dx(etaext)*dx(dK0ext)+dy(etaext)*dy(dK0ext)))
-+on(2,etaext=etaNewton);
++on(labelsurf,etaext=etaNewton);
 
 // Calcul du champ lagrangien pour deformation de maillage
 fespace Vh11(th,[P1,P1]);
@@ -220,9 +223,9 @@ Vh11 [uz,ur], [vz,vr];
 // problem pour cas pined
 problem CalcDef([uz,ur],[vz,vr])=
     int2d(th)( ((dx(uz)*dx(vz)+dy(uz)*dy(vz)) + (dx(ur)*dx(vr)+dy(ur)*dy(vr))) )
-+on(2,ur=etaNewton*N0r,uz=etaNewton*N0z)
-+int1d(th,5,55)((ur*vr*1e30+uz*vz*1e30)*(typestart=="pined"))
-+int1d(th,1,11)((ur*vr)*1e30);
++on(labelsurf,ur=etaNewton*N0r,uz=etaNewton*N0z)
++int1d(th,labelwall,55)((ur*vr*1e30+uz*vz*1e30)*(typestart=="pined"))
++int1d(th,labelaxis,11)((ur*vr)*1e30);
 //+on(5,6,55,ur=0,uz=0)
 //+on(1,11,ur=0,uz=0); // ne pas le faire sur l'axe
 
@@ -230,15 +233,15 @@ problem CalcDef([uz,ur],[vz,vr])=
 // problem pour cas angle
 problem CalcDefAngle([uz,ur],[vz,vr])=
     int2d(th)( ((dx(uz)*dx(vz)+dy(uz)*dy(vz)) + (dx(ur)*dx(vr)+dy(ur)*dy(vr))) )
-+on(2,ur=etaNewton*N0r,uz=etaNewton*N0z-etaNewton[](IndexPointSurf(0))*cos(alphaPointSurf(0)) )
-+on(5,6,55,uz=0)//enlever 55 pour la cas pined
-+on(1,11,ur=0); // ne pas le faire sur l'axe
++on(labelsurf,ur=etaNewton*N0r,uz=etaNewton*N0z-etaNewton[](IndexPointSurf(0))*cos(alphaPointSurf(0)) )
++on(labelwall,6,55,uz=0)//enlever 55 pour la cas pined
++on(labelaxis,11,ur=0); // ne pas le faire sur l'axe
 
 // problem pour liquid bridge
 problem CalcDefBridge([uz,ur],[vz,vr])=
     int2d(th)( (dx(uz)*dx(vz)+dy(uz)*dy(vz)) + (dx(ur)*dx(vr)+dy(ur)*dy(vr)) )
-+on(2,ur=etaNewton*N0r,uz=etaNewton*N0z)
-+on(1,5,6,ur=0,uz=0);
++on(labelsurf,ur=etaNewton*N0r,uz=etaNewton*N0z)
++on(labelaxis,labelwall,6,ur=0,uz=0);
 
 
 
@@ -259,7 +262,7 @@ macro SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface
 int ksurf = 0;
 for(int k=0;k<nbboundaryelements;k++)
 {
-	if(thsurface.be(k).label==2) 
+	if(thsurface.be(k).label==labelsurf) 
 	{
 	if (ksurf==0){IndexPointSurf(ksurf) = thsurface.be(k)[0];}
 	else{if(IndexPointSurf(ksurf) !=thsurface.be(k)[0]){/*cout << "WARNING probleme numeration de la surface !" << endl*/ ; }}
@@ -364,9 +367,9 @@ N0r[][IndexPointSurf(ksurf)  ] = sin(alphaPointSurf(ksurf));
 N0z[][IndexPointSurf(ksurf)  ] = -cos(alphaPointSurf(ksurf));
 }
 IFMACRO(FREEFEMPLOTS,YES)
-plot([N0r,N0z],wait=1,value=1,cmm=" CalcGeom : Normale");
-plot(thsurface,K0a,wait=1,value=1,cmm="CalcGeom : K0a");
-plot(K0b,wait=1,value=1,cmm="CalcGeom : K0b");
+plot([N0r,N0z],wait=0,value=1,cmm=" CalcGeom : Normale");
+plot(thsurface,K0a,wait=0,value=1,cmm="CalcGeom : K0a");
+plot(K0b,wait=0,value=1,cmm="CalcGeom : K0b");
 ENDIFMACRO
 //EOM
 
