@@ -21,6 +21,7 @@ function [meanflow, mode, mode2] = SF_HB2(varargin)
 
 global ff ffdir ffdatadir sfdir verbosity
 
+
 %%% management of optionnal parameters
 meanflow = varargin{1};
 mode = varargin{2};

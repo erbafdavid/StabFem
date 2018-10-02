@@ -83,7 +83,7 @@ cout << endl << "###################################" << endl << endl;
 
 cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;  
         cout << "#### Number of vertices    " << th.nv <<  endl;
-	    cout << "### Dimension of matrices " << vB[].n << endl << endl;
+
 	
 	real Re;
 	

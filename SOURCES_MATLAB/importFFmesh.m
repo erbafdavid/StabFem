@@ -8,7 +8,7 @@ global ff ffdir ffdatadir sfdir verbosity
 % 2/ mesh=importFFmesh(fileToRead1,'seg') -> imports information for points, triangles & SEGMENTS (VERY INEFFICIENT, SHOULD BE IMPROVED)
 %
 % FileToRead1 is typically of the form "mesh.msh".
-% The program will also need files "mesh.ff2m" and "SF_Init.ff2m"
+% The program will also need files "mesh.ff2m" a.nd "SF_Init.ff2m"
 %
 %  This program was originally adapted from FreeFem_to_matlab, copyright Julien Dambrine 2010 ;
 %  modified by D. Fabre (2017) ; and redesigned in 2018 with help of M. Chloros
@@ -53,6 +53,7 @@ if (verbosity > 2)
 end
 frewind(fid);
 if ~(dimension == 2)
+    dimension
     error('only supported dimension is 2');
 end
 %start over

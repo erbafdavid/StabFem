@@ -260,16 +260,33 @@ problem CalcDefBridge([uz,ur],[vz,vr])=
 macro SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface)
 {
 int ksurf = 0;
-for(int k=0;k<nbboundaryelements;k++)
+for(int k=0;k<nbboundaryelements;k++) 
 {
 	if(thsurface.be(k).label==labelsurf) 
 	{
 	if (ksurf==0){IndexPointSurf(ksurf) = thsurface.be(k)[0];}
-	else{if(IndexPointSurf(ksurf) !=thsurface.be(k)[0]){/*cout << "WARNING probleme numeration de la surface !" << endl*/ ; }}
+	else{if(IndexPointSurf(ksurf) !=thsurface.be(k)[0]){cout << "WARNING probleme numeration de la surface !" << endl ; ksurf = -1;break;}}
 	IndexPointSurf(ksurf+1) = thsurface.be(k)[1];	
 	ksurf++;
-	}
-}
+	};
+};
+if(ksurf>0)
+{cout << "Macro SurfaceNumbering : Successful numbering of free surface, direct order ; Nsurf = " << ksurf << endl;}
+else
+{
+ksurf = 0;
+for(int k=nbboundaryelements-1;k>-1;k--)
+{
+	if(thsurface.be(k).label==2) 
+	{
+	if (ksurf==0){IndexPointSurf(ksurf) = thsurface.be(k)[1];};
+	/*else{if(IndexPointSurf(ksurf) !=thsurface.be(k)[1]){cout << "toto" ;};};*/
+	IndexPointSurf(ksurf+1) = thsurface.be(k)[0];	
+	ksurf++;
+	};
+};
+cout << "Macro SurfaceNumbering : Successful numbering of free surface, reverse order ; Nsurf = " << ksurf << endl;
+};
 Nsurface = ksurf; 
 for(ksurf=0;ksurf<Nsurface+1;ksurf++)
        {

@@ -25,7 +25,7 @@ function pdestruct = importFFdata(varargin)
 
 global ff ffdir ffdatadir sfdir verbosity
 
-mydisp(2, ['  ENTERING FUNCTION  importFFdata.m']);
+mydisp(15, ['  ENTERING FUNCTION  importFFdata.m']);
 
 if (ischar(varargin{1}) == 0)
     % if first argument is a mesh structure, take dimension np from it
@@ -52,9 +52,9 @@ for i = istart:nargin
     if (exist([ffdatadir, fileToRead]) == 2)
         fileToRead = [ffdatadir, fileToRead];
     end
-    mydisp(2, ['      Function importFFdata : reading file ', fileToRead]);
+    mydisp(15, ['      Function importFFdata : reading file ', fileToRead]);
     rawData1 = importdata(fileToRead);
-    mydisp(2, ['      FUNCTION  importFFdata.m : reading file ', fileToRead]);
+    mydisp(15, ['      FUNCTION  importFFdata.m : reading file ', fileToRead]);
     data = rawData1.data;
     
     if (np > 0) %% && i == istart) DAVID
@@ -75,8 +75,10 @@ for i = istart:nargin
     numkeywords = length(words{1});
     K1 = words{1}{1};
     
-    if strcmp(lower(K1), 'format')
-        mydisp(5, 'Warning : third line or data file is "Format :" ; this is obsolete ! please revert to new format (see manual)');
+    if sum(strcmp(lower(K1), {'format','format:'}))
+        mydisp(0, 'Warning : third line or data file is "Format :" ; this is obsolete ! please modify your Macro_StabFem.edp to fit to new format (see manual)');
+        mydisp(0,' you may replace by something like (for a eigenmode) ''file << "datatype Eigenmode datastoragemode CxP2P2P1.0 " << endl'' ;');
+        mydisp(0,'                                   (for a mesh) ''file << "datatype mesh meshtype 2D " << endl;'' ;');
         pdestruct.datatype = Datadescription;
     else
         if mod(numkeywords, 2)
@@ -222,6 +224,6 @@ for i = istart:nargin
     end
     end
     
-    mydisp(2, ['  END FUNCTION  importFFdata.m']);
+    mydisp(15, ['  END FUNCTION  importFFdata.m']);
     
 end

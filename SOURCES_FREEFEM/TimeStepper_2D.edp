@@ -185,8 +185,7 @@ ENDIFMACRO
 		matrix NSMAT=NS(femp2xfemp2xfemp1,femp2xfemp2xfemp1,solver=UMFPACK,tgv=1.e30);
                                           
 
-	up1 = u1init;
-	up2 = u2init; 
+	up1 = u1init; up2 = u2init; 
 	
 	upp1 = up1; upp2 = up2; // We could impro ve by reading the file number (it-1)
 	

@@ -1,0 +1,124 @@
+//verbosity = 0;
+//real R = 1,Rbase=1;
+//real LL,RMAX,Lsurf;
+//int d=10;
+//int typegeom;
+
+
+real K0, dpdz,gamma;
+K0 = 1;dpdz = 0;gamma =0;
+
+include "Macros_StabFem.edp"
+
+cout << "Construction du Maillage initial 'tourbillon potentiel' " << endl << endl; 
+
+
+real H,Gamma,R,xi,g;
+R = 1;g=1;
+cout << " ENTREZ La hauteur d'eau moyenne H ?" << endl;
+cin  >> H;
+
+cout << " ENTREZ le parametre xi ?" << endl;
+cin >> xi;
+
+int n;
+cout << " ENTREZ La densite du maillage ?" << endl;
+cin  >> n;
+cout << "==> Densite = " << n << endl;
+
+
+
+//////////////////////////////////////////////////////////////////
+Gamma=xi*sqrt(2*g*H*R^2/(R^2-xi^2-2*xi^2*log(R/xi)));
+real Fr=Gamma/(sqrt(R*g)*R);
+real Hmax = Gamma^2/(2*g)*(1/xi^2-1/R^2);
+cout << "xi = " << xi << "; Gamma = " << 2*pi*Gamma << "; Fr = " << Fr << " ; a = " << H << " ; Hmax = " << Hmax << endl ;
+
+
+//////MAILLAGE////////////////////////////////////////////////////
+real cc=0.5/sqrt(xi); //parametre de maillage
+real R2=cc*H*g*xi^3/Gamma^2+xi;
+border interface1(t=R2,R){x=t;y=Gamma^2/(2*g)*(1/xi^2-1/t^2);label=2;}
+border interface2(t=0,Gamma^2/(2*g)*(1/xi^2-1/R2^2)){x=xi/sqrt(1-(2*g*xi^2/Gamma^2)*t);y=t;label=2;}
+border fond(t=xi,R){ x=t ; y=0 ; label=5;}
+border bord(t=0,Gamma^2/(2*g)*((1/xi)^2-(1/R)^2)){x=R ; y=t ; label=5;}
+////////////////////////////////////////////////////////////////////
+mesh th = buildmesh(interface1(-n)+interface2(-n*H)+fond(n*(1-xi))+bord(Hmax*n));
+
+IFMACRO(FREEFEMPLOTS,YES)
+plot(th,wait=1);
+ENDIFMACRO
+
+
+
+
+
+//SAVE MESH TO FILE
+
+savemesh(th,ffdatadir+"mesh_guess.msh");
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Defininition of problem type and geometry for StabFem. Problem type : " << endl;
+			file << "(Auxiliary file with information on initial mesh)" << endl;
+            file << "problemtype 3DFreeSurfaceStatic" << endl;
+			file << "real R real a real Hmax real GAMMA real xi" << endl;
+			file << R  << endl << H << endl << Hmax << endl << Gamma*2*pi << endl << xi << endl;
+}
+
+
+// SECOND AUXILIARY FILE mesh.ff2m
+{ 
+mesh Shempty=emptymesh(th); 
+	
+include "Macros_Geometrie_Surface.edp";
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+CalcGeomSurf;
+SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+SFWriteMesh(ffdatadir+"mesh_guess.ff2m",th)
+}
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomR = 1 ;" << endl ;
+            file2 << " real SFGeomGAMMA = " << Gamma*2*pi <<  " ;" << endl ;
+            file2 << " real SFGeomXI = " << xi <<  " ;" << endl ;
+            file2 << " real SFGeoma = " << H <<  " ;" << endl ;
+            file2 << " real SFGeomHmax = " << Hmax <<  " ;" << endl ;
+
+}
+
+
+cout << "  ===>  Mesh_PotentialVortex : successfully created " << endl << endl;
+
+//exec("cp "+ffdatadir+"mesh.ff2m "+ffdatadir+"mesh_guess.ff2m");
+
+
+
+//// CREATION OF A BASE FLOW FILE
+//// (this is a	static problem so there is actually no base flow. However the file is created to ensure the right functioning of StabFem	
+	
+	
+//		fespace femp2(th,P2);
+//		femp2 phi = 0;
+//		fespace femp1(th,P1);
+//		femp1 phiP1 = 0;
+				
+//		ofstream file(ffdatadir+"BaseFlow.txt");
+//	    file << phi[] << endl;
+//	    file <<  endl << 0 << endl;
+
+//// EXPORTATION DU CHAMP DE BASE AUX FORMAT FF2M
+
+//SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",phiP1);
+
+
+		
+
+	

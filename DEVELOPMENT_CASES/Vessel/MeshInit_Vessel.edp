@@ -1,0 +1,198 @@
+
+
+real R = 1,Rbase=1;
+real Rpin,Lsurf,Rdrop;
+int d;
+int typegeom;
+real LL;
+
+string typestart = "angle";//"pined";//
+string typeend = "axis";
+
+include "Macros_StabFem.edp"
+
+cout << "Construction du Maillage initial 'guess' " << endl << endl; 
+
+
+
+//cin >> typegeom;
+typegeom = 0;
+
+cout << " ENTREZ La hauter H ?" << endl;
+cin  >> LL;
+
+
+cout << " ENTREZ La densite du maillage ?" << endl;
+cin  >> d;
+
+
+
+
+
+
+//real angle;
+//cout << " ENTREZ L'angle (en degres) ?" << endl;
+//cin  >> angle;
+//angle = angle*pi/180;
+
+
+ 
+//real Rdrop = 1;
+//
+//Rbase = Rdrop*sin(angle);
+
+
+
+
+cout << "==> Longueur = " << LL << endl;
+cout << "==> Densite = " << d << endl;
+
+
+
+border Fond(t=0,1){y=-LL;x=t;label=5;};
+
+border Wall(t=-LL,-1./d){y=t;x=1;label=5;};
+border Wallbis(t=-1./d,0){y=t;x=1;label=55;};
+
+// tentative d'ameliorer en separant l'axe en deux
+border Axe(t=-1./d,-LL){y = t ; x = 0;label=1;};
+border Axebis(t=0,-1./d){y = t ; x = 0;label=11;};
+
+//border Side2(t=R,0){y=LL ; x = t;label=5;};
+mesh MeshInt;
+
+
+border SurfDrop(t=1,0){y=0;x=t;label=2;};
+
+//plot(SurfDrop(d)+Wall((d-1))+Wallbis(1)+Axe(LL*(d-1))+Axebis(1)+Fond(d),wait = 1);
+
+MeshInt = buildmesh(SurfDrop(d)+Wall(LL*(d-1)/5)+Wallbis(1)+Axe(LL*((d-1)/5))+Axebis(1)+Fond(d/5)); // Attention modif sauvage
+
+
+
+
+mesh th = MeshInt;
+
+plot(th,wait=1);
+
+
+//SAVE MESH TO FILE
+
+savemesh(th,ffdatadir+"mesh_guess.msh");
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Definition of problem type and geometry for StabFem. Problem type : " << endl;
+			file << "(Auxiliary file with information on initial mesh)" << endl;
+            file << "problemtype 3DFreeSurfaceStatic" << endl;
+            file << "real Rinit real Linit " << endl;
+			file << R  << endl << LL << endl;
+}
+
+
+// SECOND AUXILIARY FILE mesh.ff2m
+{ 
+//mesh Shempty=th; 
+real PP0 = 2/R;real dpdz = 0;real gamma=1;	
+//include "Macros_Geometrie_Surface.edp";
+mesh thsurface = th;
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp";
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+CalcGeomSurf;
+SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+SFWriteMesh(ffdatadir+"mesh_guess.ff2m",th)
+}
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomvessel = 1 ;" << endl ;
+            file2 << " real SFGeomLvessel = " << LL <<  " ;" << endl ;
+            file2 << " real SFGeomGAMMA = " << 0 <<  " ;" << endl ;
+
+}
+
+
+/*////////////////////////////////////////////////////////////////
+//
+// POST-TRAITEMENT : fichiers Infos_Geom.txt et Geom_Surface.txt
+//
+////////////////////////////////////////////////////////////////
+
+
+// Construction de vecteurs contenant les points de la surface numerotes (cf. macro)  
+
+//mesh Shempty=emptymesh(MeshInt); 	
+
+/// TEST
+mesh Shempty=MeshInt; 	
+
+
+
+
+real K0, dpdz;
+include "Macros_Geometrie_Surface.edp";
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+CalcGeomSurf;
+
+
+// Calcul de diverses quantites interessantes
+real Vol = 2*pi*int2d(MeshInt)(x); // Volume
+real Area = 2*pi*int1d(MeshInt,2)(x); // Surface
+real Rmax = xPointSurf(0:Nsurface).max;
+real Rmin = xPointSurf(0:Nsurface).min;
+real Zmax = yPointSurf(0:Nsurface).max;
+real Zmin = yPointSurf(0:Nsurface).min;
+real Z1 = yPointSurf(0);
+real Z2 = yPointSurf(Nsurface);
+real L = Z2-Z1;
+
+dpdz = 0;
+
+cout << " ####### STATISTIQUES sur la forme : " << endl << endl;
+cout << " ## Longueur                        : " << L << endl;
+cout << " ## gradient pression adim (Bo^-1)  : " << dpdz << endl;
+cout << " ## Volume                          : " << Vol << endl;
+//cout << " ## Volume / Volume cyl             : " << Vol/(pi*L*Rbase^2) << endl;
+cout << " ## Courbure                        : " << K0 << endl;
+cout << " ## SURFACE                         : " << Area << endl;
+cout << " ## Rmax                            : " << Rmax << endl;
+cout << " ## Rmin                            : " << Rmin << endl;
+cout << " ## Zmax                            : " << Zmax << endl;
+cout << " ## Zmin                            : " << Zmin << endl;
+cout << endl;
+
+
+// fichier info geom
+{
+ofstream fileG("Infos_Geom.txt");
+fileG.scientific;
+fileG << L << " " ; 
+//fileG << Vol/(pi*L*Rbase^2) << " " ;
+fileG << K0 << " " ; 
+fileG << dpdz << " " ;
+fileG << Area << " ";
+fileG << Zmin << " " ; 
+fileG << Zmax << " " ; 
+fileG << Rmin << " " ; 
+fileG << Rmax << " ";
+fileG <<  endl ; 
+fileG << "### Infos geometrie : L Vol' K0 dpdz Area Zmin Zmax Rmin Rmax" << endl;
+};
+
+
+
+// ##################  ECRITURE D'un fichier contenant la geometrie de la surface ############ 
+ofstream filegeom2("Geom_SurfaceINIT.txt") ;
+for(int ksurf=Nsurface;ksurf>-1;ksurf--) 
+	{
+	filegeom2 << S0PointSurf(ksurf) << "   " << xPointSurf(ksurf) << "  "  << yPointSurf(ksurf) << "   " 
+	<< alphaPointSurf(ksurf) << "   " << K0aPointSurf(ksurf) << "  " << K0bPointSurf(ksurf)  
+	<< "  " << dS0PointSurf(ksurf)  	<< endl ;
+	};*/

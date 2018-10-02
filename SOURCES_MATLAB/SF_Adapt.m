@@ -103,12 +103,17 @@ optionstring = [' ', num2str(nfields), ' '];
 for i=1:nfields;
      mycp(flowforadapt(i).mesh.filename, [ffdatadir, 'mesh.msh']);
      mycp(flowforadapt(i).filename, [ffdatadir, 'FlowFieldToAdapt',num2str(i),'.txt']);
+%    if(isfield(flowforadapt(i),'datastoragemode')) 
     [dumb,storagemode,nscalars] = fileparts(flowforadapt(i).datastoragemode); % this is to extract two parts of datastoragemode, e.g. 
     if(strcmp(nscalars,''))
         nscalars = '0';
     else
         nscalars = nscalars(2:end); %to remove the dot
     end
+%    else 
+%        storagemode = 'ReP2P2P1';
+%        nscalars = 1;
+%    end
     optionstring = [optionstring, ' ', storagemode, ' ' , nscalars , ' '];
 end
 

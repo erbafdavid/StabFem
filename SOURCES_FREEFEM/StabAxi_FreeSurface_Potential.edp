@@ -379,6 +379,7 @@ else if(matrixconstruction=="block")
         etaRAD = sqrt(etaRAD);
         int Imax = etaRAD.imax;
         norm =  etaTEMP[][Imax];
+       if(norm ==0){ cout << "WARNING  : dected norm = 0 !" << endl; norm =1;};
         }
 		[Modecphi,Modeceta] = [Modecphi/norm,Modeceta/norm];
 
