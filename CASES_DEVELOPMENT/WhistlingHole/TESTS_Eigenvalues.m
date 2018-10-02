@@ -35,8 +35,19 @@ evG1 = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20)
 % nev = 20 => Slepc solver
 ev = SF_Stability(bf,'shift',-2.1i,'m',0+1i,'nev',20)
 % nev = 1 => shift-invert solver
-ev1 = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20)
+ev1 = SF_Stability(bf,'shift',-2.1i,'m',0+1i,'nev',20)
 
-plot(evG,evG1,ev,ev1)
+scatter(real(evG), imag(evG),'MarkerEdgeColor',[0 .5 .5],...
+              'MarkerFaceColor',[0 .7 .7],...
+              'LineWidth',1.5)
+hold on;
+scatter(real(evG1),imag(evG1),'s','red',...
+              'LineWidth',1.5)
+
+scatter(real(ev),imag(ev),'s','magenta',...
+              'LineWidth',1.5)
+hold on;
+scatter(real(ev1),imag(ev1),'s','black',...
+              'LineWidth',1.5)
 legend('Stab_Axi_Complex.edp, nev=20','Stab_Axi_Complex.edp, nev=1','Stab_Axi_Complex_m0.edp, nev=20','Stab_Axi_Complex_m0.edp, nev=1');
 
