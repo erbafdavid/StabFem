@@ -92,19 +92,19 @@ figure(4);
 E=0.15;
 
 subplot(1,4,1);
-plotFF(emm0(3),'phi.im','title','Mode m=0,a');hold on;
+plotFF(emm0(3),'phi.im','title',{'Mode m=0,a',['\omega_r = ',num2str(-imag(evm0(3)))] } );hold on;
 plotFF_ETA(emm0(3),'Amp',E,'style','r');hold off;
 
 subplot(1,4,2);
-plotFF(emm0(5),'phi.im','title','Mode m=0,s');hold on;
+plotFF(emm0(5),'ur.im','title',{'Mode m=0,s',['\omega_r = ',num2str(-imag(evm0(5)))] } );hold on;
 plotFF_ETA(emm0(5),'Amp',E,'style','r');hold off;
 
 subplot(1,4,3);
-plotFF(emm1(1),'phi.im','title','Mode m=1,s');hold on;
+plotFF(emm1(1),'phi.im','title',{'Mode m=1,s',['\omega_r = ',num2str(-imag(evm1(1)))] } );hold on;
 plotFF_ETA(emm1(1),'Amp',E,'style','r');hold off;
 
 subplot(1,4,4);
-plotFF(emm1(3),'phi.im','title','Mode m=1,a');hold on;
+plotFF(emm1(3),'phi.im','title',{'Mode m=1,a',['\omega_r = ',num2str(-imag(evm1(3)))] } );hold on;
 plotFF_ETA(emm1(3),'Amp',E,'style','r');hold off;
 
 pos = get(gcf,'Position'); pos(3)=pos(4)*2.6;set(gcf,'Position',pos); % resize aspect ratio
@@ -132,7 +132,7 @@ box on; pos = get(gcf,'Position'); pos(3)=pos(4)*.8;set(gcf,'Position',pos); % r
 set(gca,'FontSize', 12);
 saveas(gcf,'FIGURES/Bridges_NV_Eigenmodes_eta_cyl_L3_5',figureformat);
 % note that for m=0 the two first modes are spurious, so we take modes 3 and 5
-pause(0.1);
+pause(1);
 
 end
 
@@ -164,7 +164,7 @@ end
 
 
 %%
-if(isfigures==1)
+if(isfigures>1)
  %CHAPTER 2 : Construction of equilibrium shape and stability
 %%%%% calculations for a family of bridge shapes with L=4 and variable volume and pressure
 
@@ -180,7 +180,7 @@ for P = tabP
     tabV = [tabV ffmesh.Vol];
     figure(20);
     plot(ffmesh.xsurf,ffmesh.ysurf); hold on;
-    pause(0.1);
+    pause(1);
     evm0 =  SF_Stability(ffmesh,'nev',16,'m',0,'sort','SIA');
     evm1 =  SF_Stability(ffmesh,'nev',16,'m',1,'sort','SIA');
     tabEVm0 = [tabEVm0 evm0];
@@ -227,7 +227,7 @@ for P = tabP
     tabV = [tabV ffmesh.Vol];
     figure(20);
     plot(ffmesh.xsurf,ffmesh.ysurf); hold on;
-    pause(0.1);
+    pause(1);
     evm0 =  SF_Stability(ffmesh,'nev',16,'m',0,'sort','SIA');
     evm1 =  SF_Stability(ffmesh,'nev',16,'m',1,'sort','SIA');
     tabEVm0 = [tabEVm0 evm0];
@@ -276,104 +276,60 @@ end % chapter 2
 
 
 
+%%
+disp('##### autorun test 3 :  eigenvalues in the VISCOUS case')
 
-%%%%% CHAPTER 3 : Construction of equilibrium shapes WITH VOLUME
-%%%%% CORRESPONDING TO THAT OF TOUCHING SPHERES (Chireux et al.)
-%%%%% 
 
-if(isfigures==1)
+L = 4;
+density=10;
+ %creation of an initial mesh (with volume corresponding to coalescence of two spherical caps) 
+ffmesh = SF_Mesh('MeshInit_Bridge.edp','Params',[0 L density]);
+V = pi*L/2*(1+L^2/12);
+gamma = 1;
+rhog = 0;
+ffmesh = SF_Mesh_Deform(ffmesh,'V',V,'typestart','pined','typeend','pined','gamma',gamma,'rhog',rhog);
+nu = 1e-2;
 
-% CHAPTER 3a : First loop in the interval [3.5,7] (increasing values)
-L = 3.5;
-ffmesh = SF_Mesh('MeshInit_Bridge.edp','Params',[0 L density]); %% creation of an initial mesh (cylindrical liquid bridge)
+[evViscm1,emViscm1] =  SF_Stability(ffmesh,'nu',nu,'gamma',1,'nev',10,'m',1,'shift',3.45i);
+[evViscm0,emViscm0] =  SF_Stability(ffmesh,'nu',nu,'gamma',1,'nev',10,'m',0,'shift',3.45i);
 
-tabL = 3.5:.1:7; Lans= tabL(1);
-tabV = [];
-tabP = [];
-tabEVm0 = []; tabEVm1=[]; 
-for L = tabL
-    ffmesh = SF_MeshStretch(ffmesh,1,L/Lans);
-    V = pi*L/2*(1+L^2/12);
-    ffmesh = SF_Mesh_Deform(ffmesh,'V',V)
-    tabV = [tabV ffmesh.Vol]; tabP = [tabP ffmesh.P0];
-    figure(30);
-    plot(ffmesh.xsurf,ffmesh.ysurf); hold on;
-    pause(0.1);
-    evm0 =  SF_Stability(ffmesh,'nev',16,'m',0,'sort','SIA');
-    evm1 =  SF_Stability(ffmesh,'nev',16,'m',1,'sort','SIA');
-    tabEVm0 = [tabEVm0 evm0];
-    tabEVm1 = [tabEVm1 evm1];
-    Lans = L;
+evViscm0
+evViscm1
+
+evm0REF =  [ -0.1101 + 4.0796i  -0.0491 + 2.2391i  -0.1967 + 6.2051i  -0.0120 + 0.8156i];
+evm1REF =  [   -0.0818 + 3.0672i  -0.1436 + 4.7451i -0.0380 + 1.7478i -0.2283 + 6.7509i -0.0087 + 0.7452i];
+
+error3=0
+error3 = abs(evViscm0(1)/evm0REF(1)-1)+abs(evViscm0(1)/evm0REF(1)-1)+ abs(evViscm1(3)/evm1REF(3)-1)+abs(evViscm1(4)/evm1REF(4)-1)
+if(error3>5e-3) 
+    value = value+1 
 end
 
-% PLOTS
-figure(30);
-title('A few equilibrium shapes for liquid bridges');
+if(isfigures>0)
+figure(10);
+E=0.2;
 
-figure(32);hold on;
-for num=1:8
-    plot(tabL,imag(tabEVm0(num,:)),'ro-',tabL,imag(tabEVm1(num,:)),'bo-');
-end
-title('frequencies of m=0 (red) and m=1 (blue) modes vs. L');
-xlabel('L');ylabel('\omega_r');
+subplot(1,4,1);
+plotFF(emViscm0(4),'ur1.im','title',{'Mode m=0,a',['\omega_r = ',num2str(imag(evViscm0(4))),', \omega_i = ',num2str(real(evViscm0(4))) ]} );hold on;
+plotFF_ETA(emViscm0(4),'Amp',E,'style','r');hold off;
 
+subplot(1,4,2);
+plotFF(emViscm0(2),'ur1.im','title',{'Mode m=0,s',['\omega_r = ',num2str(imag(evViscm0(2))),', \omega_i = ',num2str(real(evViscm0(2)))]});hold on;
+plotFF_ETA(emViscm0(2),'Amp',E,'style','r');hold off;
 
-figure(33);hold on;
-for num=1:8
-    plot(tabL,imag(tabEVm0(num,:)).*tabL.^1.5,'ro-',tabL,imag(tabEVm1(num,:)).*tabL.^1.5,'bo-');
-end
-title('rescaled frequencies of m=0 (red) and m=1 (blue) modes vs. L');
-xlabel('L');ylabel('\omega_r/\omega_L');
-ylim([0 22]);
+subplot(1,4,3);
+plotFF(emViscm1(5),'ur1.im','title',{'Mode m=1,s',['\omega_r = ',num2str(imag(evViscm1(5))),', \omega_i = ',num2str(real(evViscm1(5))) ] });
+hold on;
+plotFF_ETA(emViscm1(5),'Amp',E,'style','r');hold off;
 
-% CHAPTER 3ab : First loop in the interval [3.5,2] (decreasing values)
-L = 3.5;
-ffmesh = SF_Mesh('MeshInit_Bridge.edp','Params',[0 L density]); %% creation of an initial mesh (cylindrical liquid bridge)
+subplot(1,4,4);
+plotFF(emViscm1(3),'ur1.im','title',{'Mode m=1,a',['\omega_r = ',num2str(imag(evViscm1(3))),', \omega_i = ', num2str(real(evViscm1(3))) ] } );
+hold on;
+plotFF_ETA(emViscm1(3),'Amp',E,'style','r');hold off;
 
-tabL = 3.5:-.1:2; Lans= tabL(1);
-tabV = [];
-tabP = [];
-tabEVm0 = []; tabEVm1=[]; 
-for L = tabL
-    ffmesh = SF_MeshStretch(ffmesh,1,L/Lans);
-    V = pi*L/2*(1+L^2/12);
-    ffmesh = SF_Mesh_Deform(ffmesh,'V',V)
-    tabV = [tabV ffmesh.Vol]; tabP = [tabP ffmesh.P0];
-    figure(30);
-    plot(ffmesh.xsurf,ffmesh.ysurf); hold on;
-    pause(0.1);
-    evm0 =  SF_Stability(ffmesh,'nev',16,'m',0,'sort','SIA');
-    evm1 =  SF_Stability(ffmesh,'nev',16,'m',1,'sort','SIA');
-    tabEVm0 = [tabEVm0 evm0];
-    tabEVm1 = [tabEVm1 evm1];
-    Lans = L;
-end
-
-% PLOTS
-figure(30);
-title('A few equilibrium shapes for liquid bridges');
-
-figure(32);hold on;
-for num=1:8
-    plot(tabL,imag(tabEVm0(num,:)),'ro-',tabL,imag(tabEVm1(num,:)),'bo-');
-end
-title('frequencies of m=0 (red) and m=1 (blue) modes vs. L');
-xlabel('L');ylabel('\omega_r');
-ylim([0 6]);
-box on; pos = get(gcf,'Position'); pos(4)=pos(3)*1;set(gcf,'Position',pos); % resize aspect ratio
-set(gca,'FontSize', 14);
-saveas(gca,'FIGURES/Bridges_NV_coal_omega',figureformat);
-
-figure(33);hold on;
-for num=1:8
-    plot(tabL,imag(tabEVm0(num,:)).*tabL.^1.5,'ro-',tabL,imag(tabEVm1(num,:)).*tabL.^1.5,'bo-');
-end
-title('rescaled frequencies of m=0 (red) and m=1 (blue) modes vs. L');
-xlabel('L');ylabel('\omega_r/\omega_L');
-ylim([0 22]);
-box on; pos = get(gcf,'Position'); pos(4)=pos(3)*1;set(gcf,'Position',pos); % resize aspect ratio
-set(gca,'FontSize', 14);
-saveas(gca,'FIGURES/Bridges_NV_L3_5_coal_omegaL',figureformat);
+pos = get(gcf,'Position'); pos(3)=pos(4)*2.6;set(gcf,'Position',pos); % resize aspect ratio
+%set(gca,'FontSize', 14);
+saveas(gcf,'FIGURES/Bridges_Viscous_Oh1em2_Eigenmodes_phi_cyl_L3_5',figureformat);
 
 end
 

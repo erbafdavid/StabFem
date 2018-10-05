@@ -102,8 +102,10 @@ if(GammaBar!=0) {cout << " ERROR : GAMMA (rotation) NOT YET IMPLEMENTED !!!'" <<
 
 cout << "ENTREZ typestart (pined, axis, plane or angle) : "<< endl;
 cin >> typestart;
+if(typestart=="angle") {cout << " typestart=angle NOT YET IMPLEMENTED !!!'" << endl; exit(10);};
 cout << "ENTREZ typeend (pined, axis, plane) : "<< endl;
 cin >> typeend;
+if(typeend=="angle") {cout << " typeend=angle NOT YET IMPLEMENTED !!!'" << endl; exit(10);};
 
 
 /////////////////////////////////////
@@ -142,7 +144,7 @@ for(int i = 0; (i<Itmax)&(Res>1e-7);i++)
 {
 
 // Calcul de la deformation de surface 
-
+Wh1 etaNewton ;
 if(typecont=="V")
 {
 CalcEtaV(etaNewton,PP1,VolObj);
@@ -152,7 +154,7 @@ cout << " Nouvelle pression : PP0 : " << PP0 << endl;
 }
 else if(typecont=="P")
 {
-CalcEta;
+CalcEta(etaNewton,PP0);
 }
 else
 {
@@ -160,13 +162,21 @@ cout << "ERROR : typecont should only be V or P (S not implemented yet)" << endl
 exit(10);
 };
 
-ExtendEta; plot(etaext,fill=1,value=1,wait=1,cmm="eta ext"); //(pour visualisation)
+IFMACRO(FREEFEMPLOTS,YES)
+Vh etaext;
+ExtendEta(etaext); plot(etaext,fill=1,value=1,wait=1,cmm="eta ext"); //(pour visualisation)
+ENDIFMACRO
 
 // Calcul d'un champ de deplacement du maillage 
 
+fespace Vh11(th,[P1,P1]);
+Vh11 [ur,uz];
+CalcDef(ur,uz);
 
-CalcDef;
+
+IFMACRO(FREEFEMPLOTS,YES)
 plot([ur,uz],fill=1,value=1,cmm="champ de deformation calcule iteration "+i,wait=1);
+ENDIFMACRO
 
 // Deplacement du maillage
 th = movemesh(th,[x+ur,y+uz]);

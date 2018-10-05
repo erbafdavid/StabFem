@@ -1,21 +1,23 @@
 ///
-// THIS PROGRAM IS ADAPTED FROM Eigen_Bridge_Potential.edp from LiquidBridges++_V1.3
-// imported in STABFEM project by D. Fabre on december 2017.
+// PROGRAM StabAxi_FreeSurface_Viscous.edp
 // STILL TO BE RATIONALIZED A LOT !!!
 
 
-//  Computation of the eigenvalues and eigenvectors for oscillations of a liquid bridge
-//  (inviscid theory)
+//  Computation of the eigenvalues and eigenvectors for oscillations of a static meniscus (GENERAL PROGRAM)
 // ----------------------------------------
-// the problem is potential : u = i grad (phi) (mind the "i" factor !) 
+// the problem is viscous : 
+
+
+// previous comment : inviscid potential
+// u = grad (phi) 
 // PROBLEM : find $\omega$ and $[phi,eta]$  such that
 // 	$$ \Delta \phi = 0 $$ inside the domain
-// 	$$ \omega \phi = \gamma (-(K0a^2+K0b^2) \eta - \partial^2 \eta / \partial s^2 + m^2/r^2 \eta $$ on the free surface
-// 	$$ \omega \eta = grad \phi \dot n $$ on the free surface 
+// 	$$ \lambda \phi = - \gamma (-(K0a^2+K0b^2) \eta - \partial^2 \eta / \partial s^2 + m^2/r^2 \eta $$ on the free surface
+// 	$$ \lambda \eta = grad \phi \dot n $$ on the free surface 
 // 
 //-----------------------------------------
 
-// Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
+// Remarque : phi et eta sont definis comme des champs P1 sur le volume, meme si eta n'a de sens qu'à la surface
 
 
 include "Macros_StabFem.edp"
@@ -31,11 +33,11 @@ real nu;
 
 cout << "ENTREZ LA TENSION DE SURFACE GAMMA : "<< endl;
 cin >> gamma;
-if(gamma != 1){ 
-	// TO BE MODIFIED !
-	cout << "WARNING : PROGRAM HAS TO BE ADAPTED FOR GAMMA ~= 1"<< endl; 
-	exit(-1);
-	} ;
+//if(gamma != 1){ 
+//	// TO BE MODIFIED !
+//	cout << "WARNING : PROGRAM HAS TO BE ADAPTED FOR GAMMA ~= 1"<< endl; 
+//	exit(-1);
+//	} ;
 
 
 cout << "ENTREZ LE PARAMETRE DE GRAVITE dp/dz = rho g : "<< endl;
@@ -43,6 +45,16 @@ cin >> dpdz;
 
 cout << "ENTREZ LA VISCOSITE NU : "<< endl;
 cin >> nu;
+
+string typestart,typeend;
+cout << "%% ENTREZ typestart (pined, axis, plane, angle, angleV) : ";
+cin >> typestart;
+cout << typestart << endl;
+
+cout << "%% ENTREZ typeend (pined, axis, plane) : ";
+cin >> typeend;
+cout << typeend << endl;
+
 
 int m;  // Nombre d'onde
 cout << " ENTREZ Le nombre d'onde m ?" << endl;
@@ -64,8 +76,8 @@ cin >> nev ;
 cout << "==> Calcul des valeurs propres pour m = " << m << endl;
 
 
-int Nval = min(nev,10);  // nb. de valeurs propres à calculer
-int Nmodes = nev; // nb. de vecteurs propres à post-traiter
+int Nval = nev;  // nb. de valeurs propres à calculer
+int Nmodes = Nval; // nb. de vecteurs propres à post-traiter
 int ncv = 4*nev;   ///// Krylov Basis
 
 
@@ -81,10 +93,22 @@ int ncv = 4*nev;   ///// Krylov Basis
 
 mesh th=readmesh(ffdatadir+"mesh.msh");
 //mesh th=th; // autre nom possible...
-mesh Shempty=emptymesh(th); 	// Maillage 'surface'
-real L, K0, Vol, Area;
+mesh thsurface;
+if(typesurfacemesh=="plain") 
+{
+thsurface = th; 	// Maillage 'surface'
+};
+if(typesurfacemesh=="empty") 
+{
+thsurface = emptymesh(th); 	// Maillage 'surface'
+};
+real L, K0, Vol, Area, PP0;
 
-include "Macros_Geometrie_Surface.edp"
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
+
+
+//include "Macros_Geometry_FreeSurface.edp"
+//include "Macros_Geometry_Surface.edp"
 
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
 // Calcul des normales et des courbures
@@ -92,7 +116,8 @@ CalcGeomSurf;
 
 
 
-fespace P2P2P2P1P1P1(th,[P2,P2,P2,P1,P1,P1]);
+fespace P2P2P2P1P1P1(th,[P1b,P1b,P1b,P1,P1,P1]);
+fespace PP1(th,P1);
 
 P2P2P2P1P1P1<complex> [uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1];
 
@@ -125,6 +150,8 @@ macro D(im,u) [
 
 // CONSTRUCTION DES MATRICES
 
+macro nr() N0r // 
+macro nz() N0z //
 
 
 varf a([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) = 
@@ -135,20 +162,24 @@ varf a([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) =
              + div(1i*m,u)*vp
              )*x
              )   	
-	+ int1d(th,2)(gamma*uk1*(vz*N.y+vr*N.x)*x)  // dynamic BC
-	+ int1d(th,2)(veta*(uz*N.y+ur*N.x)*x) // kinematic BC
-	+ int1d(th,2)((-uk1*vk1-(Ds(ueta))*(Ds(vk1))  -(K0a^2+K0b^2)*ueta*vk1+m^2/(x^2+1e-30)*vk1*ueta)*x) // def of k1
-	+ int1d(th,2)(vz*dpdz*ueta*N.y*x)// gravity
+	+ int1d(th,2)(gamma*uk1*(vz*nz+vr*nr)*x)  // dynamic BC
+	+ int1d(th,2)(-vz*dpdz*ueta*nz*x)// gravity
+	+ int1d(th,2)(veta*(uz*nz+ur*nr)*x) // kinematic BC
+	+ int1d(th,2)((uk1*vk1+(Ds(ueta))*(Ds(vk1))-(K0a^2+K0b^2)*ueta*vk1+m^2/x^2*vk1*ueta
+	             //-1e-5*((Ds(uk1))*(Ds(vk1))-(K0a^2+K0b^2)*uk1*vk1+m^2/x^2*vk1*uk1) // test
+	             ) *x) // def of k1
 	+ int2d(th)( -shift*(uz*vz+ur*vr+uphi*vphi)*x ) // shift volume
 	+ int1d(th,2)(-shift*ueta*veta*x) // shift surface
-	+ int2d(th)(1e-12*(ueta*veta+uk1*vk1)*x )
-	+ on(5,ueta=0) // pinned contact lines
-	+ on(5,ur=0,uz=0,uphi=0) // plates
-	+ int1d(th,1)(uz*vz*1e30*(abs(m)>0)+(ur*vr+uphi*vphi)*1e30*(abs(m)!=1)+uk1*vk1*1e30) //axis 
+	+ int2d(th)(1e-8*(ueta*veta+uk1*vk1)*x )
+	+ int1d(th,5,55)(1e15*ueta*veta*((typestart=="pined")||(typeend=="pined"))) // pinned contact lines
+	+ int1d(th,1)(uz*vz*1e15*(abs(m)>0)+(ur*vr+uphi*vphi)*1e15*(abs(m)!=1))
+	+ int1d(th,1)(1e15*(uk1*vk1)*(abs(m)>0)) //axis 
+//	+ on(5,55,ur=0,uz=0,uphi=0) // plates
+	+ int1d(th,5,55)(1e15*(ur*vr+uz*vz+uphi*vphi))
 ;
 
 varf b([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) =
-      int2d(th)((uz*vz+ur*vr+uphi*vphi)*x+0*(ueta*veta)+0*(uk1*vk1) )
+      int2d(th)((uz*vz+ur*vr+uphi*vphi)*x )
     + int1d(th,2)(ueta*veta*x)
 ;
 
@@ -162,12 +193,12 @@ varf b([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) =
 /////////////////////////////////////////////////////
 
 
-matrix<complex> OP= a(P2P2P2P1P1P1,P2P2P2P1P1P1,solver=sparsesolver); 
+matrix<complex> OP= a(P2P2P2P1P1P1,P2P2P2P1P1P1,solver=sparsesolver,tgv=1e15); 
 matrix<complex> B= b(P2P2P2P1P1P1,P2P2P2P1P1P1,solver=CG); 
 
 //int nev=Nval;  // number of computed eigen valeu close to sigma
 complex[int] ev(Nval); // to store nev eigein values
-P2P2P2P1P1P1<complex>[int] [eVuz,uVur,eVuphi,eVp,eVeta,eVK1](Nval);   // to store nev eigen vectors
+P2P2P2P1P1P1<complex>[int] [eVuz,eVur,eVuphi,eVp,eVeta,eVK1](Nval);   // to store nev eigen vectors
 
 int k=EigenValue(OP,B,sigma=shift,value=ev,vector=eVuz,tol=1e-8,maxit=0,ncv=ncv);  
 
@@ -187,23 +218,46 @@ cout << " ### VP Calculees :" << endl;
 ofstream EV(ffdatadir+"Spectrum.txt");
 EV.scientific;
 P2P2P2P1P1P1<complex> [MODEz,MODEr,MODEphi,MODEp,MODEeta,MODEk1];
+
 for (int i=0;i<k;i++)
   {
     cout << " VP numero " <<  i << " : " << real(ev[i]) << "+i" << imag(ev[i]) <<  endl;
-    EV << real(ev[i]) << "  " << imag(ev[i]) << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl; 
+    EV << real(ev[i]) << "  " << imag(ev[i]) << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  
+    << endl; 
+
+// Normalisation of the modes
+        ueta[] = eVuz[i][];
+        complex norm;
+        {
+        PP1<complex> uetaTEMP=ueta;
+        real[int] Xx = uetaTEMP[].re;
+        real[int] Yy = uetaTEMP[].im;
+        real[int] etaRAD  = Xx.*Xx;
+                  etaRAD += Yy.*Yy;
+        etaRAD = sqrt(etaRAD);
+        int Imax = etaRAD.imax;
+        norm =  uetaTEMP[][Imax];
+      // if(norm ==0){ cout << "WARNING  : dected norm = 0 !" << endl; norm =1; };
+        }
+		ueta[] = 1/norm*ueta[];
+
+
   
 // Post-traitement MODES
   if (i<k)
      {	
    	  ofstream FileTXT(ffdatadir+"Eigenmode"+(i+1)+".txt");
-   	  FileTXT << eVuz[i][];
+   	  FileTXT << ueta[];
    	  FileTXT << endl << endl << endl;
-   	  MODEz[] = eVuz[i][];
-     SFWriteMode(ffdatadir+"Eigenmode"+(i+1)+".ff2m",MODE,ev[i]);   
-     
-     plot(eVuz[i],cmm="mode numero"+i+" : uz", wait=1); 	
+   	  MODEz[] = ueta[];
+     SFWriteMode(ffdatadir+"Eigenmode"+(i+1)+".ff2m",MODE,ev[i]);
+     //IFMACRO(FREEFEMPLOTS,YES)   
+      plot(eVur[i],cmm="mode numero"+i+" : ur", wait=1); 
+      plot(eVuz[i],cmm="mode numero"+i+" : uz", wait=1); 
+      plot(eVuphi[i],cmm="mode numero"+i+" : uphi", wait=1);	
       plot(eVeta[i],cmm="mode numero"+i+" : eta", wait=1); 	
        plot(eVK1[i],cmm="mode numero"+i+" : k1", wait=1); 	
+       //ENDIFMACRO
      };
   };	
 	

@@ -47,11 +47,11 @@ include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
 
 IFMACRO(EIGENSOLVER,SLEPC)
-load "../../../../../../../home/jsagg/StabFem/SOURCES_OTHER/PETSc-complex"                             // PETSc plugin
-load "../../../../../../../home/jsagg/StabFem/SOURCES_OTHER/SLEPc-complex"                             // SLEPc plugin
-macro partitioner()metis// 
+load "PETSc-complex"                             // PETSc plugin
+load "SLEPc-complex"                             // SLEPc plugin
+//macro partitioner()metis// 
 macro dimension(      )2// 
-include "/home/jsagg/StabFem/SOURCES_OTHER/macro_ddm.idp"                  // Additional DDM functions
+include "macro_ddm.idp"                  // Additional DDM functions 
 ENDIFMACRO
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +293,7 @@ IFMACRO(EIGENSOLVER,SLEPC)
 
 	/* ///////////////////// CALL TO SLEPC /////////////////////////////////////////////////// */
 	int k = zeigensolver
-	(DistA,              /* matrix OP = A − sigma*B */
+	(DistA,              /* matrix OP = A ??? sigma*B */
 	 DistB,              
 	 vectors = eux, /* Array to store the FEM-EigenFunctions*/
 	 values  = ev, /* Array to store the EigenValues */
