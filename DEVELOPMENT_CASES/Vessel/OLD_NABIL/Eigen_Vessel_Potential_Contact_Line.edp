@@ -15,11 +15,11 @@
 // Remarque : phi et eta sont definis comme des champs P2 sur le volume, meme si eta n'a de sens qu'à la surface
 
 // Definition des parametres necessaires au bon fonctionnement des macros
-string surfaceorder="direct"; /// possibilities : "direct", "reverse" (use reverse to fit with matlab "meniscus" program);
+//string surfaceorder="direct"; /// possibilities : "direct", "reverse" (use reverse to fit with matlab "meniscus" program);
 string typestart = "pined"; // possibilites : "pined", "axis", "plane", "angle"
 string typeend = "axis";    // possibilites : "pined", "axis", "plane", "angle"
 int anglecut =3; // position of the "cut" in the tan2 determination. 
-                  // 0 -> alpha in [-pi,pi]; 1-> [-pi/2,3pi/2]; 2 -> [0,pi] ; 3 -> [-3*pi/2,pi/2] 
+                  // 0 -> alpha in [-pi,pi]; 1-> [-pi/2,3pi/2]; 2 -> [0,2*pi] ; 3 -> [-3*pi/2,pi/2] 
 
 verbosity=0;
 
@@ -50,7 +50,8 @@ int Nval = 10;  // nb. de valeurs propres à calculer
 int Nmodes = 1; // nb. de vecteurs propres à post-traiter
 
 cout << " ENTREZ Le nombre d'onde m ?" << endl;
-cin >> m;
+//cin >> m;
+m=1;
 cout << "==> Calcul des valeurs propres pour m = " << m << endl;
 
 ////////////////////////////////////////////////////////////////
@@ -114,21 +115,18 @@ varf aqeta(etaA,qA)=
 	+ int2d(Th)((dx(qA)*dx(etaA)+dy(qA)*dy(etaA))*RegEta*abs(x))
 	+ int1d(Th,1,5)(1e30*etaA*qA*abs(x))
 ;
-/*varf aveta(etaA,vA)=
-	int2d(Th)((dx(vA)*dx(etaA)+dy(vA)*dy(etaA))*1e-30*abs(x))//
-	- int1d(Th,2)(shift*(etaA*vA)*x)
-;
 
-varf aqphi(phiA,qA)=
-	int2d(Th)( 1e-30*(dx(phiA)*dx(qA) + dy(phiA)*dy(qA))*x  ) //
-	- int1d(Th,2)(shift*(qA*phiA)*x)
-;*/
 matrix Avphi = avphi(Vh,Vh,solver=UMFPACK);
 //matrix Aqphi = aqphi(Vh,Vh,solver=UMFPACK);
 matrix Aqeta = aqeta(Vh,Vh,solver=UMFPACK); 
 //matrix Aveta = aveta(Vh,Vh,solver=UMFPACK); 
 Aqeta(IndexPointSurf(0),IndexPointSurf(0)) = Aqeta(IndexPointSurf(0),IndexPointSurf(0))-gamma*(1/tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0);
-matrix A = [[0,Aqeta],[Avphi,0]];
+
+matrix A = [
+	[0,Aqeta],
+	[Avphi,0]
+	];
+	
 set(A,solver =UMFPACK);
 
 // Construction de la matrice B
@@ -141,18 +139,45 @@ varf bveta(etaB,vB) =
 
 matrix Bqphi = bqphi(Vh,Vh,solver=GMRES,eps=1e-20); 
 matrix Bveta = bveta(Vh,Vh,solver=GMRES,eps=1e-20); 
-matrix B = [[Bqphi,0],[0,Bveta]];
+
+matrix B = [
+			[Bqphi,0],
+			[0,Bveta]
+		];
+// manière de résoundre sans SLEPC (mat. A doit être symétrique)		
+		
+
 set(B,solver =GMRES);
+
+
+matrix Bbis = [
+			[0,Bqphi],
+			[Bveta,0]
+		];
+// manière "naturelle" qui sera utilisée dans le non linéaire	
+		
+
+set(B,solver =GMRES);
+
+
 
 // Construction de la matrice C
 varf cveta(etaC,vC) = 
-        int1d(Th,2)(etaC*vC*x*1e-20);
+        int1d(Th,2)(etaC*vC*x*1e-40);
 varf cqphi(phiC,qC) = 
-       int1d(Th,2)(qC*phiC*x*1e-20);
+       int1d(Th,2)(qC*phiC*x*1e-40);
 matrix Cveta = cveta(Vh,Vh,solver=GMRES,eps=1e-20);
 matrix Cqphi = cqphi(Vh,Vh,solver=GMRES,eps=1e-20); 
-Cveta(IndexPointSurf(0),IndexPointSurf(0))=Cveta(IndexPointSurf(0),IndexPointSurf(0))+(alphatild/cos(alphaPointSurf(0)+pi/2));
-matrix C=[[0,Cveta],[Cqphi,0]];
+Cveta(IndexPointSurf(0),IndexPointSurf(0)) += (1/(-cos(alphaPointSurf(0))))*xPointSurf(0); // D&N : il manque un facteur alphatilde*gamma
+
+
+matrix C=
+	[
+		[Cqphi,0],
+		[0,Cveta]
+    ];
+
+
 set(C,solver =GMRES);
 
 ////////////////////////////////////////////////////
@@ -170,74 +195,80 @@ real[int,int] EVV(A.n,nev);
 
 int k=EigenValue(A,B,sym=false,sigma=shift,value=ev,ivalue=evi,vector=eVphi,tol=1e-10,maxit=0,ncv=0);
 
-//EVV = eVphi[][];
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
-cout << endl << "########################################################" << endl << endl;
-cout << " ### VP Calculees :" << endl;
+
+
 real[int]  eev(Nval);
-ofstream EV("spectrum.dat");
-EV.scientific;
-for (int i=0;i<k;i++)
-{
-  cout << " VP numero " <<  i<< " : " << ev[i] << "+i"<<evi[i] <<  endl;
-  EV << ev[i] << "  "<< evi[i] << " " << L << "  " << K0  << " " << Vol << "  " << dpdz << "   " << m  <<  endl;
-//    plot(u1,cmm="Eigen  Vector "+i+" valeur =" + ev[i]  ,wait=1,value=1);
-}; 
-    
+   
 real[int] X(A.n);   
 // Post-traitement MODES
-for (int i=0;i<Nmodes;i++)
-   {	
+	   	
+   	int i=0;
+   	
+   	cout << " VP numero " <<  i<< " : " << ev[i] << "+i"<<evi[i] <<  endl;
+   	 
+// On met le vecteur propre dans un vecteur X et dans des champs ModePhi ; ModeEta   	 
+   	 
     Vh ModePhi,ModeEta;
-//    ModePhi=eVphi[i];
-//    ModeEta=eVeta[i];
 	real[int] EVVV(A.n);
-	EVVV = eVphi[i][];
-	//ModeEta = ModeEta/ModeEta(1,0)*.5;
-	//ModePhi = ModePhi/ModeEta(1,0)*.5;
+	EVVV = eVphi[0][];
 	[ModePhi[],ModeEta[]] = EVVV;
 	X=[ModePhi[],ModeEta[]];
-    	Vh ux,uy;
-   };
+	
+	plot(ModePhi,wait=1,cmm="PodePhi");
+	
+    	
+    // Normalisation
+    real norm = .5/ModeEta(xPointSurf(0),yPointSurf(0))*(-cos(alphaPointSurf(0))); // Normalisation Gallaire : etaZ_R = 1/2 => eta(0) = 1/2*sin(beta) - 1/2*(-cos(alpha))    
+    ModeEta = ModeEta*norm;
+    ModePhi = ModePhi*norm;
+    X = norm*X;	
+    cout << "apres normalisation : eta(0) ; etaZ(0) " << ModeEta(xPointSurf(0),yPointSurf(0)) << " ; " << ModeEta(xPointSurf(0),yPointSurf(0))/cos(alphaPointSurf(0)) << endl;   	
+        
+        
+        
+        
+        
+        	
 ////////////////////////////////////////////////////
 //
 //    Coeff ordre 2
 //
 ///////////////////////////////////////////////////
-real ommega=ev[0];
-real[int] Y1(A.n);
-real[int] Y2(A.n);
-Y1= B*X;
-eta[] = X; // on recupere eta et phi dans un champ "composite"
-Vh Xeta;
-Vh Xphi;
-Xeta = eta;
-Xphi = phi;
-eta[] = Y1; 
-Vh Y1eta;
-Vh Y1phi;
-Y1eta = eta;
-Y1phi = phi;
+real omega=ev[0];
 
-Y2=C*X;
-eta[] = Y2; 
-Vh Y2eta;
-Vh Y2phi;
-Y2eta = eta;
-Y2phi = phi;
-real c1 = int2d(Th)((Xphi*Y1phi)*x)+int1d(Th,2)((Xeta*Y1eta)*x);
-real c2 = int2d(Th)((Xphi*Y2phi)*x)+int1d(Th,2)((Xeta*Y2eta)*x);
-real c22=(alphatild/cos(alphaPointSurf(0)+pi/2))*Xeta[](IndexPointSurf(0));
-real c3=(deltatild/pi)*xPointSurf(0);
-real Xi=ev[0]*c22/c1;
-real xi=c3/c1;
+
+// terme C1
+real c1 = int1d(Th,2)(ModePhi*ModeEta*x)+int1d(Th,2)(ModePhi*ModeEta*x); // = <X,BX>
+
+real[int] BX = Bbis*X;
+real[int] XBX = X.*BX;
+real c1bis = X'*BX; //XBX.sum;
+
+cout << "c1 = " << c1 << " ; " << c1bis << endl;
+
+
+// terme c2
+real c2=(1/(-cos(alphaPointSurf(0))))*(ModeEta[](IndexPointSurf(0)))^2*xPointSurf(0);
+
+real[int] CX = C*X;
+real c2bis = X'*CX;
+
+cout << "c2 = " << c2 << " ; " << c2bis << endl;
+
+// terme c3
+real c3=xPointSurf(0)*ModeEta[](IndexPointSurf(0));
+cout << "c3 = " << c3 << endl;
+
+real zeta=alphatild*gamma*omega*c2/c1;
+real chi=c3/c1*(deltatild/pi)*gamma;
 
 
 cout << endl << "########################################################" << endl << endl;
 
 cout << " Les coefficients de l'equation d'amplitude : "<<endl;
-cout << " Xi=" << Xi <<  endl;
-cout << " xi=" << xi <<  endl;
+cout << " zeta (ou Xi) =" << zeta <<  " = (alphatilde*gamma*omega) * " << c2/c1 <<  endl;
+cout << " chi  (ou xi) =" << chi << " = (deltatild*gamma/pi) * " << c3/c1 <<  endl;
 
 cout << endl << "########################################################" << endl << endl;
 

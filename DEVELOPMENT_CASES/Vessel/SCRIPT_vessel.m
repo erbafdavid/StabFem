@@ -34,11 +34,14 @@ legend('flat, free');
 
 figure(2);suptitle('m=1 sloshing modes : Horizontal surface, free condition');hold on;
 subplot(1,3,1);
-plotFF(emm1(2),'phi.im','title',{'Mode (m,n)= (1,1)',['freq = ',num2str(imag(evm1(2)))]},'symmetry','YA');hold on;plotFF_ETA(emm1(2),'symmetry','YA');
+plotFF(emm1(2),'phi.im','title',{'Mode (m,n)= (1,1)',['freq = ',num2str(imag(evm1(2)))]},'symmetry','YA');hold on;
+plotFF_ETA(emm1(2),'symmetry','YA');
 subplot(1,3,2);
-plotFF(emm1(1),'phi.im','title',{'Mode (m,n)= (1,2)',['freq = ',num2str(imag(evm1(1)))]},'symmetry','YA');hold on;plotFF_ETA(emm1(1),'symmetry','YA');
+plotFF(emm1(1),'phi.im','title',{'Mode (m,n)= (1,2)',['freq = ',num2str(imag(evm1(1)))]},'symmetry','YA');hold on;
+plotFF_ETA(emm1(1),'symmetry','YA');
 subplot(1,3,3);
-plotFF(emm1(3),'phi.im','title',{'Mode (m,n)= (1,3)',['freq = ',num2str(imag(evm1(3)))]},'symmetry','YA');hold on;plotFF_ETA(emm1(3),'symmetry','YA');
+plotFF(emm1(3),'phi.im','title',{'Mode (m,n)= (1,3)',['freq = ',num2str(imag(evm1(3)))]},'symmetry','YA');hold on;
+plotFF_ETA(emm1(3),'symmetry','YA');
 pos = get(gcf,'Position'); pos(3)=pos(4)*2.6;set(gcf,'Position',pos); % resize aspect ratio
 
 pause;
