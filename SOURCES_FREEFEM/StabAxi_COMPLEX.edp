@@ -210,11 +210,11 @@ varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
  // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
  + BoundaryconditionsStability(u,v,m); 
 
-complex shiftSave = shift;
+//complex shiftSave = shift;
 /// SLEPC DOES NOT NEED TO BE SHIFTED WHEN OPERATORS ARE BUILT
-IFMACRO(EIGENSOLVER,SLEPC)
-    shift = 0;
-ENDIFMACRO
+//IFMACRO(EIGENSOLVER,SLEPC)
+//    shift = 0;
+//ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
 	varf b([ux,ur,uphi,up],[vx,vr,vphi,vp]) = int2d(th)( (ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) );
@@ -234,11 +234,11 @@ cout << "$$ Building matrices..." ;
 ////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
 if(iadjoint=="D")
 {   OP=LNSE(XXXMh,XXXMh);//,solver=sparsesolver); 
-    shiftOP = shiftSave; 
+    shiftOP = shift; 
 }
 else if(iadjoint=="A")
 {   OP=LNSEadjoint(XXXMh,XXXMh);//,solver=sparsesolver); 
-    shiftOP = conj(shiftSave); 
+    shiftOP = conj(shift); 
 }
 else if(iadjoint=="S") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; };
 cout << "$$ ... done !" << endl;
@@ -304,9 +304,9 @@ IFMACRO(EIGENSOLVER,SLEPC)
 ENDIFMACRO
 
 /// ONCE WE FINISH WE RECOVER THE SHIFT
-IFMACRO(EIGENSOLVER,SLEPC)
-    shift = shiftSave;
-ENDIFMACRO
+//IFMACRO(EIGENSOLVER,SLEPC)
+//    shift = shiftSave;
+//ENDIFMACRO
 ////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -349,7 +349,7 @@ int testCB = exec("ls "+ffdatadir+"Eigenmode_guess.txt");
     	if (testCB!=0)
 		{
 		cout << "$$ No file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
-		[ux0,ur0,uphi0,p0] = [1,0,0,0];
+		[ux0,ur0,uphi0,p0] = [exp(-x^2),0,0,0];
 		} 
 		else
 		{
@@ -411,14 +411,20 @@ else if(iadjoint=="S")
 	/// ITERATION LOOP
 	int iter;
 	for (iter=0; ((err>errmax)&&(iter<itmax)); iter++)
-	{
+		{
+			cout << "shift : " << shift <<  " " << shiftOP << endl;
 		//	complex[int] rhs = B*ux0[];
-    	complex[int] rhs= brhs(0,XXXMh);  
+//    	complex[int] rhs= brhs(0,XXXMh); 
+		complex[int] rhs = B*ux0[]; 
 		complex[int] w = OP^-1*rhs;
 		ux[] = w;
 	
-		complex XnXn1 = int2d(th)((ux0*ux+ur0*ur+uphi0*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
-		complex Xn1Xn1 =  int2d(th)((ux*ux+ur*ur+uphi*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+//		complex XnXn1 = int2d(th)((ux0*ux+ur0*ur+uphi0*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+//		complex Xn1Xn1 =  int2d(th)((ux*ux+ur*ur+uphi*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+
+		complex XnXn1 = int2d(th)(ux0*ux0+ur0*ur0+uphi0*uphi0);
+		complex Xn1Xn1 =  int2d(th)(ux*ux0+ur*ur0+uphi*uphi0);
+
 		complex GG = Xn1Xn1/XnXn1;
 		// at each step the inverse shifted eigenval. is approximated by <X_{n+1}, Y> / <X_n, Y>
 		//      ( the choice Y = X_{n+1} is convenient but we could choose something else )

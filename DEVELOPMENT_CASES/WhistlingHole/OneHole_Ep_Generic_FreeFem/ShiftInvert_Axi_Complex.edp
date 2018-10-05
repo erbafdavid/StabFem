@@ -1,0 +1,245 @@
+//
+
+/// JET SIFFLANT : EIGENVALUE COMPUTATION BY SHIFT/INVERT ITERATION
+
+	load "UMFPACK64"
+/// DECLARATIONS FORMELLES
+	include "Params_Conduct.edp";
+	int Nprof =6;
+	macro Uin(rr) ( (2+Nprof)/Nprof*(1-rr^Nprof) )  //EOM
+	
+	mesh th=readmesh("mesh.msh");
+ 	fespace p2xp2xp1(th,[P2,P2,P1]);
+ 	fespace p2(th,P2);
+	fespace p1(th,P1);	
+ 	fespace p2xp2xp2xp1(th,[P2,P2,P2,P1]);
+	p2xp2xp1<complex> [urp,uzp,pp];
+    p2xp2xp1<complex> [ur,uz,p],[vr,vz,q];
+    p2xp2xp1<complex> [ur0,uz0,p0];
+    p2xp2xp1 [urr,uzr,pr],[uri,uzi,pii];
+    
+	int m=0; 
+	real nu,Re,sigmar,sigmai,shiftr,shifti;
+	real epsilonPQ = 0*1e-20; // terme de desingularisation
+//	real S = 100.;
+//	real Q = 1.;
+
+	{
+	ifstream cbin("chbaseCOMPLEX.txt");
+	cbin >> urp[];
+	cbin >> Re;
+	};
+    	
+	
+	cout << "########################################################" << endl;
+	cout << "### EIGENVALUE COMPUTATION (S/I) "<< endl ;
+	cout << "### Jet through single hole, H/D = " << ep/(2*Rhole) << " ; Re = " << Re << endl;
+	cout << " ### Axisymetric (m=0), incompressible (open) case" << endl; 
+	cout << "### With complex coordinate mapping (D. Fabre , R. Longobardi, V2.1, jan. 2017)" << endl;
+	cout << "########################################################" << endl << endl;
+
+	
+	cout << " Entrez SHIFT (re,im) :     (warning im(shift) should be negative) " << endl; 
+	cin  >> shiftr >> shifti;
+	complex shift = 1i*shifti+shiftr;
+	
+	nu=2*Rhole/Re;
+	cout << " Calcul de VP SHIFT/INVERT ; Re    = " << Re << endl; 
+	cout << "                             nu    = " << nu << endl;
+	cout << "                             shift = " << shiftr << " +i " << shifti << endl;
+
+
+
+/// declaration probleme
+///  
+/// This solves (A - shift B) X_{n+1} = B X_n
+/// Here X_n is uz0[] and X_{n+1} is uz[] 
+///
+/// This problem converges to X_{n+1} = G X_n with G = 1/(sigma-shift)
+
+	problem ShiftInvert([ur,uz,p],[vr,vz,q],eps=1e-16) = 
+	int2d(th)(
+	(
+	- yphys*vz*(
+		(uzp*G*dx(uz)+uz*G*dx(uzp)+urp*Gy*dy(uz)+ur*Gy*dy(uzp))	 )  				
+	- yphys*vr*(
+		(uzp*G*dx(ur)+uz*G*dx(urp)+urp*Gy*dy(ur)+ur*Gy*dy(urp))	)	
+
+	- nu*(yphys*G*dx(uz)*G*dx(vz)+yphys*Gy*dy(uz)*Gy*dy(vz)  
+	      + yphys*G*dx(ur)*G*dx(vr)+yphys*Gy*dy(ur)*Gy*dy(vr)+1/yphys*ur*vr  )
+	  
+	+ p*(yphys*G*dx(vz)+vr+yphys*Gy*dy(vr))
+	- q*(yphys*G*dx(uz)+ur+yphys*Gy*dy(ur))
+	
+	-yphys*shift*(vz*uz+vr*ur)	
+	
+	)*1/(Gy*G)
+	) 
++ int2d(th)
+    (-yphys*(vz*uz0+vr*ur0)*1/(Gy*G))
+	
+//	+ on(1,uz=0,ur=0.) // no conditions = zero traction (pressure) on inlet
+  	+ on(2,uz=0.,ur=0.)	
+	+ on(6,7,ur=0.);
+//	fin declaration
+	
+// initialisation
+	[ur0,uz0,p0] = [urp,uzp,pp]; // simplest method : X_1 = base flow
+	int itmax = 30;
+	complex sigma0 = 1e6;
+	real err = 1e6;
+	real errmax=1e-6;
+	complex sigma;
+	
+/// ITERATION LOOP
+	for (int i=0; ((err>errmax)&&(i<itmax)); i++)
+	{
+	ShiftInvert;
+	complex XnXn1 = int2d(th)(uz0*uz+ur0*ur);
+	complex Xn1Xn1 =  int2d(th)(uz*uz+ur*ur);
+	complex GG = Xn1Xn1/XnXn1;
+// at each step the inverse shifted eigenval. is approximated by <X_{n+1}, Y> / <X_n, Y>
+//      ( the choice Y = X_{n+1} is convenient but we could choose something else )
+	sigma = shift+1/GG;
+	err = abs(sigma-sigma0);
+	cout << " iteration " << i << " : " << endl;	
+//	cout << " GG = " << GG << endl;
+//	cout << " XnXn = " << XnXn << endl;
+	cout << " estimated eigenvalue sigma = " << sigma << endl;	
+	
+	ur0[] = 1/sqrt(abs(Xn1Xn1))*ur[];
+	sigma0 = sigma;
+	}
+/// END ITERATION LOOP	
+
+sigmar = real(sigma) ; sigmai = imag(sigma);
+/////Termine di normalizzazione....magari calcoli il flusso e poi lo normalizzi in modo che u'_M (nel primo foro) = 1
+ 
+ complex Rate = 2*pi*int1d(th,1)(uz*y);
+ complex Qid = pi*Rhole^2 + 1i*0;
+ complex normterm = Qid/Rate;
+
+ ur[] = normterm*ur[];
+
+///Save...
+
+{ofstream file("EigenMode_Re"+Re+"_sigmar"+real(sigma)+"_sigmai"+imag(sigma)+".uvp");
+  	file << ur[] ;	
+   	file << endl << endl << Re << endl
+   	<< endl << sigmar << "   " << sigmai <<endl;}
+
+
+
+	
+	
+	
+		
+
+
+	//Sortie du fichier .dat	
+	
+   [urr,uzr,pr] = [real(ur),real(uz),real( p )];
+   [uri,uzi,pii] = [imag(ur),imag(uz),imag( p )];   
+	p1 xx,yy;
+	xx=x;
+	yy=y;
+	
+	p1 utr,vtr,ptr,vortir;
+	p2 omr;
+	p1 uti,vti,pti,vortii;
+	p2 omi;
+	p2<complex> omegaC;
+		
+	utr=uzr;
+	vtr=urr;
+	ptr=pr;
+//	omr=(dx(urr)-Gy*dy(uzr));
+//	vortir=omr;
+	
+	uti=uzi;
+	vti=uri;
+	pti=pii;
+//	omi=(dx(uri)-Gy*dy(uzi));
+//	vortii=omi;
+
+	omegaC = G*dx(ur)-Gy*dy(uz);
+	vortir = real(omegaC);
+	vortii = imag(omegaC);
+
+	
+	p1 psiR,psiI,psiT; 
+	p2<complex> psiC,psiTC;
+	
+	solve calcpsi(psiC,psiTC) = -int2d(th)(1./(yphys*G*Gy)*(G*dx(psiC)*G*dx(psiTC)+Gy*dy(psiC)*Gy*dy(psiTC)))
+	+int2d(th)(psiTC*omegaC/(G*Gy))
+//	+int1d(th,5)(psiT*uzr)
+//	-int1d(th,3)(psiT*utr)
+	+on(6,psiC=0)+on(2,7,psiC=.5);
+	
+	psiR = real(psiC);
+	psiI = imag(psiC);
+
+	p1 yyP,xxPR,xxPI;
+	xxPR = real(xphys);
+	real xxmaxR = xxPR[].max;
+	xxPI = imag(xphys);
+	real xxmaxI = xxPI[].max;
+	yyP = yphys;
+	real ymax = yyP[].max;	
+
+
+{
+	ofstream champ2D("EigenMode_Re"+Re+"_sigmar"+real(sigma)+"_sigmai"+imag(sigma)+".tec");
+	{	champ2D.precision(16);
+		champ2D << "VARIABLES= \"x\" , \"y\" , \"ur\" , \"vr\" , \"pr\" , \"omr\", \"psir\", \"ui\" , \"vi\" , \"pi\" , \"omi\", \"psii\" \"XR\"  \"XI\" \"YY\" "<< endl;
+		champ2D << "ZONE F=FEPOINT,ET=TRIANGLE,N=" << th.nv << ",E=" << th.nt << endl;
+	
+		for (int j=0; j<th.nv; j++)
+		{
+			champ2D << xx[][j] << " " << yy[][j]  << " " << utr[][j] <<  " " << vtr[][j] << " " << ptr[][j] << " " 
+				<< vortir[][j] << " " << psiR[][j] << " " 
+				<< uti[][j] <<  " " << vti[][j] << " " << pti[][j] << " " << vortii[][j] << " " << psiI[][j] << " "
+				<< xxPR[][j] << " " << xxPI[][j] << " " << yyP[][j] << endl;
+		}; 
+
+		for (int i=0; i<th.nt; i++)
+		{ 
+			champ2D << th[i][0]+1 << " " << th[i][1]+1 << " " << th[i][2]+1 << endl;
+		};
+	};
+	
+
+{
+ofstream champ1D("AXIS_EigenMode_Re"+Re+"_sigmar"+sigmar+"_sigmai"+sigmai+".dat");
+for (real xx = -(ep+Lcav); xx<Lext; xx=xx+0.01)
+{
+	champ1D << xx  << " " << real(uz(xx,0)) << " " << imag(uz(xx,0)) << " " << abs(uz(xx,0)) 
+		       << " " << real(p(xx,0)) << " " << imag(p(xx,0)) << " " << abs(p(xx,0))  
+		       << " " << xxPR(xx,0) << " " << xxPI(xx,0) << 
+		       endl;
+}
+}
+}
+
+
+//[uri,uzi,pii] = [imag(ur)/abs(ur)*exp(-y^2),imag(uz)/abs(uz)*exp(-y^2),imag( p )/abs(p )*exp(-y^2)];
+
+		// visualisation
+	
+		
+	plot(uzr,value=1,wait=1);
+	plot(uzi,value=1,wait=1);
+	
+	plot(urr,value=1,wait=1);
+	plot(uri,value=1,wait=1);
+
+	plot(pr,value=1,wait=1);
+	plot(pii,value=1,wait=1);
+	
+	plot(psiR,value=1,cmm="psir", wait=1);
+	plot(psiI,value=1,cmm="psii", wait=1);
+	
+//	plot(vortr,value=1,wait=1);
+//	plot(vorti,value=1,wait=1);
+
+

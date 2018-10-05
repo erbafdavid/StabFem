@@ -36,7 +36,7 @@ ENDIFMACRO
 // set to NO to disable all plots (recommended in MatLab/StabFem mode)
 
 IFMACRO(!EIGENSOLVER)
-macro EIGENSOLVER SLEPC// POSSIBLE OPTIONS : ARPACK, SLEPC
+macro EIGENSOLVER ARPACK// POSSIBLE OPTIONS : ARPACK, SLEPC
 ENDIFMACRO
 
 // Moved to Stability solver

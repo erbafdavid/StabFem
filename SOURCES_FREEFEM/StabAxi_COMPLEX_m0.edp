@@ -111,7 +111,7 @@ fespace Mh(th,P1);            ////// f.e. space for pressure
 fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
 fespace XXXMh(th,[P2,P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
 XXMh<complex> [ux,ur,up];                 ///////  -> unknown for the Navier-Stokes problem
-XXMh [vx,vr,vp];                 ///////  -> test for Navier-Stokes
+XXMh<complex> [vx,vr,vp];                 ///////  -> test for Navier-Stokes
 //XXXMh<complex> [Ubx,Ubr,Ubphi,Ubp];          ///////  -> Base Flow
 XXMh<complex> [Ubx,Ubr,Ubp];          ///////  -> Base Flow (in case we start with a 2-component one)
 
@@ -154,7 +154,7 @@ IFMACRO(EIGENSOLVER,SLEPC)
 if(nev>1) {isshift=0;}; // WARNING the shift should be incorporated in the operator for simple shift-invert and Arpack, but not when using SLEPc !
 ENDIFMACRO
 
-	varf LNSE([ux,ur,up],[vx,vr,q],eps=1e-16) = 
+	varf LNSE([ux,ur,up],[vx,vr,vp],eps=1e-16) = 
 	int2d(th)(
 	(
 	- Rphys(y,ParamMap)*vx*(
@@ -164,14 +164,14 @@ ENDIFMACRO
 	- nu*(Rphys(y,ParamMap)*dX(ux)*dX(vx)+Rphys(y,ParamMap)*dY(ux)*dY(vx)  
 	      + Rphys(y,ParamMap)*dX(ur)*dX(vr)+Rphys(y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(y,ParamMap)*ur*vr  )  
 	+ up*(Rphys(y,ParamMap)*dX(vx)+vr+Rphys(y,ParamMap)*dY(vr))
-	- q*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
+	- vp*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
 	-Rphys(y,ParamMap)*isshift*shift*(vx*ux+vr*ur)	
 	)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
   	+ on(2,ux=0.,ur=0.)	
 	+ on(6,7,ur=0.);
 //	fin declaration
 
-	varf LNSEadjoint([vx,vr,q],[ux,ur,up],eps=1e-16) = 
+	varf LNSEadjoint([vx,vr,vp],[ux,ur,up],eps=1e-16) = 
 	int2d(th)(
 	(
 	- Rphys(y,ParamMap)*vx*(
@@ -181,7 +181,7 @@ ENDIFMACRO
 	- nu*(Rphys(y,ParamMap)*dX(ux)*dX(vx)+Rphys(y,ParamMap)*dY(ux)*dY(vx)  
 	      + Rphys(y,ParamMap)*dX(ur)*dX(vr)+Rphys(y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(y,ParamMap)*ur*vr  )  
 	+ up*(Rphys(y,ParamMap)*dX(vx)+vr+Rphys(y,ParamMap)*dY(vr))
-	- q*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
+	- vp*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
 	-Rphys(y,ParamMap)*isshift*shift*(vx*ux+vr*ur)	
 	)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
   	+ on(2,vx=0.,vr=0.)	
@@ -189,11 +189,11 @@ ENDIFMACRO
 //	fin declaration
 
 
-complex shiftSave = shift;
+//complex shiftSave = shift;
 /// SLEPC DOES NOT NEED TO BE SHIFTED WHEN OPERATORS ARE BUILT
-IFMACRO(EIGENSOLVER,SLEPC)
-    shift = 0;
-ENDIFMACRO
+//IFMACRO(EIGENSOLVER,SLEPC)
+//    shift = 0;
+//ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
 	varf b([ux,ur,up],[vx,vr,q]) =  int2d(th) (Rphys(y,ParamMap)*(vx*ux+vr*ur)*1/(Hy(y,ParamMap)*Hx(x,ParamMap)));
@@ -214,9 +214,9 @@ if(nev>1)
 cout << "$$ Building matrices..." ;
 ////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
 if(iadjoint=="D")
-{ OP=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = shiftSave; }
+{ OP=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = shift; }
 else if(iadjoint=="A")
-{ OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shiftSave); }
+{ OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
 else if(iadjoint=="S") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; };
 cout << "$$ ... done !" << endl;
 ////////////////////////////////////////////////////////////////////////////////////
@@ -282,9 +282,9 @@ IFMACRO(EIGENSOLVER,SLEPC)
 ENDIFMACRO
 
 /// ONCE WE FINISH WE RECOVER THE SHIFT
-IFMACRO(EIGENSOLVER,SLEPC)
-    shift = shiftSave;
-ENDIFMACRO
+//IFMACRO(EIGENSOLVER,SLEPC)
+//    shift = shiftSave;
+//ENDIFMACRO
 ////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -313,12 +313,74 @@ ENDIFMACRO
 ////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
-
-else
-
 /// SIMPLE SHIFT-INVERT IF ONLY ONE MODE IS RESQUESTED
+else
 {
+
+
 XXMh<complex> [ux0,ur0,p0],[uxdirect,urdirect,pdirect],[uxadjoint,uradjoint,padjoint]; 
+
+
+
+	problem ShiftInvert([ux,ur,up],[vx,vr,vp],eps=1e-16) = 
+	
+	int2d(th)(
+	(
+	- Rphys(y,ParamMap)*vx*(
+		(Ubx*dX(ux)+ux*dX(Ubx)+Ubr*dY(ux)+ur*dY(Ubx))	 )  				
+	- Rphys(y,ParamMap)*vr*(
+		(Ubx*dX(ur)+ux*dX(Ubr)+Ubr*dY(ur)+ur*dY(Ubr))	)	
+	- nu*(Rphys(y,ParamMap)*dX(ux)*dX(vx)+Rphys(y,ParamMap)*dY(ux)*dY(vx)  
+	      + Rphys(y,ParamMap)*dX(ur)*dX(vr)+Rphys(y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(y,ParamMap)*ur*vr  )  
+	+ up*(Rphys(y,ParamMap)*dX(vx)+vr+Rphys(y,ParamMap)*dY(vr))
+	- vp*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
+	-Rphys(y,ParamMap)*isshift*shift*(vx*ux+vr*ur)	
+	)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
+
++ int2d(th)
+    (-Rphys(y,ParamMap)*(vx*ux0+vr*ur0)/(Hy(y,ParamMap)*Hx(x,ParamMap)))
+	
+//	+ on(1,uz=0,ur=0.) // no conditions = zero traction (pressure) on inlet
+  	+ on(2,ux=0.,ur=0.)	
+	+ on(6,7,ur=0.);
+	
+	
+//	
+//		problem ShiftInvert([ur,uz,p],[vr,vz,q],eps=1e-16) = 
+//	int2d(th)(
+//	(
+//	- yphys*vz*(
+//		(uzp*G*dx(uz)+uz*G*dx(uzp)+urp*Gy*dy(uz)+ur*Gy*dy(uzp))	 )  				
+//	- yphys*vr*(
+//		(uzp*G*dx(ur)+uz*G*dx(urp)+urp*Gy*dy(ur)+ur*Gy*dy(urp))	)	
+//
+//	- nu*(yphys*G*dx(uz)*G*dx(vz)+yphys*Gy*dy(uz)*Gy*dy(vz)  
+//	      + yphys*G*dx(ur)*G*dx(vr)+yphys*Gy*dy(ur)*Gy*dy(vr)+1/yphys*ur*vr  )
+//	  
+//	+ p*(yphys*G*dx(vz)+vr+yphys*Gy*dy(vr))
+//	- q*(yphys*G*dx(uz)+ur+yphys*Gy*dy(ur))
+//	
+//	-yphys*shift*(vz*uz+vr*ur)	
+//	
+//	)*1/(Gy*G)
+//	) 
+//+ int2d(th)
+//    (-yphys*(vz*uz0+vr*ur0)*1/(Gy*G))
+//	
+////	+ on(1,uz=0,ur=0.) // no conditions = zero traction (pressure) on inlet
+//  	+ on(2,uz=0.,ur=0.)	
+//	+ on(6,7,ur=0.);
+////	fin declaration
+
+	
+	
+//	fin declaration
+
+
+
+
+
+
 
 int testCB = exec("ls "+ffdatadir+"Eigenmode_guess.txt");
     	if (testCB!=0)
@@ -390,9 +452,11 @@ else if(iadjoint=="S")
 	for (iter=0; ((err>errmax)&&(iter<itmax)); iter++)
 	{
 		//	complex[int] rhs = B*ux0[];
-    	complex[int] rhs= brhs(0,XXMh);  //////// see freefem++doc.pdf for the solver 
-		complex[int] w = OP^-1*rhs;
-		ux[] = w;
+    	//complex[int] rhs= brhs(0,XXMh);  //////// see freefem++doc.pdf for the solver 
+		//complex[int] w = OP^-1*rhs;
+		//ux[] = w;
+		
+		ShiftInvert;
 	
 		complex XnXn1 = int2d(th)(ux0*ux+ur0*ur);
 		complex Xn1Xn1 =  int2d(th)(ux*ux+ur*ur);

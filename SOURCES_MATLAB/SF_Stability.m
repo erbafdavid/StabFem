@@ -1,53 +1,77 @@
 function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 
-% StabFem wrapper for Eigenvalue calculations
-%
-% usage : [eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
-%
-% field is either a "baseflow" structure (with "mesh" structure as a subfield) 
-% or directly a "mesh" structure (for instance in problems such as sloshing where baseflow is not relevant).
-%
-% Parameters include :
-%
-%   Re :        Reynolds number (specify only if it differs from the one of base flow, which is not usual)
-%   m :         Azimuthal wavenumer (for axisymmetric problem)
-%   k :         Transverse wavenumber (for 3D stability of 2D flow)
-%   STIFFNESS : For spring-mounted object
-%   MASS :      For spring-mounted object
-%   DAMPING :   For spring-mounted object
-%   gamma :     Surface tension (for free-surface problems)
-%   rhog :      gravity parameter (for free-surface problems)
-%   nu :        viscosity (for free-surface problems)
-%   alpha :      parameter modelling at contact line (linear model of Miles & Hocking ) 
-%   sym :       Symmetry condition for a 2D problem 
-%               (set to 'S' for symmetric, 'A' for antisymmetric, or 'N' if no symmetry plane is present)
-%   shift :     shift for shift-invert algorithm.
-%               value can be either a numerical value (complex), 'prev' to use previously computed eigenvalue, 
-%               or 'cont' to use extrapolated value from two previous computations. 
-%               (obviously 'prev' and 'cont' cannot be used at first call to this function).
-%   nev :       requested number of eigenvalues
-%               (the solver will use Arnoldi method if nev>1 and shift-invert if nev=1)
-%   type :      'D' for direct problem (default) ; 'A' for ajoint problem ; 'DA' for discrete adjoint 
-%   sort :      how to sort the eigenvalues if nev>1. Accepted values :
-%               'LR' (largest real), 'SR' (smallest real), ,'SM' (smallest magnitude), 'SI', 'SIA' (smallest absolute value of imaginary part),
-%               'cont' (sort according to proximity with previous computation; continuation mode) 
-%   PlotSpectrum : set to 'yes' to launch the spectrum explorator.
-%               This option will draw the spectrum in figure 100 and will allow to display the eigenmodes 
-%               by clicking on the corresponding eigenvalue
-%  PlotSpectrumField : which field to plot in the spectrum explorator. 
-%
-% STABFEM IMPLEMENTATION :
-% According to parameters, this wrapper will launch one of the following
-% FreeFem++ solvers :
-%      'Stab2D.edp'
-%      'StabAxi.edp'
-%       (list to be completed)
-%
-% output :  eigenvalues (array of complex values) + eigenvectors (returned as a structure or an array of structures)
-%
-% This program is part of the StabFem project distributed under gnu licence. 
-% Copyright D. Fabre, 2017-2018.
-%
+%> StabFem wrapper for Eigenvalue calculations
+%>
+%> usage : [eigenvalues,eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
+%>
+%> field is either a "baseflow" structure (with "mesh" structure as a subfield) 
+%> or directly a "mesh" structure (for instance in problems such as sloshing where baseflow is not relevant).
+%>
+%> Output :
+%> eigenvalues -> array containing the eigenvalues
+%> eigenvector -> array of struct objects containing the eigenvectors.
+%> 
+%> List of accepted parameters (in approximate order of usefulness):
+%>
+%>  1/ geometrical parameters
+%>
+%>   m :         Azimuthal wavenumer (for axisymmetric problem) (def. 1)
+%>   k :         Transverse wavenumber (for 3D stability of 2D flow) (def. 0)
+%>   sym :       Symmetry condition for a 2D problem  (def. 'A')
+%>               (set to 'S' for symmetric, 'A' for antisymmetric, or 'N' if no symmetry plane is present)
+%> 
+%>  2/ Numerical parameters of the solver
+%>    
+%>   shift :     shift for shift-invert algorithm.
+%>               value can be either a numerical value (complex), 'prev' to use previously computed eigenvalue, 
+%>               or 'cont' to use extrapolated value from two previous computations. 
+%>               (obviously 'prev' and 'cont' cannot be used at first call to this function).
+%>   nev :       requested number of eigenvalues
+%>               (the solver will use Arnoldi method if nev>1 and shift-invert if nev=1)
+%>   type :      'D' for direct problem (default) ; 'A' for ajoint problem ; 'DA' for discrete adjoint 
+%>   solver :    Alternative solver 
+%>               In this case the program will use an alternative ff solver
+%>               (e.g. myStab2D.edp instead of Stab2D.edp)
+%>               Useful in developpment/debugging mode ; the alternative
+%>               solver has to use the same input parameters is the standard.
+%>
+%>  3/ Physical parameters
+%>
+%>     Many options here, chose the ones relevant to your case)
+%>     NB : in some cases the values will be automatically picked from the
+%>     base flow (or mesh) object. But warning this is not done systematically
+%>     
+%>   Re :        Reynolds number (specify only if it differs from the one of base flow, which is not usual)
+%>   STIFFNESS : For spring-mounted object
+%>   MASS :      For spring-mounted object
+%>   DAMPING :   For spring-mounted object
+%>   gamma :     Surface tension (for free-surface problems)
+%>   rhog :      gravity parameter (for free-surface problems)
+%>   nu :        viscosity (for free-surface problems)
+%>   GammaBAR :  circulation (for potential problems)
+%>   alphaMILES :parameter modelling contact line dissipation (linear model of Miles & Hocking ) 
+%> 
+%>  4/ Post-processing options 
+%> 
+%>   sort :      how to sort the eigenvalues if nev>1. Accepted values :
+%>               'LR' (largest real), 'SR' (smallest real), ,'SM' (smallest magnitude), 'SI', 'SIA' (smallest absolute value of imaginary part),
+%>               'cont' (sort according to proximity with previous computation; continuation mode) 
+%>   PlotSpectrum : set to 'yes' to launch the spectrum explorator.
+%>               This option will draw the spectrum in figure 100 and will allow to display the eigenmodes 
+%>               by clicking on the corresponding eigenvalue. 
+%>  PlotSpectrumField : which field to plot in the spectrum explorator. 
+%>
+%> STABFEM IMPLEMENTATION :
+%> According to parameters, this wrapper will launch one of the following
+%> FreeFem++ solvers :
+%>      'Stab2D.edp'
+%>      'StabAxi.edp'
+%>       (list to be completed)
+%>
+%>
+%> This program is part of the StabFem project distributed under gnu licence. 
+%> Copyright D. Fabre, 2017-2018.
+%>
 
 global ff ffMPI ffdir ffdatadir sfdir verbosity
 
@@ -66,7 +90,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    end
    
 
-%%% management of optionnal parameters
+%% Chapter 1 : management of optionnal parameters
     p = inputParser;
   
    % parameter for most cases
@@ -85,14 +109,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    addParameter(p,'Darcy',DarcyDefault,@isnumeric);
    
    if(isfield(baseflow,'Porosity')) PorosityDefault = baseflow.Porosity ; else PorosityDefault = 0.95; end;
-   addParameter(p,'Porosity',PorosityDefault,@isnumeric);
-  
-   %paramaters for axisymmetric case
-   addParameter(p,'m',1,@isnumeric);
- 
-   %parameters for 2D case
-   addParameter(p,'k',0,@isnumeric);
-   addParameter(p,'sym','A',@ischar);   
+   addParameter(p,'Porosity',PorosityDefault,@isnumeric);  
    
    %parameters for spring-mounted object  
    addParameter(p,'STIFFNESS',0);
@@ -112,12 +129,19 @@ persistent eigenvaluesPrev % for sort of type 'cont'
     addParameter(p,'GammaBAR',GammaBARDefault);
     addParameter(p,'typestart','pined');
     addParameter(p,'typeend','pined');
+    
+   %symmetry paramaters for axisymmetric case
+   addParameter(p,'m',1,@isnumeric);
+   %symmetry parameters for 2D case
+   addParameter(p,'k',0,@isnumeric);
+   addParameter(p,'sym','A',@ischar);   
    
   %parameters for the eigenvalue solver
    addParameter(p,'shift',1+1i);
    addParameter(p,'nev',1,@isnumeric);
    addParameter(p,'type','D',@ischar); 
-  
+   addParameter(p,'solver','default',@ischar);
+   
    %parameters for mpirun
    addParameter(p,'ncores',1,@isnumeric);
    
@@ -146,9 +170,17 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    end
  
    
-% select the relevant freefem script
+%% Chapter 2 : select the relevant freefem script
 
-
+% explanation : we will launch a command with the form 
+%   echo "47 0 0.7 A D 10" | FreeFem++ Stab2D.edp
+%  
+% this will be slitted in the form :
+%   echo "argumentstring" | "fff" "solver"
+% so in each case we have to a) construct the argumentstring containing the parameters,
+% b) define the fff command (usually FreeFem++ but can be FreeFem+++-mpi in some cases
+%  and c) define the default solver (which can be replaced by a custom one)
+%
 switch ffmesh.problemtype
 
     case('AxiXR')
@@ -157,8 +189,10 @@ switch ffmesh.problemtype
      mydisp(1,['      ### USING Axisymmetric Solver']);
      argumentstring = [ num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ...
                           ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ];
-     solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi.edp'];
-     status = mysystem(solvercommand);
+     fff = ff;               
+     solver = [ffdir 'StabAxi.edp'];
+%     solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi.edp'];
+%     status = mysystem(solvercommand);
 
      case ('AxiXRCOMPLEX') 
          
@@ -166,14 +200,16 @@ switch ffmesh.problemtype
      mydisp(1,['      ### USING Axisymmetric Solver WITH COMPLEX MAPPING']);
      argumentstring = [' " ' num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift)) ...
                           ' ' num2str(real(p.Results.m)) ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ' ];
-     if(imag(p.Results.m)==0)
-        solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'Stab_Axi_COMPLEX.edp'];
-     else
-         mydisp(1,'### TRICK ### m imaginary ; we use the alternative solver for m=0'); 
-         solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'Stab_Axi_COMPLEX_m0.edp'];
-     end
+%     if(imag(p.Results.m)==0)
+        fff = ffMPI;               
+        solver = [ffdir 'StabAxi_COMPLEX.edp']; 
+%        solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'StabAxi_COMPLEX.edp'];
+%     else
+%         mydisp(1,'### TRICK ### m imaginary ; we use the alternative solver for m=0'); 
+%         solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'StabAxi_COMPLEX_m0.edp'];
+%     end
      
-     status = mysystem(solvercommand);
+%     status = mysystem(solvercommand);
         
     case('AxiXRPOROUS')
     
@@ -181,8 +217,10 @@ switch ffmesh.problemtype
      mydisp(1,['      ### USING Axisymmetric Solver WITH POROSITY AND SWIRL']);
      argumentstring = [ num2str(p.Results.Re) ' ' num2str(baseflow.Omegax) ' ' num2str(baseflow.Darcy) ' ' num2str(baseflow.Porosity) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' num2str(p.Results.m) ' ' p.Results.type ' ' num2str(p.Results.nev) ];
-     solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab_Axi_Porous.edp'];
-     status = mysystem(solvercommand);        
+     fff = ff;               
+     solver = [ffdir 'StabAxi_Porous.edp'];
+%     solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_Porous.edp'];
+%     status = mysystem(solvercommand);        
     
  
     case('2D')
@@ -194,19 +232,21 @@ switch ffmesh.problemtype
         mydisp(1,['      ### USING 2D Solver']);
         argumentstring = [ num2str(p.Results.Re) ' '  num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ];
-        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D.edp'];
-        status = mysystem(solvercommand);
+        fff = ff;               
+        solver = [ffdir 'Stab2D.edp'];
+%        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D.edp'];
+%        status = mysystem(solvercommand);
         
          else 
-             
              % 2D BaseFlow / 3D modes
                  mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### 3D Stability of 2D Base-Flow with k = ',num2str(p.Results.k)]);
         argumentstring = [num2str(p.Results.Re) ' ' num2str(p.Results.k) ' '  num2str(real(shift)) ....
             ' ' num2str(imag(shift)) ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ];
-                         
-        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D_Modes3D.edp'];
-        status = mysystem(solvercommand);
+        fff = ff;               
+        solver = [ffdir 'Stab2D_Modes3D.edp'];                 
+%        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D_Modes3D.edp'];
+%        status = mysystem(solvercommand);
          end
          
     case('2DComp')
@@ -235,8 +275,10 @@ switch ffmesh.problemtype
         ncores = p.Results.ncores;
         argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.Ma) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' num2str(symmetry) ' ' num2str(typeEig) ' ' num2str(p.Results.nev) ' " '];
-        solvercommand = ['echo ' argumentstring ' | ',ffMPI,' -np ',num2str(ncores),' ', 'Stab2DComp.edp'];
-        status = mysystem(solvercommand);
+        fff = [ ffMPI ' -np ',num2str(ncores) ];               
+        solver = [ffdir 'Stab2DCOMP.edp'];
+%        solvercommand = ['echo ' argumentstring ' | ',ffMPI,' -np ',num2str(ncores),' ', 'Stab2DComp.edp'];
+%        status = mysystem(solvercommand);
         
     case('2DMobile')
         % for spring-mounted cylinder
@@ -246,8 +288,10 @@ switch ffmesh.problemtype
         argumentstring = [ num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '... 
                             num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
                             ' ' p.Results.type ' ' num2str(p.Results.nev) ]; 
-        solvercommand = ['echo ' argumenstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
-        status = mysystem(solvercommand);
+        fff = ff;
+        sover = [ffdir 'Stab2D_VIV.edp'];
+%        solvercommand = ['echo ' argumenstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
+%        status = mysystem(solvercommand);
         
      case('3DFreeSurfaceStatic')
         % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
@@ -257,14 +301,20 @@ switch ffmesh.problemtype
         num2str(p.Results.nu) ' ' num2str(p.Results.alpha) ' ' ...
         p.Results.typestart ' ' p.Results.typeend  ' ' num2str(p.Results.m) ' '... 
         num2str(p.Results.nev)  ' ' num2str(real(p.Results.shift)) ' ' num2str(imag(p.Results.shift)) ' '];
-        solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
-        status = mysystem(solvercommand);     
+        fff = ffMPI;               
+        solver = [ffdir 'StabAxi_FreeSurface_Potential.edp'];
+%        solvercommand = ['echo ' argumentstring ' | ' ffMPI ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
+%        status = mysystem(solvercommand);     
         else
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE VISCOUS : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.nu) ...
+            ' ' p.Results.typestart ' ' p.Results.typeend  ' '...
             ' ' num2str(p.Results.m) ' ' num2str(real(p.Results.shift)) ' ' num2str(imag(p.Results.shift)) ' ' num2str(p.Results.nev) ' " '];
-        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Viscous.edp'];
-        status = mysystem(solvercommand);  
+       
+        fff = ff;
+        solver = [ffdir 'StabAxi_FreeSurface_Viscous.edp'];
+%        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Viscous.edp'];
+%        status = mysystem(solvercommand);  
         end
         
     %case(...)    
@@ -275,7 +325,27 @@ switch ffmesh.problemtype
 end
 
 
-if(status~=0&&status~=141) 
+%% Chapter 3 : launch the ff solver
+
+mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+
+if(strcmp(p.Results.solver,'default'))
+    mydisp(1,['      ### USING STANDARD StabFem Solver ',solver]);        
+
+else
+    if(exist(p.Results.solver))
+        solver = p.Results.solver;
+    else if(exist([ffdir '/' p.Results.solver]))
+            solver = [ffdir '/' p.Results.solver];
+        end
+    end
+    mydisp(1,['      ### USING CUSTOM FreeFem++ Solver ',solver]);
+end
+
+solvercommand = ['echo ' argumentstring ' | ' fff ' ' solver ];
+status = mysystem(solvercommand);
+
+if(status~=0&&status~=141) % WARNING : error codes may differ with OCTAVE !
      %result 
      error('ERROR : FreeFem stability computation aborted');
  else
@@ -284,6 +354,8 @@ if(status~=0&&status~=141)
 end
 
 
+
+%% Chapter 4 : post-processing
 
 if (p.Results.type=='D')
     rawData1 = importdata([ffdatadir 'Spectrum.txt']);
