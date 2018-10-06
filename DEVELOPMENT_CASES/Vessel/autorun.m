@@ -35,7 +35,7 @@ ffmesh = SF_Mesh_Deform(ffmesh,'P',0,'gamma',gamma,'rhog',rhog,'typestart','pine
 disp('###first test : flat surface, free condition')
 
 
-[evm1,emm1] =  SF_Stability(ffmesh,'nev',10,'m',1,'shift',2.1i,'typestart','angleV','typeend','axis');
+[evm1,emm1] =  SF_Stability(ffmesh,'nev',10,'m',1,'shift',2.1i,'typestart','freeV','typeend','axis');
 % NB with this value of the shift the modes number n=1,2,3 will be found with index (2,1,3)
 
 evTheory = [1.3606    2.3737    3.1274]; % see script Analytical solution
@@ -114,7 +114,7 @@ end
 % alphastart = ffmesh.alpha(1)*180/pi % this should be 225 degrees (angle with respect to vertical = 45 degrees)
 % 
 % 
-% [evm1,emm1] =  SF_Stability(ffmesh,'nev',10,'m',1,'shift',2.1i,'typestart','angle','typeend','axis');
+% [evm1,emm1] =  SF_Stability(ffmesh,'nev',10,'m',1,'shift',2.1i,'typestart','freeV','typeend','axis');
 % 
 % evTheory = [1.3587    2.3630    3.1118]; 
 % error3 = abs(imag(evm1(2))/evTheory(1)-1)+abs(imag(evm1(1))/evTheory(2)-1)+abs(imag(evm1(3))/evTheory(3)-1)
