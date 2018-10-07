@@ -28,6 +28,11 @@ concretement :
 sudo mv /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6 /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6ANS
 sudo ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6  /usr/local/MATLAB/2016a/bin/glnxa64/bin/MATLAB/libstdc++.so.6
 
+## PROBLEME AVEC FFGLUT sur mac
+
+
+
+sudo ln -s /usr/local/ff++/openmpi-2.1/3.60/bin/ffglut /usr/local/bin/ffglut
 
 ## Using Slepc on MAC
 
