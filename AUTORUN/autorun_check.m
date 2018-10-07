@@ -6,7 +6,7 @@ test = 0;
 AUTORUN_LIST_STABLE =... 
     {'STABLE_CASES/EXAMPLE_Lshape', 'STABLE_CASES/CYLINDER',...
     'STABLE_CASES/ROTATING_POLYGONS','STABLE_CASES/LiquidBridges',...
-    'STABLE_CASES/Vessel'...
+    'STABLE_CASES/Vessel','STABLE_CASES/BLUNTBODY_IN_PIPE'...
     };
 
 AUTORUN_LIST_DEVEL = {'DEVELOPMENT_CASES/Vessel'};
@@ -21,8 +21,9 @@ AUTORUN_LIST_CUSTOM =...
 % 2/ cas stables + cas devel. (sens?s tourner sur le r?seau IMFT, pas garantis ailleurs)
 % 3/ custom (pour faire tourner sur un nombre limit? de cas
 
+AUTORUN_LIST = AUTORUN_LIST_STABLE
 %AUTORUN_LIST = { AUTORUN_LIST_STABLE{:} , AUTORUN_LIST_DEVEL{:} }
-AUTORUN_LIST = AUTORUN_LIST_CUSTOM
+%AUTORUN_LIST = AUTORUN_LIST_CUSTOM
 
 cd('..')
 
