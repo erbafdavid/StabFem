@@ -47,11 +47,11 @@ cout << "ENTREZ LA VISCOSITE NU : "<< endl;
 cin >> nu;
 
 string typestart,typeend;
-cout << "%% ENTREZ typestart (pined, axis, plane, angle, angleV) : ";
+cout << "%% ENTREZ typestart (pined, axis, plane, freeH, freeV) : ";
 cin >> typestart;
 cout << typestart << endl;
 
-cout << "%% ENTREZ typeend (pined, axis, plane) : ";
+cout << "%% ENTREZ typeend (pined, axis, freeH, freeV) : ";
 cin >> typeend;
 cout << typeend << endl;
 
@@ -251,13 +251,15 @@ for (int i=0;i<k;i++)
    	  FileTXT << endl << endl << endl;
    	  MODEz[] = ueta[];
      SFWriteMode(ffdatadir+"Eigenmode"+(i+1)+".ff2m",MODE,ev[i]);
-     //IFMACRO(FREEFEMPLOTS,YES)   
+
+IFMACRO(FREEFEMPLOTS,YES)   
       plot(eVur[i],cmm="mode numero"+i+" : ur", wait=1); 
       plot(eVuz[i],cmm="mode numero"+i+" : uz", wait=1); 
       plot(eVuphi[i],cmm="mode numero"+i+" : uphi", wait=1);	
       plot(eVeta[i],cmm="mode numero"+i+" : eta", wait=1); 	
-       plot(eVK1[i],cmm="mode numero"+i+" : k1", wait=1); 	
-       //ENDIFMACRO
+      plot(eVK1[i],cmm="mode numero"+i+" : k1", wait=1); 	
+ENDIFMACRO
+
      };
   };	
 	

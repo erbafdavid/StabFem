@@ -48,7 +48,7 @@ if(typesurfacemesh=="empty")
 thsurface = emptymesh(th); 	// Maillage 'surface'
 };
 
-real L, PP0, Vol, Area;
+
 
 // constantes physiques 
 real gamma; // tension de surface
@@ -57,11 +57,12 @@ real dpdz; // parametre de gravite
 real GAMMA; // circulation pour cas polygones tournants
 real nu; // viscosity FOR VISCOUS POTENTIAL CASE 
 real alphaMILES; // parametre alpha pour dissipation a la linge triple (Miles, Hocking)
-string typestart; // possibilites : "pined", "axis", "plane", "angle"
-string typeend;    // possibilites : "pined", "axis", "plane", "angle"
+string typestart; // possibilites : "pined", "axis", "plane", "freeH", "freeV"
+string typeend;    // possibilites : "pined", "axis", "plane", "freeH, "freeV"
 
 include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 
+real L, PP0, Vol, Area;
 
 
 
@@ -93,12 +94,19 @@ int m;  // Nombre d'onde
 
 
 
-cout << "%% ENTREZ typestart (pined, axis, plane, angle, angleV) : ";
+cout << "%% ENTREZ typestart (pined, axis, plane, freeH, freeV) : ";
 cin >> typestart;
 cout << typestart << endl;
 cout << "%% ENTREZ typeend (pined, axis, plane) : ";
 cin >> typeend;
 cout << typeend << endl;
+
+if((matrixconstruction=="composite")&&(typestart=="freeH"||typestart=="freeV"||typeend=="freeH"||typeend=="freeV"))
+{ 
+	cout << " ERROR in StabAxi_FreeSurface_Potential.edp " << endl;
+	cout << " free conditions can only be used with the option matrixconstruction='block' (edit your Macro_StabFem.edp file !)" << endl; 
+	exit(10);
+};
 
 cout << "%% ENTREZ Le nombre d'onde m ?";
 cin >> m;
@@ -169,8 +177,7 @@ varf a([phi,eta],[q,v]) = // order of test fun. shoud be [v,q] for SLEPC ; [q,v]
 // Pour regulariser eta dans le volume	
 		+ int2d(th)((dx(q)*dx(eta)+dy(q)*dy(eta))*RegEta*x) //  deuxieme idee : laplacien 
 // Conditions limites par penalisation
-//+ int1d(th,1)(1e30*eta*q*abs(x)) // pour ligne de contact fixee
-+ int1d(th,5,55)(1e30*eta*q*abs(x)*gamma*((typestart=="pined")||(typeend=="pined"))) // pour ligne de contact fixee si gamma ne 0.
++ int1d(th,5,55)(1e30*eta*q*x*gamma*((typestart=="pined")||(typeend=="pined"))) // pour ligne de contact fixee si gamma ne 0.
 + int1d(th,1)((m!=0)*phi*v*1e30) // CL axe pour m different de 0
 ;
 
@@ -196,20 +203,20 @@ varf aqeta(etaA,qA)=
 	int1d(th,2)(-gamma*((Ds(etaA))*(Ds(qA))-(K0a^2+K0b^2)*etaA*qA+m^2/(x^2+1e-30)*qA*etaA)*x)
 	-int1d(th,2)(qA*etaA*(dpdz*N.y-DPDR(x)*N.x)*x)
 	+ int2d(th)((dx(qA)*dx(etaA)+dy(qA)*dy(etaA))*RegEta*x)
-//	+ int1d(th,1,5)(1e30*etaA*qA*abs(x))
 	+ int1d(th,5,55)(1e30*etaA*qA*abs(x)*(gamma!=0)*((typestart=="pined")||(typeend=="pined"))) // pour ligne de contact fixee si gamma ne 0.
-//	+ int1d(th,55)(etaA*qA*1e30*(typestart=="pined"))
 ;
 
 varf aveta(etaA,vA)=
 	int2d(th)((dx(vA)*dx(etaA)+dy(vA)*dy(etaA))*1e-30*x)//
 	- int1d(th,2)(isshift*shift*(etaA*vA)*x)
-	+ int1d(th,2)(-1i*m*GAMMA/(2*pi*x^2)*(etaA*vA)*x);
+	+ int1d(th,2)(-1i*m*GAMMA/(2*pi*x^2)*(etaA*vA)*x)
+;
 
 varf aqphi(phiA,qA)=
 	int2d(th)( 1e-30*(dx(phiA)*dx(qA) + dy(phiA)*dy(qA))*x) //
 	- int1d(th,2)(isshift*shift*(qA*phiA)*x)
- 	+ int1d(th,2)(-1i*m*GAMMA/(2*pi*x^2)*(qA*phiA)*x);
+ 	+ int1d(th,2)(-1i*m*GAMMA/(2*pi*x^2)*(qA*phiA)*x)
+ ;
 
 matrix<complex> Avphi = avphi(Vh,Vh,solver=UMFPACK);
 matrix<complex> Aqphi = aqphi(Vh,Vh,solver=UMFPACK);
@@ -217,16 +224,19 @@ matrix<complex> Aqeta = aqeta(Vh,Vh,solver=UMFPACK);
 matrix<complex> Aveta = aveta(Vh,Vh,solver=UMFPACK); 
 
 // Modify the coefficient of the first point along the surface for "natural conditions"
-if(typestart=="angle")
-	{Aqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*(1/tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0);};
-if(typestart=="angleV")
+if(typestart=="freeV")
 	{Aqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*(tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0);};
+if(typestart=="freeH")
+	{Aqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*(1/tan(alphaPointSurf(0)))*K0aPointSurf(0)*xPointSurf(0);};
 
-A = [[Aqphi,Aqeta],[Avphi,Aveta]];
+A = [
+	[Aqphi,Aqeta],
+	[Avphi,Aveta]
+	];
+	
 set(A,solver =UMFPACK);
 
 // Construction de la matrice B
-// Nouvelle methode par blocs
 varf bqphi(phiB,qB) = 
        int1d(th,2)(qB*phiB*x);
 
@@ -238,20 +248,22 @@ varf bqeta(etaB,qB) = int1d(th,2)(0*etaB*qB);
 
 matrix<complex> Bqphi = bqphi(Vh,Vh,solver=GMRES,eps=1e-20); 
 matrix<complex> Bveta = bveta(Vh,Vh,solver=GMRES,eps=1e-20); 
-
-
 matrix<complex> Bqeta = bqeta(Vh,Vh,solver=GMRES,eps=1e-20); 
 
 // Modify the coefficient of the first point along the surface for Miles & Hocking term
-if(typestart=="angle")
+if(typestart=="freeH")
 	{Bqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*alphaMILES/sin(alphaPointSurf(0))*xPointSurf(0);};
-if(typestart=="angleV")
-    {Bqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*alphaMILES/cos(alphaPointSurf(0))*xPointSurf(0);};
+if(typestart=="freeV")
+    {Bqeta(IndexPointSurf(0),IndexPointSurf(0)) += gamma*alphaMILES/(-cos(alphaPointSurf(0)))*xPointSurf(0);};
 
 
 
 
-B = [[Bqphi,Bqeta],[0,Bveta]];
+B = [	
+	[Bqphi,Bqeta],
+	[0,Bveta]
+	];
+
 set(B,solver =GMRES);
 };
 
@@ -259,23 +271,20 @@ set(B,solver =GMRES);
 ////////////////////////////////////////////////////
 //
 //  RESOLUTION DU PB AUX VALEURS PROPRES
-//
-//  Important warning : here the computed eigenvalues correspond to omega = lambda/i !
 //  
 /////////////////////////////////////////////////////
 
 
 complex[int] ev(nev); // to store nev eigein value
-VhxVh<complex>[int] [eVphi,eVeta](nev);   // to store nev eigen vector
+VhxVh<complex>[int] [eVphi,eVeta](nev);   // to store nev eigen vector WARNING BLOCK MODE !
 complex[int,int] EVV(A.n,nev);
 
 ///////////////////// CALL TO ARPACK++ ////////////////////////////////// //////////
 
-
-
 IFMACRO(EIGENSOLVER,ARPACK)
 int k=EigenValue(A,B,sigma=shift,value=ev,vector=eVphi,tol=1e-10,maxit=0,ncv=0);
 ENDIFMACRO
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -367,7 +376,6 @@ else if(matrixconstruction=="block")
 	[Modecphi,Modeceta]=[Modebphi,Modebeta];
 	};
 
-
 // Normalisation of the modes
         complex norm;
         {
@@ -395,9 +403,10 @@ if (i<Nmodes)
    {	
    	{
    	ofstream FileTXT(ffdatadir+"Eigenmode"+(i+1)+".txt");
-   	FileTXT << eVphi[i][];
+   	FileTXT << Modecphi[];
    	FileTXT << endl << endl << lambda << endl;
    	}
+   	
    SFWriteModePotential(ffdatadir+"Eigenmode"+(i+1)+".ff2m",Modec,lambda);
    IFMACRO(FREEFEMPLOTS,YES)
    Vh imagphi = imag(eVphi[i]);

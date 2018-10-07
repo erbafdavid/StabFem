@@ -18,11 +18,12 @@ verbosity = 1;
 %% Adress of the executable :
 if (isunix)
     %ff = '/usr/local/bin/FreeFem++ -v 0'; % on most systems
-    ff = '/PRODCOM/Ubuntu16.04/freefem/3.55/gcc-5.4-mpich_3.2/bin/FreeFem++ -v 0'; % on IMFT network
-    ffMPI = '/PRODCOM/Ubuntu16.04/freefem/3.55/gcc-5.4-mpich_3.2/bin/ff-mpirun -v 0';
+    ff = '/PRODCOM/Ubuntu16.04/freefem/3.55/gcc-5.4-mpich_3.2/bin/FreeFem++'; % on IMFT network
+    ffMPI = '/PRODCOM/Ubuntu16.04/freefem/3.55/gcc-5.4-mpich_3.2/bin/ff-mpirun';
 end
 if (ismac)
-    ff = '/usr/local/bin/FreeFem++ -v 0';
+    ff = '/usr/local/bin/FreeFem++ -v 0  -glut /usr/local/bin/ffglut';
+%    ff = '/usr/local/bin/FreeFem++ -v 0'; % to use without ffglut (no graphics but more fluid)
     ffMPI = '/usr/local/ff++/openmpi-2.1/3.60/bin/FreeFem++-mpi -v 0';
 %    ffMPI = '/usr/local/bin/FreeFem++-mpi -v 0';    
     % NB normally this is where the FreeFem++ executable should be on a mac.
@@ -41,6 +42,11 @@ end
 sfdir = '~/StabFem/SOURCES_MATLAB/';
 ffdir = '~/StabFem/SOURCES_FREEFEM/';
 % This is the recommended implementation on most systems.
+
+% should do something like this as well (or use freefem++.pref file)
+%system('export FF_INCLUDEPATH="~/StabFem/SOURCES_FREEFEM" ');
+%system('export FF_LOADPATH="~/StabFem/SOURCES_OTHER"');
+
 
 % In case StabFem is not in your root directory you may adapt. Bellow a few
 % examples from various contributors.

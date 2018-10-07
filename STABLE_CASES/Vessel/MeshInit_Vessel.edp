@@ -52,11 +52,11 @@ cout << "==> Densite = " << d << endl;
 border Fond(t=0,1){y=-LL;x=t;label=5;};
 
 border Wall(t=-LL,-1./d){y=t;x=1;label=5;};
-border Wallbis(t=-1./d,0){y=t;x=1;label=55;};
+border Wallbis(t=-1./d,0){y=t;x=1;label=5;};
 
 // tentative d'ameliorer en separant l'axe en deux
 border Axe(t=-1./d,-LL){y = t ; x = 0;label=1;};
-border Axebis(t=0,-1./d){y = t ; x = 0;label=11;};
+border Axebis(t=0,-1./d){y = t ; x = 0;label=1;};
 
 //border Side2(t=R,0){y=LL ; x = t;label=5;};
 mesh MeshInt;
@@ -69,12 +69,12 @@ border SurfDrop(t=1,0){y=0;x=t;label=2;};
 MeshInt = buildmesh(SurfDrop(d)+Wall(LL*(d-1)/5)+Wallbis(1)+Axe(LL*((d-1)/5))+Axebis(1)+Fond(d/5)); // Attention modif sauvage
 
 
+mesh th = MeshInt = buildmesh(SurfDrop(d)+Wall(LL*(d-1)/5)+Wallbis(1)+Axe(LL*((d-1)/5))+Axebis(1)+Fond(d/5)); // Attention modif sauvage
 
 
-mesh th = MeshInt;
-
+IFMACRO(FREEFEMPLOTS,YES)
 plot(th,wait=1);
-
+ENDIFMACRO
 
 //SAVE MESH TO FILE
 

@@ -96,7 +96,7 @@ plotFF(emm0(3),'phi.im','title',{'Mode m=0,a',['\omega_r = ',num2str(-imag(evm0(
 plotFF_ETA(emm0(3),'Amp',E,'style','r');hold off;
 
 subplot(1,4,2);
-plotFF(emm0(5),'ur.im','title',{'Mode m=0,s',['\omega_r = ',num2str(-imag(evm0(5)))] } );hold on;
+plotFF(emm0(5),'phi.im','title',{'Mode m=0,s',['\omega_r = ',num2str(-imag(evm0(5)))] } );hold on;
 plotFF_ETA(emm0(5),'Amp',E,'style','r');hold off;
 
 subplot(1,4,3);
@@ -127,7 +127,7 @@ plot([ffmesh.xsurf(1), -ffmesh.xsurf(1)],[ffmesh.ysurf(1), ffmesh.ysurf(1)],'k',
 plot([ffmesh.xsurf(end), -ffmesh.xsurf(end)],[ffmesh.ysurf(end), ffmesh.ysurf(end)],'k','LineWidth',3);
 plot([0,0],[ffmesh.ysurf(1), ffmesh.ysurf(end)],'k:');
 
-legend(h([1 3 5 7]),'m=0,a','m=0,s','m=1,s','m=1,a');
+%legend(h([1 3 5 7]),'m=0,a','m=0,s','m=1,s','m=1,a');
 box on; pos = get(gcf,'Position'); pos(3)=pos(4)*.8;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 12);
 saveas(gcf,'FIGURES/Bridges_NV_Eigenmodes_eta_cyl_L3_5',figureformat);

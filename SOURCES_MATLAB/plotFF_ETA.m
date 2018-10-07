@@ -29,13 +29,23 @@ switch p.Results.symmetry
     case('no')
         mydisp(15,'No symmetry');
     case('YS')
+        eigenmodeSYM = eigenmode;
+        eigenmodeSYM.mesh.xsurf = - eigenmodeSYM.mesh.xsurf;
         hold on; 
-        h1 = plot(-ffmesh.xsurf-real(E*eigenmode.eta).*ffmesh.N0r,ffmesh.ysurf+real(E*eigenmode.eta).*ffmesh.N0z,p.Results.style,'LineWidth',p.Results.LineWidth);
-        h = [h; h1];
+        plotFF_ETA(eigenmodeSYM,varargin{:},'symmetry','no');
+        %
+        %hold on; 
+        %h1 = plot(-ffmesh.xsurf-real(E*eigenmode.eta).*ffmesh.N0r,ffmesh.ysurf+real(E*eigenmode.eta).*ffmesh.N0z,p.Results.style,'LineWidth',p.Results.LineWidth);
+        %h = [h; h1];
     case('YA')
+        %hold on; 
+        %h1 = plot(-ffmesh.xsurf+real(E*eigenmode.eta).*ffmesh.N0r,ffmesh.ysurf-real(E*eigenmode.eta).*ffmesh.N0z,p.Results.style,'LineWidth',p.Results.LineWidth);
+        %h = [h; h1];
+        eigenmodeSYM = eigenmode;
+        eigenmodeSYM.mesh.xsurf = - eigenmodeSYM.mesh.xsurf;
+        eigenmodeSYM.eta = - eigenmodeSYM.eta;
         hold on; 
-        h1 = plot(-ffmesh.xsurf+real(E*eigenmode.eta).*ffmesh.N0r,ffmesh.ysurf-real(E*eigenmode.eta).*ffmesh.N0z,p.Results.style,'LineWidth',p.Results.LineWidth);
-        h = [h; h1];
+        plotFF_ETA(eigenmodeSYM,varargin{:},'symmetry','no');
 end
 
 

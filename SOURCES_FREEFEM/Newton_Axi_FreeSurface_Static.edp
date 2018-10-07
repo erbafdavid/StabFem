@@ -35,8 +35,6 @@ real Rbase = 1; // On prend le rayon du tube capillaire comme echelle de longueu
 include "SF_Geom.edp";
 include "Macros_StabFem.edp"
 
-/*mesh th=readmesh(ffdatadir+"mesh_guess.msh");
-mesh Shempty=emptymesh(th); 	// Maillage 'surface'*/
 mesh th=readmesh(ffdatadir+"mesh_guess.msh");
 mesh thsurface;
 if(typesurfacemesh=="plain") 
@@ -47,81 +45,114 @@ if(typesurfacemesh=="empty")
 {
 thsurface = emptymesh(th); 	// Maillage 'surface'
 };
-//mesh Shempty=thsurface;
+
 real PP0 = 1; // guess
 real PP1;
 real dpdz;
 real gamma ; // tension de surface (parametre pas encore utilisé dans cette version du programme mais a integrer proprement
-string typestart; // possibilites : "pined", "axis", "plane", "angle"
+string typestart; // possibilites : "pined", "axis", "plane", "freeH", "freeV"
 string typeend;    // possibilites : "pined", "axis", "plane", "angle"
-//typestart="pined";
-//typeend="pined";
+
 include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 
 
+/////////////////////////////////////
+//
+// INPUT PARAMETER
+//
+///////////////////////////////////////
 
 
+cout << "$$ Entering FreeFem++ Program Newton_Axi_FreeSurface_Static.edp : " << endl;
+cout << "$$ COMPUTATION OF A MENISCUS (static equilibrium shape of a free surface) and corresponding mesh" << endl;
+cout << "$$ Input parameters : " << endl;
 
 string typecont;
-
-cout << "COMPUTATION OF A MENISCUS (static equilibrium shape of a free surface) and corresponding mesh" << endl;
-cout << "Type of continuation : V (impose volume), P (impose pressure) or S (arclength continuation) ?" << endl;
+cout << "$$ Type of continuation : V (impose volume), P (impose pressure) or angle (impose angle) or S (arclength continuation) 	>> " ;
 cin >>  typecont;
-
+cout << typecont << endl;
 real VolObj;
-
+real thetaS, alphaS;
 
 if(typecont=="V")
 {
-cout << " ENTREZ LA VALEUR DU VOLUME RECHERCHE ?" << endl;
+cout << "$$ Value of prescribed volume  V0    >> " ;
 cin >> VolObj;
-//cout << "==> Volume reduit = " << VolObj/(pi*L) << endl;
-
+cout << VolObj << endl;
 VolObj = VolObj/(2*pi);
 // Warning the "volume" used in the code is actually volume/(2 pi) ; to be rationalised someday
 }
+
 else if(typecont=="P")
 {
-cout << " ENTREZ LA VALEUR DE LA pression de reference ?" << endl;
+cout << "$$ Value of prescribed reference pressure P0 (at z=0)    >> " ;
 cin >> PP0;
-cout << "==> Courbure = " << PP0 << endl;
+cout << PP0 << endl;
 }
 
-cout << "ENTREZ LA VALEUR DE LA TENSION DE SURFACE ?" << endl;
-cin >> gamma ;
+else if(typecont=="angle")
+{
+cout << "$$ Value of prescribed static angle (degrees)    >> " ;
+cin >> thetaS;
+cout << thetaS ;
+thetaS = pi/180*thetaS;
+cout << "( = " << thetaS << " radians )" << endl;
+}
 
-cout << " ENTREZ LE PARAMETRE DE GRAVITE rho g  " << endl;
+else if(typecont=="S")
+{
+cout << "$$ WARNING : type continuation 'S' not yet implemented ! " << endl;
+exit(10);
+}
+
+else
+{
+cout << "$$ WARNING : type continuation n" << typecont << " not recognized !!! " << endl;
+exit(10);
+};
+
+
+cout << "$$ Value of surface tension  >>" ;
+cin >> gamma ;
+cout << gamma << endl;
+
+cout << "$$ Value of gravity parameter (rho g) >>  " ;
 cin >> dpdz;
-cout << "==> dpdz = " << dpdz << endl;
+cout << dpdz << endl;
 
 real GammaBar;
-cout << " ENTREZ LE PARAMETRE DE ROTATION bar{Gamma}  = Gamma/(2*pi) " << endl;
+cout << "$$ Value of ROTATION parameter bar{Gamma}  = Gamma/(2*pi) >> " ;
 cin >> GammaBar;
-cout << "==> GammaBAR = " << GammaBar << endl;
+cout  << GammaBar << endl;
 if(GammaBar!=0) {cout << " ERROR : GAMMA (rotation) NOT YET IMPLEMENTED !!!'" << endl; exit(10);};
 
-cout << "ENTREZ typestart (pined, axis, plane or angle) : "<< endl;
+cout << "$$ Value of parameter typestart (pined, axis, freeH or freeV) >> ";
 cin >> typestart;
-if(typestart=="angle") {cout << " typestart=angle NOT YET IMPLEMENTED !!!'" << endl; exit(10);};
-cout << "ENTREZ typeend (pined, axis, plane) : "<< endl;
-cin >> typeend;
-if(typeend=="angle") {cout << " typeend=angle NOT YET IMPLEMENTED !!!'" << endl; exit(10);};
+cout << typestart << endl;
+//if(typestart=="freeH") {cout << " typestart=freeH NOT YET IMPLEMENTED !!!'" << endl; exit(10);};
 
+cout << "$$ Value of parameter typeend (pined, axis, plane) >> "<< endl;
+cin >> typeend;
+if(typeend=="freeH") {cout << " typeend=freeH NOT YET IMPLEMENTED !!!'" << endl; exit(10);};
+
+if(typecont=="angle")
+{
+if(typestart=="freeV"){ alphaS = 3*pi/2-thetaS;}
+if(typestart=="freeH"){ alphaS = pi/-thetaS;}
+if(typestart=="pined"){ cout << "error : in 'angle' mode typestart must be set to either freeV or freeH (even if it's actually pined)" << endl;}
+};
 
 /////////////////////////////////////
+//
 // Calcul de la geometrie initiale
+//
 ///////////////////////////////////////
 
 
 // Calcul des normales et des courbures
 CalcGeomSurf;
-
-// Plots
-//ExtendC;
-//plot(K0ext,[N0r,N0z],fill=1,value=1,wait=0,cmm="Normales de la forme initiale et Courbure K0 prolongee dans le plan");
-// plot(K0ext,fill=1,value=1,wait=0,cmm="Courbure K0 prolongee dans le plan");
-
 SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface);
+
 real Zmin = yPointSurf(0);
 real Zmax = yPointSurf(Nsurface);
 real L = Zmax-Zmin;
@@ -156,6 +187,10 @@ else if(typecont=="P")
 {
 CalcEta(etaNewton,PP0);
 }
+else if(typecont=="angle")
+{
+CalcEtaangle(etaNewton,PP1,alphaS);
+}
 else
 {
 cout << "ERROR : typecont should only be V or P (S not implemented yet)" << endl;
@@ -179,10 +214,15 @@ plot([ur,uz],fill=1,value=1,cmm="champ de deformation calcule iteration "+i,wait
 ENDIFMACRO
 
 // Deplacement du maillage
+
+
+real minarea=checkmovemesh(th,[x+ur,y+uz]);if (minarea <0 )
+	{
+		cout << " WARNING : movemesh not valid. trying to underrelax by a factor 1/2" << endl;
+		[ur,uz] = [ur/2,uz/2]; 
+	}
+
 th = movemesh(th,[x+ur,y+uz]);
-plot(th,thsurface,cmm="Deformation maillage iteration "+i,wait=1);
-real NewVolume = int2d(th)(x);
-cout << "NewVolume = " << NewVolume << endl; 
 if(typesurfacemesh=="plain") 
 {
 thsurface = th; 	// Maillage 'surface'
@@ -194,9 +234,12 @@ thsurface = emptymesh(th); 	// Maillage 'surface'
 
 //Shempty = emptymesh(th);
 //Shempty = movemesh(Shempty,[x+urdef,y+uzdef]);
-thsurface = th;
+//thsurface = th;
 // warning : ca ne marche qu'en mode "plain"... 
 
+IFMACRO(FREEFEMPLOTS,YES)
+plot(th,thsurface,cmm="Deformation maillage iteration "+i,wait=1);
+ENDIFMACRO
 
 // Recalcul des normales et courbures
 CalcGeomSurf;
@@ -205,12 +248,15 @@ K0ext = K0ext-(PP0-dpdz*y);
 IFMACRO(FREEFEMPLOTS,YES)
 plot(K0ext,fill=1,value=1,cmm="Erreur courbure iteration "+i,wait=1);
 ENDIFMACRO
+
+real NewVolume = int2d(th)(x);
+//cout << "NewVolume = " << NewVolume << endl; 
+
 //Res = int1d(Shempty,2)( (K0a+K0b-(K0-dpdz*y))^2 );
 Res = int1d(thsurface,2)(abs(x)*(gamma*(K0a+K0b)-(PP0-dpdz*y))^2);
-cout << " iteration " << i << " : Res = " << Res << " Volume = " << NewVolume <<  " PP1 = " << PP1 
-<< " PP0 : " << PP0 <<  endl; 
+cout << " iteration " << i << " : Res = " << Res << " ; Volume = " << NewVolume << " ; PP0 = " << PP0 << " ; angle = " << alphaPointSurf(0) <<  endl; 
 
-cout << " Statistique sur geometrie" << endl;
+
 //cout << " Max(eta) :" << etaNewton[].max << endl;
 
 }
@@ -225,15 +271,25 @@ cout << endl << " ------- NEWTON TERMINE -------" << endl << endl;
 if (Res < 1e-4)
 { cout << "solution convergee : on copie le maillage dans mesh.msh" << endl;
  savemesh(th,ffdatadir+"mesh.msh");
+ savemesh(th,ffdatadir+"mesh_guess.msh");
+ 
+ SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+  
+ real NewVolume = int2d(th)(x);
+ 
+ cout << "$$ Statistique sur geometrie" << endl;
+ cout << "$$ P0 = " << PP0 << endl;
+ cout << "$$ Volume = " << 2*pi*NewVolume << "       ( Volume / 2pi = " << NewVolume << " ) " << endl;  
+ cout << "$$ Angle at starting point = " << alphaPointSurf(0)*180/pi << "      ( = " << alphaPointSurf(0) << " radians )" << endl; 
 }
 else
 {
 cout << "ATTENTION : pas de convergence du Newton !" << endl;
-exit(-10);
+exit(10);
 };
 
 
-SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
 
 
 //exec("cp "+ffdatadir+"mesh.msh "+ffdatadir+"mesh_guess.msh");

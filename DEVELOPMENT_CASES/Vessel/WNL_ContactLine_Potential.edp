@@ -1,0 +1,176 @@
+//  Weakly NonLinear analysis of sloshing dynamics with a mobile contact line
+//  (inviscid theory)
+//  By Nabil ACHOUR / D. FABRE
+//
+// This program reproduces the work of Viola, Gallaire & Brun (2017)
+//
+// contact line model with hysteresis :
+// $$ theta_C - \teta_E = - \alpha V_C - \Delta sign (V_c) $$
+//  
+// Note that here we have : 
+//   $$\theta_C = 3\pi/2 - \alpha_C$$
+//   $$ \alpha_C = \alpha(s=0) + {\left[\partial \eta / \partial s + K_0^a cot( \alpha )  \eta \right]}_{s=0}$$
+//   $$ V_c = \frac{1}{\sin \theta_E} \partial eta / \partial t \equiv \frac{1}{-\cos \alpha} \partial eta / \partial t $$
+//
+//
+// We assume \alpha = \tilde \alpha \epsilon
+// 			 \Delta = \tilde \Delta \epsilon^2
+//
+// ----------------------------------------
+// the problem is potential : u = grad (phi) 
+//  
+// State vector : $q = [\phi(r,\phi,z,t),\eta(s,\phi,t]$
+//
+// WNL : q = \epsilon \left( q_1 exp (i m \phi - i \omega t) + c.c. \right) + \epsilon^2 q_2
+//
+// LINEAR PROBLEM : solved in StabAxi_FreeSurface_Potential.edp
+//
+// WNL : compatibility conditions lead to amplitude equation
+//
+// dA/dT = - \zeta T A - \chi A/|A|
+//
+// \zeta =  \frac{\tilde{\alpha} \omega}{Bo} \tilde{\zeta}
+//
+// \chi = \frac{\tilde{\Delta}{\pi Bo}} \tilde{chi} 
+//
+//
+// USAGE OF THE PROGRAM :
+//
+// INPUT PARAMERERS : (none)
+// 
+// INPUT FILE : EigenmodeFORWNL.txt
+//
+// OUTPUT FILE : WNL.ff2m
+
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+include "SF_Geom.edp"; 
+include "Macros_StabFem.edp"
+
+
+mesh th=readmesh(ffdatadir+"mesh.msh");
+//mesh thsurface;
+//if(typesurfacemesh=="plain") 
+//{
+//thsurface = th; 	// Maillage 'surface'
+//};
+//if(typesurfacemesh=="empty") 
+//{
+//thsurface = emptymesh(th); 	// Maillage 'surface'
+//};
+
+real L, PP0, Vol, Area;
+
+// constantes physiques 
+real gamma; // tension de surface
+real R; // echelle de longueur (rayon pour un pont liquide)
+real dpdz; // parametre de gravite
+real GAMMA; // circulation pour cas polygones tournants
+real nu; // viscosity FOR VISCOUS POTENTIAL CASE 
+real alphaMILES; // parametre alpha pour dissipation a la linge triple (Miles, Hocking)
+string typestart="freeV"; // possibilites : "pined", "axis", "plane", "angle"
+string typeend="axis";    // possibilites : "pined", "axis", "plane", "angle"
+
+include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
+
+SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
+CalcGeomSurf;
+
+
+////////////////////////////////////////////////////////////////
+//
+// MAILLAGE ET GEOMETRIE INITIAUX
+//
+////////////////////////////////////////////////////////////////
+
+
+mesh Th=readmesh(ffdatadir+"mesh.msh");
+fespace VhxVh(Th,[P1,P1]);
+
+VhxVh<complex> [phi,eta],[q,v];
+complex lambda;
+{
+ifstream fileMODE(ffdatadir+"EIGENMODE_FOR_WNL.txt");
+fileMODE >> phi[];
+fileMODE >> lambda;
+}
+
+real omega = imag(lambda);
+
+cout << "%% PROGRAM WNL_ContactLine_Potential.edp : " << endl << endl;
+cout << "%% Reading eigenmode file (P1P1) "<< endl;
+cout << "%% Eigenvalue of read file : " << lambda;
+
+   	 
+    Vh ModePhi,ModeEta;
+	ModeEta = real(eta);
+	ModePhi = -imag(phi);
+	
+	
+    // Normalisation
+    real norm = .5/ModeEta(xPointSurf(0),yPointSurf(0))*(-cos(alphaPointSurf(0))); // Normalisation Gallaire : etaZ_R = 1/2 => eta(0) = 1/2*sin(beta) = 1/2*(-cos(alpha))    
+    ModeEta = ModeEta*norm;
+    ModePhi = ModePhi*norm;
+    cout << "apres normalisation : eta(0) ; etaZ(0) " << ModeEta(xPointSurf(0),yPointSurf(0)) << " ; " << ModeEta(xPointSurf(0),yPointSurf(0))/(-cos(alphaPointSurf(0))) << endl;   	
+     	
+////////////////////////////////////////////////////
+//
+//    Coeff ordre 2
+//
+///////////////////////////////////////////////////
+
+
+// constantes physiques 
+gamma = 0.002;	  // Surface Tension
+R=1;
+dpdz =1;
+real epss=0.0001;
+real alphatild=0.60*epss;
+real deltatild=65*(epss^2);
+
+
+// terme C1
+real c1 = int1d(Th,2)(ModePhi*ModeEta*x)+int1d(Th,2)(ModePhi*ModeEta*x); // = <X,BX>
+cout << "c1 = " << c1 << endl;//" ; " << c1bis << endl;
+
+
+// terme c2
+real c2=(1/(-cos(alphaPointSurf(0))))*(ModeEta[](IndexPointSurf(0)))^2*xPointSurf(0); 
+cout << "c2 = " << c2 << endl; //" ; " << c2bis << endl;
+
+// terme c3
+real c3=xPointSurf(0)*ModeEta[](IndexPointSurf(0));
+cout << "c3 = " << c3 << endl;
+
+
+
+real zeta=alphatild*gamma*omega*c2/c1;
+real chi=c3/c1*(deltatild/pi)*gamma;
+
+
+cout << endl << "########################################################" << endl << endl;
+
+cout << "%% Les coefficients de l'equation d'amplitude : "<<endl;
+cout << "%% zeta = (alphatilde*gamma) * zetatilde avec zetatilde = " << c2/c1*omega <<  endl;
+cout << "%% chi  = (deltatild*gamma/pi) * chitilde avec chitilde = " << c3/c1 <<  endl;
+
+cout << endl << "########################################################" << endl << endl;
+
+
+{ 
+	ofstream file(ffdatadir+"WNL.ff2m"); 
+    file << "### Data generated by Freefem++ ; " << endl;
+    file << "Parameters of the amplitude equations for an oscillating free surface" << endl;
+    file << "datatype WNL" << endl;
+	file << "real omega real zetatilde real chitilde" << endl << endl ; 
+    file << omega << endl ;
+	file << c2/c1*omega;
+	file << c3/c1;
+}
+

@@ -35,7 +35,7 @@ if (typegeom==0) // cylindre
 RMAX = R;
 border SurfBulle(t=0,LL){y=t;x=R;label=2;};
 Lsurf=LL;
-plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
+//plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 };
 
@@ -47,7 +47,7 @@ real thetac = atan(LL/2);
 Lsurf = 2*Rc*thetac;
 cout << " Portion de sphere : Rc = " << Rc << " ; thetac = " << thetac << " ; Lsurf = " << Lsurf << endl;
 border SurfBulle(t=-thetac,thetac){y=Rc*(sin(t)+sin(thetac));x=Rc*cos(t);label=2;};
-plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
+//plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 };
 
@@ -57,7 +57,7 @@ cout << " ENTREZ Le rayon max. ?" << endl;
 cin  >> RMAX;
 border SurfBulle(t=0,LL){y=t;x=R+(RMAX-R)*sin(pi*t/LL);label=2;};
 Lsurf = LL; 
-plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
+//plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 };
 
@@ -69,7 +69,7 @@ real a= LL/2;
 real b = (RMAX-R);
 Lsurf = pi*(3*(a+b)-sqrt((3*a+b)*(a+3*b)))/2; // formule approchee perimetre ellipse
 border SurfBulle(t=-pi/2,pi/2){y=LL/2*(1+sin(t));x=R+(RMAX-R)*cos(t);label=2;};
-plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
+//plot(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 };
 
@@ -78,9 +78,9 @@ th = buildmesh(SurfBulle(Lsurf*d)+Side1(R*d)+Side2(R*d)+Axe(LL*d));
 cout << "==> Longueur = " << LL << endl;
 cout << "==> Densite = " << d << endl;
 
-
+IFMACRO(FREEFEMPLOTS,YES)
 plot(th,wait=1);
-
+ENDIFMACRO
 
 
 

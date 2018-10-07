@@ -1,0 +1,16 @@
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.eps
+*.txt
+*.ff2m
+*.dat
+*.msh
+*.ps
+*.png
+*/*/WORK
+*CASES/*/FIGURES
+
+

@@ -7,13 +7,15 @@ function value = autorun(isfigures);
 % autorun -> automatic check
 % autorun(1) -> produces the figures used for the manual
 
+run('../../SOURCES_MATLAB/SF_Start.m');ffdatadir = './';verbosity=10;
+
+
 if(nargin==0) 
-    isfigures=0; 
+    isfigures=0; verbosity=0;
 end;
 value=0;
 
 
-run('../../SOURCES_MATLAB/SF_Start.m');ffdatadir = './';verbosity=0;
 
 % Generation of the mesh
 Ndensity =40;

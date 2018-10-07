@@ -59,12 +59,15 @@ function handle = plotFF(FFdata, varargin);
 %                       'auto' (default) | [N,M]
 %      'Title'       Title
 %                       (default=[])
-%      'XLim'        Range for the x-axis
-%                       'minmax' (default) | [min,max]
+%      'XLim'        Range for the x-axis 
+%                       'minmax' (default) | [min,max] 
+%               NOTE: if not specified but the mesh contains a 'xlim' field, this one is used.
 %      'YLim'        Range for the y-axis
 %                       'minmax' (default) | [min,max]
+%               NOTE: if not specified but the mesh contains a 'ylim' field, this one is used.
 %      'ZLim'        Range for the z-axis
 %                       'minmax' (default) | [min,max]
+%
 %      'DAspect'     Data unit length of the xy- and z-axes
 %                       'off' | 'xyequal' (default) | [ux,uy,uz]
 %      'FlowData'    Data for quiver plot
@@ -73,6 +76,11 @@ function handle = plotFF(FFdata, varargin);
 %                       'auto' (default) | [N,M]
 %       'symmetry'  symmetry property of the flow to plot
 %                       'no' (default) | 'YS' (symmetric w.r.t. Y axis) | 'YA' (antisymmetric w.r.t. Y axis) | 'XS' | 'XA'              
+%
+%     Notes :
+
+
+
 
 global ff ffdir ffdatadir sfdir verbosity
 
@@ -83,6 +91,12 @@ global ff ffdir ffdatadir sfdir verbosity
 if (mod(nargin, 2) == 1) % plot mesh in single-entry mode : mesh
     mesh = FFdata;
     varargin = {varargin{:}, 'mesh', 'on'};
+    if(isfield(mesh,'xlim'))
+        varargin = {varargin{:}, 'xlim', mesh.xlim};
+    end
+    if(isfield(mesh,'ylim'))
+        varargin = {varargin{:}, 'ylim', mesh.ylim};
+    end
     mydisp(15, ['launching ffpeplot with the following options :']);
     if (verbosity >= 15)
         varargin;
@@ -92,6 +106,12 @@ else % plot mesh in single-entry mode : data
     mesh = FFdata.mesh;
     field1 = varargin{1};
     varargin = {varargin{2:end}};
+     if(isfield(mesh,'xlim'))
+        varargin = {varargin{:}, 'xlim', mesh.xlim};
+    end
+    if(isfield(mesh,'ylim'))
+        varargin = {varargin{:}, 'ylim', mesh.ylim};
+    end
     if (strcmp(field1, 'mesh')) % plot mesh ins double-entry mde
         varargin = {varargin{:}, 'mesh', 'on'};
         
