@@ -30,13 +30,13 @@ ENDIFMACRO
 // END DEFINITION OF SOLVER
 
 IFMACRO(!FREEFEMPLOTS)
-macro FREEFEMPLOTS  YES//EOM
+macro FREEFEMPLOTS  NO//EOM
 ENDIFMACRO 
 // Set to YES to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
 // set to NO to disable all plots (recommended in MatLab/StabFem mode)
 
 IFMACRO(!EIGENSOLVER)
-macro EIGENSOLVER ARPACK// POSSIBLE OPTIONS : ARPACK, SLEPC
+macro EIGENSOLVER SLEPC// POSSIBLE OPTIONS : ARPACK, SLEPC
 ENDIFMACRO
 
 // Moved to Stability solver
@@ -70,8 +70,7 @@ ENDIFMACRO
 // To select the solver ; avaiLable are "default", "UMFPACK64", "MUMPS_seq", and "PETSC"
 
 
-
-
+// GEOMETRIC PARAMETERS
 
 //string ffdatadir = "./WORK/";
 string ffdatadir = "./WORK/";

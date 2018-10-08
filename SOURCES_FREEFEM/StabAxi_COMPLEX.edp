@@ -64,7 +64,7 @@ ENDIFMACRO
 	real Re;                  
 	cout << "$$ Enter Reynolds :   " << endl; 
 	cin  >> Re;
-	real nu=1.0/Re;  
+	real nu=2*SFGeomRhole/Re;  
 	real shiftr,shifti;	
 	cout << "$$ Enter SHIFT (re,im) :   " << endl; 
 	cin  >> shiftr >> shifti;
@@ -262,6 +262,7 @@ ENDIFMACRO
 ///////////////////// OR CALL TO SLEPC ////////////////////////////////// //////////
 
 IFMACRO(EIGENSOLVER,SLEPC)
+	cout << "SOLVING EIGENVALUE PROBLEM WITH SLEPC" << endl;
 	/***************************************/
 	/*      Build distributed matrices     */
 	/***************************************/
@@ -447,8 +448,9 @@ else if(iadjoint=="S")
  	// renormalization by MAXIMUM
  	Xh NormU = sqrt(abs(ux)^2+abs(ur)^2+abs(uphi)^2);
 	ux[] = 1/NormU[].max*ux[];
-	
-	
+	cout << "PLOTTING" << endl;
+	XXMh [realur,realux,realup] = [real(ur),real(ux),real(up)];
+	plot(realux,fill=1,wait=1,value=1,cmm="final ux");
 	string namefile,namefileFF,descriptionFF,typeDA; 
 	if(iter<itmax)
 	
@@ -543,6 +545,8 @@ cout << "$$ Computation of sensitivity after direct and adjoint" << endl;
 
 
 };
+
+
 
 cout << "$$$$ LEAVING Stab_Axi_COMPLEX.edp " << endl << "$$" << endl; 
 

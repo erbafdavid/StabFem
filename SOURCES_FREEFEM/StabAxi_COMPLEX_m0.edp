@@ -64,7 +64,7 @@ ENDIFMACRO
 	real Re;                  
 	cout << "$$ Enter Reynolds :   " << endl; 
 	cin  >> Re;
-	real nu=1.0/Re;  
+	real nu=2*SFGeomRhole/Re;  
 	real shiftr,shifti;	
 	cout << "$$ Enter SHIFT (re,im) :   " << endl; 
 	cin  >> shiftr >> shifti;
@@ -197,7 +197,7 @@ ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
 	varf b([ux,ur,up],[vx,vr,q]) =  int2d(th) (Rphys(y,ParamMap)*(vx*ux+vr*ur)*1/(Hy(y,ParamMap)*Hx(x,ParamMap)));
-		matrix<complex> B= b(XXMh,XXMh,solver=CG);  //////// see freefem++doc.pdf for the solver 
+		matrix<complex> B= b(XXMh,XXMh);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
 matrix<complex> OP,OPA;
@@ -214,9 +214,9 @@ if(nev>1)
 cout << "$$ Building matrices..." ;
 ////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
 if(iadjoint=="D")
-{ OP=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = shift; }
+{ OP=LNSE(XXMh,XXMh); shiftOP = shift; }
 else if(iadjoint=="A")
-{ OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
+{ OP=LNSEadjoint(XXMh,XXMh); shiftOP = conj(shift); }
 else if(iadjoint=="S") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; };
 cout << "$$ ... done !" << endl;
 ////////////////////////////////////////////////////////////////////////////////////
@@ -230,6 +230,8 @@ XXMh<complex> [int] [eux,eur,eup](nev);   ////// vector to store EIGENVECTORS
 ///////////////////// CALL TO ARPACK++ ////////////////////////////////// //////////
 
 IFMACRO(EIGENSOLVER,ARPACK)
+set(OP,solver=sparsesolver);  //// factorize matrix
+set(B,solver=CG);  //// factorize matrix
 int k=EigenValue(OP,B,sigma=shiftOP,value=ev,vector=eux,tol=1e-6,maxit=0,ncv=ncv);    //Arpack call
 if(iadjoint=="A") { ev = conj(ev); } ;
 ENDIFMACRO
@@ -451,12 +453,12 @@ else if(iadjoint=="S")
 	int iter;
 	for (iter=0; ((err>errmax)&&(iter<itmax)); iter++)
 	{
-		//	complex[int] rhs = B*ux0[];
-    	//complex[int] rhs= brhs(0,XXMh);  //////// see freefem++doc.pdf for the solver 
-		//complex[int] w = OP^-1*rhs;
-		//ux[] = w;
+		//complex[int] rhs = B*ux0[];
+    	complex[int] rhs= brhs(0,XXMh);  //////// see freefem++doc.pdf for the solver 
+		complex[int] w = OP^-1*rhs;
+		ux[] = w;
 		
-		ShiftInvert;
+		//ShiftInvert;
 	
 		complex XnXn1 = int2d(th)(ux0*ux+ur0*ur);
 		complex Xn1Xn1 =  int2d(th)(ux*ux+ur*ur);
