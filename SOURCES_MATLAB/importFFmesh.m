@@ -36,6 +36,11 @@ if (~isfield(meshstruct, 'problemtype')) % for retrocompatibility ; to be remove
     meshstruct = rmfield(meshstruct, 'datatype');
 end
 
+if (~isfield(meshstruct, 'meshgeneration')) % for retrocompatibility ; to be removed in future
+    meshstruct.meshgeneration = 0;
+    % initial mesh should be generation = 0
+end
+
 
 %
 meshstruct.meshgeneration = 0;

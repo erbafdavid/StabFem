@@ -72,7 +72,7 @@ flowforadapt = [vararginfields{1:nfields}];
 % END WORKAROUND 
 
 %% designation of the adapted mesh
-if(isfield(flowforadapt(1),'meshmeshgeneration'))
+if(isfield(flowforadapt(1).mesh,'meshgeneration'))
      meshgeneration = flowforadapt(1).mesh.meshgeneration;
 else
     meshgeneration = 0;
@@ -170,7 +170,10 @@ end
 
 %% OUTPUT    
 % WARNING : the mesh-associated data in the structures will most likely be wrong !    
-     mkdir([ffdatadir, 'MESHES']); %% put it elsewhere !
+    if(exist([ffdatadir, 'MESHES'])==0)
+        mkdir([ffdatadir, 'MESHES']); %% put it elsewhere !
+    end
+    
      mycp([ffdatadir 'SF_Init.ff2m'],[ffdatadir 'MESHES/SF_Init.ff2m']); %% put it elsewhere ! 
      mycp([ffdatadir, 'mesh_adapt.msh'], [ffdatadir, 'MESHES/mesh',designation,'.msh']);
      mycp([ffdatadir, 'mesh_adapt.ff2m'], [ffdatadir, 'MESHES/mesh',designation,'.ff2m']);
@@ -215,6 +218,8 @@ end
 if(strcmp(varargin{1}.datatype,'mesh'))
     varargout  = { newmesh varargout{:}};   
 end
+
+myrm([ffdatadir 'Eigenmode*']); % remove all eigenmode files
 
 end
 

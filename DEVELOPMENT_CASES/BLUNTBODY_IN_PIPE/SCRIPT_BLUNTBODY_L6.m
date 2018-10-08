@@ -4,14 +4,14 @@ verbosity=1;
 
 %% Generation of the base flow
 
-if(exist('./WORK/BASEFLOW/BaseFlow_Re500.ff2m')==0)
+%if(exist('./WORK/BASEFLOW/BaseFlow_Re500.ff2m')==0)
     bf = SmartMesh_L6();
-else
-    ffmesh = importFFmesh('./WORK/MESHES/mesh_adapt8_Re500.msh');
+%else
+    ffmesh = importFFmesh('./MESHES/mesh_adapt8_Re500.msh');
     bf = importFFdata(ffmesh,'./WORK/MESHES/BaseFlow_adapt8_Re500.ff2m');
     bf = SF_BaseFlow(bf)
     bf.mesh.xlim = [-2 10];bf.mesh.ylim = [0 1];
-end
+%end
 
 % plot the base flow
 figure;plotFF(bf,'ux','contour','on','clevels',[0,0]);  %
@@ -21,6 +21,21 @@ pause(0.1);
 %% Spectrum explorator 
 [ev,eigenmode] = SF_Stability(bf,'m',1,'shift',1+0.2i,'nev',20,'type','D','plotspectrum','yes');   
 pause(0.1);
+
+
+%% Localizing the threshold
+% steady mode
+bf = SF_BaseFlow(bf,'Re',180);
+[ev,em] = SF_Stability(bf,'nev',1,'shift',0.01);
+[bf,em] = SF_FindThreshold(bf,em);
+
+
+% unsteady mode
+bf = SF_BaseFlow(bf,'Re',400);
+[ev,em] = SF_Stability(bf,'nev',1,'shift',0.74i);
+[bf,em] = SF_FindThreshold(bf,em);
+
+
 
  
 %% COMPUTING THE UNSTEADY BRANCH (going backwards)

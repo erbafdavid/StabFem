@@ -16,27 +16,13 @@
 include "Macros_StabFem.edp" 
 
 
-//string ffdatadir = "./WORK/";
-
-// load "iovtk"                       /// load library to write in vtk format
-// load "BinaryIO"                 ////load libary to write the solution in binary form
-// load "BinaryIO_64"
-
-
-
-//real Rbody=0.5;         /////// Cylinder Rbody
- 
-
-
 real n=5;                 
 int ns=30; 
 
 cout << " Generation of an initial mesh for a BLUNT BODY in a PIPE" << endl;
 cout << " Enter the dimensions Rbody, Lel, Lcyl, Rtube, xmin, xmax ? " << endl; 
 
-//real xinlet=-20.;     
-//real xoutlet=40.; 
-//real yside=20.;       
+     
 real xinlet , xoutlet, Rpipe,Lcyl,Rbody, Lel ;
 
 cin >> Rbody >> Lel >> Lcyl >> Rpipe >>  xinlet >> xoutlet ;
@@ -50,14 +36,9 @@ cout << "SIZE OF DOMAIN : Xmin = " << xinlet << " ; Xmax = " << xoutlet << endl;
 int bctype;
 cout << "Type of Boundary condition at lateral boundary : " << endl;
 cout << "             1-> constant velocity " << endl <<  "             2-> fixed wall (zero velocity) " << endl 
-<< "  3-> no stress (outlet)           4 -> slip (no tangential stress)  " << endl;
+<< "  3-> no stress (outlet)           4 -> slip (no normal velocity, no tangential stress)  " << endl;
 cin >> bctype;
 
-/////////////////////////////////////////////////////////////////////////////////
-//int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
-                         /////// label for boundary conditions  
-/////////////////////////////////////////////////////////////////////////////////
-// cylinder center is in (0,0)
 
 //border cylinder(t=0,pi){ x=Rbody*cos(t);y=Rbody*sin(t);label=bcwall;}
 border square1(t=0,pi/2){x=-Lel*cos(t);y=Rbody*sin(t);label=21;}

@@ -19,9 +19,17 @@ function [baseflow, eigenmode] = SF_FindThreshold(baseflow, eigenmode)
 
 global ff ffdir ffdatadir sfdir verbosity
 
-system(['cp ', ffdatadir, 'Eigenmode.txt ', ffdatadir, 'Eigenmode_guess.txt']);
+mycp(baseflow.filename, [ffdatadir, 'BaseFlow_guess.txt']);
+mycp(eigenmode.filename, [ffdatadir, 'Eigenmode_guess.txt']);
 
+
+switch(baseflow.mesh.problemtype)
+    case('2D')
 solvercommand = [ff, ' ', ffdir, 'FindThreshold2D.edp'];
+    case('AxiXR')
+solvercommand = [ff, ' ', ffdir, 'FindThresholdAxi.edp'];        
+end
+
 status = mysystem(solvercommand);
 
 mydisp(1,['#### Direct computation of instability threshold ']);
@@ -29,18 +37,19 @@ mydisp(1,['#### Direct computation of instability threshold ']);
 baseflowT = importFFdata(baseflow.mesh, 'BaseFlow_threshold.ff2m');
 eigenmodeT = importFFdata(baseflow.mesh, 'Eigenmode_threshold.ff2m');
 
-
 mydisp(1,['#### Re_c =  ', num2str(baseflowT.Re)]);
-mydisp(1,['#### lambda_c =  ', num2str(eigenmodeT.lambda)]);
+mydisp(1,['#### omega_c =  ', num2str(imag(eigenmodeT.lambda))]);
 
+
+% The following is probably useless... moreover system(cp...) shoud be replaced by mycp
 if (nargout > 0)
     baseflow = baseflowT;
     system(['cp ', ffdatadir, 'BaseFlow_threshold.txt ', ffdatadir, 'BaseFlow.txt']);
     system(['cp ', ffdatadir, 'BaseFlow_threshold.txt ', ffdatadir, 'BaseFlow_guess.txt']);
 end
-
-
 if (nargout > 1)
     eigenmode = eigenmodeT;
     system(['cp ', ffdatadir, 'Eigenmode_threshold.txt ', ffdatadir, 'Eigenmode_guess.txt']);
+end
+
 end

@@ -163,8 +163,10 @@ for i = istart:nargin
     end
     
     if (istart == 2 && Ndata ~= length(data))
-        error(['Error in importFFdata : wrong data number ; expecting ', num2str(Ndata), ' reading ', num2str(length(data)), ...
-            '  (Mesh may be incompatible)'])
+        disp(['### Error in importFFdata : wrong data number ; expecting ', num2str(Ndata), ' reading ', num2str(length(data)), ...
+            '  (Mesh may be incompatible)']);
+         disp(['### When reading  data file : ',fileToRead]);
+         disp(['### Associated to mesh file : ',mesh.filename]);
     end
     
     for ifield = 1:numfields

@@ -98,8 +98,6 @@ XXMh [Ubaxix,Ubaxir,Ubaxip];          ///////  -> Base Flow (in case we start wi
 
 
 
-
-
 real eps = 1e-12; // desingularisation term for matrix B, useful with some solvers
 
 macro div(im,u) (dx(u#x)+dy(u#r)+u#r/y+im/y*u#phi)// macro for divergence 
@@ -163,7 +161,6 @@ macro Conv(ima,ua,imb,ub,v) (
 varf   LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
    int2d(th)( 
    			(-2*nu*(D(1i*m,u):D(-1i*m,v))
-             + up*vp*(eps) 
              + up*div(-1i*m,v)
              + div(1i*m,u)*vp
              - Conv(1i*m,u,0,Ub,v)
@@ -176,7 +173,6 @@ varf   LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
 varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
    int2d(th)( 
    			(-2*nu*(D(1i*m,u):D(-1i*m,v))
-             + up*vp*(eps) 
              + up*div(-1i*m,v)
              + div(1i*m,u)*vp
              - Conv(-1i*m,v,0,Ub,u)
@@ -421,9 +417,10 @@ else if(iadjoint=="S")
     {
     ofstream file(namefile);
   	file << ux[] ;	
-   	file << endl << endl << Re << endl
-   	<< endl << lambdar << "   " << lambdai  << endl;
+   	file << endl << endl << lambdar << "   " << lambdai  << endl;
     }
+	exec("cp "+namefile+" "+ffdatadir+"Eigenmode1.txt");//hack for compatibility
+	  
 
     // write output in .dff.2m format (for StabFem)
 	SFWriteMode(namefileFF,u,lambda,shift,m,"EigenMode"+typeDA,iter);	 // MACRO DEFINED in StabFem_Macros.edp
