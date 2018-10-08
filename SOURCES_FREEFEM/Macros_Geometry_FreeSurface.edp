@@ -369,8 +369,8 @@ problem CalcK0b(K0b,test)=
 macro CalcGeomSurfANS
 CalcN0r;
 CalcN0z;
-plot(N0r,wait=0,value=1);
-plot(N0z,wait=0,value=1);
+//plot(N0r,wait=0,value=1);
+//plot(N0z,wait=0,value=1);
 NormN = sqrt(N0r^2+N0z^2)+1e-10;
 N0r = N0r/NormN;
 N0z = N0z/NormN;
@@ -378,8 +378,8 @@ T0r = N0z;
 T0z = -N0r;
 CalcK0a;
 CalcK0b;
-plot(K0a,wait=0,value=1);
-plot(K0b,wait=0,value=1);
+//plot(K0a,wait=0,value=1);
+//plot(K0b,wait=0,value=1);
 cout << "max K0a : " << K0a[].max << " " << K0a[].min <<endl; 
 //EOM
 //

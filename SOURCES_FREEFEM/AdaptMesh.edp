@@ -37,10 +37,9 @@
 
 
 	verbosity = 0;
+	include "SF_Geom.edp";
 	include "Macros_StabFem.edp";
-
-
-
+	
 
 // Input parameters
 string typemeshmanipulation;
@@ -75,6 +74,26 @@ cout << endl << endl;
 	mesh thold = th;
 	int nvprev = th.nv;
 
+IFMACRO(FREESURFACE,YES)
+	mesh thsurface;
+	if(typesurfacemesh=="plain") 
+	{
+	thsurface = th; 	// Maillage 'surface'
+	};
+	if(typesurfacemesh=="empty") 
+	{
+	thsurface = emptymesh(th); 	// Maillage 'surface'
+	};
+	string typestart,typeend;
+	typestart="??"; typeend="??";
+	real PP0,dpdz;
+	include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
+	SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
+	CalcGeomSurf;
+ENDIFMACRO
+
+	
+
     cout << endl << "$$#### Mesh information BEFORE ADAPT :" << endl;  
     cout << "$$#### Number of vertices    " << th.nv <<  endl;	
 
@@ -97,6 +116,8 @@ cout << endl << endl;
     fespace p2xp2xp2xp1(th,[P2,P2,P2,P1]);
     fespace p2xp2xp1xp1xp1(th,[P2,P2,P1,P1,P1]);
     fespace p2xp2xp2xp1xp1xp1(th,[P2,P2,P2,P1,P1,P1]);
+    fespace p1bxp1bxp1bxp1xp1xp1(th,[P1b,P1b,P1b,P1,P1,P1]);  
+
 
 // All flowfields will be converted to the most general format p2xp2xp2xp1xp1xp1<complex> for reprojection after adaptation
     p2xp2xp2xp1xp1xp1<complex>[int] [FTAx,FTAy,FTAz,FTAp,FTAr,FTAT](nfieldsmax);
@@ -127,6 +148,16 @@ for(int i=0;i<nfields;i++)
           [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [uBx,uBy,0];
           nfieldsR++;
 		}
+    else if(datastoragemode[i]=="CxP2P2P1")
+	   {
+          p2xp2xp1<complex> [uBx,uBy,uBp]; 
+          file >> uBx[]; 
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx,uBy,(0+0i),uBp,(0+0i),(0+0i)];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),0];nfieldsR++;
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),0];nfieldsR++;
+		}
     else if(datastoragemode[i]=="ReP2P2P2P1")
 		{
           p2xp2xp2xp1 [uBx,uBy,uBz,uBp]; 
@@ -136,6 +167,16 @@ for(int i=0;i<nfields;i++)
           [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx*(1+0i),uBy*(1+0i),uBz*(1+0i),uBp*(1+0i),(0+0i),(0+0i)];
           [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [uBx,uBy,uBz];
           nfieldsR++;
+		}
+	else if(datastoragemode[i]=="CxP2P2P2P1")
+	   {
+          p2xp2xp2xp1<complex> [uBx,uBy,uBz,uBp]; 
+          file >> uBx[]; 
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx,uBy,uBz,uBp,(0+0i),(0+0i)];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),real(uBz)];nfieldsR++;
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),imag(uBz)];nfieldsR++;
 		}
     else if(datastoragemode[i]=="ReP2P2P1P1P1")
 		{
@@ -148,9 +189,9 @@ for(int i=0;i<nfields;i++)
           nfields++;
 		}
 
-     else if(datastoragemode[i]=="ReP2P2P2P1P1P1")
+     else if(datastoragemode[i]=="ReP1bP1bP1bP1P1P1")
 		{
-          p2xp2xp2xp1xp1xp1 [uBx,uBy,uBz,uBp,uBrho,uBT]; 
+          p1bxp1bxp1bxp1xp1xp1 [uBx,uBy,uBz,uBp,uBrho,uBT]; 
           file >> uBx[];   
           for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};   
           cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	       
@@ -158,26 +199,16 @@ for(int i=0;i<nfields;i++)
           [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [uBx,uBy,0];
           nfieldsR++;
 		} 
-	 else if(datastoragemode[i]=="CxP2P2P1")
-	   {
-          p2xp2xp1<complex> [uBx,uBy,uBp]; 
-          file >> uBx[]; 
-          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
-          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
-          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx,uBy,(0+0i),uBp,(0+0i),(0+0i)];
-          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),0];nfieldsR++;
-          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),0];nfieldsR++;
-		}	
-     else if(datastoragemode[i]=="CxP2P2P2P1")
-	   {
-          p2xp2xp2xp1<complex> [uBx,uBy,uBz,uBp]; 
-          file >> uBx[]; 
-          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
-          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
-          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx,uBy,uBz,uBp,(0+0i),(0+0i)];
-          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),0];nfieldsR++;
-          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),0];nfieldsR++;
-		}	
+	  else if(datastoragemode[i]=="CxP1bP1bP1bP1P1P1")
+		{
+          p1bxp1bxp1bxp1xp1xp1<complex> [uBx,uBy,uBz,uBp,uBrho,uBT]; 
+          file >> uBx[];   
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};   
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	       
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx,uBy,uBz,uBp,uBrho,uBT];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),real(uBz)];nfieldsR++;
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),imag(uBz)];nfieldsR++;
+		} 
 	 else if(datastoragemode[i]=="ReP2")
 	   {
           p2 uBx;
@@ -286,6 +317,20 @@ IFMACRO(FREEFEMPLOTS,YES)
 	plot(thnew,wait=1);
 ENDIFMACRO
 
+IFMACRO(FREESURFACE,YES)
+	if(typesurfacemesh=="plain") 
+	{
+	thsurface = thnew; 	// Maillage 'surface'
+	};
+	if(typesurfacemesh=="empty") 
+	{
+	thsurface = emptymesh(thnew); 	// Maillage 'surface'
+	};
+	SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
+	CalcGeomSurf;
+ENDIFMACRO
+
+
 //return(10);
 
 cout << endl << "$$#### Mesh information AFTER ADAPT :" << endl;  
@@ -310,7 +355,9 @@ cout << endl << "$$#### Mesh information AFTER ADAPT :" << endl;
     fespace p0N(thnew,P0);
  	fespace p2xp2xp1N(thnew,[P2,P2,P1]);
  	fespace p2xp2xp2xp1N(thnew,[P2,P2,P2,P1]);
-    fespace p2xp2xp1xp1xp1N(thnew,[P2,P2,P1,P1,P1]);  
+    fespace p2xp2xp1xp1xp1N(thnew,[P2,P2,P1,P1,P1]); 
+//    fespace p2xp2xp2xp1xp1xp1N(thnew,[P2,P2,P2,P1,P1,P1]); 
+    fespace p1bxp1bxp1bxp1xp1xp1N(thnew,[P1b,P1b,P1b,P1,P1,P1]);  
 
 for(int i=0;i<nfields;i++) 
     {
@@ -327,6 +374,14 @@ for(int i=0;i<nfields;i++)
           for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
           cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
 		}
+	else if(datastoragemode[i]=="CxP2P2P1")
+	   {
+	   	  p2xp2xp1N<complex> [uBNx,uBNy,UBNp]=[FTAx[i],FTAy[i],FTAp[i]];        
+          U << uBNx[];
+          U << endl; 
+          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+		}
     else if(datastoragemode[i]=="ReP2P2P2P1")
         {
           p2xp2xp2xp1N [uBNx,uBNy,UBNz,UBNp]=[real(FTAx[i]),real(FTAy[i]),real(FTAz[i]),real(FTAp[i])]; 
@@ -335,6 +390,14 @@ for(int i=0;i<nfields;i++)
           for(int j =0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
           cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
         }
+    else if(datastoragemode[i]=="CxP2P2P2P1")
+	   {
+	   	  p2xp2xp2xp1N<complex> [uBNx,uBNy,uBNz,UBNp]=[FTAx[i],FTAy[i],FTAz[i],FTAp[i]];        
+          U << uBNx[];
+          U << endl; 
+          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+		}
     else if(datastoragemode[i]=="ReP2P2P1P1P1")
         {
           p2xp2xp1xp1xp1N [uBNx,uBNy,uBNp,uBNrho,uBNT]=[real(FTAx[i]),real(FTAy[i]),real(FTAp[i]),real(FTAr[i]),real(FTAT[i])];
@@ -351,23 +414,23 @@ for(int i=0;i<nfields;i++)
           for(int j =0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
           cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
         }
-    else if(datastoragemode[i]=="CxP2P2P1")
-	   {
-	   	  p2xp2xp1N<complex> [uBNx,uBNy,UBNp]=[FTAx[i],FTAy[i],FTAp[i]];        
+      else if(datastoragemode[i]=="ReP1bP1bP1bP1P1P1")
+        {
+          p1bxp1bxp1bxp1xp1xp1N [uBNx,uBNy,uBNz,uBNp,uBNrho,uBNT]=[real(FTAx[i]),real(FTAy[i]),real(FTAz[i]),real(FTAp[i]),real(FTAr[i]),real(FTAT[i])];
           U << uBNx[];
-          U << endl; 
-          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+           U << endl; 
+          for(int j =0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
           cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
-		}
-	 else if(datastoragemode[i]=="CxP2P2P2P1")
-	   {
-	   	  p2xp2xp2xp1N<complex> [uBNx,uBNy,uBNz,UBNp]=[FTAx[i],FTAy[i],FTAz[i],FTAp[i]];        
+        } 
+      else if(datastoragemode[i]=="CxP1bP1bP1bP1P1P1")
+        {
+          p1bxp1bxp1bxp1xp1xp1N<complex> [uBNx,uBNy,uBNz,uBNp,uBNrho,uBNT]=[FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]];
           U << uBNx[];
-          U << endl; 
-          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+           U << endl; 
+          for(int j =0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
           cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
-		}	
-	else if(datastoragemode[i]=="ReP2P2P1")
+        }     	
+	else if(datastoragemode[i]=="ReP2")
 	   {
 	   	  p2N uBNx=real(FTAx[i]);        
           U << uBNx[];

@@ -46,23 +46,27 @@ include "Macros_StabFem.edp";
 
 
 	real Re;                  
-	cout << "$$ Enter Reynolds :   " << endl; 
+	cout << "$$ Enter Reynolds                     >>   "; 
 	cin  >> Re;
+	cout << Re << endl;
 	real nu=1.0/Re;  
 	real shiftr,shifti;	
-	cout << "$$ Enter SHIFT (re,im) :   " << endl; 
+	cout << "$$ Enter SHIFT (re,im)                 >>  " ; 
 	cin  >> shiftr >> shifti;
+	cout << shiftr << " " shifti << endl;
 	complex shift = 1i*shifti+shiftr;
 	string symmetry;
-	cout << "$$ Symmetry properties ?? (A, S or N)" << endl;
+	cout << "$$ Symmetry properties ?? (A, S or N).  >> " ;
 	cin >> symmetry;
+	cout << symetry << endl;
 	string iadjoint; // 0 for direct ; 1 for adjoint
-	cout << "$$ Direct (D), Adjoint (A), continusous adjoint (cA), D&A+sensitivity (S), D&A(c)+sentitivity (cS) ?" << endl;
+	cout << "$$ Direct (D), Adjoint (A), continusous adjoint (cA), D&A+sensitivity (S), D&A(c)+sentitivity (cS) ? >> " ;
 	cin >> iadjoint;	
-
+	cout << iadjoint << endl;
 	int nev;
-    cout << "$$ Enter nev ? (will use simple shift-invert if nev = 1)" << endl;
+    cout << "$$ Enter nev ? (will use simple shift-invert if nev = 1) >> " ;
     cin >> nev ;
+    cout << nev << endl;
 	int ncv = 4*nev;   ///// Krylov Basis
 
 	
@@ -406,8 +410,7 @@ else if(iadjoint=="cS")
     {
     ofstream file(namefile);
   	file << ux[] ;	
-   	file << endl << endl << Re << endl
-   	<< endl << lambdar << "   " << lambdai  << endl;
+   	file << endl << endl << lambdar << "   " << lambdai  << endl;
     }
 
     // write output in .dff.2m format (for StabFem)

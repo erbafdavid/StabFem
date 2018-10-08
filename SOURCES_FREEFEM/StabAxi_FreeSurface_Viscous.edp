@@ -102,7 +102,7 @@ if(typesurfacemesh=="empty")
 {
 thsurface = emptymesh(th); 	// Maillage 'surface'
 };
-real L, K0, Vol, Area, PP0;
+real L, K0, Vol, Area, PP0; // is this useful ?
 
 include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 
@@ -116,10 +116,10 @@ CalcGeomSurf;
 
 
 
-fespace P2P2P2P1P1P1(th,[P1b,P1b,P1b,P1,P1,P1]);
+fespace P1bP1bP1bP1P1P1(th,[P1b,P1b,P1b,P1,P1,P1]);
 fespace PP1(th,P1);
 
-P2P2P2P1P1P1<complex> [uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1];
+P1bP1bP1bP1P1P1<complex> [uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1];
 
 
 //real shift = 1e-12;  // value of the shift
@@ -193,12 +193,12 @@ varf b([uz,ur,uphi,up,ueta,uk1],[vz,vr,vphi,vp,veta,vk1]) =
 /////////////////////////////////////////////////////
 
 
-matrix<complex> OP= a(P2P2P2P1P1P1,P2P2P2P1P1P1,solver=sparsesolver,tgv=1e15); 
-matrix<complex> B= b(P2P2P2P1P1P1,P2P2P2P1P1P1,solver=CG); 
+matrix<complex> OP= a(P1bP1bP1bP1P1P1,P1bP1bP1bP1P1P1,solver=sparsesolver,tgv=1e15); 
+matrix<complex> B= b(P1bP1bP1bP1P1P1,P1bP1bP1bP1P1P1,solver=CG); 
 
 //int nev=Nval;  // number of computed eigen valeu close to sigma
 complex[int] ev(Nval); // to store nev eigein values
-P2P2P2P1P1P1<complex>[int] [eVuz,eVur,eVuphi,eVp,eVeta,eVK1](Nval);   // to store nev eigen vectors
+P1bP1bP1bP1P1P1<complex>[int] [eVuz,eVur,eVuphi,eVp,eVeta,eVK1](Nval);   // to store nev eigen vectors
 
 int k=EigenValue(OP,B,sigma=shift,value=ev,vector=eVuz,tol=1e-8,maxit=0,ncv=ncv);  
 
@@ -217,7 +217,7 @@ cout << " ### VP Calculees :" << endl;
 //real[int]  eev(Nval);
 ofstream EV(ffdatadir+"Spectrum.txt");
 EV.scientific;
-P2P2P2P1P1P1<complex> [MODEz,MODEr,MODEphi,MODEp,MODEeta,MODEk1];
+P1bP1bP1bP1P1P1<complex> [MODEz,MODEr,MODEphi,MODEp,MODEeta,MODEk1];
 
 for (int i=0;i<k;i++)
   {
@@ -248,7 +248,8 @@ for (int i=0;i<k;i++)
      {	
    	  ofstream FileTXT(ffdatadir+"Eigenmode"+(i+1)+".txt");
    	  FileTXT << ueta[];
-   	  FileTXT << endl << endl << endl;
+   	  FileTXT << endl << endl;
+   	  FileTXT << real(ev[i]) << " " << imag(ev[i]) << endl;
    	  MODEz[] = ueta[];
      SFWriteMode(ffdatadir+"Eigenmode"+(i+1)+".ff2m",MODE,ev[i]);
 

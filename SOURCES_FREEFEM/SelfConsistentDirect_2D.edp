@@ -141,7 +141,7 @@ cout << "Drag force of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 {
 cout << "starting  from mode in file SelfConsistentMode_guess.txt" << endl;
 ifstream cbin(ffdatadir+"SelfConsistentMode_guess.txt");
-cbin >> u1x[] >> ReM >> sigmaM >> omegaM; 
+cbin >> u1x[]  >> sigmaM >> omegaM; 
 cout << " 			omega of the starting field = " << omegaM<< endl;
 cout << "           Fy of the starting field : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 cout << "   		Energy-Norm (A) of starting field (complex macro) : " << EnergyNorm(u1)/sqrt(2) << endl;	

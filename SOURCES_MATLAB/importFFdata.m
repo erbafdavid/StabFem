@@ -49,9 +49,14 @@ end
 for i = istart:nargin
     fileToRead = varargin{i};
     
+    if(exist(fileToRead) == 0)
     if (exist([ffdatadir, fileToRead]) == 2)
         fileToRead = [ffdatadir, fileToRead];
+    else
+        error(['Error in importFFdata : file ', fileToRead, ' does not exist !!']); 
     end
+    end
+    
     mydisp(15, ['      Function importFFdata : reading file ', fileToRead]);
     rawData1 = importdata(fileToRead);
     mydisp(15, ['      FUNCTION  importFFdata.m : reading file ', fileToRead]);
