@@ -168,9 +168,9 @@ cout << endl << "###################################" << endl << endl;
 	
 	femp2xfemp2xfemp1 [realur,realux,realup] = [real(ur),real(ux),real(up)];
 	femp2xfemp2xfemp1 [realuxguess,realurguess,realpguess] = [real(uxguess),real(urguess),real(pguess)];
-	plot(realur,realuxguess,value=1,wait=true);
-	plot(realux,realurguess,value=1,wait=true);
-	plot(realup,realpguess,value=1,wait=true);
+	//plot(realur,realuxguess,value=1,wait=true);
+	//plot(realux,realurguess,value=1,wait=true);
+	//plot(realup,realpguess,value=1,wait=true);
 	}
 	
 	}
@@ -193,7 +193,7 @@ cout << endl << "###################################" << endl << endl;
           exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt"); 
           SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",i); // file in .ff2ml format for StabFem driver
           // plot 
-		  plot(ux,fill=1,wait=0,value=1,cmm="final ur");
+		  //plot(ux,fill=1,wait=0,value=1,cmm="final ur");
 			//plot(uy,fill=1,wait=0,value=1,cmm="final ux");
 			//plot(p,fill=1,wait=0,value=1,cmm="final Pressure");
     
