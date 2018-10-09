@@ -15,7 +15,7 @@ verbosity=10;
 chi = 1;
 Re = 1500;
 if(exist('bf'))
-    bf = SF_BaseFlow(bf,'Re',Re);
+    bf = SF_BaseFlow(bf,'Re',Re,'type','NEW','MappingParams',Params);
 else
     bf = SmartMesh_Hole(chi);
 end
@@ -32,25 +32,25 @@ end
 %% 
 
 
-evG = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20)
-% nev = 1 => shift-invert solver
-evG1 = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',1)
+[evG,emG] = SF_Stability(bf,'shift',2.1i,'m',0,'nev',20)
+% % nev = 1 => shift-invert solver
+[evG1,emG1] = SF_Stability(bf,'shift',2.1i,'m',0,'nev',1)
 
 
 % SECOND test : USING solver  Stab_Axi_COMPLEX_m0.edp adapted from Raffaele's sources
 % note that this solver is switched on by the "trick" m = 0+1i...
 % nev = 20 => Slepc solver
-ev = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20,'solver','StabAxi_COMPLEX_m0.edp')
+[ev,em] = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20,'solver','StabAxi_COMPLEX_m0.edp')
 % nev = 1 => shift-invert solver
-ev1 = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',1,'solver','StabAxi_COMPLEX_m0.edp')
+[ev1,em1] = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',1,'solver','StabAxi_COMPLEX_m0.edp')
 
 close;
 %plot(evG,evG1,ev,ev1)
-plot(real(evG), imag(evG),'b+')
+plot(real(evG), -imag(evG),'b+')
 hold on;
-plot(real(evG1),imag(evG1),'bo')
+plot(real(evG1),-imag(evG1),'bo')
 
-plot(real(ev),imag(ev),'r+')
+plot(real(evList),imag(evList),'r+')
 hold on;
 scatter(real(ev1),imag(ev1),'ro')
 
