@@ -41,18 +41,18 @@
 cout << "$$$$ ENTERING Stab_Axi_COMPLEX.edp " << endl << "$$" << endl; 
 
 
-//load "MUMPS_seq"        ////////  load sparsesolver 
 include "SF_Geom.edp";   
 include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
 
 IFMACRO(EIGENSOLVER,SLEPC)
-load "PETSc-complex"                             // PETSc plugin
-load "SLEPc-complex"                             // SLEPc plugin
-//macro partitioner()metis// 
+load "PETSc-complex"
+load "SLEPc-complex"                    
+macro partitioner()metis// 
 macro dimension(      )2// 
-include "macro_ddm.idp"                  // Additional DDM functions 
+include "macro_ddm.idp"                 
 ENDIFMACRO
+
 
 /////////////////////////////////////////////////////////////////////////////////
 //////////////////----->             parameters         <-----///////////////////
@@ -97,24 +97,17 @@ ENDIFMACRO
 	
 	cout << "$$ nev = " << nev << endl;
 	
-	
-
-
 
 mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
-
 
 fespace Xh(th,P2);             ////// f.e. space for vel.
 fespace Mh(th,P1);            ////// f.e. space for pressure
 fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
 fespace XXXMh(th,[P2,P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
 XXXMh<complex> [ux,ur,uphi,up];                 ///////  -> unknown for the Navier-Stokes problem
-XXXMh [vx,vr,vphi,vp];                 ///////  -> test for Navier-Stokes
+XXXMh<complex> [vx,vr,vphi,vp];                 ///////  -> test for Navier-Stokes
 XXXMh<complex> [Ubx,Ubr,Ubphi,Ubp];          ///////  -> Base Flow
 XXMh<complex> [Ubaxix,Ubaxir,Ubaxip];          ///////  -> Base Flow (in case we start with a 2-component one)
-
-
-
 
 
 real eps = 1e-12; // desingularisation term for matrix B, useful with some solvers
@@ -124,7 +117,7 @@ macro Grad(im,u) [
 			[dX(u#x), dY(u#x),  im/Rphys(y,ParamMap)*u#x ], 
 			[dX(u#r), dY(u#r),  im/Rphys(y,ParamMap)*u#r-u#phi/Rphys(y,ParamMap)],
 			[dX(u#phi),dY(u#phi), im/Rphys(y,ParamMap)*u#phi+u#r/Rphys(y,ParamMap) ]
-			] // macro for vecocity gradient tensor
+			] // macro for velocity gradient tensor
 macro D(im,u) [	
 				[dX(u#x), 				.5*(dX(u#r)+dY(u#x)),  .5*(im/Rphys(y,ParamMap)*u#x+dX(u#phi)) ], 
 				[.5*(dX(u#r)+dY(u#x)), 	dY(u#r),				.5*(im/Rphys(y,ParamMap)*u#r-u#phi/Rphys(y,ParamMap)+dY(u#phi))],
@@ -133,7 +126,6 @@ macro D(im,u) [
 macro Conv(ima,ua,imb,ub,v) ( 
               (Grad(ima,ua)*[ub#x,ub#r,ub#phi] + Grad(imb,ub)*[ua#x,ua#r,ua#phi])'*[v#x,v#r,v#phi]
               			) // macro for mutual convection operator
-
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +145,7 @@ macro Conv(ima,ua,imb,ub,v) (
         cout << "$$ Ndim = " << NdimUVP << " : reading UVP baseflow " << endl;
         ifstream file(ffdatadir+"BaseFlow.txt");
         file >> Ubaxix[];
-        [Ubx,Ubr,Ubphi,Ubp] = [Ubaxix,Ubaxir,0,Ubaxip];
+        [Ubx,Ubr,Ubphi,Ubp] = [Ubaxix,Ubaxir,0+0*1i,Ubaxip];
 		file >> Reans;
         }
         else if(NdimBaseFlow == NdimUVWP) 
@@ -217,8 +209,8 @@ varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
 //ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
-	varf b([ux,ur,uphi,up],[vx,vr,vphi,vp]) = int2d(th)( (ux*vx+ur*vr+uphi*vphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) );
-	matrix<complex> B= b(XXXMh,XXXMh,solver=CG);  //////// see freefem++doc.pdf for the solver 
+	varf b([ux,ur,uphi,up],[vx,vr,vphi,vp]) = int2d(th)( Rphys(y,ParamMap)*(ux*vx+ur*vr+uphi*vphi)*1/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+	matrix<complex> B= b(XXXMh,XXXMh);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
 matrix<complex> OP,OPA;
@@ -253,6 +245,8 @@ XXXMh<complex> [int] [eux,eur,euphi,eup](nev);   ////// vector to store EIGENVEC
 ///////////////////// CALL TO ARPACK++ ////////////////////////////////// //////////
 
 IFMACRO(EIGENSOLVER,ARPACK)
+set(OP,solver=sparsesolver);  //// factorize matrix
+set(B,solver=CG);  //// factorize matrix
 int k=EigenValue(OP,B,sigma=shiftOP,value=ev,vector=eux,tol=1e-6,maxit=0,ncv=ncv);    //Arpack call
 if(iadjoint=="A") { ev = conj(ev); } ;
 ENDIFMACRO
@@ -350,7 +344,7 @@ int testCB = exec("ls "+ffdatadir+"Eigenmode_guess.txt");
     	if (testCB!=0)
 		{
 		cout << "$$ No file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
-		[ux0,ur0,uphi0,p0] = [exp(-x^2),0,0,0];
+		[ux0,ur0,uphi0,p0] = [1.0,0,0,0];
 		} 
 		else
 		{
@@ -415,13 +409,13 @@ else if(iadjoint=="S")
 		{
 			cout << "shift : " << shift <<  " " << shiftOP << endl;
 		//	complex[int] rhs = B*ux0[];
-//    	complex[int] rhs= brhs(0,XXXMh); 
-		complex[int] rhs = B*ux0[]; 
+    	complex[int] rhs= brhs(0,XXXMh); 
+		//complex[int] rhs = B*ux0[]; 
 		complex[int] w = OP^-1*rhs;
 		ux[] = w;
 	
-//		complex XnXn1 = int2d(th)((ux0*ux+ur0*ur+uphi0*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
-//		complex Xn1Xn1 =  int2d(th)((ux*ux+ur*ur+uphi*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+		//complex XnXn1 = int2d(th)((ux0*ux+ur0*ur+uphi0*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+		//complex Xn1Xn1 =  int2d(th)((ux*ux+ur*ur+uphi*uphi)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
 
 		complex XnXn1 = int2d(th)(ux0*ux0+ur0*ur0+uphi0*uphi0);
 		complex Xn1Xn1 =  int2d(th)(ux*ux0+ur*ur0+uphi*uphi0);
