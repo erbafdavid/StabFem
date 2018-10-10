@@ -112,8 +112,7 @@ if(strcmp(lower(type),'baseflows')+strcmp(lower(type),'all'))
         disp(' REMINDER : PROCEDURE TO RECOVER A PREVIOUSLY COMPUTED BASEFLOW')
         disp('    type succesfully the three following commands (to be adapted for your case...) :');
         disp(' ');
-        disp('    ffmesh = importFFmesh(''./WORK/mesh.msh'')');
-        disp('    bf = importFFdata(ffmesh,''./WORK/MEANFLOW/BaseFlow_Re100.ff2m'')');
+        disp('    ffmesh = importFFmesh(''./WORK/mesh.msh''); bf = importFFdata(ffmesh,''./WORK/BASEFLOWS/BaseFlow_Re100.ff2m'')');
         disp('    bf = SF_BaseFlow(bf)');
         disp(' ');
         disp(' ');

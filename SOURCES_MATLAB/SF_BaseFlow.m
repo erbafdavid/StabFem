@@ -179,6 +179,10 @@ else
     end
     
     % Copy under the expected name
+    
+    if(strcmp(p.Results.type, 'POSTADAPT')==1)
+         myrm([ffdatadir '/BASEFLOWS/*']); % after adapt we clean the "BASEFLOWS" directory as the previous baseflows are no longer compatible 
+    end
     mycp([ffdatadir, 'BaseFlow.txt'], [BFfilename, '.txt']);
     mycp([ffdatadir, 'BaseFlow.ff2m'], [BFfilename, '.ff2m']);
     

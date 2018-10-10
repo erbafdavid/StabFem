@@ -33,7 +33,7 @@ include "Macros_StabFem.edp";
 	
 	real Uhole =1; // mean velocity across the hole
 	
-	real Uinlet = Uhole*(SFGeomRhole/SFGeomRcav)^2;
+	real Uinlet = (SFGeomRhole/SFGeomRcav)^2;
 	
 	real Re;
 	real Reans,lecture;

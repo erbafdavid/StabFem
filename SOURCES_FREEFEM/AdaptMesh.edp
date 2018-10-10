@@ -55,15 +55,18 @@ cout << endl << "$$       ADAPTMESH.edp        " << endl;
 cout << endl << "$$ ###################################" << endl << endl;
 
 
-cout << "$$ Enter nfields (number of fields to be used for adaptation)" << endl;
+cout << "$$ Enter nfields (number of fields to be used for adaptation) >> " ;
 cin >> nfields ;
+cout << nfields << endl;
 
 for(int i = 0;i<nfields;i++)
     {
-    cout << "$$ Enter storage mode of field number " << i  << " ? (string like ReP2P2P1, etc...)" << endl;
+    cout << "$$ Enter storage mode of .txt file number " << i  << " ? (string like ReP2P2P1, etc...) >> " ;
     cin >> datastoragemode[i] ;
-    cout << "$$ Enter number of real scalars writtend at the end of file for field number "<< i  << " ?  (e.g. 1 for a base flow if Re is written at the end..)" << endl;
-     cin >> scalarnumber[i] ; 
+	cout << datastoragemode[i] << endl ;
+    cout << "$$ Enter number of additional real scalars associated to flowfield in file number "<< i  << " >>  " ;
+    cin >> scalarnumber[i] ; 
+    cout << scalarnumber[i] << endl; 
     };
 cout << endl << "$$ Adapting mesh to " << nfields << " flowfields" ;
 

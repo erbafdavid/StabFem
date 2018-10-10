@@ -11,7 +11,7 @@ verbosity=10;
 
 
 %% chi = 1
-
+Params = [0 17 2.5 0. 5 17]; % Lm, LA, LC, gammac, yA, yB
 chi = 1;
 Re = 1500;
 if(exist('bf'))
@@ -34,7 +34,7 @@ end
 
 [evG,emG] = SF_Stability(bf,'shift',2.1i,'m',0,'nev',20)
 % % nev = 1 => shift-invert solver
-[evG1,emG1] = SF_Stability(bf,'shift',2.1i,'m',0,'nev',1)
+%[evG1,emG1] = SF_Stability(bf,'shift',2.1i,'m',0,'nev',1)
 
 
 % SECOND test : USING solver  Stab_Axi_COMPLEX_m0.edp adapted from Raffaele's sources
@@ -42,16 +42,16 @@ end
 % nev = 20 => Slepc solver
 [ev,em] = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',20,'solver','StabAxi_COMPLEX_m0.edp')
 % nev = 1 => shift-invert solver
-[ev1,em1] = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',1,'solver','StabAxi_COMPLEX_m0.edp')
+%[ev1,em1] = SF_Stability(bf,'shift',-2.1i,'m',0,'nev',1,'solver','StabAxi_COMPLEX_m0.edp')
 
 close;
 %plot(evG,evG1,ev,ev1)
 plot(real(evG), -imag(evG),'b+')
 hold on;
-plot(real(evG1),-imag(evG1),'bo')
+%plot(real(evG1),-imag(evG1),'bo')
 
-plot(real(evList),imag(evList),'r+')
+plot(real(ev),imag(ev),'r+')
 hold on;
-scatter(real(ev1),imag(ev1),'ro')
+%scatter(real(ev1),imag(ev1),'ro')
 
 legend('Stab_Axi_Complex.edp, nev=20','Stab_Axi_Complex.edp, nev=1','Stab_Axi_Complex_m0.edp, nev=20','Stab_Axi_Complex_m0.edp, nev=1');
