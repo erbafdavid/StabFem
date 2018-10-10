@@ -72,7 +72,7 @@ ENDIFMACRO
 	int m;
 	cout << "$$ Wavenumber ? " << endl;
 	cin >> m;
-	if(m!=0){exit(10);};
+	if(m!=0){cout << "Error : this program works only with m=0 !" << endl; exit(10);};
 	
 	string iadjoint; 
 	cout << " Direct (D), Adjoint (A), or both+sensitivity (S) ?" << endl;
@@ -83,6 +83,7 @@ ENDIFMACRO
 	int nev;
     cout << "$$ Enter nev ? (will use simple shift-invert if nev = 1)" << endl;
     cin >> nev ;
+    if(nev>1){cout << "Error : this program works only with nev=1 !" << endl; exit(10);};
 	int ncv = 4*nev;   ///// Krylov Basis
 
 	
@@ -211,109 +212,105 @@ if(nev>1)
 /// SOLUTION AND POSTPROCESSING FOR NEV>1 (built-in eigenvalue solver)
 
 {
-cout << "$$ Building matrices..." ;
-////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
-if(iadjoint=="D")
-{ OP=LNSE(XXMh,XXMh); shiftOP = shift; }
-else if(iadjoint=="A")
-{ OP=LNSEadjoint(XXMh,XXMh); shiftOP = conj(shift); }
-else if(iadjoint=="S") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; };
-cout << "$$ ... done !" << endl;
-////////////////////////////////////////////////////////////////////////////////////
-
-
-//// SOLVER ////
-
-complex[int] ev(nev);                     ////// vector to store eigenvalues
-XXMh<complex> [int] [eux,eur,eup](nev);   ////// vector to store EIGENVECTORS 
-
-///////////////////// CALL TO ARPACK++ ////////////////////////////////// //////////
-IFMACRO(EIGENSOLVER,ARPACK)
-set(OP,solver=sparsesolver);  //// factorize matrix
-set(B,solver=CG);  //// factorize matrix
-int k=EigenValue(OP,B,sigma=shiftOP,value=ev,vector=eux,tol=1e-6,maxit=0,ncv=ncv);    //Arpack call
-if(iadjoint=="A") { ev = conj(ev); } ;
-ENDIFMACRO
-////////////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////// OR CALL TO SLEPC ////////////////////////////////// //////////
-
-IFMACRO(EIGENSOLVER,SLEPC)
-	load "PETSc-complex"
-	load "SLEPc-complex"                    
-	macro partitioner()metis// 
-	macro dimension(      )2// 
-	include "macro_ddm.idp" 
-	/***************************************/
-	/*      Build distributed matrices     */
-	/***************************************/
-	int[int] arrayIntersection;                 // Rank of neighborings subdomains
-    int[int][int] restrictionIntersection(0);   // Local-to-neighbors renumbering
-    real[int] D1(OP.n);
-    D1.resize(OP.n);
-    D1 = 1;
-	dmatrix<complex> DistA(OP, arrayIntersection, restrictionIntersection, D1, clean = true);
-	dmatrix<complex> DistB(DistA, B, clean = true);
-
-	string ssparams =            // Parameters for the distributed EigenValue solver
-	  " -eps_nev " + nev       + // Number of eigenvalues
-	  " -eps_type krylovschur" +
-	  //" -eps_interval -0.2,0.05" +
-	  " -eps_target " + shiftOP +
-	  //" -eps_harmonic " +
-	  " -st_type cayley "     +
-	  //" -st_type cayley_antishift "     +
-	  //" -st_pc_type cholesky " +
-	  //" -st_pc_factor_mat_solver_type superlu_dist " +
-	  //" -st_ksp_type preonly " +
-	  //" -mat_superlu_dist_rowperm NATURAL " +
-	  " -st_pc_type lu "       +
-	  " -st_pc_factor_mat_solver_package mumps" +
-	  " -eps_view"             +
-	  " -eps_gen_non_hermitian"      // The problem is generalized non hermitian
-	;
-
-	///////////////////// CALL TO SLEPC ///////////////////////////////////////////////////
-	int k = zeigensolver
-	(DistA,              // matrix OP = A − sigma*B
-	 DistB,              //
-	 vectors = eux, // Array to store the FEM-EigenFunctions
-	 values  = ev, // Array to store the EigenValues
-	 sparams = ssparams  // Parameters for the distributed EigenValue solver
-	);
-
-	k=min(k,nev); // some time the number of converged eigen value
-	              // can be greater than Nev;
-ENDIFMACRO
-
-/// ONCE WE FINISH WE RECOVER THE SHIFT
-//IFMACRO(EIGENSOLVER,SLEPC)
-//    shift = shiftSave;
+//cout << "$$ Building matrices..." ;
+//////// BUILD OP-MATRIX=A-lambda*B //////////////////////////////////////////////////////////////
+//if(iadjoint=="D")
+//{ OP=LNSE(XXMh,XXMh); shiftOP = shift; }
+//else if(iadjoint=="A")
+//{ OP=LNSEadjoint(XXMh,XXMh); shiftOP = conj(shift); }
+//else if(iadjoint=="S") { cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; };
+//cout << "$$ ... done !" << endl;
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//
+////// SOLVER ////
+//
+//complex[int] ev(nev);                     ////// vector to store eigenvalues
+//XXMh<complex> [int] [eux,eur,eup](nev);   ////// vector to store EIGENVECTORS 
+//
+/////////////////////// CALL TO ARPACK++ ////////////////////////////////// //////////
+//IFMACRO(EIGENSOLVER,ARPACK)
+//set(OP,solver=sparsesolver);  //// factorize matrix
+//set(B,solver=CG);  //// factorize matrix
+//int k=EigenValue(OP,B,sigma=shiftOP,value=ev,vector=eux,tol=1e-6,maxit=0,ncv=ncv);    //Arpack call
+//if(iadjoint=="A") { ev = conj(ev); } ;
 //ENDIFMACRO
-////////////////////////////////////////////////////////////////////////////////////
-
-
-	string namefile;
-    namefile=ffdatadir+"Spectrum.txt";
-    ofstream fileVP1(namefile); 
-	
-	for (int i=0;i<nev;i++)
-	{
-       fileVP1 << real(ev[i]) << " " << imag(ev[i]) << " " << Re << " " << 0 << " " << real(shift) << " " << imag(shift) << endl;
-       	cout << "$$ valeur propre : " << i+1 << "  : " << ev[i] << endl;
-
- 		 if(iadjoint=="D"){namefile=ffdatadir+"Eigenmode"+(i+1);}
- 		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
- 		 {ofstream fileMode(namefile+".txt");
- 		  ux[] = eux[i][];
- 		  fileMode << ux[]; 
- 		  fileMode << endl << endl << Re << endl << endl << real(ev[i]) << "   " << imag(ev[i])  << endl;
- 		  }
- 		 cout << "$$ Writing eigenmode in file " << namefile << endl;
- 		 SFWriteMode(namefile+".ff2m",u,ev[i],shift,m,"EigenModeD",1);	 // MACRO DEFINED in StabFem_Macros.edp
- 		 
- 	};
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//
+/////////////////////// OR CALL TO SLEPC ////////////////////////////////// //////////
+//
+//IFMACRO(EIGENSOLVER,SLEPC)
+//	/***************************************/
+//	/*      Build distributed matrices     */
+//	/***************************************/
+//	int[int] arrayIntersection;                 // Rank of neighborings subdomains
+//    int[int][int] restrictionIntersection(0);   // Local-to-neighbors renumbering
+//    real[int] D1(OP.n);
+//    D1.resize(OP.n);
+//    D1 = 1;
+//	dmatrix<complex> DistA(OP, arrayIntersection, restrictionIntersection, D1, clean = true);
+//	dmatrix<complex> DistB(DistA, B, clean = true);
+//
+//	string ssparams =            // Parameters for the distributed EigenValue solver
+//	  " -eps_nev " + nev       + // Number of eigenvalues
+//	  " -eps_type krylovschur" +
+//	  //" -eps_interval -0.2,0.05" +
+//	  " -eps_target " + shiftOP +
+//	  //" -eps_harmonic " +
+//	  " -st_type cayley "     +
+//	  //" -st_type cayley_antishift "     +
+//	  //" -st_pc_type cholesky " +
+//	  //" -st_pc_factor_mat_solver_type superlu_dist " +
+//	  //" -st_ksp_type preonly " +
+//	  //" -mat_superlu_dist_rowperm NATURAL " +
+//	  " -st_pc_type lu "       +
+//	  " -st_pc_factor_mat_solver_package mumps" +
+//	  " -eps_view"             +
+//	  " -eps_gen_non_hermitian"      // The problem is generalized non hermitian
+//	;
+//
+//	///////////////////// CALL TO SLEPC ///////////////////////////////////////////////////
+//	int k = zeigensolver
+//	(DistA,              // matrix OP = A − sigma*B
+//	 DistB,              //
+//	 vectors = eux, // Array to store the FEM-EigenFunctions
+//	 values  = ev, // Array to store the EigenValues
+//	 sparams = ssparams  // Parameters for the distributed EigenValue solver
+//	);
+//
+//	k=min(k,nev); // some time the number of converged eigen value
+//	              // can be greater than Nev;
+//ENDIFMACRO
+//
+///// ONCE WE FINISH WE RECOVER THE SHIFT
+////IFMACRO(EIGENSOLVER,SLEPC)
+////    shift = shiftSave;
+////ENDIFMACRO
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//	string namefile;
+//    namefile=ffdatadir+"Spectrum.txt";
+//    ofstream fileVP1(namefile); 
+//	
+//	for (int i=0;i<nev;i++)
+//	{
+//       fileVP1 << real(ev[i]) << " " << imag(ev[i]) << " " << Re << " " << 0 << " " << real(shift) << " " << imag(shift) << endl;
+//       	cout << "$$ valeur propre : " << i+1 << "  : " << ev[i] << endl;
+//
+// 		 if(iadjoint=="D"){namefile=ffdatadir+"Eigenmode"+(i+1);}
+// 		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
+// 		 {ofstream fileMode(namefile+".txt");
+// 		  ux[] = eux[i][];
+// 		  fileMode << ux[]; 
+// 		  fileMode << endl << endl << Re << endl << endl << real(ev[i]) << "   " << imag(ev[i])  << endl;
+// 		  }
+// 		 cout << "$$ Writing eigenmode in file " << namefile << endl;
+// 		 SFWriteMode(namefile+".ff2m",u,ev[i],shift,m,"EigenModeD",1);	 // MACRO DEFINED in StabFem_Macros.edp
+// 		 
+// 	};
+;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -328,7 +325,7 @@ XXMh<complex> [ux0,ur0,p0],[uxdirect,urdirect,pdirect],[uxadjoint,uradjoint,padj
 
 
 
-	problem ShiftInvert([ux,ur,up],[vx,vr,vp],eps=1e-16,solver=GMRES) = 
+	problem ShiftInvert([ux,ur,up],[vx,vr,vp],eps=1e-16) = 
 	
 	int2d(th)(
 	(
@@ -453,7 +450,7 @@ else if(iadjoint=="S")
 	varf brhs([ux,ur,up],[vx,vr,q]) = int2d(th)( (ux0*vx+ur0*vr)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) );
 //	varf Bf([ux0,ur0,up0],[vx,vr,q]) =  int2d(th) (Rphys(y,ParamMap)*(vx*ux0+vr*ur0)*1/(Gy*G)); // why 
 
-	defaulttoMUMPS();
+//	defaulttoMUMPS();
 	set(OP,solver=sparsesolver);  //// ?????
 
 

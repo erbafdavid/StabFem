@@ -1,8 +1,10 @@
 %> @file SOURCES_MATLAB/SF_Init.m
 %> @brief Matlab/FreeFem driver for generating initial mesh and base flow
 %>
-%> @param[in] meshfile: FreeFem script file
+%> @param[in] meshfile: Name of the FreeFem program file 
+%>            (expected to be present in the working directory or in the parent directory)
 %> @param[in] parameters: Parameters for the FreeFem++ script
+%>             (should be compatible with the list of parameters expected by the ff program)
 %> @param[out] baseflow: Generated Base Flow
 %>
 %> Usage in single-input mode: <code>baseflow = SF_Init('Mesh.edp')</code>
@@ -32,14 +34,32 @@ else
     myrm([ffdatadir, 'BASEFLOWS/*']);
 end
 
-% Creation et vidange de BASEFLOWS/
+% Creation et vidange de MESHES/
 if (exist([ffdatadir, 'MESHES']) ~= 7)
     mymake([ffdatadir, 'MESHES/']);
 else
     myrm([ffdatadir, 'MESHES/*']);
 end
 
+% Creation et vidange de MEANFLOWS/
+if (exist([ffdatadir, 'MEANFLOWS']) ~= 7)
+    mymake([ffdatadir, 'MEANFLOWS']);
+else
+    myrm([ffdatadir, 'MEANFLOWS/*']);
+end
 
+% Check if the ff script is present in the working directory or in the parent directory 
+if(exist(['./', meshfile])==2)
+    mydisp(1,['### FUNCTION SF_Init : creating initial mesh from ff script ',meshfile]);
+elseif(exist(['../' meshfile])==2)
+    meshfile = ['../' meshfile];
+    toto
+    mydisp(1,['### FUNCTION SF_Init : creating initial mesh from ff script ',meshfile]);
+else 
+        error(['### FUNCTION SF_Init : ff script ',meshfile,' ,not found !']);
+end
+        
+        
 % Execution du maillage
 if (nargin == 1)
     command = [ff, ' ', meshfile];
@@ -54,8 +74,10 @@ else
     %    command = ['echo  ', parameters, ' | ',ff,' ',meshfile]
     
 end
-error = 'ERROR : SF_Init not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
-mysystem(command, error);
+errormessage = 'ERROR : SF_Init not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
+mysystem(command, errormessage)
+
+command
 
 % Traitement des infos
 if (nargout == 1)
@@ -73,6 +95,9 @@ if (nargout == 1)
     baseflow = importFFdata(mesh, 'BaseFlow_guess.ff2m');
     baseflow.filename = [ffdatadir, 'MESHES/BaseFlow_init.txt'];
     mydisp(1,['      ### INITIAL MESH CREATED WITH np = ', num2str(mesh.np), ' points']);
+else
+    disp('### initial mesh correctly processed but no SF output is generated');
+    
 end
 
 % myrm([ffdatadir 'Eigenmode_guess.txt']);

@@ -32,6 +32,6 @@ ForcedFlow1 = SF_ForcedFlow(bf,Omega1);
 Omega2 = 4;
 ForcedFlow2 = SF_ForcedFlow(bf,Omega2);
 %figure; plotFF(ForcedFlow2,'ux1');
-bf = SF_Adapt(bf,ForcedFlow1,ForcedFlow2,'Hmax',0.25);
+bf = SF_Adapt(bf,ForcedFlow1,ForcedFlow2,'Hmax',1);
  
 end

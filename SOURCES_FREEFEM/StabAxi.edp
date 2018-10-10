@@ -49,7 +49,7 @@ include "Macros_StabFem.edp";
 	real Re;                  
 	cout << "$$ Enter Reynolds :   " << endl; 
 	cin  >> Re;
-	real nu=1.0/Re;  
+	real nu=SFGeomLengthscale*SFGeomVelocityscale/Re; // NB SFGeom parameters should be defined in SF_Geom.edp 
 	real shiftr,shifti;	
 	cout << "$$ Enter SHIFT (re,im) :   " << endl; 
 	cin  >> shiftr >> shifti;
@@ -293,17 +293,25 @@ else
 XXXMh<complex> [ux0,ur0,uphi0,p0],[uxdirect,urdirect,uphidirect,pdirect],[uxadjoint,uradjoint,uphiadjoint,padjoint]; 
 
 int testCB = exec("ls "+ffdatadir+"Eigenmode_guess.txt");
-    	if (testCB!=0)
-		{
-		cout << "$$ No file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
-		[ux0,ur0,uphi0,p0] = [1,0,0,0];
-		} 
-		else
+    	if (testCB==0)
+    	{
+    	ifstream cbin(ffdatadir+"Eigenmode_guess.txt");
+    	int Ndim;
+		cbin >> Ndim;
+		if(Ndim!=ux0[].n){testCB=1;};
+    	};
+		if(testCB==0)
 		{
 		cout << "$$ Starting shift/invert from mode in file Eigenmode_guess.txt" << endl;
 		ifstream cbin(ffdatadir+"Eigenmode_guess.txt");
 		cbin >> ux0[];
-		};
+		}
+		else
+		{
+		cout << "$$ No file Eigenmode_guess.txt : strarting from arbitrary initial condition" << endl;
+		[ux0,ur0,uphi0,p0] = [1,0,0,0];
+		} 
+		;
 
 
 // selection of the computation to be performed : direct, adjoint or both

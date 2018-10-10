@@ -335,11 +335,16 @@ if(strcmp(p.Results.solver,'default'))
 else
     if(exist(p.Results.solver))
         solver = p.Results.solver;
-    else if(exist([ffdir '/' p.Results.solver]))
+    elseif(exist([ffdir '/' p.Results.solver]))
             solver = [ffdir '/' p.Results.solver];
-        end
+    else
+        error(['Error : solver ',solver ' could not be found !']);
     end
     mydisp(1,['      ### USING CUSTOM FreeFem++ Solver ',solver]);
+    if(strcmp(p.Results.solver,'StabAxi_COMPLEX_m0_nev1.edp')==1) 
+        disp('NB USING ff instead of ff-mpi (VERY UGLY FIX TO OVERCOME A STRANGE BUG : otherwise shift-invert mode does not work with FreeFem++-mpi'); 
+        fff = ff;
+    end
 end
 
 solvercommand = ['echo ' argumentstring ' | ' fff ' ' solver ];
@@ -457,10 +462,15 @@ end
         figure(100);
         %%mycmp = [[0 0 0];[1 0 1] ;[0 1 1]; [1 1 0]; [1 0 0];[0 1 0];[0 0 1]]; %color codes for symbols
         h=plot(real(shift),imag(shift),'o');hold on;
+        if(p.Results.type=='A') 
+            type = 'A'; 
+        else
+            type = '';
+        end
         for ind = 1:length(eigenvalues)
             h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
             %%%%  plotting command for eigenmodes and callback function
-            tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
+            tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' type num2str(ind) '.ff2m''); ' ... 
       'plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
       ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; figure();'...
       'plotFF(eigenmodeP,''' p.Results.PlotSpectrumField ''',''title'',plottitle);'  ];

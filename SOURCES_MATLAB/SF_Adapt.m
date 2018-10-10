@@ -207,7 +207,8 @@ if(strcmp(varargout{1}.datatype,'BaseFlow'))
      varargout{1} = baseflowNew; 
 %     % Store adapted mesh/base flow in directory "MESHES"
      mycp([ffdatadir, 'BaseFlow.txt'], [ffdatadir, 'MESHES/BaseFlow',designation, '.txt']);
-     mycp([ffdatadir, 'BaseFlow.ff2m'], [ffdatadir, 'MESHES/BaseFlow',designation '.ff2m']);     
+     mycp([ffdatadir, 'BaseFlow.ff2m'], [ffdatadir, 'MESHES/BaseFlow',designation '.ff2m']);   
+     myrm([ffdatadir '/BASEFLOWS/*']); % after adapt we clean the "BASEFLOWS" directory as the previous baseflows are no longer compatible 
      else
          error('ERROR in SF_Adapt : baseflow recomputation failed');
      end

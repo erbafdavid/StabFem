@@ -87,7 +87,7 @@ cout << "$$$$ ENTERING Newton_Axi.edp " << endl << "$$" << endl;
 
 	cout << "$$ Newton pour Re = " << Re << endl;	
 	cout << "$$ CI : " << Reans << endl; 
-	real nu=1./Re;
+	real nu=SFGeomLengthscale*SFGeomVelocityscale/Re; // NB SFGeom parameters should be defined in SF_Geom.edp
 	real eps = 1e-20; // may not be required
 
 
