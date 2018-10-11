@@ -123,7 +123,7 @@ savemesh(th,ffdatadir+"mesh.msh");
 {
 			ofstream file2("SF_Geom.edp"); 
 			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
-            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomLengthscale = 2 ; // length scale for nondimensionalization" << endl ;
             file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization"  << endl ;
             file2 << " real SFGeomRext = " << Rext << " ; " << endl ; 
  			file2 << " real SFGeomLext = " << Lext << " ; " << endl ; 

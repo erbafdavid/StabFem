@@ -64,7 +64,7 @@ ENDIFMACRO
 	real Re;                  
 	cout << "$$ Enter Reynolds :   " << endl; 
 	cin  >> Re;
-	real nu=2*SFGeomRhole/Re;  
+	real nu=SFGeomLengthscale*SFGeomVelocityscale/Re; // NB SFGeom parameters should be defined in SF_Geom.edp 
 	real shiftr,shifti;	
 	cout << "$$ Enter SHIFT (re,im) :   " << endl; 
 	cin  >> shiftr >> shifti;
@@ -528,7 +528,7 @@ else if(iadjoint=="S")
     {
     ofstream file(namefile);
   	file << ux[] ;	
-   	file << endl << endl << Re << endl
+   	file << endl <<  endl
    	<< endl << lambdar << "   " << lambdai  << endl;
     }
 

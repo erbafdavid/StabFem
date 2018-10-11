@@ -78,15 +78,15 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 persistent sigmaPrev sigmaPrevPrev % for continuation on one branch
 persistent eigenvaluesPrev % for sort of type 'cont'
 
-   if(isfield(baseflow,'np')==1)
+   if(strcmp(baseflow.datatype,'Mesh')==1)
        % first argument is a simple mesh
        ffmesh = baseflow; 
-       %mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
+       mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
    else
        % first argument is a base flow
        ffmesh = baseflow.mesh;
        mycp(baseflow.filename,[ffdatadir 'BaseFlow.txt']);
-       %mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
+       mycp(baseflow.mesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
    end
    
 
@@ -333,12 +333,13 @@ if(strcmp(p.Results.solver,'default'))
     mydisp(1,['      ### USING STANDARD StabFem Solver ',solver]);        
 
 else
-    if(exist(p.Results.solver))
+    if(exist(p.Results.solver)==2)
         solver = p.Results.solver;
-    elseif(exist([ffdir '/' p.Results.solver]))
-            solver = [ffdir '/' p.Results.solver];
+        
+    elseif(exist([ffdir  p.Results.solver])==2)
+           solver = [ffdir  p.Results.solver];
     else
-        error(['Error : solver ',solver ' could not be found !']);
+        error(['Error : solver ',p.Results.solver, ' could not be found !']);
     end
     mydisp(1,['      ### USING CUSTOM FreeFem++ Solver ',solver]);
     if(strcmp(p.Results.solver,'StabAxi_COMPLEX_m0_nev1.edp')==1) 

@@ -104,7 +104,8 @@ cout << endl << "###################################" << endl << endl;
 
         femp2xfemp2xfemp1<complex> [ux,ur,up]=[uxguess+0*1i,urguess+0*1i,pguess+0*1i];
 	femp2xfemp2xfemp1<complex> [dux,dur,dup],[vz,vr,q];
-	real nu=(2*SFGeomRhole)/Re;
+	
+	real nu=SFGeomLengthscale*SFGeomVelocityscale/Re; // NB SFGeom parameters should be defined in SF_Geom.edp 
         
 	real epsilon=1e-6;
         real residuNewton=1e-10;

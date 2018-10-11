@@ -75,6 +75,9 @@ for i = istart:nargin
     header = rawData1.textdata{4};
     description = textscan(header, '%s');
     numfields = length(description{1}) / 2;
+    if(mod(numfields,1)~=0)
+        error(['Error in importFFdata : wrong number of words at line 4 of header of file ',fileToRead]);
+    end
     words = textscan(keawords, '%s');
     
     numkeywords = length(words{1});
@@ -98,12 +101,11 @@ for i = istart:nargin
             end
         end
     end
-    
-    if (isfield(pdestruct,'datatype')&&(strcmp(lower(pdestruct.datatype),'timestatistics')==1))
+    if (isfield(pdestruct,'datatype')&&((strcmp(lower(pdestruct.datatype),'timestatistics')==1)...
+                                        ||(strcmp(lower(pdestruct.datatype),'forcedlinear')==1)))
     %% the data file is a time series (most likely coming from DNS)
     indexdata = 1;
-    Ndata = 0;
-    
+    Ndata = 0;    
     for ifield = 1:numfields
         typefield = description{1}{2 * ifield - 1};
         namefield = description{1}{2 * ifield};
@@ -112,9 +114,16 @@ for i = istart:nargin
                 value = data(:,indexdata);
                 indexdata = indexdata + 1;
                 pdestruct = setfield(pdestruct, namefield, value);
-                mydisp(15, ['      Function importFFdata : reading real field in TimeStatistics data']);
+                mydisp(15, ['      Function importFFdata : reading real tab. in TimeStatistics data']);
   
-            %case ('complex')
+            case ('complex')
+                valuer = data(:,indexdata);
+                indexdata = indexdata + 1;
+                valuei = data(:,indexdata);
+                indexdata = indexdata + 1;
+                pdestruct = setfield(pdestruct, namefield, valuer+1i*valuei);
+                mydisp(15, ['      Function importFFdata : reading complex tab. in TimeStatistics data']);
+
             
              case(default)
                     error('wrong type of data in file !')
