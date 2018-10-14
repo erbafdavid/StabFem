@@ -1,0 +1,573 @@
+//
+//  PROGRAM SelfConsistent.edp
+//	
+//	Solves directly the Self-Consistent equations to decribe the limit cycle with a mean flow and a quasi-linear mode (Mantic-lugo et al)
+//      It is an extension of the self-consistent case developed by David Fabre.
+//
+//  The flow is assumed as an expansion in the form : 	u = u_0 + [ u_{1,c} cos (omega t) + u_{1,s} sin (omega t) ] e^{lambda t}
+//  This expansion is equivalent to Mantic-Lugo et al : u = u_0 + A [U_1 e^{i omega t + i sigma t + cc] where u_1 is the complex self-consistent mode.
+// 	The connection between both parametrizations is u_{1,c} - i u_{1,s} = 2 A u_1 where u_1 is normalised with ||u_1|| = 1/sqrt(2). 
+//
+//  INPUT PARAMETERS (from keyboard or pipe) :
+//   	Re , omega_guess, sigma, typenormalization [,norm] 
+//
+//       the "sigma" parameter is the amplification rate in the SC model of Mantic-Lugo ; if zero it reduces to a simple truncated fourier expansion	
+//
+//	INPUT FILES :
+//		MeanFlow_guess.txt				-> starting field for mean-flow (real) 
+//      SelfConsistentMode_guess.txt 	-> starting field for self-consistent mode (stored as COMPLEX ; real and imaginary parts are u1,c and -u1,s)
+// 		mesh.msh 						->  mesh in Freefem format
+//  OUTPUT FILES :
+//		MeanFlow.txt					-> Converged mean flow (real)
+//		MeanFlow.ff2m					
+//      SelfConsistentMode.txt			-> Converged self-consistent mode (stored as COMPLEX with same convention) 
+//      SelfConsistentMode.ff2m 
+//
+// 	ERROR MANAGEMENT : 
+//      if Newton iteration diverges, SelfConsistentMode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
+//
+
+
+
+
+//load "MUMPS_seq"
+load "MUMPS_FreeFem"
+load "scotch"
+load "../../../SOURCES_OTHER/iovtk"
+include "SF_Geom.edp";
+include "Params.edp";
+include "Macros_StabFem.edp";
+string copyfile = "yes"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
+
+
+/////////////////////////////////////////////////////////////////////////////////
+
+
+mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
+//int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+
+real Re, Ma, ReM;
+real omega, omegaM, sigmaM, domega;
+real gamma=1.4; //////////////////         GAMMA        //////////////////////////
+real Pr=0.7;         //////////////////  PRANDTL NUM   //////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////
+
+fespace XH2(th,P2);
+fespace XXxxxH(th,[P2,P2,P1,P1,P1]); // space for (ux,uy,p,T,rho)
+XH2 AMPFORCE=AmpSponge(Ma);
+//////////////////////////// MARCRO /////////////////////////// 
+macro def(u,p,T,rho)[u#x,u#y,p,T,rho]//EOF
+
+XXxxxH def(ub,ubp,ubT,ubrho); // base flow (start) 
+XXxxxH def(Uba,Ubap,Ubatemp,Ubaro); // base flow (save) 
+XXxxxH def(Ub,Pb,Tb,Rhob); // For the macros
+XXxxxH def(Urif,Prif,Trif,Rhorif)=[1.0,0.0,1.0,1.0,1.0];
+
+XXxxxH<complex> [u1x,u1y,u1p,u1T,u1rho];    //eigenmode (start)      
+
+XXxxxH [u0x,u0y,u0p,u0T,u0rho],[u1cx,u1cy,u1cp,u1cT,u1crho],[u1sx,u1sy,u1sp,u1sT,u1srho], [U0x,U0y,U0p,U0temp,U0ro]; // components 0 (mean flow) and 1 (fundamental, re and im) of HB  
+XXxxxH [du0x,du0y,du0p,du0T,du0rho],[du1cx,du1cy,du1cp,du1cT,du1crho],[du1sx,du1sy,du1sp,du1sT,du1srho]; // Increments in Newton
+XXxxxH [vx,vy,vp,vT,vrho]; // test functions
+
+
+
+     
+////////////////////////////////////////////////////////////////////////////////
+
+  macro div(u) ((dx(u#x)+dy(u#y)))   //EOM
+  macro ugradf(u,f) ((u#x*dx(f)+u#y*dy(f)))    //
+  macro ugradfConj(u,f) ((conj(u#x)*dx(f)+conj(u#y)*dy(f)))    //
+  macro realInnerProd(u,v) ((u#x*v#x + u#y*v#y)) //
+  macro termnonlinear(u,v,w) ((w#x*(u#x*dx(v#x)+u#y*dy(v#x))+w#y*(u#x*dx(v#y)+u#y*dy(v#y)))) //
+  macro Grad(u) [[dx(u#x),dx(u#y)],[dy(u#x),dy(u#y)]]//EOM
+  macro Strain(u)[[dx(u#x),0.5*(dx(u#y)+dy(u#x))],[0.5*(dx(u#y)+dy(u#x)),dy(u#y)]]//EOM
+  macro gradgrad(u,v)(dx(u)*dx(v)+dy(u)*dy(v))//EOM
+
+  macro NonLinearOmega(ua,ub,v) (
+				-ub#rho*realInnerProd(ua,v) + ua#rho*realInnerProd(ub,v) 
+				- ub#rho*ua#T*v#T + ua#rho*ub#T*v#T
+			) // EOM macro fro the term involving the term i*omega
+  macro NonLinearRho(ua,ub,u0,v) (
+				(ua#rho*div(ub) + ub#rho*div(ua))*v#rho +
+				(ugradf(ua,ub#rho) + ugradf(ub,ua#rho))*v#rho
+			) //EOM macro for NonLinearRho
+
+  macro NonLinearU(ua,ub,u0,v) (
+			 	  ua#rho*termnonlinear(ub,u0,v) +  ub#rho*termnonlinear(ua,u0,v)
+				+ u0#rho*termnonlinear(ua,ub,v) + u0#rho*termnonlinear(ub,ua,v)
+				+ ua#rho*termnonlinear(u0,ub,v) + ub#rho*termnonlinear(u0,ua,v)
+			) //EOM macro for NonLinearU
+
+  macro NonLineardU(ua,ub,u0,v) (
+			 	  ua#rho*termnonlinear(ub,u0,v) +  ub#rho*termnonlinear(ua,u0,v)
+				+ u0#rho*termnonlinear(ua,ub,v) + u0#rho*termnonlinear(ub,ua,v)
+				+ ua#rho*termnonlinear(u0,ub,v) + ub#rho*termnonlinear(u0,ua,v)
+			) //EOM macro for NonLinearU
+
+  macro NonLinearT(ua,ub,u0,v) (
+				  v#T*(u0#rho*ugradf(ua,ub#T) + u0#rho*ugradf(ub,ua#T))
+				+ v#T*(ua#rho*ugradf(u0,ub#T) + ub#rho*ugradf(u0,ua#T))
+				+ v#T*(ua#rho*ugradf(ub,u0#T) + ub#rho*ugradf(ua,u0#T))
+				+ v#T*(gamma-1.0)*(ua#p*div(ub) + ub#p*div(ua))
+				- v#T*gamma*(gamma-1.0)*Ma^2/Re*(2.0*((Strain(ua):Strain(ub)))-2.0/3.0*(div(ua)*div(ub)))
+				- v#T*gamma*(gamma-1.0)*Ma^2/Re*(2.0*((Strain(ub):Strain(ua)))-2.0/3.0*(div(ub)*div(ua)))
+			) //EOM macro for NonLinearT
+
+  macro NonLineardT(ua,ub,u0,v) (
+				  v#T*(u0#rho*ugradf(ua,ub#T) + u0#rho*ugradf(ub,ua#T))
+				+ v#T*(ua#rho*ugradf(u0,ub#T) + ub#rho*ugradf(u0,ua#T))
+				+ v#T*(ua#rho*ugradf(ub,u0#T) + ub#rho*ugradf(ua,u0#T))
+			) //EOM macro for NonLinearT
+
+  macro NonLinearP(ua,ub,u0,v) (
+				-v#p*(ua#rho*ub#T + ub#rho*ua#T)
+			) //EOM macro for NonLinearP
+
+  macro NonLinear(ua,ub,u0,v) ( -NonLinearRho(ua,ub,u0,v) - NonLinearU(ua,ub,u0,v) - NonLinearT(ua,ub,u0,v) - NonLinearP(ua,ub,u0,v) ) // EOM
+  macro NonLineardq(ua,ub,u0,v) ( -NonLineardU(ua,ub,u0,v) - NonLineardT(ua,ub,u0,v)) // EOM
+
+
+  macro NS(u,v)(
+				v#rho*(u#rho*div(u)+ugradf(u,u#rho))
+
+				-u#p*div(v)/(gamma*Ma^2)+2.0/Re*(Strain(u):Grad(v))-2.0/(3.0*Re)*(div(u)*div(v))+u#rho*termnonlinear(u,u,v)
+
+				+v#T*(u#rho*ugradf(u,u#T)+(gamma-1.0)*u#p*div(u)-gamma*(gamma-1.0)*Ma^2/Re*(2.0*((Strain(u):Strain(u)))-2.0/3.0*(div(u)*div(u))))
+				+gamma/(Pr*Re)*gradgrad(u#T,v#T)   
+				
+				+v#p*(u#p-(u#rho*u#T))
+	) //EOM macro for NS operator
+
+  macro NSL(U,u,v)(
+				v#rho*(u#rho*div(U)+U#rho*div(u)+ugradf(U,u#rho)+ugradf(u,U#rho)) 
+
+				-u#p/(gamma*Ma^2)*div(v)+2.0/Re*(Strain(u):Grad(v))-2.0/(3.0*Re)*(div(u)*div(v))+ U#rho*(termnonlinear(u,U,v))
+				+u#rho*termnonlinear(U,U,v)+U#rho*termnonlinear(U,u,v)
+
+				+v#T*(u#rho*ugradf(U,U#T)+U#rho*ugradf(U,u#T)+U#rho*ugradf(u,U#T)+(gamma-1)*(u#p*div(U) + U#p*div(u))
+				-gamma*(gamma-1.0)*Ma^2/Re*(2.0*((Strain(u):Strain(U))+(Strain(U):Strain(u)))-2.0/3.0*(2.0*div(U)*div(u))))
+				+gamma/(Pr*Re)*gradgrad(u#T,v#T)
+
+				+v#p*(u#p-(u#rho*U#T+U#rho*u#T))								  
+	) // EOM macro for linear NS operator
+
+  macro BNorm(U,u,v) (   U#rho*(u#x*v#x + u#y*v#y + u#T*v#T) + u#rho*v#rho)   //
+  macro BNormdq(U,u,v) (   U#rho*(u#x*v#x + u#y*v#y + u#T*v#T))   //
+  macro Boundaryconditions(du,us,dp,dT,drho,symmetry)
+	           on(bcinlet,du#x=0,du#y=0.0,dT=0.0,drho=0.0)
+	            /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
+	         + on(bcoutflow,du#x=0,du#y=0.0,dT=0.0,drho=0.0)  /* if you want to try no-penetration boundary (not optimal) */
+             + on(bcwall,du#x=0.0,du#y=0.0)
+             + int1d(th,bcaxis)(du#x*us#x*1e30*(symmetry==0)+du#y*us#y*1e30*(symmetry==1))  // I am not sure what to impose on T,rho and p 
+//EOM
+
+
+macro Lift(nu,u)   
+	(
+	int1d(th,2,21,22,23)(((u#p-1.0)/(gamma*Ma^2))*N.y)
+	+ int1d(th,2,21,22,23)( -nu*((((4.0/3.)*dy(u#y) - (2.0/3.)*dx(u#x))*N.y+(dx(u#y)+dy(u#x))*N.x)))
+	)//
+
+macro dLift(nu,u)   
+	(
+	int1d(th,2,21,22,23)(((u#p)/(gamma*Ma^2))*N.y)
+	+ int1d(th,2,21,22,23)( -nu*(((4.0/3.)*dy(u#y) - (2.0/3.)*dx(u#x))*N.y + (dx(u#y)+dy(u#x))*N.x))
+	)//
+
+// WARNING : HERE IT IS Lift FORCE
+macro Drag(nu,u)    
+	(
+	int1d(th,2,21,22,23)((u#p-1.0)/(gamma*Ma^2)*N.x)
+	+ int1d(th,2,21,22,23)( -nu*((((4./3.)*dx(u#x) - (2./3.)*dy(u#y))*N.x+ (dx(u#y)+dy(u#x))*N.y)))
+	)
+// Drag FORCE
+
+macro EnergyNorm(u,U) sqrt(int2d(th)(  U#rho*(abs(u#x)^2+abs(u#y)^2+abs(u#T)^2) + abs(u#rho)^2 ) )
+// "Energy" norm for a real or complex field
+
+macro EnergyNormCS(uc,us,U) sqrt( .5* int2d(th)(U#rho*(abs(uc#x)^2+abs(uc#y)^2+abs(uc#T)^2 +
+				  	      abs(us#x)^2+abs(us#y)^2+abs(us#T)^2) + abs(uc#rho)^2 + abs(us#rho)^2) )
+// "Energy" norm for a field defined by "cos" and "sin" components (factor .5 because of time-average)
+
+real eps=1.e-7; 
+       
+       
+real sigma1; // parameter sigma1 from Mantic-lugo et al ; should be zero for harmonic balance
+//real A,dA ; // amplitude 
+
+cout << " Choice of Ma : " << endl;
+cin >> Ma; 
+cout << " --> Ma = " << Ma << endl;
+
+cout << " Choice of Re : " << endl;
+cin >> Re; 
+cout << " --> Re = " << Re << endl;
+real nu=1/Re;
+
+{
+real Relu;
+cout << "starting  from mean flow in file MeanFlow_guess.txt" << endl;
+ifstream cbin(ffdatadir+"MeanFlow_guess.txt");
+cbin >> ubx[] >> Relu;
+if(Relu!=Re){ cout << "WARNING : Re not equal to that of the guess mean flow" << endl;};
+cout << "Drag force of guess mean flow : " << Drag(1/Re,ub) << endl;
+}
+
+//int check=exec("head -1 "+ffdatadir+"SelfConsistentMode_guess.txt");
+//cout << "Check :"<<  check<< endl;
+
+{
+cout << "starting  from mode in file SelfConsistentMode_guess.txt" << endl;
+ifstream cbin(ffdatadir+"SelfConsistentMode_guess.txt");
+cbin >> u1x[] >> ReM >> sigmaM >> omegaM; 
+cout << " 			omega of the starting field = " << omegaM<< endl;
+cout << "           Fy of the starting field : " << Lift(1/Re,u1) << endl;
+cout << "   		Energy-Norm (A) of starting field (complex macro) : " << EnergyNorm(u1,ub)/sqrt(2) << endl;	
+[u1cx,u1cy,u1cp,u1cT,u1crho] = [real(u1x), real(u1y), real(u1p), real(u1T), real(u1rho)]; 
+[u1sx,u1sy,u1sp,u1sT,u1srho] = [-imag(u1x), -imag(u1y), -imag(u1p),  -imag(u1T),  -imag(u1rho)];  
+cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s,ub) << endl << endl;
+}
+
+cout << " Guess for omega ? [-1 -> the one read in the guess file] " << endl; 
+cin >> omega ;
+if(omega==-1){omega = omegaM;};
+cout << " -->  omegaguess = " << omega << endl;
+
+
+cout << " Choice of sigma1 : [0 for Harmonic balance ; not zero for self-consistent] " << endl; 
+cin >> sigma1 ;
+cout << " --> sigma1 = " << sigma1 << endl;
+
+string normalisation;
+cout << " Normalisation choice ?  [none, L or E]" << endl;
+cin >> normalisation ;
+cout << " --> " << normalisation << endl;
+
+
+if(normalisation=="none")
+	{ cout << " -> No normalization for the mode " << endl;}
+	
+else if(normalisation=="L")
+	{
+		real Liftguess;
+		cout << "Value of Lift force Fy for renormalisation ?"<< endl;
+		cin >> Liftguess;
+		cout << "  -> Fy = " << Liftguess  << endl;
+
+		cout << "Fy before renormalisation : " << Lift(1/Re,u1) << endl;
+		complex modenorm = Lift(1/Re,u1);
+		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5 and Cy 1
+			cout << "Fy after renarmalisation : " << Lift(1/Re,u1) << endl;
+		    cout << "   ### Energy-norm A = " << EnergyNorm(u1,ub)/sqrt(2) << endl << endl;	
+	
+	}	
+else if(normalisation=="E")
+		{
+		real Eguess;
+		cout << "Value of ENERGY for renormalisation ?"<< endl;
+		cin >> Eguess;
+		cout << "  -> Energy = " << Eguess << endl;
+
+		cout << "Energy-norm before renormalisation : " << EnergyNorm(u1,ub)/sqrt(2) << endl;
+		complex modenorm = Lift(1/Re,u1);
+		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
+		modenorm = EnergyNorm(u1,ub)/sqrt(2);
+		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that Energy-norm is specified value
+		cout << "Energy-norm after renarmalisation : " << EnergyNorm(u1,ub)/sqrt(2) << endl;	
+		cout << "Cy after renarmalisation : " << Lift(1/Re,u1) << endl;
+		};
+
+[u0x,u0y,u0p,u0T,u0rho] = [ubx,uby,ubp,ubT,ubrho]; 
+[u1cx,u1cy,u1cp,u1cT,u1crho] = [real(u1x), real(u1y), real(u1p), real(u1T), real(u1rho)]; 
+[u1sx,u1sy,u1sp,u1sT,u1srho] = [-imag(u1x), -imag(u1y), -imag(u1p), -imag(u1T), -imag(u1rho)]; 
+cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s,ub) << endl << endl;
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// In description, the blocks are called NxM, where N is the numering of the equation and M that of the unknown
+// N = 1 steady NS for MEAN flow ; N=2 real part of linear equation for eigenmode ; N = 3 imaginary part; N = 4 phase 
+// M = 1 MEAN-flow, M=2 eigenmode-real ; M = 3 eigenmode-imag ; M = 4 domega 
+//
+/////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+//////// varf for RHS 
+
+////////////////////////////////////////////////////////////////////////////////////
+
+cout << " defining operators for nonlinear term..." << endl;
+
+
+varf NLOpF1([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
+// block 1 : NS for base flow
+   int2d(th)( -NS(u0,v) )
+	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,2)
+	+int2d(th,mpirank)(AMPFORCE*(vy*du0y+vx*du0x+vT*du0T+vrho*du0rho))
+    +int2d(th)( .25*NonLinear(u1c,u1c,u0,v) + .25*NonLinear(u1s,u1s,u0,v) + .5*omega*NonLinearOmega(u1c,u1s,v) );
+ 			
+// block 2 : base-flow effect on real part of eigenmode			
+varf NLOpF2([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
+	 int2d(th)( -NSL(u0,u1c,v) )
+	- int2d(th) ( sigma1 * BNorm(u0,u1c,v) )
+	+ int2d(th) ( -omega * BNorm(u0,u1s,v) ) 
+	+int2d(th,mpirank)(AMPFORCE*(vy*du1cy+vx*du1cx+vT*du1cT+vrho*du1crho))
+    + Boundaryconditions(du1c,v,du1cp,du1cT,du1crho,2);
+	
+// block 3 : base-flow effect on imag part of eigenmode			
+varf NLOpF3([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
+	 int2d(th)( -NSL(u0,u1s,v)  )
+	+int2d(th,mpirank)(AMPFORCE*(vy*du1sy+vx*du1sx+vT*du1sT+vrho*du1srho))
+              
+    + Boundaryconditions(du1s,v,du1sp,du1sT,du1srho,2)			
+	- int2d(th) ( sigma1 * BNorm(u0,u1s,v) )
+	+ int2d(th) ( omega * BNorm(u0,u1c,v) );
+
+// blocks 4 : fix the phase with imag(lift)
+// this is constructed directly when assemblying the matrix
+cout << " defining operators for nonlinear term... done" << endl;
+
+	
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+//////// varf for Linear part 
+
+////////////////////////////////////////////////////////////////////////////////////
+
+cout << " defining operators for linear term..." << endl;
+
+// block 1-1 : NS for base flow
+varf LinOp11([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
+   	int2d(th)( -NSL(u0,du0,v) + .25*NonLineardq(u1c,u1c,du0,v) + .25*NonLineardq(u1s,u1s,du0,v) ) 
+ 	+int2d(th,mpirank)(AMPFORCE*(vy*du0y+vx*du0x+vT*du0T+vrho*du0rho))       
+ 	+ Boundaryconditions(du0,v,du0p,du0T,du0rho,2);
+
+// block 1-2 : nonlinear term (real parts)
+varf LinOp12([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
+      int2d(th)( .5*NonLinear(u1c,du1c,u0,v)  + .5*omega*NonLinearOmega(du1c,u1s,v) );
+
+// block 1-3 : nonlinear term (real parts)
+varf LinOp13([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
+      int2d(th)( .5*NonLinear(u1s,du1s,u0,v) + .5*omega*NonLinearOmega(u1c,du1s,v));
+ 			
+// block 1-4 : effect of domega on the base flow
+varf LinOp14([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho])
+	= int2d(th)(.5*NonLinearOmega(u1c,u1s,v));
+ 			
+// block 2-1 : base-flow effect on real part of eigenmode			
+varf LinOp21([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
+	 int2d(th)(  NonLinear(du0,u1c,u0,v) -omega*BNormdq(du0,u1s,v) -sigma1*BNormdq(du0,u1c,v) );
+             
+// block 2-2 : Stokes operator on real part of eigenmode             
+varf LinOp22([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
+             int2d(th)( -NSL(u0,du1c,v) )
+            - int2d(th)( sigma1*BNorm(u0,du1c,v)  )
+			+int2d(th,mpirank)(AMPFORCE*(vy*du1cy+vx*du1cx+vT*du1cT+vrho*du1crho))
+ 			+ Boundaryconditions(du1c,v,du1cp,du1cT,du1crho,2);	
+ 			
+// block 2-3 : effect of omega on real part of equation for eigenmode
+varf LinOp23([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
+			 int2d(th)(-omega*BNorm(u0,du1s,v) );
+
+// block 2-4 : effect of domega on eigenmode-real equations
+varf LinOp24([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho])
+	=  int2d(th)(-BNorm(u0,u1s,v) ); // this is to be multiplied by domega
+
+
+
+// block 3-1 : base-flow effect on imag part of eigenmode			
+varf LinOp31([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho]) =
+	 int2d(th)( NonLinear(du0,u1s,u0,v) + omega*BNormdq(du0,u1c,v) - sigma1*BNormdq(du0,u1s,v)  );  
+	             
+// block 3-2 : effect of omega on imag part of equation for eigenmode
+varf LinOp32([du1cx,du1cy,du1cp,du1cT,du1crho],[vx,vy,vp,vT,vrho]) =
+			 int2d(th)(omega*BNorm(u0,du1c,v) );
+			 			
+// block 3-3 : Stokes operator on real part of eigenmode             
+varf LinOp33([du1sx,du1sy,du1sp,du1sT,du1srho],[vx,vy,vp,vT,vrho]) =
+             int2d(th)( -NSL(u0,du1s,v) )
+           - int2d(th) ( sigma1*BNorm(u0,du1s,v)  )
+     	   + int2d(th,mpirank)(AMPFORCE*(vx*du1sy+vy*du1sx+vT*du1sT+vrho*du1srho))
+ 		   + Boundaryconditions(du1s,v,du1sp,du1sT,du1srho,2)	
+ 			;
+
+// block 3-4 : effect of domega on eigenmode-imag equations
+varf LinOp34([du0x,du0y,du0p,du0T,du0rho],[vx,vy,vp,vT,vrho])
+	= int2d(th)(BNorm(u0,u1c,v));
+
+
+// bloc 4-3 : to fix the phase by imposing Lift(u1s) = 0
+varf LinOp43([vx,vy,vp,vT,vrho],[du1sx,du1sy,du1sp,du1sT,du1srho])	
+	= dLift(1/Re,du1s);
+
+
+cout << " defining operators for linear term... done" << endl << endl;
+
+
+real tol = 1e-6;
+
+///// BEGINING OF NEWTON LOOP
+real dXX = 1;
+int iter=1;
+while(abs(dXX)>tol&&abs(dXX)<1e6&&iter<100)
+	{ 
+	cout << endl << "Newton loop step " << iter << endl;
+
+	cout << "constructing rhs... " << endl;
+
+	real[int] RHSF1(u0x[].n), RHSF2(u0x[].n), RHSF3(u0x[].n); 
+	RHSF1 = NLOpF1(0,XXxxxH);
+	RHSF2 = NLOpF2(0,XXxxxH);
+	RHSF3 = NLOpF3(0,XXxxxH);	
+	real RHSF4 = Lift(1/Re,u1s); 	
+	
+	real[int] RHS = [RHSF1, RHSF2, RHSF3, RHSF4];		
+//	cout <<  " max RHS : " << RHSF1.l2 <<  ", " << RHSF2.l2 <<  ", " << RHSF3.l2 <<  ", " << RHSF4 << endl;
+
+
+	
+	cout << " Assembling matrix..." << endl;
+	
+matrix matLinOp11 = LinOp11(XXxxxH,XXxxxH);
+matrix matLinOp12 = LinOp12(XXxxxH,XXxxxH);
+matrix matLinOp13 = LinOp13(XXxxxH,XXxxxH);
+real[int] matLinOp14 = LinOp14(0,XXxxxH);
+
+matrix matLinOp21 = LinOp21(XXxxxH,XXxxxH);
+matrix matLinOp22 = LinOp22(XXxxxH,XXxxxH);
+matrix matLinOp23 = LinOp23(XXxxxH,XXxxxH);
+real[int] matLinOp24 = LinOp24(0,XXxxxH);
+
+
+matrix matLinOp31 = LinOp31(XXxxxH,XXxxxH);
+matrix matLinOp32 = LinOp32(XXxxxH,XXxxxH);
+matrix matLinOp33 = LinOp33(XXxxxH,XXxxxH);
+real[int] matLinOp34 = LinOp34(0,XXxxxH);
+
+real[int] matLinOp43 = LinOp43(0,XXxxxH);
+
+matrix LinOp = [	[matLinOp11, matLinOp12, matLinOp13, 	matLinOp14],
+					[matLinOp21,matLinOp22,  matLinOp23,	matLinOp24 ],
+					[matLinOp31,matLinOp32, matLinOp33,		matLinOp34 ],
+					[	0	   ,0 	, 		matLinOp43',	0 		 ]
+			   ];
+				
+cout << " Assembling matrix... done" << endl;
+
+
+cout << " LU-ing matrix..." << endl;
+set(LinOp,solver=sparsesolver);
+cout << " LU-ing matrix... done" << endl;
+
+	
+	cout << " solving BIG problem..." << endl;
+	real[int] dX(LinOp.n);
+	dX = LinOp^-1*RHS;
+	[du0x[], du1cx[], du1sx[], domega] = dX;
+	
+	u0x[] -= du0x[];
+	u1cx[] -= du1cx[];
+	u1sx[] -= du1sx[];
+	omega -= domega;
+
+
+
+
+	cout << endl << "   ### ||du0||, ||du1,r||, ||du1,i||, domega : " << du0x[].l2 
+			<< " " << du1cx[].l2 << " " << du1sx[].l2 << " " << -domega << endl;
+	dXX = du0x[].l2+du1cx[].l2+du1sx[].l2+abs(domega);
+	
+	cout << "   ### ||u0||, ||u1,r||, ||u1,i|| : " << u0x[].l2 
+			<< " " << u1cx[].l2 << " " << u1sx[].l2  << endl;
+
+	
+	cout <<  "   ### omega = " << omega << endl;
+	cout << "   ### Energy-norm of perturbation A = " << EnergyNormCS(u1c,u1s,u0)  << endl;	
+	cout << " 	### Fy = " << Lift(1/Re,u1c) << endl ; 
+	//plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
+
+	iter++;
+	if(u1cx[].l2<1e-6){dXX = 1e30; };
+	};
+	
+	if(abs(dXX)>1e6) 
+	{
+	cout << "dXX" << dXX << endl;
+	def(Uba,Ubap,Ubatemp,Ubaro) = def(ub,ubp,ubT,ubrho);
+	def(Ub,Pb,Tb,Rhob) = [u0x,u0y,u0p,u0T,u0rho];
+	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",Uba,"MeanFlow",iter);
+	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omegaM+sigma1,"HarmonicMode",-1);
+	cout << endl << endl << "#####################################################################@" << endl << endl;
+	cout << " Newton Loop DIVERGED " << endl;	
+	int[int] forder=[1,1,1,1,1,1,1,1];
+		savevtk(ffdatadir+"/MeanFlow.vtk",th,Pb,[Ubx,Uby,0],Tb,Rhob,order=forder,dataname="Pb Ub Tb Rhob");	
+
+   	 {
+    	cout << "- reading "+ffdatadir+"MeanFlow__M"+Ma+".bin"<< endl;
+   		cout << "all ok!" << endl;
+     	};
+	}
+	
+	else
+	{
+	cout << endl << endl << "#####################################################################@" << endl << endl
+	     << "HB MODEL : Newton Loop converged in " << iter << " iterations " << endl;
+	cout << " >>> Omegac = " << omega << endl;	
+	cout << " >>> Energy of perturbation A = " << EnergyNormCS(u1c,u1s,u0)  << endl;	
+	cout << " >>> Fy = " << Lift(1/Re,u1c) << endl ; 
+	
+/// GENERATES OUTPUT FILES
+
+{
+	ofstream file(ffdatadir+"MeanFlow.txt");
+	file << u0x[]; 
+	file << endl << endl << Re;
+}; 
+def(Ub,Pb,Tb,Rhob) = [u0x,u0y,u0p,u0T,u0rho];
+[U0x,U0y,U0p,U0temp,U0ro] = [u0x,u0y,u0p,u0T,u0rho];
+SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",U0,"MeanFlow",iter);
+
+[u1x,u1y,u1p,u1T,u1rho] = [u1cx-1i*u1sx,u1cy-1i*u1sy,u1cp-1i*u1sp,u1cT-1i*u1sT,u1crho-1i*u1srho]; 
+
+{
+ 	ofstream file(ffdatadir+"SelfConsistentMode.txt");
+   	file << u1x[] ;	
+   	file << endl << endl << Re << endl
+   	<< endl << sigma1 << "   " << omega  << endl;
+};
+
+
+SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
+int[int] forder=[1,1,1,1,1,1,1,1];
+cout << "Saving VTK" << endl;
+savevtk("WORK/MeanFlow_SC.vtk",th,U0p,[U0x,U0y,0],U0temp,U0ro,order=forder,dataname="Pb Ub Tb Rhob");
+cout << "Saving SC Mode" << endl;
+savevtk("WORK/SCMode_SC.vtk",th,u1cp,[u1cx,u1cy,0],u1cT,u1crho,u1sp,[u1sx,u1sy,0],u1sT,u1srho,order=forder,dataname="pr ur Tr rhor pi ui Ti rhoi");
+cout << "Finished saving VTK files" << endl;
+if(copyfile=="yes")
+{
+cout << " COPYING Output into guess for next calculation..." << endl; 
+{
+	ofstream file(ffdatadir+"MeanFlow_guess.txt");
+	file << u0x[]; 
+	file << endl << endl << Re;
+};
+{
+ 	ofstream file(ffdatadir+"SelfConsistentMode_guess.txt");
+   	file << u1x[] ;	
+   	file << endl << endl << Re << endl
+   	<< endl << sigma1 << "   " << omega  << endl;
+};
+};
+
+	};
+	
+// END PROGRAM
+

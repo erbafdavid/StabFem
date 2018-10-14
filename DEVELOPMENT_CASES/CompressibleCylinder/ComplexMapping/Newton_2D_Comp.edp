@@ -30,8 +30,6 @@ load "../../../SOURCES_OTHER/iovtk"
 include "SF_Geom.edp";
 include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
-include "SF_Mesh.edp";
-include "SF_Method.edp"
 
 
 //cout << "mpirank " << mpirank << endl;

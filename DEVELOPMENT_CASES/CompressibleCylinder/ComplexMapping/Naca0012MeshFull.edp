@@ -1,0 +1,96 @@
+// cet exemple est dans la doc de Freefem++ 
+// 
+// it was in teh very first version of MacGFem
+//
+// Computation of the potential flow around a NACA0012 airfoil.
+// The method of decomposition is used to apply the Joukowski condition
+// The solution is seeked in the form psi0 + beta psi1 and beta is
+// adjusted so that the pressure is continuous at the trailing edge
+// janvier 2003
+// avril 2008 version ++
+// mars 2011  version thanks to Geordie MacBain
+//
+// ./FreeFem++-CoCoa3 nacaPYL.edp 
+// fichier genere  cff.data P.gp
+include "Macros_StabFem.edp";
+
+verbosity = 0;
+wait=0;
+real Wing=99,beta;
+int  np=64*2;      
+real pis180=pi/180.; // angle conversion
+real eps=0.001;      // for the derivative 
+real R0=50;         // size of teh domain 
+
+
+// def NACA0012
+func real extra(real x){
+    return 0.17735*sqrt(x)-0.075597*x 
+       - 0.212836*(x^2)+0.17363*(x^3)-0.06254*(x^4);}
+       
+func real intra(real x){
+	return   -(0.17735*sqrt(x)-0.075597*x 
+        -0.212836*(x^2)+0.17363*(x^3)-0.06254*(x^4));}
+       
+// external an zoomed domains
+border C(t=0,2*pi) { x=R0*cos(t)+0.5; y=R0*sin(t);} 
+border c(t=0,2*pi) { x=1* cos(t)+0.5; y= 1*sin(t); }       
+
+border Splus(t=0,1){ x = t; y = extra(t); label=2;} 
+border Sminus(t=1,0){ x =t; y = intra(t); label=2;} 
+   
+// mesh generation   
+mesh th= buildmesh(C(np/2)+Splus(np)+Sminus(np)); 
+mesh Zoom = buildmesh(c(np)+Splus(np)+Sminus(np));
+
+// SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+      file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+      file << "2DComp" << endl;
+      file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+      file << "real R real Xmin real Xmax real Rmax" << endl;
+      file <<  R0  << endl << 1 << endl << 1 << endl << 1  << endl;
+}
+
+
+// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
+  SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+      ofstream file2("SF_Geom.edp"); 
+      file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
+}
+
+
+
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+  fespace femp1(th,P1);
+  fespace femp2xfemp2xfemp1(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
+        femp2xfemp2xfemp1 [ux,uy,up,utemp,uro]=[1.0,0.0,1.0,1.0,1.0];
+        real Re = 0;real nu=1; real Ma = 0.01; real gamma = 1.4; // these three are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+        {
+        ofstream file(ffdatadir+"BaseFlow_guess.txt");
+      file << ux[] << endl;
+      file <<  endl << 0 << endl;
+        }
+        
+// Save in ff2m format (for StabFem)      
+       SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
+
+
+
+
