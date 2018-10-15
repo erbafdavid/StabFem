@@ -53,12 +53,12 @@ include "Macros_StabFem.edp";
 	real shiftr,shifti;	
 	cout << "$$ Enter SHIFT (re,im)                 >>  " ; 
 	cin  >> shiftr >> shifti;
-	cout << shiftr << " " shifti << endl;
+	cout << shiftr << " " << shifti << endl;
 	complex shift = 1i*shifti+shiftr;
 	string symmetry;
 	cout << "$$ Symmetry properties ?? (A, S or N).  >> " ;
 	cin >> symmetry;
-	cout << symetry << endl;
+	cout << symmetry << endl;
 	string iadjoint; // 0 for direct ; 1 for adjoint
 	cout << "$$ Direct (D), Adjoint (A), continusous adjoint (cA), D&A+sensitivity (S), D&A(c)+sentitivity (cS) ? >> " ;
 	cin >> iadjoint;	

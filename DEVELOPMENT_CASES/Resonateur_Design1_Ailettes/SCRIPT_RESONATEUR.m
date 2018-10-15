@@ -1,10 +1,10 @@
-run('../SOURCES_MATLAB/SF_Start.m');
+run('../../SOURCES_MATLAB/SF_Start.m');
 
 baseflow=SF_Init('Mesh_Resonateur_Design_Ailettes.edp');
 baseflow=SF_BaseFlow(baseflow,'Re',10);
 baseflow=SF_BaseFlow(baseflow,'Re',30);
 baseflow=SF_BaseFlow(baseflow,'Re',60);
-baseflow=SF_BaseFlow(baseflow,'Re',100);
+baseflow=SF_BaseFlow(baseflow,'Re',120);
 baseflow=SF_Adapt(baseflow);
 
 % illustration of mesh and base flow for Re = 100
