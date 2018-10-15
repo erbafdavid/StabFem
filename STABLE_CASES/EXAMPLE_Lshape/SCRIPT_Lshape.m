@@ -1,6 +1,7 @@
 % This script is a basic example which illustrates the main functionalities of the StabFem Software
 clear all; close all;
-run('../SOURCES_MATLAB/SF_Start.m');ffdatadir = './';verbosity=100;
+run('../../SOURCES_MATLAB/SF_Start.m');ffdatadir = './';verbosity=100;
+mkdir('FIGURES');
 
 % Generation of the mesh
 Ndensity =40;
@@ -26,7 +27,7 @@ set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_T0_Cut','png');
 pause
 
 % importation and plotting of a complex P1 field : temperature for unsteady problem
-heatU=SF_Launch('Lshape_Unsteady.edp','Params',100,'Mesh',ffmesh,'DataFile','Heat_Unsteady.ff2m')
+heatU=SF_Launch('Lshape_Unsteady.edp','Params',100,'Mesh',ffmesh,'DataFile','Heat_unsteady.ff2m')
 figure();plotFF(heatU,'Tc.re','title',['Ti: real(colors) part'])
 %figure();plotFF(heatU,'Tc.re','contour','Tc.im','title',['Ti: ' char(13) 'real(colors) and imaginary(levels) parts'])
 set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_Tc','png');
