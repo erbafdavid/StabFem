@@ -275,7 +275,9 @@ switch ffmesh.problemtype
         ncores = p.Results.ncores;
         argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.Ma) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' num2str(symmetry) ' ' num2str(typeEig) ' ' num2str(p.Results.nev) ' " '];
-        fff = [ ffMPI ' -np ',num2str(ncores) ];               
+       % fff = [ ffMPI ' -np ',num2str(ncores) ]; does not work with FreeFem++-mpi
+          fff = ffMPI ; 
+        
         solver = [ffdir 'Stab2D_Comp.edp'];
 %        solvercommand = ['echo ' argumentstring ' | ',ffMPI,' -np ',num2str(ncores),' ', 'Stab2DComp.edp'];
 %        status = mysystem(solvercommand);

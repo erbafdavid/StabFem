@@ -101,7 +101,7 @@ if (mod(nargin, 2) == 1) % plot mesh in single-entry mode : mesh
     if (verbosity >= 15)
         varargin;
     end;
-    ffpdeplot(mesh.points, mesh.seg, mesh.tri, varargin{:});
+    ffpdeplot(mesh.points, mesh.bounds, mesh.tri, varargin{:});
 else % plot mesh in single-entry mode : data
     mesh = FFdata.mesh;
     field1 = varargin{1};
@@ -120,7 +120,7 @@ else % plot mesh in single-entry mode : data
             varargin
         end;
         
-        ffpdeplot(mesh.points, mesh.seg, mesh.tri, varargin{:});
+        ffpdeplot(mesh.points, mesh.bounds, mesh.tri, varargin{:});
         %axis equal;
     else
         % plot data
@@ -142,7 +142,7 @@ else % plot mesh in single-entry mode : data
             varargin
         end;
         
-        ffpdeplot(FFdata.mesh.points, FFdata.mesh.seg, FFdata.mesh.tri, 'xydata', data, varargin{:});
+        ffpdeplot(FFdata.mesh.points, FFdata.mesh.bounds, FFdata.mesh.tri, 'xydata', data, varargin{:});
 
     
 %%% SYMMETRIZATION OF THE PLOT
@@ -172,7 +172,7 @@ else
     end
   
   hold on;
-    ffpdeplot(pointsS, FFdata.mesh.seg, FFdata.mesh.tri, 'xydata', dataS, varargin{:});
+    ffpdeplot(pointsS, FFdata.mesh.bounds, FFdata.mesh.tri, 'xydata', dataS, varargin{:});
     hold off;
 end
 

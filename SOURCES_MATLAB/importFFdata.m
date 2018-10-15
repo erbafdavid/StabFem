@@ -85,8 +85,10 @@ for i = istart:nargin
     
     if sum(strcmp(lower(K1), {'format','format:'}))
         mydisp(0, 'Warning : third line or data file is "Format :" ; this is obsolete ! please modify your Macro_StabFem.edp to fit to new format (see manual)');
-        mydisp(0,' you may replace by something like (for a eigenmode) ''file << "datatype Eigenmode datastoragemode CxP2P2P1.0 " << endl'' ;');
+        mydisp(0,' you may replace by something like (for a baseflow) ''file << "datatype BaseFlow datastoragemode ReP2P2P1.1 " << endl'' ;');
+        mydisp(0,'                                   (for a eigenmode) ''file << "datatype Eigenmode datastoragemode CxP2P2P1.2 " << endl'' ;');
         mydisp(0,'                                   (for a mesh) ''file << "datatype mesh meshtype 2D " << endl;'' ;');
+        mydisp(0,'                                   (for file SF_Geom.ff2m) ''file << "problemtype 2D " << endl;'' ;');
         pdestruct.datatype = Datadescription;
     else
         if mod(numkeywords, 2)
@@ -172,10 +174,11 @@ for i = istart:nargin
     end
     
     if (istart == 2 && Ndata ~= length(data))
-        disp(['### Error in importFFdata : wrong data number ; expecting ', num2str(Ndata), ' reading ', num2str(length(data)), ...
+         disp(['### Error in importFFdata : wrong data number ; expecting ', num2str(Ndata), ' reading ', num2str(length(data)), ...
             '  (Mesh may be incompatible)']);
          disp(['### When reading  data file : ',fileToRead]);
          disp(['### Associated to mesh file : ',mesh.filename]);
+         error('stop here');
     end
     
     for ifield = 1:numfields

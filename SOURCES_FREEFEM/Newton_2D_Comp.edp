@@ -25,13 +25,15 @@
 //load "MUMPS_FreeFem"
 load "MUMPS_FreeFem"
 load "scotch";
+IFMACRO(VTK,YES)
 load "../SOURCES_OTHER/iovtk"
+ENDIFMACRO
 //load "./CPP_FUNCTIONS/BinaryIO_64";
 include "SF_Geom.edp";
 include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
-include "SF_Mesh.edp";
-include "SF_Method.edp"
+//include "SF_Mesh.edp";
+//include "SF_Method.edp"
 
 
 //cout << "mpirank " << mpirank << endl;
@@ -241,8 +243,10 @@ XXxxxH [urx,ury,urp,urtemp,urro] = [real(Ubx),real(Uby),real(Pb),real(Tb),real(R
          
 
           SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",ur,"BaseFlow",i); // file in .ff2ml format for StabFem driver
+         IFMACRO(VTK,YES)
           int[int] forder=[1,1,1,1];
 		  savevtk(ffdatadir+"/BflowCM_Re"+Re+"_M"+Ma+".vtk",th,urp,[urx,ury,0],urtemp,urro,order=forder,dataname="Pb vel temp rho");
+		  ENDIFMACRO
 		};
           
 

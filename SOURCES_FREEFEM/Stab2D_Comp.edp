@@ -39,10 +39,12 @@
 include "Param_Mapping.edp";
  include "SF_Geom.edp";
 include "Macros_StabFem.edp";
-include "SF_Mesh.edp";
+//include "SF_Mesh.edp";
 load "MUMPS_FreeFem"
 load "scotch"
+IFMACRO(VTK,YES)
 load "../SOURCES_OTHER/iovtk"
+ENDIFMACRO
 load "PETSc-complex"                             // PETSc plugin
 load "SLEPc-complex"                             // SLEPc plugin
 macro partitioner()metis// End Of Macro  // metis, scotch, or parmetis
@@ -404,11 +406,13 @@ for (int i=0;i<k;i++)
     defU(upr,ppr,Tpr,rhopr)=[real(eux[i]),real(euy[i]),real(ep[i]),real(eT[i]),real(erho[i])]; 
     defU(upi,ppi,Tpi,rhopi)=[imag(eux[i]),imag(euy[i]),imag(ep[i]),imag(eT[i]),imag(erho[i])]; 
     
+    IFMACRO(VTK,YES)
     if(mpirank==0)  
       { 
-//	SaveVecComplexPETSc(eu1[i][],pathspectrum+"/directmode_"+i+".bin");
-	savevtk(ffdatadir+"/directmode_"+i+".vtk",th,ppr,[uprx,upry,0],Tpr,rhopr,ppi,[upix,upiy,0],Tpi,rhopi,order=forder,dataname="pr velr tempr rhor pi veli tempi rhoi");	
+/*	SaveVecComplexPETSc(eu1[i][],pathspectrum+"/directmode_"+i+".bin");*/
+	savevtk(ffdatadir+"/directmode_"+i+".vtk",th,ppr,[uprx,upry,0],Tpr,rhopr,ppi,[upix,upiy,0],Tpi,rhopi,order=forder,dataname="pr velr tempr rhor pi veli tempi rhoi");
       }
+      	ENDIFMACRO	
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
   }   //END FOR
 
