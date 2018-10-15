@@ -1,0 +1,167 @@
+//
+//  PROGRAM Mesh.edp
+//
+//  Example of mesh generator for StabFem 
+//
+//  OUTPUT FILES :
+// 		mesh.msh 			->  mesh in Freefem format
+//		mesh.ff2m 		->  descriptor 
+//      BaseFlow_guess.txt 	->  base flow used to start first newton iteration
+//      BaseFlow.ff2m 	->  (ff2m format)
+//
+//	convention for boundary conditions :
+//  1 = inlet ; 2 (and 21,22,23) = wall ; 3 = outlet ; 6 = axis
+
+//  D. Fabre, June 2017
+
+
+include "Params.edp"
+include "Macros_StabFem.edp";
+
+xinfm=-50.;
+xinfv=100.;
+yinf=50.;
+x1m=-5.;
+x1v=30.;
+y1=2.5;
+x2m=-15.;
+x2v=50.;
+y2=10;
+ls=300;
+
+n=1.8;
+ncil=75;
+n1=7;
+n2=4;
+ns=0.4;
+nsponge=0.05;
+
+cout << " Generation of an initial mesh for a 2D compressible cylinder" << endl;
+cout << " Enter the dimensions xmin, xmax, ymax ? " << endl; 
+cin >> xinfm >> xinfv >> yinf ;
+cout << "Xmin = " << xinfm << " ; Xmax = " << xinfv << " ; ymax = " << yinf << endl;  
+
+cout << " Enter the dimensions of the inner domain x1_{L}, x1_{R}, y1 ? " << endl; 
+cin >> x1m >> x1v >> y1 ;
+cout << "X_L = " << x1m << " ; X_R = " << x1v << " ; y1 = " << y1 << endl;  
+
+cout << " Enter the dimensions of the middle domain x2_{L}, x2_{R}, y2 ? " << endl; 
+cin >> x2m >> x2v >> y2 ;
+cout << "X2_L = " << x2m << " ; X2_R = " << x2v << " ; y2 = " << y2 << endl;  
+
+cout << " Enter the size of the sponge region " << endl; 
+cin >> ls ;
+cout << "Size of the domain = " << ls << endl;  
+
+cout << " Enter the vertical density of the mesh " << endl; 
+cin >> n ;
+cout << "Vertical density of the mesh = " << n << endl; 
+
+
+cout << " Enter the density of the refinement around the cylinder " << endl; 
+cin >> ncil ;
+cout << "density around the cylinder = " << ncil << endl; 
+
+cout << " Enter the density of points in the inner domain, middle, outer and sponge zone andl alpha ? " << endl; 
+cin >> n1 >> n2 >> ns >> nsponge >> alpha ;
+cout << "n1 = " << n1 << " ; n2 = " << n2 << " ; ns = " << ns << "; nsponge = " << nsponge << " ; alpha = " << alpha << endl;  
+
+
+
+border inletsponge(t=0,1){ x=xinfm-ls;y=(yinf+ls)*(1-2*t);label=bcinlet;}
+border latinfsponge(t=0,1){ x=xinfm-ls+(xinfv-xinfm+2*ls)*t;y=-yinf-ls;label=bcinlet;}
+border outletsponge(t=0,1){ x=xinfv+ls;y=-(yinf+ls)*(1-2*t);label=bcoutflow;}
+border latsupsponge(t=0,1){ x=xinfv+ls-(xinfv-xinfm+2*ls)*t;y=yinf+ls;label=bcinlet;}
+
+// geometria cilindro
+
+border cilindro(t=0,2*pi){ x=cos(t)*0.5;y=0.5*sin(t);label=bcwall;}
+// dominio esterno
+border inlet(t=0,1){ x=xinfm;y=yinf*(1-2*t);label=0;}
+border latinf(t=0,1){ x=xinfm+(xinfv-xinfm)*t;y=-yinf;label=0;}
+border outlet(t=0,1){ x=xinfv;y=-yinf*(1-2*t);label=0;}
+border latsup(t=0,1){ x=xinfv-(xinfv-xinfm)*t;y=yinf;label=0;}
+
+// domini di infittimento 1: vicino al cilindro
+border a1(t=0,1){ x=x1m;y=y1*(1-2*t);label=0;}
+border a2(t=0,1){ x=x1m+(x1v-x1m)*t;y=-y1;label=0;}
+border a3(t=0,1){ x=x1v;y=-y1*(1-2*t);label=0;}
+border a4(t=0,1){ x=x1v-(x1v-x1m)*t;y=+y1;label=0;}
+
+// infittimento intermedio
+border b1(t=0,1){ x=x2m;y=y2*(1-2*t);label=0;}
+border b2(t=0,1){ x=x2m+(x2v-x2m)*t;y=-y2;label=0;}
+border b3(t=0,1){ x=x2v;y=-y2*(1-2*t);label=0;}
+border b4(t=0,1){ x=x2v-(x2v-x2m)*t;y=+y2;label=0;}
+
+
+mesh th=buildmesh(inletsponge(2*(yinf+ls)/n*nsponge)+latinfsponge((xinfv-xinfm+2*ls)/n*nsponge)+outletsponge(2*(yinf+ls)/n*nsponge)+latsupsponge((xinfv-xinfm+2*ls)/n*nsponge)+
+inlet(2*yinf/n*ns)+latinf((xinfv-xinfm)/n*ns)+outlet(2*yinf/n*ns)+latsup((xinfv-xinfm)/n*ns)+cilindro(-ncil*pi/n)+a1(n1/n*2*y1)+a2(n1/n*(x1v-x1m))+a3(n1/n*2*y1)+a4(n1/n*(x1v-x1m))+b1(2*y2/n*n2)+b2((x2v-x2m)/n*n2)+b3(2*y2/n*n2)+b4((x2v-x2m)/n*n2));
+
+//plot(th);
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+			file << "2DComp" << endl;
+			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "XInfMin, XinfP, YInf, x1m, x1v, y1, x2m, x2v, y2, ls, n, ncyl, n1 n2, ns, nsponge" << endl;
+			file <<  xinfm  << endl << xinfv << endl << yinf << endl << x1m << endl << x1v << endl << y1 << endl << x2m << endl << x2v << endl << y2 << endl << ls << endl << n << endl << ncil << endl << n1 << endl << n2 << endl << ns << endl << nsponge << endl;
+}
+
+
+// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
+}
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+ 	fespace femp1(th,P1);
+	fespace femp2xfemp2xfemp1(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
+        femp2xfemp2xfemp1 [ux,uy,up,utemp,uro]=[1.0,0.0,1.0,1.0,1.0];
+        real Re = 0;real nu=1; real Ma = 0.01; real gamma = 1.4; real Pr = 0.7; // these three are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+      	{
+      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+	    file << ux[] << endl;
+	    file <<  endl << 0 << endl;
+      	}
+      	
+// Save in ff2m format (for StabFem)	    
+	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
+
+//plot(th,cmm="Mesh",wait=1,ps="Mesh.eps");
+/*
+fespace Xh(th,P2);
+Xh DELTA=hTriangle;
+plot(DELTA,value=1,fill=1);
+real delta=DELTA(xinfv,0);
+real Ret=100.0;
+Xh REY=Ret*delta/DELTA;
+REY=min(REY,Ret);
+plot(REY,value=1,fill=1);
+*/
+/*
+fespace Xh(th,P2);
+
+Xh ampsponge;
+ampsponge=AmpSponge;
+plot(ampsponge,fill=1,value=1);
+
+
+// SAVE THE MESH in mesh.msh file 
+//savemesh(th,pht+"mesh.msh");
+
+
+*/

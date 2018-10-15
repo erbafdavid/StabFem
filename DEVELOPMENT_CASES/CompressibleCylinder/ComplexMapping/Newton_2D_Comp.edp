@@ -25,13 +25,11 @@
 //load "MUMPS_FreeFem"
 load "MUMPS_FreeFem"
 load "scotch";
-load "../SOURCES_OTHER/iovtk"
+load "../../../SOURCES_OTHER/iovtk"
 //load "./CPP_FUNCTIONS/BinaryIO_64";
 include "SF_Geom.edp";
 include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
-include "SF_Mesh.edp";
-include "SF_Method.edp"
 
 
 //cout << "mpirank " << mpirank << endl;

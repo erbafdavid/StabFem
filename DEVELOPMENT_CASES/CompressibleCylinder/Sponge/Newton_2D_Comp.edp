@@ -1,6 +1,6 @@
 //
 //  PROGRAM Newton_2D_Comp.edp
-//  computation of 2D compessible base flow [ux,uy,p,T,rho](x,y)
+//  computation of 2D base flow [ux,uy](x,y)
 //   
 //
 //  INPUT PARAMETERS (from keyboard or pipe) :
@@ -22,17 +22,19 @@
 
 //////////////
 //LOADS FROM FLAVIO
+load "../../../SOURCES_OTHER/iovtk"
 //load "MUMPS_FreeFem"
 load "MUMPS_FreeFem"
 load "scotch";
-load "../SOURCES_OTHER/iovtk"
 //load "./CPP_FUNCTIONS/BinaryIO_64";
-include "SF_Geom.edp";
-include "Param_Mapping.edp";
-include "Macros_StabFem.edp";
-include "SF_Mesh.edp";
-include "SF_Method.edp"
+include "Params.edp";
+///////////////////
 
+
+/// INCLUDES FROM SF STRUCTURE
+		include "SF_Geom.edp";
+		include "Macros_StabFem.edp";		
+///
 
 //cout << "mpirank " << mpirank << endl;
 //cout << " mpisize " << mpisize << endl;
@@ -89,9 +91,14 @@ broadcast(processor(0),th);
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-real TOLLERANCENewton=1e-9;  /// tollerance of newton loop
+real TOLLERANCENewton=2e-9;  /// tollerance of newton loop
 int NITERATIONNEWTLOOP=40;  //////////////  Max number of ITERATIONs --> Newton loop
-real TOLLERANCEDiv = 20.0; // Tolerance to reset initial condition due to divergence of the Newton method.
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//bool InitSol=false;
+//string nameoldsol="./Data/B_flow_Re150_M0.2.bin";
+//string nameoldmesh="TOTOMh.msh";
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 fespace XH2(th,P2);
@@ -104,9 +111,9 @@ macro def(u,p,T,rho)[u#x,u#y,p,T,rho]//EOF
 
 
   
-XXxxxH<complex> def(du,dp,dT,drho);
-XXxxxH<complex> def(Ub,Pb,Tb,Rhob);
-XXxxxH<complex> def(Urif,Prif,Trif,Rhorif)=[1.0,0.0,1.0,1.0,1.0];
+XXxxxH def(du,dp,dT,drho);
+XXxxxH def(Ub,Pb,Tb,Rhob);
+XXxxxH def(Urif,Prif,Trif,Rhorif)=[1.0,0.0,1.0,1.0,1.0];
 
 {
 ifstream file(ffdatadir+"BaseFlow_guess.txt");
@@ -117,38 +124,46 @@ file >> Reans;
 cout << "$$ Newton for Re = " << Re << endl;	
 cout << "$$ Reynolds of the initial condition : " << Reans << endl;
 
-  macro div(u) ((Dx(u#x)+Dy(u#y)))   //EOM
-  macro ugradf(u,f) ((u#x*Dx(f)+u#y*Dy(f)))    //
-//macro gradfgradf(f,f1) ((Dx(f)*Dx(f1)+Dy(f)*Dy(f1)))  //
-//macro strain(u1,u2,v1,v2) ((Dx(u1)*Dx(v1)+(1./2)*(Dx(u2)+Dy(u1))*(Dx(v2)+Dy(v1))+Dy(u2)*Dy(v2)))  //
-  macro termnonlinear(u,v,w) ((w#x*(u#x*Dx(v#x)+u#y*Dy(v#x))+w#y*(u#x*Dx(v#y)+u#y*Dy(v#y)))) //
-  macro Grad(u) [[Dx(u#x),Dx(u#y)],[Dy(u#x),Dy(u#y)]]//EOM
-  macro Strain(u)[[Dx(u#x),0.5*(Dx(u#y)+Dy(u#x))],[0.5*(Dx(u#y)+Dy(u#x)),Dy(u#y)]]//EOM
-  macro gradgrad(u,v)(Dx(u)*Dx(v)+Dy(u)*Dy(v))//EOM
+
+XH2 AMPFORCE;
+//M=1.0;
+AMPFORCE=AmpSponge(Ma);
+
+  macro div(u) ((dx(u#x)+dy(u#y)))   //EOM
+  macro ugradf(u,f) ((u#x*dx(f)+u#y*dy(f)))    //
+//macro gradfgradf(f,f1) ((dx(f)*dx(f1)+dy(f)*dy(f1)))  //
+//macro strain(u1,u2,v1,v2) ((dx(u1)*dx(v1)+(1./2)*(dx(u2)+dy(u1))*(dx(v2)+dy(v1))+dy(u2)*dy(v2)))  //
+  macro termnonlinear(u,v,w) ((w#x*(u#x*dx(v#x)+u#y*dy(v#x))+w#y*(u#x*dx(v#y)+u#y*dy(v#y)))) //
+  macro Grad(u) [[dx(u#x),dx(u#y)],[dy(u#x),dy(u#y)]]//EOM
+  macro Strain(u)[[dx(u#x),0.5*(dx(u#y)+dy(u#x))],[0.5*(dx(u#y)+dy(u#x)),dy(u#y)]]//EOM
+  macro gradgrad(u,v)(dx(u)*dx(v)+dy(u)*dy(v))//EOM
   
   varf dirichlet(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=on(bcinlet,dux=1.0-Ubx,duy=0.0-Uby,dT=1.-Tb,drho=1.-Rhob)
   +on(bcoutflow,dux=1.0-Ubx,duy=0.0-Uby,dT=1.-Tb,drho=1.-Rhob)
   +on(bcwall,dux=0.0-Ubx,duy=0.0-Uby);
 
-varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank)( (JJ)*((rhos*(drho*div(Ub)+Rhob*div(du)+ugradf(Ub,drho)+ugradf(du,Rhob)) 
+varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=
+								int2d(th,mpirank)(rhos*(drho*div(Ub)+Rhob*div(du)+ugradf(Ub,drho)+ugradf(du,Rhob)) 
 								       //mass equation
 								       -dp/(gamma*Ma^2)*div(us)+2.0/Re*(Strain(du):Grad(us))-2.0/(3.0*Re)*(div(du)*div(us))+Rhob*termnonlinear(du,Ub,us)+drho*termnonlinear(Ub,Ub,us)+Rhob*termnonlinear(Ub,du,us)
 								       //momentum
 								  +Ts*(drho*ugradf(Ub,Tb)+Rhob*ugradf(Ub,dT)+Rhob*ugradf(du,Tb)+(gamma-1)*(div(Ub)*dp + Pb*div(du))-gamma*(gamma-1.0)*Ma^2/Re*(2.0*((Strain(du):Strain(Ub))+(Strain(Ub):Strain(du)))-2.0/3.0*(2.0*div(Ub)*div(du))))+gamma/(Pr*Re)*gradgrad(dT,Ts)
 								       // energy
 								       +ps*(dp-(drho*Tb+Rhob*dT))
-								  )))
+								  )
+  +int2d(th,mpirank)(AMPFORCE*(usy*duy+usx*dux+Ts*dT+rhos*drho))
   +BoundaryconditionsBaseFlow(du,dp,dT,drho);
 
 
-varf vNs(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpirank)( (JJ)*(rhos*(Rhob*div(Ub)+ugradf(Ub,Rhob))
+varf vNs(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpirank)(rhos*(Rhob*div(Ub)+ugradf(Ub,Rhob))
 							   //mass equation
 							   -Pb/(gamma*Ma^2)*div(us)+2.0/Re*(Strain(Ub):Grad(us))-2.0/(3.0*Re)*(div(Ub)*div(us))+Rhob*termnonlinear(Ub,Ub,us)
 							   //momentum
 								   +Ts*(Rhob*ugradf(Ub,Tb)+(gamma-1)*Pb*div(Ub)-gamma*(gamma-1.0)*Ma^2/Re*(2.0*((Strain(Ub):Strain(Ub)))-2.0/3.0*(div(Ub)*div(Ub))))+gamma/(Pr*Re)*gradgrad(Tb,Ts)
 							   // energy
 							   +ps*(Pb-(Rhob*Tb))
-							   ))
+							   )
+  -int2d(th,mpirank)(AMPFORCE*(usy*(Uby-Urify)+usx*(Ubx-Urifx)+Ts*(Tb-Trif)+rhos*(Rhob-Rhorif)))
   +BoundaryconditionsBaseFlow(du,dp,dT,drho);
 
 real res,ener=1.;
@@ -165,6 +180,7 @@ int contout=0;
     
     
 
+	AMPFORCE=AmpSponge(Ma);
 	res=1.0;
 	ener=1.0;
 	
@@ -175,28 +191,24 @@ int contout=0;
 	    {
 	      ts=clock();
 	      
-	      matrix<complex> NewtLoc=jacobian(XXxxxH,XXxxxH);
-	      matrix<complex> Newt;
+	      matrix NewtLoc=jacobian(XXxxxH,XXxxxH);
+	      matrix Newt;
 	      mpiAllReduce(NewtLoc,Newt,mpiCommWorld,mpiSUM);
 	      if(mpirank==0)
 		cout<<"Matrix formed in "<<clock()-ts<<" s"<<endl;  
-	      complex[int] rhsl= vNs(0,XXxxxH);
-	      complex[int] rhs(Newt.n);
+	      real[int] rhsl= vNs(0,XXxxxH);
+	      real[int] rhs(Newt.n);
 	      mpiAllReduce(rhsl,rhs,mpiCommWorld,mpiSUM);
 	      set(Newt,solver=sparsesolver,sparams=ssparams);
 	      dux[] =  (Newt^-1*rhs);
-	      ener=sqrt(int2d(th)(abs(duy)^2+abs(dux)^2)); 
+	      ener=sqrt(int2d(th)(duy^2+dux^2)); 
 	      if(mpirank==0)
 		{
 		  cout << "iter "<<i<<" | sqrt(int2d(th)(dux^2+duy^2)) = " << ener << endl;
 		}
 	      Ubx[]+=dux[];
 	      i++;	    
-	    if(ener > TOLLERANCEDiv && i <= 5)
-	    {
-	    	cout << "Initial condition has been reseted" << endl;
-	    	Ubx[] = Urifx[];
-	    }
+	      
 	     }// end of NEWTON LOOP
 	     
 	     /// NEXT IS PLOT AND POSTPROCESS
@@ -227,22 +239,20 @@ int contout=0;
 //		}
 //		else
 		
-
-// temporary fix
-XXxxxH<complex> [ux,uy,up,utemp,uro] = [(Ubx),(Uby),(Pb),(Tb),(Rhob)];
-XXxxxH [urx,ury,urp,urtemp,urro] = [real(Ubx),real(Uby),real(Pb),real(Tb),real(Rhob)];
-
 		{
 		  {ofstream file(ffdatadir+"BaseFlow.txt"); // file in .txt format for FreeFem solvers
-		  file << ux[]; 
+		  file << Ubx[]; 
 		  file << endl << endl << Re;
 		  }; 
           exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt"); 
+
+// temporary fix
+XXxxxH [ux,uy,up,utemp,uro] = [Ubx,Uby,Pb,Tb,Rhob];
          
 
-          SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",ur,"BaseFlow",i); // file in .ff2ml format for StabFem driver
-          int[int] forder=[1,1,1,1];
-		  savevtk(ffdatadir+"/BflowCM_Re"+Re+"_M"+Ma+".vtk",th,urp,[urx,ury,0],urtemp,urro,order=forder,dataname="Pb vel temp rho");
+          SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",i); // file in .ff2ml format for StabFem driver
+
+    
 		};
           
 

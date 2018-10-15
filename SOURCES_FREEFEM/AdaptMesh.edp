@@ -181,6 +181,16 @@ for(int i=0;i<nfields;i++)
           [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),real(uBz)];nfieldsR++;
           [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),imag(uBz)];nfieldsR++;
 		}
+  else if(datastoragemode[i]=="CxP2P2P1P1P1")
+    {
+          p2xp2xp1xp1xp1<complex> [uBx,uBy,uBp,uBrho,uBT]; 
+          file >> uBx[];   
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl; 
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx,uBy,uBp,uBp,uBrho,uBT];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),real(uBrho)];nfieldsR++;
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),imag(uBrho)];nfieldsR++;
+    }
     else if(datastoragemode[i]=="ReP2P2P1P1P1")
 		{
           p2xp2xp1xp1xp1 [uBx,uBy,uBp,uBrho,uBT]; 
@@ -401,6 +411,14 @@ for(int i=0;i<nfields;i++)
           for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
           cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
 		}
+    else if(datastoragemode[i]=="CxP2P2P1P1P1")
+        {
+          p2xp2xp1xp1xp1N<complex> [uBNx,uBNy,uBNp,uBNrho,uBNT]=[FTAx[i],FTAy[i],FTAp[i],FTAr[i],FTAT[i]];
+          U << uBNx[]; 
+          U << endl;
+          for(int j =0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+        }
     else if(datastoragemode[i]=="ReP2P2P1P1P1")
         {
           p2xp2xp1xp1xp1N [uBNx,uBNy,uBNp,uBNrho,uBNT]=[real(FTAx[i]),real(FTAy[i]),real(FTAp[i]),real(FTAr[i]),real(FTAT[i])];

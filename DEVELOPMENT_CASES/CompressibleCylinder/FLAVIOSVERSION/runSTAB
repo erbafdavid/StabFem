@@ -1,2 +1,0 @@
-#!/bin/bash
-ff-mpirun -np $1 Stability.edp
