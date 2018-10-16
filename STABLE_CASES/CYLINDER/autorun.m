@@ -11,14 +11,17 @@ function value = autorun(isfigures);
 % Result "value" is the number of unsuccessful tests
 % autorun(1) -> produces the figures (in present case not yet any figures)
 
-run('../../SOURCES_MATLAB/SF_Start.m');verbosity=10;
-myrm('WORK/*')
-myrm('WORK/*/*')
-
 if(nargin==0) 
     isfigures=0; verbosity=0;
 end;
 format long;
+
+isfigures=1;
+run('../../SOURCES_MATLAB/SF_Start.m');verbosity=10;
+myrm('WORK/*')
+myrm('WORK/*/*')
+
+
 %% Chapter 0 : reference values for non-regression tests
 np_REF = 2193;
 Fx_REF =  0.6435;
@@ -103,6 +106,7 @@ end
 
 
 disp('###### autorun test 3 : COMPUTING INSTABILITY THRESHOLD');
+[ev,em] = SF_Stability(bf,'shift',+.75i,'nev',1,'type','D');
 [bf,em]=SF_FindThreshold(bf,em);
 
 Rec = bf.Re

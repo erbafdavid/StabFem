@@ -1,5 +1,5 @@
 //
-//  PROGRAM SelfConsistentDirect_2D.edp
+//  PROGRAM HB2_2D.edp
 //	
 //	Solves directly the Self-Consistent equations to decribe the limit cycle with two time-Fourier modes
 //
@@ -12,18 +12,18 @@
 //
 //	INPUT FILES :
 //		MeanFlow_guess.txt				-> starting field for mean-flow (real) 
-//      SelfConsistentMode_guess.txt 	-> starting field for self-consistent mode (stored as COMPLEX ; real and imaginary parts are u1,c and -u1,s)
-//.     SecondHarmonicMode_guess.txt	-> starting field for second harmonic (stored as COMPLEX ; real and imaginary parts are u2,c and -u2,s)
+//      HBMode1_guess.txt 	-> starting field for self-consistent mode (stored as COMPLEX ; real and imaginary parts are u1,c and -u1,s)
+//.     HBMode2_guess.txt	-> starting field for second harmonic (stored as COMPLEX ; real and imaginary parts are u2,c and -u2,s)
 // 		mesh.msh 						->  mesh in Freefem format
 //  OUTPUT FILES :
 //		MeanFlow.txt					-> Converged mean flow (real)
 //		MeanFlow.ff2m					
-//      SelfConsistentMode.txt			-> Converged self-consistent mode (stored as COMPLEX with same convention) 
-//      SelfConsistentMode.ff2m 
-//      SecondHarmonicMode.txt
-//      SecondHarmonicMode.ff2m
+//      HBMode1.txt			-> Converged self-consistent mode (stored as COMPLEX with same convention) 
+//      HBMode1.ff2m 
+//      HBMode2.txt
+//      HBMode2.ff2m
 //
-// 	ERROR MANAGEMENT : 
+// 	ERROR MANAGEMENT :  (to be modified)
 //      if Newton iteration diverges, SelfConsistentMode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
 //
 // Initial Version DF, avril 2018 ;  corrected by Diogo, may 2018 
@@ -35,7 +35,7 @@
 
 //include "SF_Geom.edp";
 include "Macros_StabFem.edp";
-string copyfile = "yes"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
+string copyfile = "no"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -152,8 +152,8 @@ cout << "Drag force of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 // lecture of 1rst harmonic
 
 {
-cout << "starting  from mode in file SelfConsistentMode_guess.txt" << endl;
-ifstream cbin(ffdatadir+"SelfConsistentMode_guess.txt");
+cout << "starting  from mode in file HBMode1_guess.txt" << endl;
+ifstream cbin(ffdatadir+"HBMode1_guess.txt");
 cbin >> u1x[] >> sigmaM >> omegaM; 
 cout << " 			omega of the starting field = " << omegaM<< endl;
 cout << "           Fy of the starting field : " << Lift(1/Re,u1x,u1y,u1p) << endl;
@@ -167,20 +167,20 @@ omega = omegaM;
 cout << " -->  omegaguess = " << omega << endl;
 
 sigma1=0;
-cout << " --> sigma1 = " << sigma1 << endl;
+cout << " --> sigma1 = " << sigmaM << endl;
 
 
 
 // 2nd Harmonic 
 
-int check=exec("head -1 "+ffdatadir+"SecondHarmonicMode_guess.txt");
+int check=exec("head -1 "+ffdatadir+"HBMode2_guess.txt");
 cout << "Check if guess for second harmonic is present :"<<  check<< endl;
 //string secondharmonicguess;
 
 if(check==0)
 {
-cout << "starting  from mode in file SecondHarmonicMode_guess.txt" << endl;
-ifstream cbin(ffdatadir+"SecondHarmonicMode_guess.txt");
+cout << "starting  from mode in file HBMode2_guess.txt" << endl;
+ifstream cbin(ffdatadir+"HBMode2_guess.txt");
 cbin >> u2x[] ;
 cout << "           Fx of the second-harmonic guess : " << Drag(1/Re,u2x,u2y,u2p) << endl;
 cout << "   		Energy-Norm (A) of starting field (complex macro) : " << EnergyNorm(u2)/sqrt(2) << endl;	
@@ -554,7 +554,7 @@ cout << " LU-ing matrix... done" << endl;
 	if(abs(dXX)>1000) 
 	{
 	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",ub,"MeanFlow",-1);
-	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omegaM+sigma1,"HarmonicMode",-1);
+	SFWriteMode(ffdatadir+"HBMode1.ff2m",u1,1i*omega+sigma1,1i*omegaM+sigma1,"HarmonicMode",-1);
 	cout << endl << endl << "#####################################################################@" << endl << endl;
 	cout << " Newton Loop DIVERGED " << endl;	
 	exit(2);
@@ -585,23 +585,22 @@ SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0,"MeanFlow",iter);
 // fundamental
     [u1x,u1y,u1p] = [u1cx-1i*u1sx,u1cy-1i*u1sy,u1cp-1i*u1sp]; 
 {
- 	ofstream file(ffdatadir+"SelfConsistentMode.txt");
+ 	ofstream file(ffdatadir+"HBMode1.txt");
    	file << u1x[] ;	
-   	file << endl << endl << Re << endl
-   	<< endl << sigma1 << "   " << omega  << endl;
+   	file << endl << endl << sigma1 << endl << omega  << endl;
 };
-SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
+SFWriteMode(ffdatadir+"HBMode1.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
 cout << "after macro" << endl;
    
 
 // harmonic
  [u2x,u2y,u2p] = [u2cx-1i*u2sx,u2cy-1i*u2sy,u2cp-1i*u2sp]; 
 {
- 	ofstream file(ffdatadir+"SecondHarmonicMode.txt");
+ 	ofstream file(ffdatadir+"HBMode2.txt");
    	file << u2x[] ;	
 };
 
-SFWriteMode(ffdatadir+"SecondHarmonicMode.ff2m",u2,2*(1i*omega+sigma1),2*(1i*omega+sigma1),"SecondHarmonicMode",iter);
+SFWriteMode(ffdatadir+"HBMode2.ff2m",u2,2*(1i*omega+sigma1),2*(1i*omega+sigma1),"SecondHarmonicMode",iter);
 
 
 
@@ -616,13 +615,13 @@ cout << " COPYING Output into guess for next calculation..." << endl;
 	file << endl << endl << Re;
 };
 {
- 	ofstream file(ffdatadir+"SelfConsistentMode_guess.txt");
+ 	ofstream file(ffdatadir+"HBMode1_guess.txt");
    	file << u1x[] ;	
-   	file << endl << endl << Re << endl
+   	file << endl << endl
    	<< endl << sigma1 << "   " << omega  << endl;
 };
 {
- 	ofstream file(ffdatadir+"SecondHarmonicMode_guess.txt");
+ 	ofstream file(ffdatadir+"HBMode2_guess.txt");
    	file << u2x[] ;	
 };
 };

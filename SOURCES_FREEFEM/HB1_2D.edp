@@ -1,5 +1,5 @@
 //
-//  PROGRAM SelfConsistentDirect_2D.edp
+//  PROGRAM HB1_2D.edp
 //	
 //	Solves directly the Self-Consistent equations to decribe the limit cycle with a mean flow and a quasi-linear mode (Mantic-lugo et al)
 //   
@@ -14,25 +14,25 @@
 //
 //	INPUT FILES :
 //		MeanFlow_guess.txt				-> starting field for mean-flow (real) 
-//      SelfConsistentMode_guess.txt 	-> starting field for self-consistent mode (stored as COMPLEX ; real and imaginary parts are u1,c and -u1,s)
+//      HBMode1_guess.txt 	-> starting field for self-consistent mode (stored as COMPLEX ; real and imaginary parts are u1,c and -u1,s)
 // 		mesh.msh 						->  mesh in Freefem format
 //  OUTPUT FILES :
 //		MeanFlow.txt					-> Converged mean flow (real)
 //		MeanFlow.ff2m					
-//      SelfConsistentMode.txt			-> Converged self-consistent mode (stored as COMPLEX with same convention) 
-//      SelfConsistentMode.ff2m 
+//      HBMode1.txt			-> Converged self-consistent mode (stored as COMPLEX with same convention) 
+//      HBMode1.ff2m 
 //
 // 	ERROR MANAGEMENT : 
 //      if Newton iteration diverges, SelfConsistentMode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
 //
-
+// 	TODO : Redesign using modern macros as done in FindThreshold_2D (version of 8 october)
 
 
 
 //load "MUMPS_seq"
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
-string copyfile = "yes"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
+string copyfile = "no"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ cout << "Drag force of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 
 {
 cout << "starting  from mode in file SelfConsistentMode_guess.txt" << endl;
-ifstream cbin(ffdatadir+"SelfConsistentMode_guess.txt");
+ifstream cbin(ffdatadir+"HBMode1_guess.txt");
 cbin >> u1x[]  >> sigmaM >> omegaM; 
 cout << " 			omega of the starting field = " << omegaM<< endl;
 cout << "           Fy of the starting field : " << Lift(1/Re,u1x,u1y,u1p) << endl;
@@ -447,14 +447,13 @@ SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0,"MeanFlow",iter);
     [u1x,u1y,u1p] = [u1cx-1i*u1sx,u1cy-1i*u1sy,u1cp-1i*u1sp]; 
 
 {
- 	ofstream file(ffdatadir+"SelfConsistentMode.txt");
+ 	ofstream file(ffdatadir+"HBMode1.txt");
    	file << u1x[] ;	
-   	file << endl << endl << Re << endl
-   	<< endl << sigma1 << endl << omega  << endl;
+   	file << endl << endl << sigma1 << endl << omega  << endl;
 };
 
 
-SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
+SFWriteMode(ffdatadir+"HBMode1.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
 
 if(copyfile=="yes")
 {
@@ -465,10 +464,9 @@ cout << " COPYING Output into guess for next calculation..." << endl;
 	file << endl << endl << Re;
 };
 {
- 	ofstream file(ffdatadir+"SelfConsistentMode_guess.txt");
+ 	ofstream file(ffdatadir+"HBMode1_guess.txt");
    	file << u1x[] ;	
-   	file << endl << endl << Re << endl
-   	<< endl << sigma1 << endl << omega  << endl;
+   	file << endl << endl << sigma1 << endl << omega  << endl;
 };
 };
 

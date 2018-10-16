@@ -40,20 +40,20 @@ switch (meanflow.mesh.problemtype)
         if (p.Results.Fyguess ~= -1)
             mydisp(2,['starting with guess Lift force : ', num2str(p.Results.Fyguess)]);
             solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
-                ' L ', num2str(p.Results.Fyguess), ' | ', ff, ' ', ffdir, 'SelfConsistentDirect_2D.edp'];
+                ' L ', num2str(p.Results.Fyguess), ' | ', ff, ' ', ffdir, 'HB1_2D.edp'];
         elseif (p.Results.Aguess ~= -1)
             mydisp(2,['starting with guess amplitude (Energy) ', num2str(p.Results.Aguess)]);
             solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
-                ' E ', num2str(p.Results.Aguess), ' | ', ff, ' ', ffdir, 'SelfConsistentDirect_2D.edp'];
+                ' E ', num2str(p.Results.Aguess), ' | ', ff, ' ', ffdir, 'HB1_2D.edp'];
         else
             solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
-                ' None  | ', ff, ' ', ffdir, 'SelfConsistentDirect_2D.edp'];
+                ' None  | ', ff, ' ', ffdir, 'HB1_2D.edp'];
         end
         
         Re = p.Results.Re;
         filenameBase = [ffdatadir 'MEANFLOWS/MeanFlow_Re' num2str(Re)];
-        filenameHB1 = [ffdatadir 'MEANFLOWS/Harmonic1_Re' num2str(Re)];
-        filenameHB2 = [ffdatadir 'MEANFLOWS/Harmonic2_Re' num2str(Re)];% this one should not be present
+        filenameHB1 = [ffdatadir 'MEANFLOWS/HBMode1_Re' num2str(Re)];
+        filenameHB2 = [ffdatadir 'MEANFLOWS/HBMode2_Re' num2str(Re)];% this one should not be present
         
         % case("your case...")
         % add your case here !
@@ -74,7 +74,7 @@ else
     
     %%% position input files for the freefem solver...
     mycp(meanflow.filename, [ffdatadir, 'MeanFlow_guess.txt']);
-    mycp(mode.filename, [ffdatadir, 'SelfConsistentMode_guess.txt']);
+    mycp(mode.filename, [ffdatadir, 'HBMode1_guess.txt']);
     
     %%% Lanch the FreeFem solver
     mydisp(1,['#### LAUNCHING Self-Consistent (HB1) CALCULATION for Re = ', num2str(p.Results.Re) ' ...' ]);
@@ -103,12 +103,12 @@ else
         mycp([ffdatadir, 'MeanFlow.ff2m'],[filenameBase '.ff2m']);
         meanflow = importFFdata(meanflow.mesh,[filenameBase '.ff2m']);
         
-        mycp([ffdatadir, 'SelfConsistentMode.txt'],[filenameHB1 '.txt']);
-        mycp([ffdatadir, 'SelfConsistentMode.ff2m'],[filenameHB1 '.ff2m']);
+        mycp([ffdatadir, 'HBMode1.txt'],[filenameHB1 '.txt']);
+        mycp([ffdatadir, 'HBMode1.ff2m'],[filenameHB1 '.ff2m']);
         mode = importFFdata(meanflow.mesh,[filenameHB1 '.ff2m']);
         
     else
-        error(['ERROR in SF_HB2 : return code of the FF solver is ',value]);
+        error(['ERROR in SF_HB1 : return code of the FF solver is ',value]);
     end
     
 end

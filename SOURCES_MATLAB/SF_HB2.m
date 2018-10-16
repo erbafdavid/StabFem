@@ -45,11 +45,11 @@ parse(p, vararginopt{:});
 switch (meanflow.mesh.problemtype)
     
     case('2D')
-        solvercommand = ['echo ', num2str(p.Results.Re), ' | ', ff, ' ', ffdir, 'HarmonicBalance_Order2_2D.edp'];        
+        solvercommand = ['echo ', num2str(p.Results.Re), ' | ', ff, ' ', ffdir, 'HB2_2D.edp'];        
         Re = p.Results.Re;
         filenameBase = [ffdatadir 'MEANFLOWS/MeanFlow_Re' num2str(Re)];
-        filenameHB1 = [ffdatadir 'MEANFLOWS/Harmonic1_Re' num2str(Re)];
-        filenameHB2 = [ffdatadir 'MEANFLOWS/Harmonic2_Re' num2str(Re)];
+        filenameHB1 =  [ffdatadir 'MEANFLOWS/Harmonic1_Re' num2str(Re)];
+        filenameHB2 =  [ffdatadir 'MEANFLOWS/Harmonic2_Re' num2str(Re)];
         
         % case("your case...")
         % add your case here !
@@ -71,11 +71,11 @@ else
     
     %%% position input files for the freefem solver...
     mycp(meanflow.filename, [ffdatadir, 'MeanFlow_guess.txt']);
-    mycp(mode.filename, [ffdatadir, 'SelfConsistentMode_guess.txt']);
+    mycp(mode.filename, [ffdatadir, 'HBMode1_guess.txt']);
     if(isstruct(mode2))
-        mycp(mode2.filename, [ffdatadir, 'SecondHarmonicMode_guess.txt']);
+        mycp(mode2.filename, [ffdatadir, 'HBMode2_guess.txt']);
     else
-        myrm([ffdatadir, 'SecondHarmonicMode_guess.txt']);
+        myrm([ffdatadir, 'HBMode2_guess.txt']);
     end
     %%% Lanch the FreeFem solver
     mydisp(1,['#### LAUNCHING Harmonic-Balance (HB2) CALCULATION for Re = ', num2str(p.Results.Re) ' ...' ]);
@@ -103,12 +103,12 @@ else
         [filenameBase '.ff2m']
         meanflow = importFFdata(meanflow.mesh,[filenameBase '.ff2m']);
         
-        mycp([ffdatadir, 'SelfConsistentMode.txt'],[filenameHB1 '.txt']);
-        mycp([ffdatadir, 'SelfConsistentMode.ff2m'],[filenameHB1 '.ff2m']);
+        mycp([ffdatadir, 'HBMode1.txt'],[filenameHB1 '.txt']);
+        mycp([ffdatadir, 'HBMode1.ff2m'],[filenameHB1 '.ff2m']);
         mode = importFFdata(meanflow.mesh,[filenameHB1 '.ff2m']);
         
-        mycp([ffdatadir, 'SecondHarmonicMode.txt'],[filenameHB2 '.txt']);
-        mycp([ffdatadir, 'SecondHarmonicMode.ff2m'],[filenameHB2 '.ff2m']);
+        mycp([ffdatadir, 'HBMode2.txt'],[filenameHB2 '.txt']);
+        mycp([ffdatadir, 'HBMode2.ff2m'],[filenameHB2 '.ff2m']);
         mode2 = importFFdata(meanflow.mesh,[filenameHB2 '.ff2m']);
         
      else
