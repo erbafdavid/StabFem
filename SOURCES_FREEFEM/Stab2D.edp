@@ -83,9 +83,9 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 ENDIFMACRO	
 
 IFMACRO(!NormalizeMode)
-macro NormalizeMode(u,symmetry)
+macro NormalizeMode(u)
 {
-real NORM = (1+1*(symmetry!="N"))*int2d(th)(abs(u#x)^2+abs(u#y)^2);
+real NORM = int2d(th)(abs(u#x)^2+abs(u#y)^2);
 u#x[] = u#x[]/NORM;
 }
 //EOM
@@ -256,7 +256,7 @@ if(iadjoint=="A") { ev = conj(ev); } ;
  		 if(iadjoint=="D"){namefile=ffdatadir+"Eigenmode"+(i+1);}
  		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
  		 ux[] = eux[i][];
- 		 NormalizeMode(u,symmetry); 
+ 		 NormalizeMode(u); 
  		  {
  		  ofstream fileMode(namefile+".txt");
  		  fileMode << ux[]; 
@@ -372,7 +372,7 @@ else if(iadjoint=="S")
 	/// END ITERATION LOOP	
 	if(directadjoint==2||directadjoint==0){lambda=conj(lambda);};
  	// renormalization 
-	NormalizeMode(u,symmetry);
+	NormalizeMode(u);
 	
 	string namefile,namefileFF,descriptionFF,typeDA; 
 	if(iter<itmax)
