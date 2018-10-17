@@ -26,6 +26,7 @@ p = inputParser;
 addParameter(p, 'Re', meanflow.Re, @isnumeric);
 addParameter(p, 'Aguess', -1, @isnumeric);
 addParameter(p, 'Fyguess', -1, @isnumeric);
+addParameter(p, 'Amp', -1, @isnumeric);
 addParameter(p, 'omegaguess', imag(mode.lambda));
 addParameter(p, 'sigma', 0);
 addParameter(p, 'specialmode', 'normal');
@@ -37,18 +38,20 @@ switch (meanflow.mesh.problemtype)
     
     case('2D')
         
-        if (p.Results.Fyguess ~= -1)
+        if(p.Results.Amp ~= -1)
+            AMP = p.Results.Amp;
+        elseif (p.Results.Fyguess ~= -1)
             mydisp(2,['starting with guess Lift force : ', num2str(p.Results.Fyguess)]);
-            solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
-                ' L ', num2str(p.Results.Fyguess), ' | ', ff, ' ', ffdir, 'HB1_2D.edp'];
+            AMP = p.Results.Fyguess/mode.Fy;
         elseif (p.Results.Aguess ~= -1)
             mydisp(2,['starting with guess amplitude (Energy) ', num2str(p.Results.Aguess)]);
-            solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
-                ' E ', num2str(p.Results.Aguess), ' | ', ff, ' ', ffdir, 'HB1_2D.edp'];
+            AMP = p.Results.Aguess/mode.Aenergy;
         else
-            solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
-                ' None  | ', ff, ' ', ffdir, 'HB1_2D.edp'];
+            AMP = 1;
         end
+        
+         solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
+                '  ',num2str(real(AMP)) ' ' num2str(imag(AMP)) ' | '  ff, ' ', ffdir, 'HB1_2D.edp'];
         
         Re = p.Results.Re;
         filenameBase = [ffdatadir 'MEANFLOWS/MeanFlow_Re' num2str(Re)];

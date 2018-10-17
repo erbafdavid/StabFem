@@ -1,16 +1,18 @@
 //
 //  PROGRAM HB1_2D.edp
 //	
-//	Solves directly the Self-Consistent equations to decribe the limit cycle with a mean flow and a quasi-linear mode (Mantic-lugo et al)
+//	Solves directly the Order 1 Hamonic Balance (or Self-Consistent) equations to decribe the limit cycle with a mean flow and a quasi-linear mode (Mantic-lugo et al)
 //   
 //  The flow is assumed as an expansion in the form : 	u = u_0 + [ u_{1,c} cos (omega t) + u_{1,s} sin (omega t) ] e^{lambda t}
 //  This expansion is equivalent to Mantic-Lugo et al : u = u_0 + A [U_1 e^{i omega t + i sigma t + cc] where u_1 is the complex self-consistent mode.
 // 	The connection between both parametrizations is u_{1,c} - i u_{1,s} = 2 A u_1 where u_1 is normalised with ||u_1|| = 1/sqrt(2). 
 //
 //  INPUT PARAMETERS (from keyboard or pipe) :
-//   	Re , omega_guess, sigma, typenormalization [,norm] 
+//   	Re , omega_guess, sigma, Amp
 //
-//       the "sigma" parameter is the amplification rate in the SC model of Mantic-Lugo ; if zero it reduces to a simple truncated fourier expansion	
+//       the "sigma" parameter is the amplification rate in the SC model of Mantic-Lugo ; if zero it is a simple HB1 expansion	
+//	     "Amp" is an initial amplitude; if Amp is not equal to 1, then the guess HBmode1 will be rescaled by multiplying by Amp 
+//			(significance of Amp thus depends on normalization ; use this parameter when starting with an eigenmode , put it to 1 when starting from a WNL guess) 
 //
 //	INPUT FILES :
 //		MeanFlow_guess.txt				-> starting field for mean-flow (real) 
@@ -46,17 +48,15 @@ mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
 fespace Xh(th,P2);             ////// f.e. space for vel.
 fespace Mh(th,P1);            ////// f.e. space for pressure
 fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
-fespace BIGSPACE(th,[P2,P2,P1,P2,P2,P1,P2,P2,P1]);
+//fespace BIGSPACE(th,[P2,P2,P1,P2,P2,P1,P2,P2,P1]); NOT USED HERE
 
 XXMh [ubx,uby,ubp]; // base flow (start) 
 XXMh<complex> [u1x,u1y,u1p];    //eigenmode (start)      
 Mh dumb; // to construct the rhs's
 
-
 XXMh [u0x,u0y,u0p],[u1cx,u1cy,u1cp],[u1sx,u1sy,u1sp]; // components 0 (mean flow) and 1 (fundamental, re and im) of HB  
 XXMh [du0x,du0y,du0p],[du1cx,du1cy,du1cp],[du1sx,du1sy,du1sp]; // Increments in Newton
 XXMh [vx,vy,vp]; // test functions
-
 
 real Re, ReM;
 real omega, omegaM, sigmaM, domega;
@@ -135,8 +135,6 @@ if(Relu!=Re){ cout << "WARNING : Re not equal to that of the guess mean flow" <<
 cout << "Drag force of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 }
 
-//int check=exec("head -1 "+ffdatadir+"SelfConsistentMode_guess.txt");
-//cout << "Check :"<<  check<< endl;
 
 {
 cout << "starting  from mode in file SelfConsistentMode_guess.txt" << endl;
@@ -160,44 +158,19 @@ cout << " Choice of sigma1 : [0 for Harmonic balance ; not zero for self-consist
 cin >> sigma1 ;
 cout << " --> sigma1 = " << sigma1 << endl;
 
-string normalisation;
-cout << " Normalisation choice ?  [none, L or E]" << endl;
-cin >> normalisation ;
-cout << " --> " << normalisation << endl;
-
-
-if(normalisation=="none")
-	{ cout << " -> No normalization for the mode " << endl;}
+		complex Amp; 
+		real Ampr, Ampi;
+		cout << "Value of Amp for rescaling ? (complex parameter) " << endl;
+		cin >> Ampr >> Ampi;
+		Amp = Ampr + 1i*Ampi;
+		cout << "  -> Amp = " << Amp  << endl;
+		cout << "Fy before rescaling : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		cout << "Energy-norm before rescaling : " << EnergyNorm(u1)/sqrt(2) << endl;
+		u1x[] = Amp*u1x[]; // normalize so that lift is 0.5 and Cy 1
+		cout << "Fy after rescaling : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		cout << "   ### Energy-norm A = " << EnergyNorm(u1)/sqrt(2) << endl << endl;	
 	
-else if(normalisation=="L")
-	{
-		real Liftguess;
-		cout << "Value of Lift force Fy for renormalisation ?"<< endl;
-		cin >> Liftguess;
-		cout << "  -> Fy = " << Liftguess  << endl;
-
-		cout << "Fy before renormalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
-		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
-		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5 and Cy 1
-			cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
-		    cout << "   ### Energy-norm A = " << EnergyNorm(u1)/sqrt(2) << endl << endl;	
 	
-	}	
-else if(normalisation=="E")
-		{
-		real Eguess;
-		cout << "Value of ENERGY for renormalisation ?"<< endl;
-		cin >> Eguess;
-		cout << "  -> Energy = " << Eguess << endl;
-
-		cout << "Energy-norm before renormalisation : " << EnergyNorm(u1)/sqrt(2) << endl;
-		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
-		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
-		modenorm = EnergyNorm(u1)/sqrt(2);
-		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that Energy-norm is specified value
-		cout << "Energy-norm after renarmalisation : " << EnergyNorm(u1)/sqrt(2) << endl;	
-		cout << "Cy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
-		};
 
 [u0x,u0y,u0p] = [ubx,uby,ubp]; 
 [u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 
@@ -212,8 +185,6 @@ cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS
 // M = 1 MEAN-flow, M=2 eigenmode-real ; M = 3 eigenmode-imag ; M = 4 domega 
 //
 /////////////////////////////////////////////////////////////////////////////////
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////////

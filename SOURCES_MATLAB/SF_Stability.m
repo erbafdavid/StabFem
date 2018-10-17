@@ -1,8 +1,10 @@
-function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
+function [eigenvalues,eigenvectors,evD,evA] = SF_Stability(baseflow,varargin)
 
 %> StabFem wrapper for Eigenvalue calculations
 %>
-%> usage : [eigenvalues,eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
+%> usage : 
+%> 1/  [eigenvalues,eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
+%> 2/  [eigenvalues,sensitivity,evD,evA] = SF_Stability(field,'type','S','nev',1, [...])
 %>
 %> field is either a "baseflow" structure (with "mesh" structure as a subfield) 
 %> or directly a "mesh" structure (for instance in problems such as sloshing where baseflow is not relevant).
@@ -10,6 +12,7 @@ function [eigenvalues,eigenvectors] = SF_Stability(baseflow,varargin)
 %> Output :
 %> eigenvalues -> array containing the eigenvalues
 %> eigenvector -> array of struct objects containing the eigenvectors.
+%> [sensitivity,evD,evA] -> sensitivity, direct and adjoint eigenmodes (with type = 'S' and nev = 1)
 %> 
 %> List of accepted parameters (in approximate order of usefulness):
 %>
@@ -418,18 +421,31 @@ end
     if(nargout>1) %% process output of eigenmodes
     if(p.Results.nev==1)
         if (p.Results.type=='D')
-        eigenvectors=importFFdata(ffmesh,'Eigenmode.ff2m');
-        eigenvectors.type=p.Results.type;
-         disp(['      # Stability calculation completed, eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
+            eigenvectors=importFFdata(ffmesh,'Eigenmode.ff2m');
+            eigenvectors.type=p.Results.type;
+            disp(['      # Stability calculation completed, eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         elseif(p.Results.type=='A')
-        eigenvectors=importFFdata(ffmesh,'EigenmodeA.ff2m');
-        eigenvectors.type=p.Results.type;
-         disp(['      # Stability calculation completed (ADJOINT), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
+            eigenvectors=importFFdata(ffmesh,'EigenmodeA.ff2m');
+            eigenvectors.type=p.Results.type;
+            disp(['      # Stability calculation completed (ADJOINT), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         elseif(p.Results.type=='S')
-        eigenvectors=importFFdata(ffmesh,'Eigenmode.ff2m','EigenmodeA.ff2m','Sensitivity.ff2m');
-        eigenvectors.type=p.Results.type;
-         disp(['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
+%           eigenvectors=importFFdata(ffmesh,'Eigenmode.ff2m','EigenmodeA.ff2m','Sensitivity.ff2m');
+%           eigenvectors.type=p.Results.type;
+            eigenvectors=importFFdata(ffmesh,'Sensitivity.ff2m');
+            eigenvectors.type='S';
+            eigenvectors.iter = 1;% previous management of non convergence errors ; to be cleaned up
+            if (nargout >2) 
+                evD=importFFdata(ffmesh,'Eigenmode.ff2m');
+                evD.type='D';
+                eigenvectors.iter = evD.iter;% previous management of non convergence errors ; to be cleaned up
+            end
+            if (nargout >3) 
+                evA=importFFdata(ffmesh,'EigenmodeA.ff2m');
+                evA.type='A';
+            end
+              mydisp(2,['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         end
+        
         if(eigenvectors.iter<0) 
             if(verbosity>1)
                 error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1). If you want to continue your loops despite this error (confident mode) use verbosity=1 ']);
