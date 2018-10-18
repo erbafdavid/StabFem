@@ -23,6 +23,7 @@ if (exist(ffdatadir) ~= 7 && exist(ffdatadir) ~= 5)
     mymake(ffdatadir);
 else
     myrm([ffdatadir, '*.txt ', ffdatadir, '*.ff2m ', ffdatadir, '*.msh ']);
+    disp('continue1')
 end
 
 % Creation et vidange de BASEFLOWS/
@@ -39,7 +40,6 @@ else
     myrm([ffdatadir, 'MESHES/*']);
 end
 
-
 % Execution du maillage
 if (nargin == 1)
     command = [ff, ' ', meshfile];
@@ -49,7 +49,6 @@ else
         stringparam = [stringparam, num2str(p), '  '];
     end
     command = ['echo   ', stringparam, '  | ', ff, ' ', meshfile];
-    
     %   Warning : does not work with windows (Adrien)
     %    command = ['echo  ', parameters, ' | ',ff,' ',meshfile]
     

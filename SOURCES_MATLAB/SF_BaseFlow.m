@@ -137,6 +137,11 @@ switch (baseflow.mesh.problemtype)
         solvercommand = ['echo ', num2str(Re), ' | ', ff, ' ', ffdir, 'Newton_2D.edp'];
         BFfilename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re)];
         
+    case ('2D_VIV')%DIOGO have added this
+        mydisp(1, '## Entering SF_BaseFlow VIV(2D INCOMPRESSIBLE)');
+        solvercommand = ['echo ', num2str(Re), ' | ', ff, ' ', ffdir, 'Newton_2D.edp'];
+        BFfilename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re)];
+        
     case ('2DComp')
         mydisp(1, '## Entering SF_BaseFlow (2D COMPRESSIBLE) ');
         solvercommand = ['echo ', num2str(Re), ' ', num2str(p.Results.Mach), ' | ', ffMPI, ' -np ', num2str(ncores), ' ', ffdir, 'Newton_2D_Comp.edp'];

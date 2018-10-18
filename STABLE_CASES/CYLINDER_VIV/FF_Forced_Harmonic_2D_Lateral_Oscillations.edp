@@ -1,0 +1,234 @@
+///////////////////////////////////////////////////////////////////////////////////////////
+///
+///		SCRIPT TO COMPUTE THE LINEAR FORCED PROBLEM OF AN OSCILLATING 2D BODY
+///		Oscilations are in a transverse direction 
+///		Contributors: Ndong Fall, David Fabre, Diogo Sabino
+///		Last modification: Diogo Sabino 18 April 2018
+///
+///		Reference Frame: Relative Frame, Relative Velocity
+///////////////////////////////////////////////////////////////////////////////////////////
+include "SF_Geom.edp"; //Values for nondimensionalization 											//why?
+include "Macros_StabFem.edp";
+
+cout << "__________________________________________________" << endl;		
+cout << "| Cylinder in a harmonic imposed motion (selon U)|"<< endl;
+cout << "|________________________________________________|" << endl;
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Mesh loading  /////////////////////////////////////////////////////////////////////////
+	mesh th=readmesh(ffdatadir+"mesh.msh");
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///	FEM space and variables definitions     ///////////////////////////////////////////////
+	fespace Xh(th,P2);             ////// f.e. space for vel.
+	fespace Mh(th,P1);            ////// f.e. space for pressure
+	fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
+
+	Mh pa ,pra;
+	Xh uxa,uya;
+
+	XXMh[UX,UY,PP];
+		
+	int Nt = UX[].n;
+	real Re,OMEGA, OMEGAstep, OMEGAlast;
+	string nomfile;
+	int m;
+////////////////////////////////////////////////////////////////////////////////////////////
+///   Save Data Path (Diogo's things)   ////////////////////////////////////////////////////
+string ffdataharmonicdir;
+cout << "Write the Path where to save your data (be sure that it exists) (with the file name without extension) e.g.: ./WORK/data_toto"<<endl;
+cin>> ffdataharmonicdir;
+		
+////////////////////////////////////////////////////////////////////////////////////////////
+///   Base flow lecture (semi-space)   /////////////////////////////////////////////////////	        	   
+	XXMh [u0x,u0y,u0p];
+
+	XXMh<complex> [vx,vy,qr],[ux,uy,up];
+	XXMh [uxR,uyR,prR],[uxI,uyI,prI];
+	{
+ 	ifstream cbin(ffdatadir+"BaseFlow.txt");
+	cbin >> u0x[];
+	cbin >> Re;	/*Reynolds number defined*/
+	};
+
+cout << "_________________________________________________" << endl;
+cout << "| Basefow corresponding to a Re = " << Re << "            |"<< endl;
+cout << "|_______________________________________________|" << endl;
+real nu=1./Re;
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+/// BaseFlow Efforts
+//Pressure Drag
+real Drag0P = TraineeP(u0,"S");  //Don't forget the complex part if needed
+//Viscous Drag
+real Drag0V = TraineeV(u0,"S"); //Don't forget the complex part if needed	
+//Total Drag
+real Drag0T= Drag0P+Drag0V;
+real Drag0Tbis= Trainee(u0,"S");
+///Display
+	cout << "________________________________________________" << endl;
+	cout << "| Drag Values:                    " << "              |"<< endl;
+	cout << "|      Pressure Base Flow Drag  : " << Drag0P << "      |"<<endl;
+	cout << "|      Viscous Base Flow Drag   : " << Drag0V << "      |"<<endl;
+	cout << "|      Total Base Flow Drag     : " << Drag0T << "      |"<<endl;
+	cout << "|      Total Base Flow Dragbis  : " << Drag0Tbis << "      |"<<endl;
+	cout << "| Lift Value:                     " << "              |"<< endl;
+	cout << "|      Base Flow Lift:          : " << "0" << "             |"<<endl;
+	cout << "|_______________________________________________|" << endl;
+
+// Il faut faire les moments aussi, avec des macros à REFAIRE
+    // Moment	
+	varf MomentT([vx,vy,q],[ux,uy,up])  = int1d(th,2)( 
+	          2*x * (up*N.y -nu * ( (dx(uy)+dy(ux)) * N.x + 2*dy(uy) * N.y ) )
+	         -2*y * (up*N.x -nu * ( 2*dx(ux) * N.x + (dx(uy)+dy(ux)) * N.y ) ) );
+	real[int] VmomentT(Nt);
+	VmomentT(:) = MomentT(0,XXMh);
+	complex[int] VmomentC(Nt);
+	VmomentC(:) = MomentT(0,XXMh);
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+// Choice of formulation
+string formulation;
+cout << "Please, chose the Formulation ?  [ A -> Absolute velocity in relative frame] [ R -> Relative velocity in relative frame]"<< endl; 
+cin >> formulation;
+cout << "The formulation chosen was:" << formulation << endl;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////	
+// Computation of the field [ux,uy,up] corresponding to the harmonic a velocity
+// Oscillation laterale sans changement d'inclinaison  (alpha=-gamma,theta=0)
+real U0=-1.; // Lateral oscilation vector
+
+problem vfStokes([ux,uy,up],[vx,vy,qr]) =
+	int2d(th)(
+		- 1i*OMEGA*ux*vx
+		- 1i*OMEGA*uy*vy // Terme 1: Temporel
+		- Convbis(u,u0,v) // Terme 2
+		+ up*divbis(v) //Terme 3: multiplie la pression
+		-2*nu*(Dbis(u):Dbis(v)) //Terme 4
+		-divbis(u)*qr // Terme 5: From continuous equation 
+		+ up*qr*(1e-12) // Terme 6: C'est le terme de stabilisation	
+		)
+	+int2d(th)(-1i*OMEGA*vy*U0*(formulation=="R") +  U0*(vx*dy(u0x)+vy*dy(u0y))*(formulation=="A") )
+	+BoundaryconditionsForced(u,v,U0,formulation);
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+//The number of Omega that is desired to be computed
+real Nomega=0;
+cout << "How many Omega values have to be computed?"<<endl;
+cin>> Nomega;
+
+if(Nomega==0){cout <<  "All values of Omega have been calculated" << endl;}
+//Normally, matlab script "SF_HarmonicForcing.m" never executes with Nomega=0
+
+else//Loop for different OMEGA values
+{
+	real[int] OMEGAtab(Nomega);
+	complex[int] Lift(Nomega), Drag(Nomega), Momentum(Nomega);
+
+	cout << "Write the values of Omega, please:" << endl;
+	for(int i=0; i<Nomega; i++) {cin >> OMEGAtab(i);}
+
+	for(int i=0; i<Nomega; i++)
+	{
+		OMEGA=OMEGAtab(i);
+		cout << "OMEGA = " << OMEGA << endl;
+		vfStokes;
+
+		Lift(i) = Portance(u,"A");
+    		Drag(i) = Trainee(u,"S");
+		cout << "The lift is:" << Lift(i) << endl;
+		Momentum(i) = VmomentC'*ux[]; //A refaire proprement
+	}
+	
+	/////////////////////////////////////////////////////////////
+	//Write output files ////////////////////////////////////////
+	//ofstream file(ffdataharmonicdir+formulation+"Forced_Harmonic2D_Re"+Re+".ff2m");
+	ofstream file(ffdataharmonicdir+".ff2m");
+	{
+		file<<"###Data Generated by FF++ (Diogo test);" << endl;
+		file<< "FileTOTOdiogo" <<endl;
+		file << "Format : " << endl;
+		file << "real." << Nomega << " OMEGAtab"<< 
+			" complex." << Nomega << " Lift" <<
+			" complex." << Nomega << " Drag" << 
+			" complex." << Nomega << " Momentum" << 
+			" real " << "Drag0P " << 
+			" real " << "Drag0V " << 
+			" real " << "Drag0T"  << endl<<endl;
+		for(int i=0; i<Nomega; i++){file << OMEGAtab(i)<<endl;};
+		for(int i=0; i<Nomega; i++){file << real(Lift(i) )<<" "<< imag(Lift(i))  <<endl;};
+		for(int i=0; i<Nomega; i++){file << real(Drag(i) )<<" "<< imag(Drag(i))  <<endl;};
+		for(int i=0; i<Nomega; i++){file << real(Momentum(i))<<" "<< imag(Momentum(i)) <<endl;};
+		file<<endl;
+		file<<Drag0P<<endl;
+		file<<Drag0V<<endl;
+		file<<Drag0T<<endl;
+		file<<endl;
+	}
+	string SaveForcedField="no"; //Save last field
+	if(SaveForcedField=="yes"){
+		ofstream fileMode(ffdataharmonicdir+"Omega"+OMEGA+"ForcedField.txt");
+ 		{
+			fileMode << ux[] << endl;
+		}
+		ofstream file(ffdataharmonicdir+"Omega"+OMEGA+"ForcedField.ff2m");
+		{
+			file<<"###Data Generated by FF++ (Diogo test);" << endl;
+			file<< "FileTOTOdiogo SaveForcedField" <<endl;
+			file << "Format : " << endl;
+			file << "P1c ux1 P1c uy1 P1c p1 P1c vort1" <<endl<<endl;
+			
+
+   			//fespace p1forff2m(th,P1); 
+			Mh<complex> ux1, uy1, up1, vort1;
+			ux1=ux;
+			uy1=uy;
+			up1=up;
+			vort1=dy(ux1)-dx(uy1);
+
+
+			for (int j=0;j<ux1[].n ; j++) file <<    real(ux1[][j]) << " " <<    imag(ux1[][j]) << endl;
+			for (int j=0;j<ux1[].n ; j++) file <<    real(uy1[][j]) << " " <<    imag(uy1[][j]) << endl;
+			for (int j=0;j<ux1[].n ; j++) file <<    real(up1[][j]) << " " <<    imag(up1[][j]) << endl;
+			for (int j=0;j<ux1[].n ; j++) file << real(vort1[][j]) << " " << imag(vort1[][j]) << endl;
+
+			file<<endl;
+		}
+
+	}//end if of the SaveForcedField
+
+
+}//If NOmega !=0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//END EDP FILE

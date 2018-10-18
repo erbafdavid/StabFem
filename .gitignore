@@ -1,0 +1,44 @@
+####################################################################################
+#	#This file has all the directories and files that normaly we don't want to add 
+#	#to the reposity
+#
+#	#Normally these unwanted files are the results folders
+#	#The available space in github is limited, so the reposity only contains the 	
+#	#necessary files to reproduze the results
+#
+#	#Next, the unwanted files are separeted by project, stating with the the SOURCES
+#
+#	(last edit: 29 may 2018)
+####################################################################################
+
+	#Files from SOURCES_MATLAB
+#...
+
+	#Files from SOURCES_FREEFEM
+SOURCES_FREEFEM/Stab2D_VIVantigoooooooooooo.edp
+
+	#Files from Article
+ARTICLE_STABFEM/*
+
+	#Files from CYLINDER
+#CYLINDER/Cylinder_*
+#CYLINDER/WORK/
+#CYLINDER/data*
+#CYLINDER/Results_Cylinder_HB12.mat
+STABLE_CASES/CYLINDER/*
+
+	#Files from CYLINDER_VIV (D.Sabino files)
+STABLE_CASES/CYLINDER_VIV/DATA*
+STABLE_CASES/CYLINDER_VIV/NOT*
+STABLE_CASES/CYLINDER_VIV/Final_results*
+STABLE_CASES/CYLINDER_VIV/Forced_Data_DNS_LJ/
+STABLE_CASES/CYLINDER_VIV/Modes_Tecplot/
+STABLE_CASES/CYLINDER_VIV/WORK/
+
+	#Files from Cavity (D.Sabino files)
+
+Cavity/Results_v1
+Cavity/WORK
+Cavity/LIXO*
+Cavity/*.eps
+Cavity/Litterature_data/

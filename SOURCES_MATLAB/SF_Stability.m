@@ -95,9 +95,10 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    addParameter(p,'sym','A',@ischar);   
    
    %parameters for spring-mounted object  
-   addParameter(p,'STIFFNESS',0);
-   addParameter(p,'MASS',0);
+   addParameter(p,'STIFFNESS',10);
+   addParameter(p,'MASS',20);
    addParameter(p,'DAMPING',0);
+   addParameter(p,'Frame','A',@ischar); %Diogo added this
    
    % parameters for free-surface problems
     if(isfield(baseflow,'gamma')) gammaDefault = baseflow.gamma ;else gammaDefault = 0; end;
@@ -266,7 +267,16 @@ switch ffmesh.problemtype
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Viscous.edp'];
         status = mysystem(solvercommand);  
         end
-        
+    case('2D_VIV')%Diogo added this!
+        % 2D_VIV flow (cylinder, etc...)
+        % 2D Baseflow / 2D modes
+        mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        mydisp(1,['      ### USING 2D Solver']);
+        argumentstring = ['  ' num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' '  num2str(p.Results.STIFFNESS) ' '...
+           num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift))...
+            ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' ' p.Results.Frame '  '];
+        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
+        status = mysystem(solvercommand);  
     %case(...)    
     % adapt to your case !
     

@@ -1,0 +1,1 @@
+these images correspond to the essays done in the NL in the limiting case where the free case tends to the fixed case, I think . See Diogo2018 Msc Thesis and you will read that HB1 its not enough for well characterise HB_VIV.
