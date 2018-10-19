@@ -2,108 +2,55 @@
 %
 %   (set of programs in Freefem to perform global stability calculations in hydrodynamic stability)
 %  
-%  THIS SCRIPT DEMONSTRATES THE MESH CONVERGENCE USING ADAPTMESH 
-%   TO BASEFLOW AND EIGENMODE.
+%  THIS SCRIPT DEMONSTRATES STABFEM FOR Spring-Mounted Cylinder
+%
+%  Revised on oct. 18, 2018 in ONERA with DIOGO
+%
+%
 
+run('../../SOURCES_MATLAB/SF_Start.m');
+verbosity=15;
 
-global ff ffdir ffdatadir sfdir verbosity
-ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw -v 0'; %% Freefem command with full path 
-ffdatadir = './DATA_FREEFEM_CYLINDER';
-sfdir = '../SOURCES_MATLAB'; % where to find the matlab drivers
-ffdir = '../SOURCES_FREEFEM/'; % where to find the freefem scripts
-verbosity=1;
-
-
-addpath(sfdir);
-system(['mkdir ' ffdatadir]);
-
-if(exist('em')==1)
+if(exist('bf')==1)
     disp('Mesh / base flow previously computed');
 else
-
-disp(' ');
-disp(' GENERATING  MESH : [-40:120]x[0:40] ');
-disp(' ');
-
-baseflow=FreeFem_Init('Mesh_Cylinder_Large.edp');
-baseflow=FreeFem_BaseFlow(baseflow,'Re',1);
-baseflow=FreeFem_BaseFlow(baseflow,'Re',10);
-baseflow=FreeFem_BaseFlow(baseflow,'Re',60);
-plotFF(baseflow,'mesh');pause;
-
-baseflow=FreeFem_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
-plotFF(baseflow,'mesh');pause(0.1);
-
+    bf = SmartMesh_Cylinder('S');
 end
 
-disp(' ');
-disp('ADAPTING MESH FOR RE=60 ')
-disp(' ');
-%baseflow=FreeFem_BaseFlow(baseflow,'Re',60);
-
-[ev,em] = FreeFem_Stability(baseflow,'shift',0.04+0.76i,'nev',1,'type','S');
-[baseflow,em]=FreeFem_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
-plotFF(baseflow,'mesh');pause(0.1);
-
-%disp(' ');
-%disp(' THRESHOLD : ')
-%[baseflowC,emC]=FreeFem_FindThreshold(baseflow,em);
-
-
-close all;
+%% Loop over Re for fixed case
 
 disp(' ');
 disp('COMPUTING STABILITY BRANCH (fixed cylinder) ')
 disp(' ');
-% starting point
-baseflow=FreeFem_BaseFlow(baseflow,'Re',40);
-[ev,em] = FreeFem_Stability(baseflow,'shift',-.03+.72i,'nev',1,'type','D');
 
 
 
-Re_tab = [40 : 5 : 80];
-sigma_tab = [];
-for Re = Re_tab
-    baseflow = FreeFem_BaseFlow(baseflow,'Re',Re);
-    [ev,em] = FreeFem_Stability(baseflow,'shift','cont','nev',1,'type','D');
-    sigma_tab = [sigma_tab ev];
-end
-figure(1);hold on;
-plot(Re_tab,real(sigma_tab),'r*');
-title('amplification rate');
+figure(10);hold on;
 
-figure(2);hold on;
-plot(Re_tab,imag(sigma_tab),'b*');
-title('oscillation rate');
-pause(0.1);
+Re_range = [60: -2.5 : 40];guessS = .04+.74i;
+bf.mesh.problemtype = '2D';
+[EVFixed,Rec,omegac] = SF_Stability_LoopRe(bf,Re_range,guessS,'plot','r');
 
 
+%% Loop over Re for spring-mounted case
 
-
-
-
-if(1==0)
-
+    
 disp(' ');
 disp('COMPUTING STABILITY BRANCH FOR VIV CASE (M=10,K=1) ')
 disp(' ');
 % starting point
-baseflow=FreeFem_BaseFlow(baseflow,'Re',40);
-[ev,em] = FreeFem_Stability(baseflow,'shift',-0.015851+0.75776i,'nev',1,'type','D','STIFFNESS',1,'MASS',30,'DAMPING',0);
+bf.mesh.problemtype = '2DMobile';
+bf=SF_BaseFlow(bf,'Re',42.5);
+[ev,em] = SF_Stability(bf,'shift',-0.0262 + 0.7076i,'nev',20,'type','D','STIFFNESS',1,'MASS',10,'DAMPING',0,'plotspectrum','yes');
+guessS = ev(1);
+Re_tab = [40 : 2.5 : 60];
+figure(10);hold on;
+[EV_10_1,Rec,omegac] = SF_Stability_LoopRe(bf,Re_tab,guessS,'STIFFNESS',1,'MASS',10,'DAMPING',0,'plot','b');
 
-Re_tab = [40 : 2.5 : 80];
-sigma_tab = [];
-for Re = Re_tab
-    baseflow=FreeFem_BaseFlow(baseflow,'Re',Re);
-    [ev,em] = FreeFem_Stability(baseflow,'shift','cont','nev',1,'type','D','STIFFNESS',1,'MASS',10,'DAMPING',0);
-    sigma_tab = [sigma_tab ev];
-end
+%figure(10); hold on;
+%plot(Re_tab,real(EV_10_1),'r--');
+%title('amplification rate');
 
-figure(1); hold on;
-plot(Re_tab,real(sigma_tab),'r--');
-title('amplification rate');
+%figure(11);hold on;
+%plot(Re_tab,imag(EV_10_1),'b--');
 
-figure(2);hold on;
-plot(Re_tab,imag(sigma_tab),'b--');
-
-end

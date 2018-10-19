@@ -132,7 +132,7 @@ switch (baseflow.mesh.problemtype)
         solvercommand = ['echo ', num2str(Re), ' ', num2str(p.Results.Omegax), ' ', num2str(p.Results.Darcy), ' ', num2str(p.Results.Porosity), ' | ', ff, ' ', ffdir, 'Newton_AxiSWIRL.edp']
         BFfilename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re), '_Omega', num2str(p.Results.Omegax), '_Da', num2str(p.Results.Darcy), '_Por', num2str(p.Results.Porosity)];
         
-    case ('2D')
+    case ({'2D','2DMobile'})
         mydisp(1, '## Entering SF_BaseFlow (2D INCOMPRESSIBLE)');
         solvercommand = ['echo ', num2str(Re), ' | ', ff, ' ', ffdir, 'Newton_2D.edp'];
         BFfilename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re)];
@@ -157,10 +157,11 @@ switch (baseflow.mesh.problemtype)
         BFfilename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re), 'Ma', num2str(Ma)];
         
         % case (other cases...)
-        
+    otherwise
+        error(['ERROR : problem type ' baseflow.mesh.problemtype ' not recognized ']); 
 end %switch
 
-error = 'ERROR : SF_ base flow computation aborted';
+errormessage = 'ERROR : SF_ base flow computation aborted';
 
 if (exist([BFfilename, '.txt']) == 2 && strcmp(p.Results.type, 'NEW') ~= 1 && strcmp(p.Results.type, 'POSTADAPT') ~= 1)
     mydisp(3, ['Base flow already computed for Re = ', num2str(Re)]);
@@ -187,7 +188,7 @@ else
     %%% TO BE MODIFIED
     
     % CALL NEWTON SOLVER
-    mysystem(solvercommand, error);
+    mysystem(solvercommand, errormessage);
     if (exist([ffdatadir, 'BaseFlow.txt']) == 0);
         error('ERROR : SF_ base flow computation did not converge');
     end

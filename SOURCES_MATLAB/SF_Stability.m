@@ -91,8 +91,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
        mycp(baseflow.filename,[ffdatadir 'BaseFlow.txt']);
        mycp(baseflow.mesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
    end
-   
-
+  
 %% Chapter 1 : management of optionnal parameters
     p = inputParser;
   
@@ -152,6 +151,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    addParameter(p,'sort','no',@ischar); 
    addParameter(p,'PlotSpectrum','no',@ischar);
    addParameter(p,'PlotSpectrumField','ux1',@ischar); 
+   addParameter(p,'plot','no',@ischar);
    
    parse(p,varargin{:});
    
@@ -184,6 +184,9 @@ persistent eigenvaluesPrev % for sort of type 'cont'
 % b) define the fff command (usually FreeFem++ but can be FreeFem+++-mpi in some cases
 %  and c) define the default solver (which can be replaced by a custom one)
 %
+
+
+
 switch ffmesh.problemtype
 
     case('AxiXR')
@@ -292,9 +295,9 @@ switch ffmesh.problemtype
         mydisp(1,['      ### USING 2D Solver FOR MOBILE OBJECT (e.g. spring-mounted)']);
         argumentstring = [ num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '... 
                             num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
-                            ' ' p.Results.type ' ' num2str(p.Results.nev) ]; 
+                            ' ' p.Results.type ' ' num2str(p.Results.nev) ' R ']; 
         fff = ff;
-        sover = [ffdir 'Stab2D_VIV.edp'];
+        solver = [ffdir 'Stab2D_VIV.edp'];
 %        solvercommand = ['echo ' argumenstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
 %        status = mysystem(solvercommand);
         
