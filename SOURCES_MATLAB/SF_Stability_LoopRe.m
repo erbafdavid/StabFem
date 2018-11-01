@@ -52,12 +52,14 @@ end
 
 % determines a threshold if required
 %if(nargout>1)
-    Ic = find(real([EV(1) EV]).*real([EV EV(end)])<0);
-    omegac = imag((EV(Ic-1)*real(EV(Ic))-EV(Ic)*real(EV(Ic-1)))/(real(EV(Ic))-real(EV(Ic-1)))); 
-    Rec = (Re_Range(Ic-1)*real(EV(Ic))-Re_Range(Ic)*real(EV(Ic-1)))/(real(EV(Ic))-real(EV(Ic-1)));
+    Icc = find(real([EV(1) EV]).*real([EV EV(end)])<0);omegac=[];Rec=[];
+    for Ic = Icc
+        omegac = [omegac imag((EV(Ic-1)*real(EV(Ic))-EV(Ic)*real(EV(Ic-1)))/(real(EV(Ic))-real(EV(Ic-1))))]; 
+        Rec = [Rec (Re_Range(Ic-1)*real(EV(Ic))-Re_Range(Ic)*real(EV(Ic-1)))/(real(EV(Ic))-real(EV(Ic-1)))];
+    end
     if(strcmp(colorplot,'noplot')==0)
         subplot(2,1,1);hold on;
-        plot(Rec,0,[colorplot,'o'],'linewidth',2);
+        plot(Rec,0*Rec,[colorplot,'o'],'linewidth',2);
         subplot(2,1,2);hold on;
         plot(Rec,omegac,[colorplot,'o'],'linewidth',2);
         RePLOT = [Re_Range(1:Ic-1) Rec Re_Range(Ic:end)];

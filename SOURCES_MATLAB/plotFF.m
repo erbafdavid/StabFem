@@ -75,7 +75,8 @@ function handle = plotFF(FFdata, varargin);
 %      'FGridParam'  Number of grid points used for quiver plot
 %                       'auto' (default) | [N,M]
 %       'symmetry'  symmetry property of the flow to plot
-%                       'no' (default) | 'YS' (symmetric w.r.t. Y axis) | 'YA' (antisymmetric w.r.t. Y axis) | 'XS' | 'XA'              
+%                       'no' (default) | 'YS' (symmetric w.r.t. Y axis) | 'YA' (antisymmetric w.r.t. Y axis) | 'XS' | 'XA' 
+%                                      | 'XM' (mirror image w/r to X axis) | 'YM'      
 %
 %     Notes :
 
@@ -147,7 +148,7 @@ else % plot mesh in single-entry mode : data
         if (verbosity >= 15)
             varargin
         end;
-        
+          
         ffpdeplot(mesh.points, mesh.bounds, mesh.tri, varargin{:});
         %axis equal;
     else
@@ -169,12 +170,20 @@ else % plot mesh in single-entry mode : data
         if (verbosity >= 20)
             varargin
         end;
-                
-        ffpdeplot(FFdata.mesh.points, FFdata.mesh.bounds, FFdata.mesh.tri, 'xydata', data, varargin{:});
+          
+ pointsS = FFdata.mesh.points;
+ if(strcmpi(symmetry,'xm'))
+        pointsS(2,:) = -pointsS(2,:);
+        symmetry = 'no';
+ elseif(strcmpi(symmetry,'ym'))
+        pointsS(1,:) = -pointsS(1,:); 
+        symmetry ='no';
+  end
+
+  ffpdeplot(pointsS, FFdata.mesh.bounds, FFdata.mesh.tri, 'xydata', data, varargin{:});
 
     
 %%% SYMMETRIZATION OF THE PLOT
-
 if(strcmp(symmetry,'no'))
         mydisp(20,'No symmetry');
 else   
@@ -188,9 +197,11 @@ else
     case('YS')
         pointsS(1,:) = -pointsS(1,:);dataS = data;
     case('YA')
-        pointsS(1,:) = -pointsS(1,:);dataS = -data; 
+        pointsS(1,:) = -pointsS(1,:);dataS = -data;
+    case({'XM','YM'})
+          % do nothing as these case has already been treated
       otherwise
-        error(' Error in plotFF with option symmetry ; value must be XS,XA,YS,YA or no')      
+        error(' Error in plotFF with option symmetry ; value must be XS,XA,YS,YA,XM,YM or no')      
   end
   
     hold on;
