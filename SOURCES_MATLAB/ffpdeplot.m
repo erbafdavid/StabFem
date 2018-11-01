@@ -325,10 +325,13 @@ function [hh,varargout] = ffpdeplot(points,boundary,triangles,varargin)
             else
                 error('value of parameter colorrange not valid !');
             end
-            %%% end DAVID
         end
-        if strcmpi(showcolbar,'on')
-            hcb=colorbar;
+        if ~(strcmpi(showcolbar,'off'))
+            if strcmpi(showcolbar,'on')
+                hcb=colorbar;
+            else
+                hcb=colorbar(showcolbar); %%% DAVID
+            end
             hh=[hcb; hh];
             if ~isempty(colorbartitle)
                 title(hcb,colorbartitle);
