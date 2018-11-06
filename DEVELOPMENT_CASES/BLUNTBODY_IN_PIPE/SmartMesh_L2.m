@@ -1,12 +1,12 @@
 
-function bf = SmartMesh_L2;
+function bf = SmartMesh_L2(dsurD)
 %
 % This function will create an adapted mesh for a blunt body of diameter 1, 
-% overall length L = 6 comprizing an oblate speroidal noze of length 1 and
+% overall length L = 2 comprizing an oblate speroidal noze of length 1 and
 % afterbody of lenght 5.
 %
 
-Rbody = 0.5; Lel = 1; Lcyl = 1; Rpipe = 1; xmin = -10; xmax = 60;Lbody=Lcyl+Lel;
+Rbody = 0.5; Lel = 1; Lcyl = 1; Rpipe = 0.5/dsurD; xmin = -10; xmax = 60;Lbody=Lcyl+Lel;
 bctype = 1;
 
     bf = SF_Init('meshInit_BluntBodyInTube.edp',[Rbody Lel Lcyl Rpipe xmin xmax bctype]); 
@@ -21,9 +21,9 @@ bctype = 1;
  ev = SF_Stability(bf,'m',1,'shift',shift,'nev',10);
  shift=ev(1);
  [ev,eigenmode] = SF_Stability(bf,'m',1,'shift',shift,'nev',1,'type','A');
- [bf,eigenmode] = SF_Adapt(bf,eigenmode); 
+ bf = SF_Adapt(bf,eigenmode); 
  [ev,eigenmode] = SF_Stability(bf,'m',1,'shift',shift,'nev',1,'type','A');
- [bf,eigenmode] = SF_Adapt(bf,eigenmode); 
+ bf = SF_Adapt(bf,eigenmode); 
  
  % adjust range for plots
  bf.mesh.xlim = [-2 10];

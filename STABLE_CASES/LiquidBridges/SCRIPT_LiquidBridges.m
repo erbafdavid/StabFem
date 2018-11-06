@@ -216,7 +216,7 @@ tabV = [];
 tabP = [];
 tabEVm0 = []; tabEVm1=[]; 
 for L = tabL
-    ffmesh = SF_MeshStretch(ffmesh,1,L/Lans);
+    ffmesh = SF_MeshStretch(ffmesh,'Yratio',L/Lans);
     V = pi*L/2*(1+L^2/12);
     ffmesh = SF_Mesh_Deform(ffmesh,'V',V)
     tabV = [tabV ffmesh.Vol]; tabP = [tabP ffmesh.P0];
@@ -259,7 +259,7 @@ tabV = [];
 tabP = [];
 tabEVm0 = []; tabEVm1=[]; 
 for L = tabL
-    ffmesh = SF_MeshStretch(ffmesh,1,L/Lans);
+    ffmesh = SF_MeshStretch(ffmesh,'Yratio',L/Lans);
     V = pi*L/2*(1+L^2/12);
     ffmesh = SF_Mesh_Deform(ffmesh,'V',V)
     tabV = [tabV ffmesh.Vol]; tabP = [tabP ffmesh.P0];

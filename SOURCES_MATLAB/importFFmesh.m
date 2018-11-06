@@ -11,8 +11,9 @@ global ff ffdir ffdatadir sfdir verbosity
 % The program will also need files "mesh.ff2m" a.nd "SF_Init.ff2m"
 %
 %  This program was originally adapted from FreeFem_to_matlab, copyright Julien Dambrine 2010 ;
-%  modified by D. Fabre (2017) ; and redesigned in 2018 with help of M. Chloros
-
+%  modified by D. Fabre (2017) ; and redesigned in 2018 with help of Markus Chloros
+% 
+%  New modif in nov. 2018 based on ffreadmesh.m from Markus 
 
 % Check for the mesh file which should be in the ffdatadir directory
 if (exist([ffdatadir, fileToRead1]) == 2)
@@ -20,105 +21,105 @@ if (exist([ffdatadir, fileToRead1]) == 2)
 end
 
 %First, read auxiliary files "mesh.ff2m" and "SF_Init.ff2m"
-[filepath, name, ext] = fileparts(fileToRead1);
+[filepath, name, ~] = fileparts(fileToRead1);
 fileToRead2 = [filepath, '/', name, '.ff2m'];
 fileToRead3 = [filepath, '/SF_Init.ff2m'];
-
 mydisp(2, ['FUNCTION  importFFmesh.m : reading complementary files']);
-
 meshstruct = importFFdata(fileToRead2, fileToRead3);
 % WARNING : in future may be better to do meshstruct = importFFdata(fileToRead3,fileToRead2);
 
 
+% Now reading mesh file using ffreadmesh from Markus
+ [meshstruct.points,meshstruct.bounds,meshstruct.tri,meshstruct.np,meshstruct.nbe,meshstruct.nt,meshstruct.labels]=ffreadmesh(fileToRead1);
+
+meshstruct.filename = fileToRead1;
+meshstruct.seg = []; % probably obsolete
+
 % change the field "datatype" to "problemtype" (to be rationalized ?)
 if (~isfield(meshstruct, 'problemtype')) % for retrocompatibility ; to be removed in future
+    disp(['WARNING : in mesh.ff2m datatyle should be replaced by problemtype']);
     meshstruct.problemtype = meshstruct.datatype;
     meshstruct = rmfield(meshstruct, 'datatype');
 end
 
 if (~isfield(meshstruct, 'meshgeneration')) % for retrocompatibility ; to be removed in future
-    meshstruct.meshgeneration = 0;
+    meshstruct.meshgeneration = findgeneration(fileToRead1);
     % initial mesh should be generation = 0
 end
 
 
-%
-meshstruct.meshgeneration = 0;
-
-%Reading mesh file
-
-fid = fopen(fileToRead1, 'r');
-if fid < 0
-    error('Error in importFFmesh : cannot open file');
-end
-fline = fgetl(fid);
-dimension = numel(strsplit(strtrim(fline), ' ')) - 1;
-if (verbosity > 2)
-    fprintf('mesh_format_FF; dimension=%i\n', dimension);
-end
-frewind(fid);
-if ~(dimension == 2)
-    dimension
-    error('only supported dimension is 2');
-end
-%start over
-headerline = textscan(fid, '%f %f %f', 1, 'Delimiter', '\n');
-%n vertex
-nv = headerline{1};
-%n triangle
-nt = headerline{2};
-%n edges
-ns = headerline{3};
-tmp = textscan(fid, repmat('%f ', [1, 3]), nv, 'Delimiter', '\n');
-%vertex coordinates [x,y] and boundary label
-points = cell2mat(tmp)';
-%triangle definition - vertex numbers (counter clock wise) and region label
-tmp = textscan(fid, repmat('%f ', [1, 4]), nt, 'Delimiter', '\n');
-tri = cell2mat(tmp)';
-%boundary definition
-tmp = textscan(fid, repmat('%f ', [1, 3]), ns, 'Delimiter', '\n');
-bounds = cell2mat(tmp)';
-fclose(fid);
-if (verbosity > 2)
-    fprintf('nvertex:%i ntriangle:%i nboundary:%i\n', nv, nt, ns);
-    fprintf('NaNs %i %i %i\n', any(any(isnan(points))), any(any(isnan(tri))), any(any(isnan(bounds))));
-    fprintf('sizes %ix%i %ix%i %ix%i\n', size(points), size(tri), size(bounds));
-end
-
-
-meshstruct.points = points;
-meshstruct.tri = tri;
-meshstruct.seg = [];
-meshstruct.bounds = bounds;
-meshstruct.filename = fileToRead1;
-%meshstruct.problemtype=meshstruct.datatype;
-%meshstruct = rmfield(meshstruct,'datatype');
-
-meshstruct.np = nv;
-
-%if(np~=meshstruct.np) error('ERROR in importFFmesh.m : np in .msh and .ff2m files incompabible');
-
-
-%[filepath,name,ext] = fileparts(fileToRead1);
-%fileToRead2 = [filepath,'/',name,'.ff2m'];
-
-%    mesh1.np = np;
-%    meshstruct = importFFmesh(mesh1,fileToRead2);
-%    meshstruct = rmfield(meshstruct,'mesh');
-% Nb this is ugly programming. to be rationalized in next version
-%end
-
-
-%    rawData2 = importdata([ fileToRead1 'info'] );
-%    problem=rawData2.textdata{3};
-%    meshstruct.problemtype=problem;
-%    header = rawData2.textdata{5};
-%    description=textscan(header,'%s');
-%    for ii = 1:length(rawData2.data);
-%        description{1}{ii};
-%        meshstruct=setfield(meshstruct,description{1}{ii},rawData2.data(ii));
-%    end
+%Reading mesh file (previous method)
+% 
+% % fid = fopen(fileToRead1, 'r');
+% if fid < 0
+%     error('Error in importFFmesh : cannot open file');
+% end
+% fline = fgetl(fid);
+% dimension = numel(strsplit(strtrim(fline), ' ')) - 1;
+% if (verbosity > 2)
+%     fprintf('mesh_format_FF; dimension=%i\n', dimension);
+% end
+% frewind(fid);
+% if ~(dimension == 2)
+%     dimension
+%     error('only supported dimension is 2');
+% end
+% %start over
+% headerline = textscan(fid, '%f %f %f', 1, 'Delimiter', '\n');
+% %n vertex
+% nv = headerline{1};
+% %n triangle
+% nt = headerline{2};
+% %n edges
+% ns = headerline{3};
+% tmp = textscan(fid, repmat('%f ', [1, 3]), nv, 'Delimiter', '\n');
+% %vertex coordinates [x,y] and boundary label
+% points = cell2mat(tmp)';
+% %triangle definition - vertex numbers (counter clock wise) and region label
+% tmp = textscan(fid, repmat('%f ', [1, 4]), nt, 'Delimiter', '\n');
+% tri = cell2mat(tmp)';
+% %boundary definition
+% tmp = textscan(fid, repmat('%f ', [1, 3]), ns, 'Delimiter', '\n');
+% bounds = cell2mat(tmp)';
+% fclose(fid);
+% if (verbosity > 2)
+%     fprintf('nvertex:%i ntriangle:%i nboundary:%i\n', nv, nt, ns);
+%     fprintf('NaNs %i %i %i\n', any(any(isnan(points))), any(any(isnan(tri))), any(any(isnan(bounds))));
+%     fprintf('sizes %ix%i %ix%i %ix%i\n', size(points), size(tri), size(bounds));
+% end
+%meshstruct.points = points;
+%meshstruct.tri = tri;
+%meshstruct.seg = [];
+%meshstruct.bounds = bounds;
+%meshstruct.filename = fileToRead1;
+%meshstruct.np = nv;
 
 
 mydisp(2, ['END FUNCTION importFFmesh.m'])
 end
+
+function generation = findgeneration(Filename)
+% this function extracts the number in a filename with the form
+% "mesh_adapt##.msh" or "mesh_stretch##.msh"
+    underlineLocations = find((Filename=='_'));
+    if(length(underlineLocations)==1)
+        if(Filename(underlineLocations(1)+1)=='a')
+            generation = str2double(Filename(underlineLocations(1)+6:end-4));
+        elseif(Filename(underlineLocations(1)+1)=='s')
+            generation = str2double(Filename(underlineLocations(1)+8:end-4));
+        else
+            generation = 0;
+        end
+    elseif(length(underlineLocations)>=1)
+        if(Filename(underlineLocations(1)+1)=='a')
+            generation = str2double(Filename(underlineLocations(1)+6:underlineLocations(2)-1));
+        elseif(Filename(underlineLocations(1)+1)=='s')
+            generation = str2double(Filename(underlineLocations(1)+8:underlineLocations(2)-1));
+        else
+            generation = 0;
+        end
+    else
+        generation = 0;
+    end
+end    
+

@@ -24,7 +24,7 @@ function varargout = SF_Adapt(varargin)
 global ff ffdir ffdatadir sfdir verbosity
 
 
-mydisp(1, ['### ENTERING SF_ADAPT'])
+mydisp(1, '### ENTERING SF_ADAPT')
 
 % managament of optional parameters
 % NB here the parser had to be customized because input parameter number 2
@@ -204,13 +204,12 @@ if(strcmp(varargout{1}.datatype,'BaseFlow'))
     mydisp(2,' SF_Adapt : recomputing base flow');
     baseflowNew = SF_BaseFlow(varargout{1}, 'type', 'POSTADAPT'); 
      if (baseflowNew.iter > 0)
-        % baseflowNew.filename
-     %  Newton successful : store base flow
-     varargout{1} = baseflowNew; 
-%     % Store adapted mesh/base flow in directory "MESHES"
+     %  Newton successful : Store adapted mesh/base flow in directory "MESHES"
      mycp([ffdatadir, 'BaseFlow.txt'], [ffdatadir, 'MESHES/BaseFlow',designation, '.txt']);
-     mycp([ffdatadir, 'BaseFlow.ff2m'], [ffdatadir, 'MESHES/BaseFlow',designation '.ff2m']);   
-%     myrm([ffdatadir '/BASEFLOWS/*']); % after adapt we clean the "BASEFLOWS" directory as the previous baseflows are no longer compatible 
+     mycp([ffdatadir, 'BaseFlow.ff2m'], [ffdatadir, 'MESHES/BaseFlow',designation '.ff2m']);
+     baseflowNew.filename = [ffdatadir, 'MESHES/BaseFlow',designation, '.txt'];
+     varargout{1} = baseflowNew; 
+%     myrm([ffdatadir '/BASEFLOWS/*']); % after adapt we clean the "BASEFLOWS" directory as the previous baseflows are no longer compatible => Now done in SF_BaseFlow ??? 
      else
          error('ERROR in SF_Adapt : baseflow recomputation failed');
      end

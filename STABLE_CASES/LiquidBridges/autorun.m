@@ -43,6 +43,8 @@ if(isfigures)
 figure(1);hold off;
 plot(ffmesh.xsurf,ffmesh.ysurf); hold on;
 end
+   
+
 
 %% CHAPTER 1 : Eigenvalue computation for m=0 and m=1 FOR A CYLINDRICAL BRIDGE
 [evm0,emm0] =  SF_Stability(ffmesh,'nev',16,'m',0,'sort','SIA');
@@ -92,8 +94,8 @@ figure(4);
 E=0.15;
 
 subplot(1,4,1);
-plotFF(emm0(3),'phi.im','title',{'Mode m=0,a',['\omega_r = ',num2str(-imag(evm0(3)))] } );hold on;
-plotFF_ETA(emm0(3),'Amp',E,'style','r');hold off;
+plotFF(emm0(3),'phi.im','title',{'Mode m=0,a',['\omega_r = ',num2str(-imag(evm0(3)))] } );
+hold on;plotFF_ETA(emm0(3),'Amp',E,'style','r');hold off;
 
 subplot(1,4,2);
 plotFF(emm0(5),'phi.im','title',{'Mode m=0,s',['\omega_r = ',num2str(-imag(evm0(5)))] } );hold on;
@@ -148,7 +150,7 @@ disp('##### autorun test 3 : equilibrium shape with volume corresponding to two 
     ffmesh = SF_Mesh_Deform(ffmesh,'V',V);
     
     L = 4;
-    ffmesh = SF_MeshStretch(ffmesh,1,L/ffmesh.L);
+    ffmesh = SF_MeshStretch(ffmesh,'Yratio',L/ffmesh.L);
     
     V = pi*L/2*(1+L^2/12);
     ffmesh = SF_Mesh_Deform(ffmesh,'V',V);

@@ -1,3 +1,4 @@
+%% THIS ONE IS OBSOLETE... TAKE L2 OR L6 WHICH USE SmartMesh
 
 run('../SOURCES_MATLAB/SF_Start.m');
 close all;
