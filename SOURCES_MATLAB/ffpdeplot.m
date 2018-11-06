@@ -105,7 +105,7 @@ function [hh,varargout] = ffpdeplot(points,boundary,triangles,varargin)
     vararginval = {[], 'interp', 'off', 'off', [], ...
                    'r', 'off', 'off', 'off', ...
                    'auto', [0,0,0], [], 10, 'patch', ...
-                   'cool', 'on', [], 'minmax', ...
+                   'jet', 'on', [], 'minmax', ...
                    [], 'minmax', 'minmax', 'minmax', 'xyequal', ...
                    [], 'auto'};
 
@@ -489,7 +489,7 @@ end
 function [S] = rowvec(S)
     [sz1,sz2]=size(S);
     if sz1>sz2
-        S=S';
+        S=S.'; % .' instead of ' if the field is complex ! 
     end
 end
 
@@ -514,7 +514,7 @@ function [u,v] = ffplottri2gridint(x, y, tx, ty, tu, tv)
                 Aa=((by-cy).*(px-cx)+(cx-bx).*(py-cy)).*invA0;
                 Ab=((cy-ay).*(px-cx)+(ax-cx).*(py-cy)).*invA0;
                 Ac=1.0-Aa-Ab;
-                pos=find(((Aa>=0) & (Ab>=0) & (Ac>=0)),1,'first');
+                pos=find(((Aa>=-1e-6) & (Ab>=-1e-6) & (Ac>=-1e-6)),1,'first');
                 if ~isempty(pos)
                     u(my,mx)=Aa(pos).*tu(1,pos)+ ...
                              Ab(pos).*tu(2,pos)+ ...
@@ -534,7 +534,7 @@ function [u,v] = ffplottri2gridint(x, y, tx, ty, tu, tv)
                 Aa=((by-cy).*(px-cx)+(cx-bx).*(py-cy)).*invA0;
                 Ab=((cy-ay).*(px-cx)+(ax-cx).*(py-cy)).*invA0;
                 Ac=1.0-Aa-Ab;
-                pos=find(((Aa>=0) & (Ab>=0) & (Ac>=0)),1,'first');
+                pos=find(((Aa>=-1e-10) & (Ab>=-1e-10) & (Ac>=-1e-10)),1,'first');%David
                 if ~isempty(pos)
                     u(my,mx)=Aa(pos).*tu(1,pos)+ ...
                              Ab(pos).*tu(2,pos)+ ...
