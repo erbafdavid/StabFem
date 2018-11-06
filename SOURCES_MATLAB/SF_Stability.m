@@ -81,7 +81,7 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 persistent sigmaPrev sigmaPrevPrev % for continuation on one branch
 persistent eigenvaluesPrev % for sort of type 'cont'
 
-   if(strcmp(baseflow.datatype,'Mesh')==1)
+   if(strcmpi(baseflow.datatype,'Mesh')==1)
        % first argument is a simple mesh
        ffmesh = baseflow; 
        mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future

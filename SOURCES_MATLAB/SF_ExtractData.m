@@ -33,16 +33,10 @@ function values = SF_ExtractData(ffdata,field,X,Y);
     tu = preparedata(ffdata.mesh.points,ffdata.mesh.tri,uu);
     
     if(numel(X)==1)
-        if(X==0) 
-            X = 1e-10; %% fix for problem when the points are on the boundary
-        end
         X = X*ones(size(Y)); 
     end
     
     if(numel(Y)==1)
-         if(Y==0) 
-            Y = 1e-10; %% fix for problem when points are on the boundary
-        end
         Y = Y*ones(size(X));
     end
     
@@ -53,7 +47,7 @@ function values = SF_ExtractData(ffdata,field,X,Y);
                 Aa=((by-cy).*(px-cx)+(cx-bx).*(py-cy)).*invA0;
                 Ab=((cy-ay).*(px-cx)+(ax-cx).*(py-cy)).*invA0;
                 Ac=1.0-Aa-Ab;
-                pos=find(((Aa>=0) & (Ab>=0) & (Ac>=0)),1,'first');
+                pos=find(((Aa>=-1e-6) & (Ab>=-1e-6) & (Ac>=-1e-6)),1,'first');
                 if ~isempty(pos)
                     values(mx)=Aa(pos).*tu(1,pos)+ ...
                              Ab(pos).*tu(2,pos)+ ...
