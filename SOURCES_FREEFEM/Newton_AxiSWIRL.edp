@@ -29,6 +29,7 @@
 		Import Macros 
     --------------------- */
 
+	load "MUMPS_seq"
 	include "SF_Geom.edp";
 	include "Macros_StabFem.edp";
 

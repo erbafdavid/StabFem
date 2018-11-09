@@ -44,8 +44,8 @@ Lx = [];
 Fx = [];
 Darcyy = [];
 Rei = 0;
-Re = [10];
-Darcy = [logspace(-9,-5,40) logspace(-5,0,100)];
+Re = [50];
+Darcy = [logspace(-9,-6,30) logspace(-6,-3,70) logspace(-3,0,30)];
 
 Omega = [0.];
 Porosite = [0.95];
@@ -59,10 +59,10 @@ for Ref = Re
         baseflow = SF_BaseFlow(baseflow,'Re',Reff,'Omegax',Omega,'Darcy',Darcy(1),'Porosity',Porosite);
         itt=itt+1;
         if ((itt==1) || (mod(itt,3)==0))
-            baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',0.5);
+            baseflow = SF_Adapt(baseflow,'Hmin',1e-4,'Hmax',1);
         end
         if (Reff==Ref)
-            baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',0.5);
+            baseflow = SF_Adapt(baseflow,'Hmin',1e-4,'Hmax',1);
         end
     end
     if (Reff==Ref)
@@ -70,15 +70,15 @@ for Ref = Re
             Darcyy = [Darcyy Darcyf];
             Dai = Dai+1;
             baseflow = SF_BaseFlow(baseflow,'Re',Reff,'Omegax',Omega,'Darcy',Darcyf,'Porosity',Porosite);
-            baseflow = SF_Adapt(baseflow,'Hmin',1e-5,'Hmax',0.5);
+            baseflow = SF_Adapt(baseflow,'Hmin',1e-4,'Hmax',1);
             disp(' ')
             disp('***********  ECRITURE  ***********')
             disp(' ')
             disp([' Itération n° ' num2str(length(Lx)) '/' num2str(length(Darcy))])
-            Lx(Rei,Dai) = baseflow.Lxx;
-            Lx(end)
+            Lx(Rei,Dai) = baseflow.Lx;
+            disp(['Lx = ' num2str(Lx(end))])
             Fx(Rei,Dai) = baseflow.Fx;
-            Fx(end)
+            disp(['Fx = ' num2str(Fx(end))])
             disp(' ')
             disp('***********  FIN ECRITURE  ***********')
             disp(' ')
@@ -102,5 +102,5 @@ for Ref = Re
         end
     end
 end
-save(['.\Resultats\Test_Lx_Fx\Re_' num2str(Re) '.mat'],'Darcyy','Lx','Fx')
+save(['.\Resultats\Test_Lx_Fx\X_' num2str(Rx) '_Re_' num2str(Re) '.mat'],'Rx','Darcyy','Lx','Fx')
 toc;

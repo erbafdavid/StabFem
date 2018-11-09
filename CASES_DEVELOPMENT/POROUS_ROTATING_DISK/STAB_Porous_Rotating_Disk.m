@@ -13,6 +13,7 @@
 [ev2,em2] = SF_Stability(baseflow,'m',1,'shift',1,'nev',10,'PlotSpectrum','yes');
 [ev3,em3] = SF_Stability(baseflow,'m',1,'shift',1+1i,'nev',10,'PlotSpectrum','yes');
 
+em = em22;
 % Plot EV_ux
 figure;
 plotFF(em,'ux1','title',['Champ de vitesse u_x pour \lambda = ' num2str(em.lambda) ' - m = ' num2str(em.m) ' - Re = ' num2str(baseflow.Re) ' - \Omega = ' num2str(baseflow.Omegax) ' - Da = ' num2str(baseflow.Darcy) ' - \epsilon = ' num2str(baseflow.Porosity)],'ColorMap','jet');
