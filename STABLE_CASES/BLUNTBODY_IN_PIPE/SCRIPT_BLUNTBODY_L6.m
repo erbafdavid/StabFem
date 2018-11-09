@@ -4,7 +4,7 @@ verbosity=1;
 
 %% Generation of the base flow
 
-if(exist('./WORK/BASEFLOW/BaseFlow_Re500.ff2m')==0)
+if(exist('./WORK/MESHES/BaseFlow_adapt8_Re500.ff2m')==0)
     bf = SmartMesh_L6();
 else
     ffmesh = importFFmesh('./WORK/MESHES/mesh_adapt8_Re500.msh');
@@ -24,16 +24,16 @@ pause(0.1);
 
  
 %% COMPUTING THE UNSTEADY BRANCH (going backwards)
-Re_RangeI = [500:-20:420 405 400:-20:300];
+Re_RangeI = [500:-20:300];
 guessI = 0.04+0.657i;
-EVI = SF_Stability_Loop(bf,Re_RangeI,guessI);
+[EVI,ResI,omegasI] = SF_Stability_LoopRe(bf,Re_RangeI,guessI,'plot','r');
        
 
         
 %% COMPUTING THE STEADY BRANCH (going backwards)
 Re_RangeS = [500:-50:300 280 :-20:160];
 guessS = 0.246;
-EVS = SF_Stability_Loop(bf,Re_RangeS,guessS);
+[EVS,ResS,omegasS] = SF_Stability_LoopRe(bf,Re_RangeS,guessS,'plot','b');
       
 
 %% FIGURES

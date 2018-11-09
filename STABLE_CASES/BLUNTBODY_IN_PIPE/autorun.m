@@ -50,8 +50,8 @@ end
 
 if(isfigures>0)
     figure;
-    subplot(2,1,1);plotFF(em(2),'ux1');title('Blunt body : steady mode')
-    subplot(2,1,2);plotFF(em(1),'ux1');title('Blunt body : unsteady mode')
+    subplot(2,1,1);plotFF(em(2),'ux1','colormap','redblue');title('Blunt body : steady mode')
+    subplot(2,1,2);plotFF(em(1),'ux1','colormap','redblue');title('Blunt body : unsteady mode')
     saveas(gcf,'FIGURES/BluntBody_L6_D2_Modes','png');
     pos = get(gcf,'Position'); pos(4)=pos(3)*.5;set(gcf,'Position',pos); % resize aspect ratio
     
@@ -64,23 +64,30 @@ end
  
 if(isfigures>1)
 %% COMPUTING THE UNSTEADY BRANCH (going backwards)
-Re_RangeI = [500:-20:420 405 400:-20:300];
+Re_RangeI = [500:-20:300];
 guessI = 0.04+0.657i;
-EVI = SF_Stability_Loop(bf,Re_RangeI,guessI);
+figure(10);hold on;
+[EVI,Res,omegas] = SF_Stability_LoopRe(bf,Re_RangeI,guessI,'plot','r');
+disp([' Unsteady branch : threshold detected at Re = ',num2str(Res),' ; omega = ',num2str(omegas) ]);
+
                
 %% COMPUTING THE STEADY BRANCH (going backwards)
 Re_RangeS = [500:-50:300 280 :-20:160];
 guessS = 0.246;
-EVS = SF_Stability_Loop(bf,Re_RangeS,guessS);
+figure(10);hold on;
+[EVS,Res,omegas] = SF_Stability_LoopRe(bf,Re_RangeS,guessS,'plot','b');
+disp([' Steady branch : threshold detected at Re = ',num2str(Res),' ; omega = ',num2str(omegas) ]);
+
+  
       
 %% FIGURES
-figure(11);hold on;
+figure(10);hold on;
 subplot(2,1,1);hold on;
-plot(Re_RangeS,real(EVS),'-b',Re_RangeI,real(EVI),'-r');hold on;
-plot(Re_RangeS,0*real(EVS),':k');%axis
+%plot(Re_RangeS,real(EVS),'-b',Re_RangeI,real(EVI),'-r');hold on;
+%plot(Re_RangeS,0*real(EVS),':k');%axis
 title('growth rate lambda_r vs. Reynolds ; unstready mode (red) and steady mode (blue)')
 subplot(2,1,2);hold on;
-plot(Re_RangeS,imag(EVS),'-b',Re_RangeI,imag(EVI),':r',Re_RangeI(real(EVI)>0),imag(EVI(real(EVI)>0)),'r-')
+%plot(Re_RangeS,imag(EVS),'-b',Re_RangeI,imag(EVI),':r',Re_RangeI(real(EVI)>0),imag(EVI(real(EVI)>0)),'r-')
 title('oscillation rate lambda_i vs. Reynolds')
 suptitle('Leading eigenvalues of a blunt body with L/d=6; D/d=2');
 saveas(gcf,'FIGURES/BluntBody_L6_D2_Eigenvalues','png');

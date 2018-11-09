@@ -1,10 +1,10 @@
-function [eigenvalues,eigenvectors,evD,evA] = SF_Stability(baseflow,varargin)
+function [eigenvalues,eigenvectors,evD,evA,Endo] = SF_Stability(baseflow,varargin)
 
 %> StabFem wrapper for Eigenvalue calculations
 %>
 %> usage : 
 %> 1/  [eigenvalues,eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
-%> 2/  [eigenvalues,sensitivity,evD,evA] = SF_Stability(field,'type','S','nev',1, [...])
+%> 2/  [eigenvalues,sensitivity,evD,evA,Endo] = SF_Stability(field,'type','S','nev',1, [...])
 %>
 %> field is either a "baseflow" structure (with "mesh" structure as a subfield) 
 %> or directly a "mesh" structure (for instance in problems such as sloshing where baseflow is not relevant).
@@ -12,7 +12,7 @@ function [eigenvalues,eigenvectors,evD,evA] = SF_Stability(baseflow,varargin)
 %> Output :
 %> eigenvalues -> array containing the eigenvalues
 %> eigenvector -> array of struct objects containing the eigenvectors.
-%> [sensitivity,evD,evA] -> sensitivity, direct and adjoint eigenmodes (with type = 'S' and nev = 1)
+%> [sensitivity,evD,evA,Endo] -> sensitivity, direct and adjoint eigenmodes and endogeneity (with type = 'S' and nev = 1)
 %> 
 %> List of accepted parameters (in approximate order of usefulness):
 %>
@@ -357,6 +357,10 @@ else
 end
 
 solvercommand = ['echo ' argumentstring ' | ' fff ' ' solver ];
+if(verbosity>=10)
+    solvercommand
+end
+
 status = mysystem(solvercommand);
 
 if(status~=0&&status~=141) % WARNING : error codes may differ with OCTAVE !
@@ -446,7 +450,10 @@ end
                 evA=importFFdata(ffmesh,'EigenmodeA.ff2m');
                 evA.type='A';
             end
-              mydisp(2,['      # Stability calculation completed (DIRECT+ADJOINT+SENSITIVITY), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
+             if (nargout >3)
+            Endo=importFFdata(ffmesh,'Endogeneity.ff2m');
+            Endo.type='S'; % useful ?
+              mydisp(2,['  # Endogeneity successfully imported']);
         end
         
         if(eigenvectors.iter<0) 

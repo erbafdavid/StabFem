@@ -1,4 +1,4 @@
-function [EV,Rec,omegac] = SF_Stability_LoopRe(bf,Re_Range,guess_ev,varargin);
+function [EV,Rec,omegac] = SF_Stability_LoopRe(bf,Re_Range,guess_ev,varargin)
 %
 % Construction of a "branch" lambda(Re) with a loop over Re.
 %
@@ -25,47 +25,58 @@ function [EV,Rec,omegac] = SF_Stability_LoopRe(bf,Re_Range,guess_ev,varargin);
 %
 
 
-
+EV = NaN*ones(size(Re_Range));
 % first step using guess
 guessI = guess_ev;
 bf=SF_BaseFlow(bf,'Re',Re_Range(1));
-EV = SF_Stability(bf,'shift',guessI,'nev',1,varargin{:});
-
+ev = SF_Stability(bf,'shift',guessI,'nev',10,varargin{:});% we take nev = 10 to make sure the first computation will be good... -> now made outside
+ev = SF_Stability(bf,'shift',ev(1),'nev',1,varargin{:});% to initiate the cont mode
+EV(1)= ev;
 % then loop...
-for Re = Re_Range(2:end)
+
+
+for i=2:length((Re_Range))
+        Re = Re_Range(i);
         bf = SF_BaseFlow(bf,'Re',Re);
-        ev = SF_Stability(bf,'nev',1,'shift','cont',varargin{:});
-        disp(['Re = ',num2str(Re),' : lambda = ',num2str(ev)])
-        EV = [EV ev];
+        [ev,em] = SF_Stability(bf,'nev',1,'shift','cont',varargin{:});
+        if(em.iter==-1)
+            mydisp(2,['Warning in SF_Stability_LoopRe : eigenvalue solver failed for Re = ',num2str(Re)]);
+            break;
+        end
+        disp(['Re = ',num2str(Re),' : lambda = ',num2str(ev)]);
+        EV(i) = ev;
 end
 
 % check if 'colorplot' is part of options...
  colorplot='noplot';
 for i=1:nargin-3
-    if(strcmp(lower(varargin{i}),'plot'))
+    if(strcmpi(varargin{i},'plot'))
        colorplot = varargin{i+1}; % defined at the bottom
     end    
 end
 if(strcmp(colorplot,'yes'))
-   colorplot='r'
+   colorplot='r';
 end
 
+
+    RePLOT = Re_Range; %[Re_Range(1:Ic-1) Rec Re_Range(Ic:end)];
+    EVPLOT = EV; %[EV(1:Ic-1) 1i*omegac EV(Ic:end)];
+
 % determines a threshold if required
-%if(nargout>1)
+    Rec = [];
     Icc = find(real([EV(1) EV]).*real([EV EV(end)])<0);omegac=[];Rec=[];
-    for Ic = Icc
-        omegac = [omegac imag((EV(Ic-1)*real(EV(Ic))-EV(Ic)*real(EV(Ic-1)))/(real(EV(Ic))-real(EV(Ic-1))))]; 
-        Rec = [Rec (Re_Range(Ic-1)*real(EV(Ic))-Re_Range(Ic)*real(EV(Ic-1)))/(real(EV(Ic))-real(EV(Ic-1)))];
+    if(isempty(Icc))
+        Rec = NaN;
+        omegac = NaN;
+    else
+        for j=1:length(Icc)
+            Ic = Icc(j);
+            omegac = [omegac imag((EV(Ic-1)*real(EV(Ic))-EV(Ic)*real(EV(Ic-1)))/(real(EV(Ic))-real(EV(Ic-1))))]; 
+            Rec = [Rec (Re_Range(Ic-1)*real(EV(Ic))-Re_Range(Ic)*real(EV(Ic-1)))/(real(EV(Ic))-real(EV(Ic-1)))];
+            EVPLOT = [EVPLOT(1:Ic-1+j-1) , 1i*omegac, EVPLOT(Ic+j-1:end)]; % to draw the curves including threshold point
+            RePLOT = [RePLOT(1:Ic-1+j-1) , Rec, RePLOT(Ic+j-1:end)];
+        end
     end
-    if(strcmp(colorplot,'noplot')==0)
-        subplot(2,1,1);hold on;
-        plot(Rec,0*Rec,[colorplot,'o'],'linewidth',2);
-        subplot(2,1,2);hold on;
-        plot(Rec,omegac,[colorplot,'o'],'linewidth',2);
-        RePLOT = [Re_Range(1:Ic-1) Rec Re_Range(Ic:end)];
-        EVPLOT = [EV(1:Ic-1) 1i*omegac EV(Ic:end)];
-    end
-%end
 
 
 % plot results if required...
@@ -80,14 +91,14 @@ plot(RePLOT,imag(EVPLOT),[colorplot '--'],'linewidth',1);
 plot(RePLOT(real(EVPLOT)>=0),imag(EVPLOT(real(EVPLOT)>=0)),[colorplot '-'],'linewidth',2);
 xlabel('Re');ylabel('\omega') ; box on;   
 
+subplot(2,1,1);hold on;
+plot(Rec,0*Rec,[colorplot,'o'],'linewidth',2);
+subplot(2,1,2);hold on;
+plot(Rec,omegac,[colorplot,'o'],'linewidth',2);
+end
+
 pause(0.1);
 end
 
 
     
-
-
-
-
-
-end

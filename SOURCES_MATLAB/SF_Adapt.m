@@ -209,7 +209,7 @@ if(strcmp(varargout{1}.datatype,'BaseFlow'))
      mycp([ffdatadir, 'BaseFlow.ff2m'], [ffdatadir, 'MESHES/BaseFlow',designation '.ff2m']);
      baseflowNew.filename = [ffdatadir, 'MESHES/BaseFlow',designation, '.txt'];
      varargout{1} = baseflowNew; 
-%     myrm([ffdatadir '/BASEFLOWS/*']); % after adapt we clean the "BASEFLOWS" directory as the previous baseflows are no longer compatible => Now done in SF_BaseFlow ??? 
+     myrm([ffdatadir '/BASEFLOWS/*']); % after adapt we clean the "BASEFLOWS" directory as the previous baseflows are no longer compatible => Now done in SF_BaseFlow ??? 
      else
          error('ERROR in SF_Adapt : baseflow recomputation failed');
      end
