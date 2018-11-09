@@ -242,7 +242,8 @@ end
 
 % custom colormaps
 function cmap = redblue()
-colmapdef=[193,0,0; 235,164,164; 235,235,235; 196,196,255; 127,127,255]/255;
+%colmapdef=[193,0,0; 235,164,164; 235,235,235; 196,196,255; 127,127,255]/255;
+colmapdef=[127,127,255; 196,196,255; 235,235,235; 235,164,164; 193,0,0  ]/255;
 [sz1,~]=size(colmapdef);
 cmap=interp1(linspace(0,1,sz1),colmapdef,linspace(0,1,255));
 end

@@ -14,13 +14,22 @@ function values = SF_ExtractData(ffdata,field,X,Y);
 % Adapted from ffplottri2gridint from Chloros, 2018. 
 % Incorporated into the StabFem project by D. F on nov. 1, 2018.
 
+% Position input files
+if(strcmpi(ffdata.datatype,'Mesh')==1)
+       % first argument is a simple mesh
+       ffmesh = ffdata; 
+else
+       % first argument is a base flow
+       ffmesh = ffdata.mesh;
+       
+end
 
 
 
-    xpts=ffdata.mesh.points(1,:);
-    ypts=ffdata.mesh.points(2,:);
-    tx=[xpts(ffdata.mesh.tri(1,:)); xpts(ffdata.mesh.tri(2,:)); xpts(ffdata.mesh.tri(3,:))];
-    ty=[ypts(ffdata.mesh.tri(1,:)); ypts(ffdata.mesh.tri(2,:)); ypts(ffdata.mesh.tri(3,:))];    
+    xpts=ffmesh.points(1,:);
+    ypts=ffmesh.points(2,:);
+    tx=[xpts(ffmesh.tri(1,:)); xpts(ffmesh.tri(2,:)); xpts(ffmesh.tri(3,:))];
+    ty=[ypts(ffmesh.tri(1,:)); ypts(ffmesh.tri(2,:)); ypts(ffmesh.tri(3,:))];    
     ax=tx(1,:);
     ay=ty(1,:);
     bx=tx(2,:);
@@ -30,7 +39,7 @@ function values = SF_ExtractData(ffdata,field,X,Y);
     invA0=(1.0)./((by-cy).*(ax-cx)+(cx-bx).*(ay-cy));
 
     uu = getfield(ffdata, field);
-    tu = preparedata(ffdata.mesh.points,ffdata.mesh.tri,uu);
+    tu = preparedata(ffmesh.points,ffmesh.tri,uu);
     
     if(numel(X)==1)
         X = X*ones(size(Y)); 
@@ -47,7 +56,7 @@ function values = SF_ExtractData(ffdata,field,X,Y);
                 Aa=((by-cy).*(px-cx)+(cx-bx).*(py-cy)).*invA0;
                 Ab=((cy-ay).*(px-cx)+(ax-cx).*(py-cy)).*invA0;
                 Ac=1.0-Aa-Ab;
-                pos=find(((Aa>=0) & (Ab>=0) & (Ac>=0)),1,'first');
+                pos=find(((Aa>=-1e-10) & (Ab>=-1e-10) & (Ac>=-1e-10)),1,'first');
                 if ~isempty(pos)
                     values(mx)=Aa(pos).*tu(1,pos)+ ...
                              Ab(pos).*tu(2,pos)+ ...

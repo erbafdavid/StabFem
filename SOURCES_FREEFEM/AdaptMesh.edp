@@ -39,7 +39,9 @@
 	verbosity = 0;
 	include "SF_Geom.edp";
 	include "Macros_StabFem.edp";
-	
+	IFMACRO(COORDINATEMAPPING,YES)
+	include "Param_Mapping.edp";
+	ENDIFMACRO
 
 // Input parameters
 string typemeshmanipulation;
@@ -363,8 +365,6 @@ cout << endl << "$$#### Mesh information AFTER ADAPT :" << endl;
 	savemesh(thnew,ffdatadir+"mesh_adapt.msh");
 	SFWriteMesh(ffdatadir+"mesh_adapt.ff2m",thnew);
 
-//savemesh(thnew,ffdatadir+"mesh.msh");
-//	SFWriteMesh(ffdatadir+"mesh.ff2m",thnew);
 
 ///	
 /// INTERPOLATE FLOW FIELDS AND SAVE TO FILE

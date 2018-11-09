@@ -26,7 +26,6 @@ fileToRead2 = [filepath, '/', name, '.ff2m'];
 fileToRead3 = [filepath, '/SF_Init.ff2m'];
 mydisp(2, ['FUNCTION  importFFmesh.m : reading complementary files']);
 meshstruct = importFFdata(fileToRead2, fileToRead3);
-% WARNING : in future may be better to do meshstruct = importFFdata(fileToRead3,fileToRead2);
 
 
 % Now reading mesh file using ffreadmesh from Markus
@@ -48,55 +47,20 @@ if (~isfield(meshstruct, 'meshgeneration')) % for retrocompatibility ; to be rem
 end
 
 
-%Reading mesh file (previous method)
-% 
-% % fid = fopen(fileToRead1, 'r');
-% if fid < 0
-%     error('Error in importFFmesh : cannot open file');
-% end
-% fline = fgetl(fid);
-% dimension = numel(strsplit(strtrim(fline), ' ')) - 1;
-% if (verbosity > 2)
-%     fprintf('mesh_format_FF; dimension=%i\n', dimension);
-% end
-% frewind(fid);
-% if ~(dimension == 2)
-%     dimension
-%     error('only supported dimension is 2');
-% end
-% %start over
-% headerline = textscan(fid, '%f %f %f', 1, 'Delimiter', '\n');
-% %n vertex
-% nv = headerline{1};
-% %n triangle
-% nt = headerline{2};
-% %n edges
-% ns = headerline{3};
-% tmp = textscan(fid, repmat('%f ', [1, 3]), nv, 'Delimiter', '\n');
-% %vertex coordinates [x,y] and boundary label
-% points = cell2mat(tmp)';
-% %triangle definition - vertex numbers (counter clock wise) and region label
-% tmp = textscan(fid, repmat('%f ', [1, 4]), nt, 'Delimiter', '\n');
-% tri = cell2mat(tmp)';
-% %boundary definition
-% tmp = textscan(fid, repmat('%f ', [1, 3]), ns, 'Delimiter', '\n');
-% bounds = cell2mat(tmp)';
-% fclose(fid);
-% if (verbosity > 2)
-%     fprintf('nvertex:%i ntriangle:%i nboundary:%i\n', nv, nt, ns);
-%     fprintf('NaNs %i %i %i\n', any(any(isnan(points))), any(any(isnan(tri))), any(any(isnan(bounds))));
-%     fprintf('sizes %ix%i %ix%i %ix%i\n', size(points), size(tri), size(bounds));
-% end
-%meshstruct.points = points;
-%meshstruct.tri = tri;
-%meshstruct.seg = [];
-%meshstruct.bounds = bounds;
-%meshstruct.filename = fileToRead1;
-%meshstruct.np = nv;
-
+if(strcmpi(meshstruct.meshtype,'2DMapped'))
+    mydisp(2,'Mapped mesh ; reading additional file for physical coordinates');
+    fileToRead4 = [ffdatadir,'Mapping.ff2m'];
+    m2 = importFFdata(meshstruct,fileToRead4);
+    meshstruct.xphys = m2.xphys;
+    meshstruct.yphys = m2.yphys;
+    meshstruct.Hx = m2.Hx;
+    meshstruct.Hy = m2.Hy;
+end
 
 mydisp(2, ['END FUNCTION importFFmesh.m'])
 end
+
+
 
 function generation = findgeneration(Filename)
 % this function extracts the number in a filename with the form

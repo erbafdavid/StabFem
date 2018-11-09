@@ -54,6 +54,17 @@ IFMACRO(EIGENSOLVER,SLEPC)
 //include "macro_ddm.idp"                 
 ENDIFMACRO
 
+
+
+IFMACRO(!NormalizeMode)
+macro NormalizeMode(u)
+{
+complex NORM = int1d(th,1)(u#x*y);
+u#x[] = u#x[]/NORM;
+}
+//EOM
+ENDIFMACRO
+
 /////////////////////////////////////////////////////////////////////////////////
 //////////////////----->             parameters         <-----///////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -157,16 +168,16 @@ ENDIFMACRO
 	varf LNSE([ux,ur,up],[vx,vr,vp],eps=1e-16) = 
 	int2d(th)(
 	(
-	- Rphys(y,ParamMap)*vx*(
+	- Rphys(x,y,ParamMap)*vx*(
 		(Ubx*dX(ux)+ux*dX(Ubx)+Ubr*dY(ux)+ur*dY(Ubx))	 )  				
-	- Rphys(y,ParamMap)*vr*(
+	- Rphys(x,y,ParamMap)*vr*(
 		(Ubx*dX(ur)+ux*dX(Ubr)+Ubr*dY(ur)+ur*dY(Ubr))	)	
-	- nu*(Rphys(y,ParamMap)*dX(ux)*dX(vx)+Rphys(y,ParamMap)*dY(ux)*dY(vx)  
-	      + Rphys(y,ParamMap)*dX(ur)*dX(vr)+Rphys(y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(y,ParamMap)*ur*vr  )  
-	+ up*(Rphys(y,ParamMap)*dX(vx)+vr+Rphys(y,ParamMap)*dY(vr))
-	- vp*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
-	-Rphys(y,ParamMap)*isshift*shift*(vx*ux+vr*ur)
-	)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
+	- nu*(Rphys(x,y,ParamMap)*dX(ux)*dX(vx)+Rphys(x,y,ParamMap)*dY(ux)*dY(vx)  
+	      + Rphys(x,y,ParamMap)*dX(ur)*dX(vr)+Rphys(x,y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(x,y,ParamMap)*ur*vr  )  
+	+ up*(Rphys(x,y,ParamMap)*dX(vx)+vr+Rphys(x,y,ParamMap)*dY(vr))
+	- vp*(Rphys(x,y,ParamMap)*dX(ux)+ur+Rphys(x,y,ParamMap)*dY(ur))
+	-Rphys(x,y,ParamMap)*isshift*shift*(vx*ux+vr*ur)
+	)*JJ ) 
   	+ on(2,ux=0.,ur=0.)	
 	+ on(6,7,ur=0.);
 //	fin declaration
@@ -174,16 +185,16 @@ ENDIFMACRO
 	varf LNSEadjoint([vx,vr,vp],[ux,ur,up],eps=1e-16) = 
 	int2d(th)(
 	(
-	- Rphys(y,ParamMap)*vx*(
+	- Rphys(x,y,ParamMap)*vx*(
 		(Ubx*dX(ux)+ux*dX(Ubx)+Ubr*dY(ux)+ur*dY(Ubx))	 )  				
-	- Rphys(y,ParamMap)*vr*(
+	- Rphys(x,y,ParamMap)*vr*(
 		(Ubx*dX(ur)+ux*dX(Ubr)+Ubr*dY(ur)+ur*dY(Ubr))	)	
-	- nu*(Rphys(y,ParamMap)*dX(ux)*dX(vx)+Rphys(y,ParamMap)*dY(ux)*dY(vx)  
-	      + Rphys(y,ParamMap)*dX(ur)*dX(vr)+Rphys(y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(y,ParamMap)*ur*vr  )  
-	+ up*(Rphys(y,ParamMap)*dX(vx)+vr+Rphys(y,ParamMap)*dY(vr))
-	- vp*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
-	-Rphys(y,ParamMap)*isshift*shift*(vx*ux+vr*ur)	
-	)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
+	- nu*(Rphys(x,y,ParamMap)*dX(ux)*dX(vx)+Rphys(x,y,ParamMap)*dY(ux)*dY(vx)  
+	      + Rphys(x,y,ParamMap)*dX(ur)*dX(vr)+Rphys(x,y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(x,y,ParamMap)*ur*vr  )  
+	+ up*(Rphys(x,y,ParamMap)*dX(vx)+vr+Rphys(x,y,ParamMap)*dY(vr))
+	- vp*(Rphys(x,y,ParamMap)*dX(ux)+ur+Rphys(x,y,ParamMap)*dY(ur))
+	-Rphys(x,y,ParamMap)*isshift*shift*(vx*ux+vr*ur)	
+	)*JJ ) 
   	+ on(2,vx=0.,vr=0.)	
 	+ on(6,7,vr=0.);
 //	fin declaration
@@ -196,7 +207,7 @@ ENDIFMACRO
 //ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
-	varf b([ux,ur,up],[vx,vr,q]) =  int2d(th) (Rphys(y,ParamMap)*(vx*ux+vr*ur)*1/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+	varf b([ux,ur,up],[vx,vr,q]) =  int2d(th) (Rphys(x,y,ParamMap)*(vx*ux+vr*ur)*JJ);
 		matrix<complex> B= b(XXMh,XXMh);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -332,19 +343,19 @@ XXMh<complex> [ux0,ur0,p0],[uxdirect,urdirect,pdirect],[uxadjoint,uradjoint,padj
 	
 	int2d(th)(
 	(
-	- Rphys(y,ParamMap)*vx*(
+	- Rphys(x,y,ParamMap)*vx*(
 		(Ubx*dX(ux)+ux*dX(Ubx)+Ubr*dY(ux)+ur*dY(Ubx))	 )  				
-	- Rphys(y,ParamMap)*vr*(
+	- Rphys(x,y,ParamMap)*vr*(
 		(Ubx*dX(ur)+ux*dX(Ubr)+Ubr*dY(ur)+ur*dY(Ubr))	)	
-	- nu*(Rphys(y,ParamMap)*dX(ux)*dX(vx)+Rphys(y,ParamMap)*dY(ux)*dY(vx)  
-	      + Rphys(y,ParamMap)*dX(ur)*dX(vr)+Rphys(y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(y,ParamMap)*ur*vr  )  
-	+ up*(Rphys(y,ParamMap)*dX(vx)+vr+Rphys(y,ParamMap)*dY(vr))
-	- vp*(Rphys(y,ParamMap)*dX(ux)+ur+Rphys(y,ParamMap)*dY(ur))
-	-Rphys(y,ParamMap)*shift*(vx*ux+vr*ur)	
-	)/(Hy(y,ParamMap)*Hx(x,ParamMap)) ) 
-
+	- nu*(Rphys(x,y,ParamMap)*dX(ux)*dX(vx)+Rphys(x,y,ParamMap)*dY(ux)*dY(vx)  
+	      + Rphys(x,y,ParamMap)*dX(ur)*dX(vr)+Rphys(x,y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(x,y,ParamMap)*ur*vr  )  
+	+ up*(Rphys(x,y,ParamMap)*dX(vx)+vr+Rphys(x,y,ParamMap)*dY(vr))
+	- vp*(Rphys(x,y,ParamMap)*dX(ux)+ur+Rphys(x,y,ParamMap)*dY(ur))
+	-Rphys(x,y,ParamMap)*shift*(vx*ux+vr*ur)	
+	)*JJ 
+	) 
 + int2d(th)
-    (-Rphys(y,ParamMap)*(vx*ux0+vr*ur0)/(Hy(y,ParamMap)*Hx(x,ParamMap)))
+    (-Rphys(x,y,ParamMap)*(vx*ux0+vr*ur0)*JJ)
 	
 //	+ on(1,uz=0,ur=0.) // no conditions = zero traction (pressure) on inlet
     + on(1,ur=0)
@@ -450,8 +461,8 @@ else if(iadjoint=="S")
 	real errmax=1e-6;
 	complex lambda;
 	
-	varf brhs([ux,ur,up],[vx,vr,q]) = int2d(th)( (ux0*vx+ur0*vr)*Rphys(y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)) );
-//	varf Bf([ux0,ur0,up0],[vx,vr,q]) =  int2d(th) (Rphys(y,ParamMap)*(vx*ux0+vr*ur0)*1/(Gy*G)); // why 
+	varf brhs([ux,ur,up],[vx,vr,q]) = int2d(th)( (ux0*vx+ur0*vr)*Rphys(x,y,ParamMap)*JJ );
+//	varf Bf([ux0,ur0,up0],[vx,vr,q]) =  int2d(th) (Rphys(x,y,ParamMap)*(vx*ux0+vr*ur0)*1/(Gy*G)); // why 
 
 	defaulttoMUMPS();
 	set(OP,solver=sparsesolver);  //// ?????
@@ -525,6 +536,7 @@ else if(iadjoint=="S")
     	};
     
     // write outpout in .txt format (for freefem)
+    NormalizeMode(u);
     {
     ofstream file(namefile);
   	file << ux[] ;	
