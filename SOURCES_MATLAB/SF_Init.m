@@ -53,7 +53,6 @@ if(exist(['./', meshfile])==2)
     mydisp(1,['### FUNCTION SF_Init : creating initial mesh from ff script ',meshfile]);
 elseif(exist(['../' meshfile])==2)
     meshfile = ['../' meshfile];
-    toto
     mydisp(1,['### FUNCTION SF_Init : creating initial mesh from ff script ',meshfile]);
 else 
         error(['### FUNCTION SF_Init : ff script ',meshfile,' ,not found !']);
