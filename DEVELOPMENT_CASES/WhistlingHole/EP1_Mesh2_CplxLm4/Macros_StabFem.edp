@@ -30,7 +30,7 @@ ENDIFMACRO
 // END DEFINITION OF SOLVER
 
 IFMACRO(!FREEFEMPLOTS)
-macro FREEFEMPLOTS  YES//EOM
+macro FREEFEMPLOTS  NO//EOM
 ENDIFMACRO 
 // Set to YES to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
 // set to NO to disable all plots (recommended in MatLab/StabFem mode)
@@ -39,14 +39,13 @@ IFMACRO(!EIGENSOLVER)
 macro EIGENSOLVER SLEPC// POSSIBLE OPTIONS : ARPACK, SLEPC
 ENDIFMACRO
 
-// Moved to Stability solver
-//IFMACRO(EIGENSOLVER,SLEPC)
-//load "PETSc-complex"
-//load "SLEPc-complex"                    
-//macro partitioner()metis// 
-//macro dimension(      )2// 
-//include "macro_ddm.idp"                 
-//ENDIFMACRO
+IFMACRO(!COORDINATEMAPPING)
+macro COORDINATEMAPPING YES//
+ENDIFMACRO
+
+IFMACRO(TOTOMAC,YES)
+cout << "toto" << endl ;
+ENDIFMACRO
 
 IFMACRO(!problemtype)
 macro problemtype "AxiXR"//EOM
@@ -56,24 +55,10 @@ IFMACRO(!ncomponentsBF)
 macro ncomponentsBF 2//EOM  // THIS PARAMETERS SHOULD BE 2 if BASE FLOW is (U,V,P) and 3 if it is (U,V,W,P) (case with rotation)
 ENDIFMACRO
 
-
-
-//IFMACRO(!freefemsolverUMFPACK64)
-//macro freefemsolverUMFPACK64 0 //EOM
-//ENDIFMACRO 
-
-//IFMACRO(freefemsolverUMFPACK64,1)
-//include "UMFPACK64"
-//cout << " USING UMFPACK64" << endl;
-//ENDIFMACRO
-
-// To select the solver ; avaiLable are "default", "UMFPACK64", "MUMPS_seq", and "PETSC"
-
-
-// GEOMETRIC PARAMETERS
-
-//string ffdatadir = "./WORK/";
 string ffdatadir = "./WORK/";
+
+
+
 
 
 // DEFINITION OF THE COMPLEX MAPPING
@@ -91,38 +76,47 @@ string ffdatadir = "./WORK/";
 
 // definition of the mapping in x direction (complex)
 
-   	macro Xphys(x,ParamMap) 
+   	macro Xphys(x,y,ParamMap) 
    	(x<ParamMap#Lm?x:ParamMap#Lm+(x-ParamMap#Lm)/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2*(1+1i*ParamMap#GC*tanh((x-ParamMap#Lm)^2/ParamMap#LC^2)) )
    	//EOM
    	
-   	macro Hx(x,ParamMap) 
+   	macro Hx(x,y,ParamMap) 
     ( (x<ParamMap#Lm)?1: 
-    (1/((1/((1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2)+4*(x-ParamMap#Lm)^2/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^3
+       (0.1e1 / ((1 - (x - ParamMap#Lm)^2 / (ParamMap#LA - ParamMap#Lm) ^ 2) ^ 2) * 
+       (0.1e1 + i * ParamMap#GC * tanh(((x - ParamMap#Lm) ^ 2 / ParamMap#LC ^ 2))) + 0.4e1 * ((x - ParamMap#Lm) ^ 2) 
+       / ((1 - (x - ParamMapLm) ^ 2 / (ParamMap#LA - ParamMap#Lm) ^ 2) ^ 3) * (0.1e1 + i * ParamMap#GC * 
+       tanh(((x - ParamMap#Lm) ^ 2 / ParamMap#LC ^ 2))) / ((ParamMap#LA - ParamMap#Lm) ^ 2) + 0.2e1 * ((x - ParamMap#Lm) ^ 2) 
+       / ((1 - (x - ParamMap#Lm) ^ 2 / (ParamMap#LA - ParamMap#Lm) ^ 2) ^ 2) * i * 
+       ParamMap#GC * (0.1e1 - tanh(((x - ParamMap#Lm) ^ 2 / ParamMap#LC ^ 2)) ^ 2) / (ParamMap#LC ^ 2) )
+    /* (1/((1/((1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2)+4*(x-ParamMap#Lm)^2/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^3
     /(ParamMap#LA-ParamMap#Lm)^2)*(1+1i*ParamMap#GC*tanh((x-ParamMap#Lm)^2/ParamMap#LC^2))+
-	2*(ParamMap#Lm+(x-ParamMap#Lm)/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2)*1i*ParamMap#GC*
-	(1-tanh((x-ParamMap#Lm)^2/ParamMap#LC^2)^2)*(x-ParamMap#Lm)/ParamMap#LC^2)
+	2*(0+(x-ParamMap#Lm)/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2)*1i*ParamMap#GC*
+	(1-tanh((x-ParamMap#Lm)^2/ParamMap#LC^2)^2)*(x-ParamMap#Lm)/ParamMap#LC^2)*/
 	 )
-    )
     //EOM
+// BUG IDENTIFIE AVEC JAVIER....
 
-	macro dX(a) Hx(x,ParamMap)*dx(a) //EOM
+	macro dX(a) Hx(x,y,ParamMap)*dx(a) //EOM
 
 
 // definition of mapping in y direction (real)
 
-    macro Rphys(y,ParamMap) 
+    macro Rphys(x,y,ParamMap) 
       	 (x<0?y:(y<ParamMap#yA?y: ( ParamMap#yA+(y-ParamMap#yA)/(1-(y-ParamMap#yA)^2/(ParamMap#yB-ParamMap#yA)^2)^2) ) ) 
       	 //EOM
       	 
-    macro Hy(y,ParamMap) 
+    macro Hy(x,y,ParamMap) 
       	(x<0?1:(y<ParamMap#yA?1: (-(y^2-2*y*ParamMap#yA+2*ParamMap#yB*ParamMap#yA-ParamMap#yB^2)^3/
       	(3*y^2-6*y*ParamMap#yA+4*ParamMap#yA^2-2*ParamMap#yB*ParamMap#yA+ParamMap#yB^2)/(-ParamMap#yB+ParamMap#yA)^4) ) )
 		//EOM
 
-	macro dY(a) Hy(y,ParamMap)*dy(a) //EOM
+	macro dY(a) Hy(x,y,ParamMap)*dy(a) //EOM
 	
 // Jacobian of the coordinate change
-	macro JJ 1/(Hx(x,ParamMap)*Hy(y,ParamMap)) //EOM	
+	macro JJ 1/(Hx(x,y,ParamMap)*Hy(x,y,ParamMap)) //EOM	
+
+
+// MACROS FOR BOUNDARY CONDITIONS
 
 macro BoundaryconditionsBaseFlow(du,up,v)
 	           on(1,du#x=Uinlet(y)-up#x,du#r=0.0)
@@ -144,53 +138,20 @@ macro BoundaryconditionsStability(u,v,m)
 
 
 
-// HERE ARE SOME MACROS WHICH ARE USEFUL FOR POST-PROCESSING WITH AN AXI FLOW OVER A BLUFF BODY
-
-//macro Trainee(u)   
-//	(
-//	int1d(th,2,21,22,23)(u#p*N.x*2*pi*y)
-//	-nu*int1d(th,2,21,22,23)( (2*dx(u#x)*N.x+(dx(u#r)+dy(u#x))*N.y)*2*pi*y)
-//	)
-////EOM
-//	
-//macro CoupleX(u)   
-//	(
-//	-nu*int1d(th,2,21,22,23)( 
-//	(dx(u#phi)*N.x+(-u#phi/y+dy(u#phi))*N.y)*y*2*pi*y)
-//	)	
-////EOM
-//
-//macro Portance(im,u)   
-//	(
-//	int1d(th,2,21,22,23)(u#p*N.y*y)
-//	-nu*int1d(th,2,21,22,23)( (2*dy(u#r)*N.y+(dx(u#r)+dy(u#x))*N.x)*2*pi*y)
-//	+im*nu*int1d(th,2,21,22,23)( ( (dy(u#phi)-u#phi/y)*N.y + (dx(u#phi))*N.x ) *pi*y)
-//	)
-////EOM
-
+// HERE ARE SOME MACROS
 macro FlowRate1(u)
     (
 	int1d(th,1)(-(u#x*N.x+u#r*N.y)*2*pi*y)
 	)
 //EOM 
 
-//macro FlowRate2(u)
-//    (
-//	int1d(th,92)((u#x*N.x+u#r*N.y)*2*pi*y)
-//	)
-//EOM 
-
-//macro deltaP(u)
-//	( u#p(-10,0)-u#p(20,5) )
-//EOM
-
 
 macro SFWriteMesh(filename,TH)
 {
      ofstream fileFF(filename);
 	 fileFF << "### Data generated by Freefem++ ; " << endl;
-     fileFF << "Mesh for the flow through a birdcall geometry" << endl;
-     fileFF << "datatype Mesh meshtype 2D" << endl;
+     fileFF << "Mesh for the flow through a single hole" << endl;
+     fileFF << "datatype Mesh meshtype 2DMapped" << endl; /* 2DMAPPED is important here ! */
 	 fileFF << "int np int Ndof real deltamin real deltamax" ;
 	 string PostProcessMeshDescription = " " ; /*description of customizable part*/
 	 fileFF << PostProcessMeshDescription << endl << endl ;
@@ -206,7 +167,25 @@ macro SFWriteMesh(filename,TH)
 	cout << "## delta max : " << delta[].max << endl;
 	fileFF << delta[].min << endl;
 	fileFF << delta[].max << endl;   
-    /*Next is customizable part ; here determination of the grid size at several points */ 
+    /*Next is customizable part ; here the physical coordinates (possibly complex...) */
+    {
+    ofstream file(ffdatadir+"Mapping.ff2m");    
+    fespace p1forff2m(TH,P1); /* Mind to use TH (argument of macro) as the current mesh is not always called th ! */  
+	p1forff2m xx,yy;
+    xx=x;
+    yy=y;
+	/*p1forff2m<complex> xphys,yphys;
+    xphys = Xphys(x,ParamMap);
+    yphys = Rphys(y,ParamMap);*/
+   	file << "### Data generated by Freefem++ ; " << endl;
+    file << "physical coordinates resulting from mapping (possibly complex...)" << endl;
+    file << "datatype MeshMapped " << endl;
+    file << "P1c xphys P1c yphys P1c Hx P1c Hy" << endl; 
+	for (int j=0;j<xx[].n ; j++) file << real(Xphys(xx[][j],ParamMap)) << endl << imag(Xphys(xx[][j],ParamMap)) << endl;
+	for (int j=0;j<xx[].n ; j++) file << real(Rphys(yy[][j],ParamMap)) << endl << imag(Rphys(yy[][j],ParamMap)) << endl;
+	for (int j=0;j<xx[].n ; j++) file << real(Hx(xx[][j],ParamMap)) << endl << imag(Hx(xx[][j],ParamMap)) << endl;
+	for (int j=0;j<xx[].n ; j++) file << real(Hy(yy[][j],ParamMap)) << endl << imag(Hy(yy[][j],ParamMap)) << endl;
+    } 
 }; 	 
 //EOM
 

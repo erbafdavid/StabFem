@@ -7,22 +7,26 @@ SF_Start;
 verbosity=10;
 close all;
 
-bf = SF_Init('Mesh_OneHole.edp',[chi,20,15,10,10]);
-Params = [4 22 1 0. 5 17]; % Lm, LA, LC, gammac, yA, yB
+bf = SF_Init('../Mesh_OneHole.edp',[chi,15,20,10,10]);
+Params = [5 21.5 1.25 0. 5 17]; % Lm, LA, LC, gammac, yA, yB
 
 bf = SF_BaseFlow(bf,'Re',1,'MappingParams', Params);
 bf = SF_BaseFlow(bf,'Re',10,'MappingParams', Params);
-bf = SF_Adapt(bf,'Hmax',0.5);
+bf = SF_Adapt(bf,'Hmax',0.5); 
 bf = SF_BaseFlow(bf,'Re',30,'MappingParams', Params);
 bf = SF_BaseFlow(bf,'Re',100,'MappingParams', Params);
 bf = SF_Adapt(bf,'Hmax',0.5); 
-Params = [4 17 1 0.1 5 17];
 bf = SF_BaseFlow(bf,'Re',300,'MappingParams', Params);
-bf = SF_Adapt(bf,'Hmax',0.5);
-Params = [4 17 1 0.3 5 17];
-bf = SF_BaseFlow(bf,'Re',350,'MappingParams', Params);
 bf = SF_BaseFlow(bf,'Re',1000,'MappingParams', Params);
 bf = SF_Adapt(bf,'Hmax',0.5);
+
+Params = [5 21.5 1.25 0.1 5 17];
+bf = SF_BaseFlow(bf,'Re',1000,'MappingParams', Params);
+bf = SF_Adapt(bf,'Hmax',0.5);
+Params = [5 21.5 1.25 0.3 5 17];
+bf = SF_BaseFlow(bf,'Re',1000,'MappingParams', Params);
+bf = SF_Adapt(bf,'Hmax',0.5);
+
 bf = SF_BaseFlow(bf,'Re',1500,'MappingParams', Params);
 bf = SF_Adapt(bf,'Hmax',.5);
 %bf = SF_BaseFlow(bf,'Re',1500,'MappingParams', Params);

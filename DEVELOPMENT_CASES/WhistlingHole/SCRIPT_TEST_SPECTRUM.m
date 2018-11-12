@@ -19,6 +19,13 @@ else
     bf = SF_BaseFlow(bf);
 end
 
+%% Illustration of the complex mapping function
+Xline = linspace(min(bf.mesh.points(1,:)),max(bf.mesh.points(1,:)),500);
+Xphysline = SF_ExtractData(bf.mesh,'xphys',Xline,0);
+figure;plot(Xline,real(Xphysline),'r-',Xline,imag(Xphysline),'b-');
+Hxline = SF_ExtractData(bf.mesh,'Hx',Xline,0);
+hold on;plot(Xline,real(Hxline),'r--',Xline,imag(Hxline),'b--');
+
 %% Chapter 2 : exploration of the spectrum and figure (mesh 1)
 figure(40);hold on;
 bf= SF_BaseFlow(bf,'Re',1700);
