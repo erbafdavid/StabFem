@@ -50,11 +50,13 @@ end
 if(strcmpi(meshstruct.meshtype,'2DMapped'))
     mydisp(2,'Mapped mesh ; reading additional file for physical coordinates');
     fileToRead4 = [ffdatadir,'Mapping.ff2m'];
-    m2 = importFFdata(meshstruct,fileToRead4);
-    meshstruct.xphys = m2.xphys;
-    meshstruct.yphys = m2.yphys;
-    meshstruct.Hx = m2.Hx;
-    meshstruct.Hy = m2.Hy;
+    if(exist(fileToRead4))
+        m2 = importFFdata(meshstruct,fileToRead4);
+        meshstruct.xphys = m2.xphys;
+        meshstruct.yphys = m2.yphys;
+        meshstruct.Hx = m2.Hx;
+        meshstruct.Hy = m2.Hy;
+    end
 end
 
 mydisp(2, ['END FUNCTION importFFmesh.m'])

@@ -318,6 +318,7 @@ ENDIFMACRO
  		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
  		 {ofstream fileMode(namefile+".txt");
  		  ux[] = eux[i][];
+ 		  NormalizeMode(u);
  		  fileMode << ux[]; 
  		  fileMode << endl << endl << Re << endl << endl << real(ev[i]) << "   " << imag(ev[i])  << endl;
  		  }

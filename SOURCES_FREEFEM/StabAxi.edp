@@ -39,6 +39,19 @@
 include "SF_Geom.edp";   
 include "Macros_StabFem.edp";
 
+
+// PREVOIR ICI LES MACROS PAR DEFAUT.... EN VOILA DEJA UNE
+
+
+IFMACRO(!NormalizeMode)
+macro NormalizeMode(u)
+{
+real NORM = int2d(th)((abs(u#x)^2+abs(u#r)^2+abs(u#phi)^2)*y);
+u#x[] = u#x[]/NORM;
+}
+//EOM
+ENDIFMACRO
+
 //////////////////////////////////////////////////////////////////////////////
 //////////////////----->             parameters         <-----///////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -250,6 +263,7 @@ if(iadjoint=="A") { ev = conj(ev); } ;
 
  		 if(iadjoint=="D"){namefile=ffdatadir+"Eigenmode"+(i+1);}
  		 else{namefile=ffdatadir+"EigenmodeA"+(i+1);};
+ 		 NormalizeMode(u);
  		 {ofstream fileMode(namefile+".txt");
  		  ux[] = eux[i][];
  		  fileMode << ux[]; 
@@ -420,6 +434,8 @@ else if(iadjoint=="S")
     		typeDA = "A";
     		uxadjoint[]=ux[];
     	};
+    
+    NormalizeMode(u);
     
     // write outpout in .txt format (for freefem)
     {

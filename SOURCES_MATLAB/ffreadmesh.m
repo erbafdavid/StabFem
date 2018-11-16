@@ -49,8 +49,14 @@
 %
 
 function [p,b,t,nv,nbe,nt,labels]=ffreadmesh(filename)
+% modif by David to link verbose parameter of this function with verbosity from StabFem 
+global verbosity;
+    if(verbosity>=10)
+        verbose = 1;
+    else
+        verbose= 0;
+    end
 
-    verbose=1;
 
     mesh_format_FF=1;
     mesh_format_GMSH=2;

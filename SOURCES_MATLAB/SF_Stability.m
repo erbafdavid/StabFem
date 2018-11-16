@@ -450,12 +450,12 @@ end
                 evA=importFFdata(ffmesh,'EigenmodeA.ff2m');
                 evA.type='A';
             end
-             if (nargout >3)
+             if (nargout >4)
             Endo=importFFdata(ffmesh,'Endogeneity.ff2m');
             Endo.type='S'; % useful ?
               mydisp(2,['  # Endogeneity successfully imported']);
-        end
-        
+             end
+         end
         if(eigenvectors.iter<0) 
             if(verbosity>1)
                 error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1). If you want to continue your loops despite this error (confident mode) use verbosity=1 ']);
@@ -468,6 +468,7 @@ end
         for iev = 1:p.Results.nev
         egv=importFFdata(ffmesh,['Eigenmode' num2str(iev) '.ff2m']);
         egv.type=p.Results.type;
+        %eigenvectors(iev) = egv;
         eigenvectors = [eigenvectors egv];
         end
         eigenvectors=eigenvectors(o);%sort the eigenvectors with the same filter as the eigenvalues
@@ -476,6 +477,7 @@ end
     for iev = 1:p.Results.nev
         egv=importFFdata(ffmesh,['EigenmodeA' num2str(iev) '.ff2m']);
         egv.type=p.Results.type;
+        %eigenvectors(iev) = egv;
         eigenvectors = [eigenvectors egv];
     end
     eigenvectors=eigenvectors(o);%sort the eigenvectors with the same filter as the eigenvalues

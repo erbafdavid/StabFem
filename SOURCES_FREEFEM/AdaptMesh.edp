@@ -97,7 +97,7 @@ IFMACRO(FREESURFACE,YES)
 	CalcGeomSurf;
 ENDIFMACRO
 
-	
+
 
     cout << endl << "$$#### Mesh information BEFORE ADAPT :" << endl;  
     cout << "$$#### Number of vertices    " << th.nv <<  endl;	
@@ -256,7 +256,15 @@ for(int i=0;i<nfields;i++)
        cout << "$$	Auxiliary SCALARS associated to this field : " << endl << "$$    " ;
 	  for(int j =0;j<scalarnumber(i);j++){ cout << scalars(i,j) << " " ;};
 	  cout << endl;
+	  
+//	 [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] =  [CUSTOMADAPT(x,y)*ADFTAx[nfieldsR],CUSTOMADAPT(x,y)*ADFTAy[nfieldsR],CUSTOMADAPT(x,y)*ADFTAz[nfieldsR]]; 
     };
+
+// Custom choices for AdaptMesh
+// IF YOU WANT TO DO SOMETHING SPECIFIC FOR ADAPTATION IN YOUR CASE, DEFINE A MACRO CUSTOMADAPT  in your Macros_StabFem.edp file, it will be plugged here.      
+IFMACRO(CUSTOMADAPT)
+CUSTOMADAPT;
+ENDIFMACRO
 
 
 ///
@@ -364,6 +372,9 @@ cout << endl << "$$#### Mesh information AFTER ADAPT :" << endl;
 
 	savemesh(thnew,ffdatadir+"mesh_adapt.msh");
 	SFWriteMesh(ffdatadir+"mesh_adapt.ff2m",thnew);
+	IFMACRO(COORDINATEMAPPING,YES)
+	SFWriteMapping(ffdatadir+"Mapping.ff2m",thnew);
+	ENDIFMACRO
 
 
 ///	
