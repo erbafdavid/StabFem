@@ -1,7 +1,14 @@
 %> @file SOURCES_MATLAB/SF_Adapt.m
 %> @brief Matlab driver for Mesh Adaptation
 %> 
-%> Usage : [flow1 [,flow2,...] ] = SF_Adapt(flow1 [,flow2,...] [,'opt1','val1']) 
+%> Usage : 
+%> 1/ mesh-associated mode (for linear problems without baseflows, e.g. sloshing, acoustics...)
+%> [mesh [,flow1,flow2,...] ] = SF_Adapt(mesh,flow1 [,flow2,...] [,'opt1','val1']) 
+%> 
+%> 2/ baseflow-associated mode (for stability problems with baseflow)
+%> [flow1 [,flow2,...] ] = SF_Adapt(flow1 [,flow2,...] [,'opt1','val1']) 
+%>
+%> @param[in] mesh : mesh-object (only when using in mesh-associated mode)
 %> @param[in] flow1 : flow provided for mesh adaptation.
 %> @param[in] (optional) flow2, flow3, etc... 
 %>             additional flows for adaptation to multiple flows (max number currently 3) 
@@ -10,12 +17,12 @@
 %> @param[out] flow1: flow structure reprojected on adapted mesh
 %> @param[out] flow2; ... if asked, eigenmode recomputed on adapted mesh
 %>
-%> IMPORTANT NOTE : if flow1 is of type "BaseFlow" then it is recomputed
+%> IMPORTANT NOTE : if using mode 2 and if flow1 is of type "BaseFlow" then it is recomputed
 %>                  after flow adatpation. additional flows are simply reprojected 
 %>                  on new mesh, not recomputed.
 %>
 %>
-%> @author David Fabre
+%> @author David Fabre & J. Sierra, redesigned in nov. 2018
 %> @version 2.1
 %> @date 02/07/2017 Release of version 2.1
 
@@ -46,11 +53,13 @@ end
 narginopt = nargin-nfields;
 vararginopt = {varargin{nfields+1:end}};
 
-if(strcmp(varargin{1}.datatype,'mesh'))
+if(strcmpi(varargin{1}.datatype,'mesh'))
     vararginfields = {varargin{2:nfields}};
     nfields = nfields-1;
+    ffmesh = varargin{1};
 else
     vararginfields = {varargin{1:nfields}};
+    ffmesh = varargin{1}.mesh;
 end
 
 % creating an array of structures "flowtoadapt"
@@ -72,19 +81,21 @@ flowforadapt = [vararginfields{1:nfields}];
 % END WORKAROUND 
 
 %% designation of the adapted mesh
-if(isfield(flowforadapt(1).mesh,'meshgeneration'))
-     meshgeneration = flowforadapt(1).mesh.meshgeneration;
+if(isfield(ffmesh,'meshgeneration'))
+     meshgeneration = ffmesh.meshgeneration;
 else
     meshgeneration = 0;
 end
 designation = ['_adapt',num2str(meshgeneration+1)];
 % this desingation will be added to the names of the mesh/BF files
 
+if(strcmpi(flowforadapt(1).datatype,'BaseFlow'))
 if (isfield(flowforadapt(1),'Re'))
    designation = [designation, '_Re' , num2str( flowforadapt(1).Re)];
 end
 if (isfield(flowforadapt(1),'Ma'))
    designation = [designation, '_Ma' , num2str( flowforadapt(1).Ma) ];
+end
 end
 
 

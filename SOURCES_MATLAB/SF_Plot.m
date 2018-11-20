@@ -143,6 +143,13 @@ if (mod(nargin, 2) == 1) % plot mesh in single-entry mode : mesh
     if (verbosity >= 15)
         varargin;
     end;
+    if(strcmpi(symmetry,'xm'))
+        mesh.points(2,:) = -mesh.points(2,:);
+        symmetry = 'no';
+ elseif(strcmpi(symmetry,'ym'))
+        mesh.points(1,:) = -mesh.points(1,:); 
+        symmetry ='no';
+  end
     handle = ffpdeplot(mesh.points, mesh.bounds, mesh.tri, varargin{:});
 else % plot mesh in single-entry mode : data
     mesh = FFdata.mesh;
@@ -161,7 +168,13 @@ else % plot mesh in single-entry mode : data
         if (verbosity >= 15)
             varargin
         end;
-          
+         if(strcmpi(symmetry,'xm'))
+        mesh.points(2,:) = -mesh.points(2,:);
+        symmetry = 'no';
+ elseif(strcmpi(symmetry,'ym'))
+        mesh.points(1,:) = -mesh.points(1,:); 
+        symmetry ='no';
+  end  
         handle = ffpdeplot(mesh.points, mesh.bounds, mesh.tri, varargin{:});
         %axis equal;
     else

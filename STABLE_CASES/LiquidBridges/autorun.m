@@ -94,20 +94,20 @@ figure(4);
 E=0.15;
 
 subplot(1,4,1);
-plotFF(emm0(3),'phi.im','title',{'Mode m=0,a',['\omega_r = ',num2str(-imag(evm0(3)))] } );
-hold on;plotFF_ETA(emm0(3),'Amp',E,'style','r');hold off;
+SF_Plot(emm0(3),'phi.im','title',{'Mode m=0,a',['\omega_r = ',num2str(-imag(evm0(3)))] } );
+hold on;SF_Plot_ETA(emm0(3),'Amp',E,'style','r');hold off;
 
 subplot(1,4,2);
-plotFF(emm0(5),'phi.im','title',{'Mode m=0,s',['\omega_r = ',num2str(-imag(evm0(5)))] } );hold on;
-plotFF_ETA(emm0(5),'Amp',E,'style','r');hold off;
+SF_Plot(emm0(5),'phi.im','title',{'Mode m=0,s',['\omega_r = ',num2str(-imag(evm0(5)))] } );hold on;
+SF_Plot_ETA(emm0(5),'Amp',E,'style','r');hold off;
 
 subplot(1,4,3);
-plotFF(emm1(1),'phi.im','title',{'Mode m=1,s',['\omega_r = ',num2str(-imag(evm1(1)))] } );hold on;
-plotFF_ETA(emm1(1),'Amp',E,'style','r');hold off;
+SF_Plot(emm1(1),'phi.im','title',{'Mode m=1,s',['\omega_r = ',num2str(-imag(evm1(1)))] } );hold on;
+SF_Plot_ETA(emm1(1),'Amp',E,'style','r');hold off;
 
 subplot(1,4,4);
-plotFF(emm1(3),'phi.im','title',{'Mode m=1,a',['\omega_r = ',num2str(-imag(evm1(3)))] } );hold on;
-plotFF_ETA(emm1(3),'Amp',E,'style','r');hold off;
+SF_Plot(emm1(3),'phi.im','title',{'Mode m=1,a',['\omega_r = ',num2str(-imag(evm1(3)))] } );hold on;
+SF_Plot_ETA(emm1(3),'Amp',E,'style','r');hold off;
 
 pos = get(gcf,'Position'); pos(3)=pos(4)*2.6;set(gcf,'Position',pos); % resize aspect ratio
 %set(gca,'FontSize', 14);
@@ -117,14 +117,14 @@ pause(1);
 
 figure(5); hold on;
 E=0.15;
-h1 = plotFF_ETA(emm0(3),'Amp',E,'style','b','symmetry','YS');hold on;
-h2 = plotFF_ETA(emm0(5),'Amp',E,'style','r','symmetry','YS');hold on;
-h3 = plotFF_ETA(emm1(1),'Amp',E,'style','g','symmetry','YA');hold on;
-h4 = plotFF_ETA(emm1(3),'Amp',E,'style','c','symmetry','YA');hold on;
+h1 = SF_Plot_ETA(emm0(3),'Amp',E,'style','b','symmetry','YS');hold on;
+h2 = SF_Plot_ETA(emm0(5),'Amp',E,'style','r','symmetry','YS');hold on;
+h3 = SF_Plot_ETA(emm1(1),'Amp',E,'style','g','symmetry','YA');hold on;
+h4 = SF_Plot_ETA(emm1(3),'Amp',E,'style','c','symmetry','YA');hold on;
 h = [h1; h2; h3; h4];
 
 % draw mean shape, end limits and axis
-plotFF_ETA(emm1(3),'Amp',0,'style','k','symmetry','YA');hold on;
+SF_Plot_ETA(emm1(3),'Amp',0,'style','k','symmetry','YA');hold on;
 plot([ffmesh.xsurf(1), -ffmesh.xsurf(1)],[ffmesh.ysurf(1), ffmesh.ysurf(1)],'k','LineWidth',3);
 plot([ffmesh.xsurf(end), -ffmesh.xsurf(end)],[ffmesh.ysurf(end), ffmesh.ysurf(end)],'k','LineWidth',3);
 plot([0,0],[ffmesh.ysurf(1), ffmesh.ysurf(end)],'k:');
@@ -307,32 +307,59 @@ if(error3>5e-3)
     value = value+1 
 end
 
-if(isfigures>0)
-figure(10);
-E=0.2;
 
+
+%% Test 4 : mesh adaptation to eigenmodes
+
+ffmesh2 = SF_Adapt(ffmesh,emViscm1(3),emViscm0(2));
+disp('number of mesh points after adapt :') 
+ffmesh2.np
+
+error4 = abs(ffmesh2.np-4223)
+if(error4>10) 
+    value = value+1 
+end
+
+%[evViscm1,emViscm1] =  SF_Stability(ffmesh2,'nu',nu,'gamma',1,'nev',10,'m',1,'shift',3.45i);
+%[evViscm0,emViscm0] =  SF_Stability(ffmesh2,'nu',nu,'gamma',1,'nev',10,'m',0,'shift',3.45i);
+%evm0REF = [-0.1076 + 4.0619i -0.0487 + 2.2321i -0.1888 + 6.1668i -0.0120 + 0.8137i]
+%emv1REF = [ -0.0826 + 3.0622i,  -0.1426 + 4.7305i, -0.0384 + 1.7461i, -0.2218 + 6.7166i ]
+%error4=0
+%error4 = abs(evViscm0(1)/evm0REF(1)-1)+abs(evViscm0(1)/evm0REF(1)-1)+ abs(evViscm1(3)/evm1REF(3)-1)+abs(evViscm1(4)/evm1REF(4)-1)
+%if(error4>5e-3) 
+%    value = value+1 
+%end
+
+if(isfigures>=1)
+
+    [evViscm1,emViscm1] =  SF_Stability(ffmesh2,'nu',nu,'gamma',1,'nev',10,'m',1,'shift',3.45i);
+    [evViscm0,emViscm0] =  SF_Stability(ffmesh2,'nu',nu,'gamma',1,'nev',10,'m',0,'shift',3.45i);
+
+    
 subplot(1,4,1);
-plotFF(emViscm0(4),'ur1.im','title',{'Mode m=0,a',['\omega_r = ',num2str(imag(evViscm0(4))),', \omega_i = ',num2str(real(evViscm0(4))) ]} );hold on;
-plotFF_ETA(emViscm0(4),'Amp',E,'style','r');hold off;
+SF_Plot(emViscm0(4),'ur1.im','title',{'Mode m=0,a',['\omega_r = ',num2str(imag(evViscm0(4))),', \omega_i = ',num2str(real(evViscm0(4))) ]} );hold on;
+SF_Plot_ETA(emViscm0(4),'Amp',E,'style','r');hold off;
 
 subplot(1,4,2);
-plotFF(emViscm0(2),'ur1.im','title',{'Mode m=0,s',['\omega_r = ',num2str(imag(evViscm0(2))),', \omega_i = ',num2str(real(evViscm0(2)))]});hold on;
-plotFF_ETA(emViscm0(2),'Amp',E,'style','r');hold off;
+SF_Plot(emViscm0(2),'ur1.im','title',{'Mode m=0,s',['\omega_r = ',num2str(imag(evViscm0(2))),', \omega_i = ',num2str(real(evViscm0(2)))]});hold on;
+SF_Plot_ETA(emViscm0(2),'Amp',E,'style','r');hold off;
 
 subplot(1,4,3);
-plotFF(emViscm1(5),'ur1.im','title',{'Mode m=1,s',['\omega_r = ',num2str(imag(evViscm1(5))),', \omega_i = ',num2str(real(evViscm1(5))) ] });
+SF_Plot(emViscm1(5),'ur1.im','title',{'Mode m=1,s',['\omega_r = ',num2str(imag(evViscm1(5))),', \omega_i = ',num2str(real(evViscm1(5))) ] });
 hold on;
-plotFF_ETA(emViscm1(5),'Amp',E,'style','r');hold off;
+SF_Plot_ETA(emViscm1(5),'Amp',E,'style','r');hold off;
 
 subplot(1,4,4);
-plotFF(emViscm1(3),'ur1.im','title',{'Mode m=1,a',['\omega_r = ',num2str(imag(evViscm1(3))),', \omega_i = ', num2str(real(evViscm1(3))) ] } );
+SF_Plot(emViscm1(3),'ur1.im','title',{'Mode m=1,a',['\omega_r = ',num2str(imag(evViscm1(3))),', \omega_i = ', num2str(real(evViscm1(3))) ] } );
 hold on;
-plotFF_ETA(emViscm1(3),'Amp',E,'style','r');hold off;
+SF_Plot_ETA(emViscm1(3),'Amp',E,'style','r');hold off;
 
 pos = get(gcf,'Position'); pos(3)=pos(4)*2.6;set(gcf,'Position',pos); % resize aspect ratio
 %set(gca,'FontSize', 14);
 saveas(gcf,'FIGURES/Bridges_Viscous_Oh1em2_Eigenmodes_phi_cyl_L3_5',figureformat);
 
-end
+figure;plotFF(ffmesh2);hold on;plotFF(ffmesh,'symmetry','YM','title','Mesh : initial (left) and adapted (right)')
 
 end
+end
+

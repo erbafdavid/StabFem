@@ -95,6 +95,7 @@ IFMACRO(FREESURFACE,YES)
 	include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 	SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
 	CalcGeomSurf;
+	cout << "Nsurface before ADAPT : " << Nsurface << endl;
 ENDIFMACRO
 
 
@@ -352,14 +353,13 @@ ENDIFMACRO
 IFMACRO(FREESURFACE,YES)
 	if(typesurfacemesh=="plain") 
 	{
-	thsurface = thnew; 	// Maillage 'surface'
+	thsurface = thnew; 	/* Maillage 'surface'*/
 	};
 	if(typesurfacemesh=="empty") 
 	{
-	thsurface = emptymesh(thnew); 	// Maillage 'surface'
+	thsurface = emptymesh(thnew); 	/* Maillage 'surface'*/
 	};
-	SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
-	CalcGeomSurf;
+	SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); 
 ENDIFMACRO
 
 
