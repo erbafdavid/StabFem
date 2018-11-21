@@ -89,7 +89,19 @@ function handle = plotFF(FFdata, varargin);
 %                   (use this option to plot fields with strong spatial amplifications)
 %                   NB : is S = 0 the colorrange is purely logarithmic
 %                   -1 (default, disabled) | S
+% 
+%       'Streamlines' Set streamlines of a given vector field (Not
+%                      optimised/ it takes more time than a normal plot)
+%                     'no' (default) | 'yes'
+%       'StreamlinesX0' array that stores the origin in x of streamlines
 %
+%       'StreamlinesY0' array that stores the origin in y of streamlines
+%
+%       'StreamlinesFieldX' string of the field to be taken as reference 
+%                           for the x component. 'ux' (default) 
+%
+%       'StreamlinesFieldY' string of the field to be taken as reference 
+%                           for the x component. 'uy' (default) 
 %     Notes :
 
 
@@ -152,7 +164,6 @@ end
 
 
 %%% prepares to invoke ffpdeplot...
-
 if (mod(nargin, 2) == 1) % plot mesh in single-entry mode : mesh
     mesh = FFdata;
     varargin = {varargin{:}, 'mesh', 'on'};
@@ -245,7 +256,7 @@ else % plot mesh in single-entry mode : data
 
   handle = ffpdeplot(pointsS, FFdata.mesh.bounds, FFdata.mesh.tri, 'xydata', data, varargin{:});
 
-    
+
 %%% SYMMETRIZATION OF THE PLOT
 if(strcmp(symmetry,'no'))
         mydisp(20,'No symmetry');
@@ -269,8 +280,36 @@ else
   
     hold on;
     handle = ffpdeplot(pointsS, FFdata.mesh.bounds, FFdata.mesh.tri, 'xydata', dataS, varargin{:});
-    hold off;
 end
+
+%%% Streamlines
+p = inputParser;
+addParameter(p, 'Streamlines', 'no'); % yes/no
+addParameter(p, 'StreamlinesX0', [0]); % Array Position streamlines start X
+addParameter(p, 'StreamlinesY0', [0]); % Array Position streamlines start Y
+addParameter(p, 'StreamlinesFieldX', 'ux'); % Field to represent streamlines in X
+addParameter(p, 'StreamlinesFieldY', 'uy'); % Field to represent streamlines in Y
+
+parse(p, varargin{:});
+
+x0 = p.Results.StreamlinesX0;
+y0 = p.Results.StreamlinesY0;
+FieldX = p.Results.StreamlinesFieldX;
+FieldY = p.Results.StreamlinesFieldY;
+
+tri = mesh.tri(1:3,:);
+X = mesh.points(1,:);
+Y = mesh.points(2,:);
+U = FFdata.(FieldX);
+V = FFdata.(FieldY);
+if(p.Results.Streamlines == "yes")
+    FlowU=TriStream(tri,X,Y,U,V,x0,y0);
+    hold on;
+    PlotTriStream(FlowU,'k');
+end
+hold off;
+
+% End streamlines
 
 end
 

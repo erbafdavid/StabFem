@@ -24,7 +24,7 @@ for realTerm = Real_Range
     for imagTerm = Imag_Range
         evSearch = realTerm - imagTerm*1i;
         [ev,em] = SF_Stability(bf, 'shift', evSearch, 'm', 0, 'nev', 10, 'type', 'D')
-        spectrumNOCM = [spectrum, ev];
+        spectrumNOCM = [spectrumNOCM, ev];
         spectrumStructNOCM = [spectrumStructNOCM, em];
     end
 end
@@ -40,7 +40,7 @@ bf = SF_SetMapping(bf,'mappingtype','box','mappingparams',Params);
 bf=SF_BaseFlow(bf,'Re',Re,'Mach',Ma,'ncores',1,'type','NEW');
 
 
-spectrum = [];
+spectrumCM = [];
 spectrumStruct = [];
 Imag_Range = [0.5:0.5:10];
 Real_Range = [1.0:-0.1:-0.5];
@@ -48,7 +48,9 @@ for realTerm = Real_Range
     for imagTerm = Imag_Range
         evSearch = realTerm - imagTerm*1i;
         [ev,em] = SF_Stability(bf, 'shift', evSearch, 'm', 0, 'nev', 10, 'type', 'D')
-        spectrum = [spectrum, ev];
+        spectrumCM = [spectrumCM, ev];
         spectrumStruct = [spectrumStruct, em];
     end
 end
+
+
