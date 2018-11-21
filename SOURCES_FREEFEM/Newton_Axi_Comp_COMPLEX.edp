@@ -79,9 +79,8 @@ if(mpirank==0)
    }
 broadcast(processor(0),th); 
 
-complex SupSemiSfera=int1d(th,bcinletsponge)(1.0/Hy(y,ParamMap)*Rphys(y,ParamMap))*(2*pi);
+complex SupSemiSfera=int1d(th,bcinletsponge)(1.0/Hy(x,y,ParamMap)*Rphys(x,y,ParamMap))*(2*pi);
 complex Uinlet=Mflux/(Rhoinlet*SupSemiSfera);
-cout << " Length of the top of the domain " << Rphys(Lup+LupSponge,ParamMap) << endl;
 cout << " Mflux " << Mflux << endl;
 cout << " Uinlet " << Uinlet << endl;
 
@@ -132,7 +131,7 @@ cout << "$$ Reynolds of the initial condition : " << Reans << endl;
   macro nvec(u) (N.x*u#x+N.y*u#y)//EOM
   macro tvec(u) (N.y*u#x-N.x*u#y)//EOM
 
-varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank) (JJ*(Rphys(y,ParamMap)*(rhos*(drho*div(Ub)+Rhob*div(du)+ugradf(Ub,drho)+ugradf(du,Rhob)) 
+varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank) (JJ*(Rphys(x,y,ParamMap)*(rhos*(drho*div(Ub)+Rhob*div(du)+ugradf(Ub,drho)+ugradf(du,Rhob)) 
 								       //mass equation
 								       -dp*div(us)
 								       //+gradpdotv(dp,us)
@@ -145,7 +144,7 @@ varf jacobian(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=int2d(th,mpirank) (JJ*(Rphy
   +BoundaryconditionsBaseFlow(du,dp,dT,drho,Uinlet);
 
 
-varf vNs(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpirank)(JJ*(Rphys(y,ParamMap)*(rhos*(Rhob*div(Ub)+ugradf(Ub,Rhob))
+varf vNs(def(du,dp,dT,drho),def(us,ps,Ts,rhos))=-int2d(th,mpirank)(JJ*(Rphys(x,y,ParamMap)*(rhos*(Rhob*div(Ub)+ugradf(Ub,Rhob))
 							   //mass equation
 							   -Pb*div(us)
 							   //+gradpdotv(Pb,us)
@@ -191,7 +190,7 @@ int contout=0;
 	      mpiAllReduce(rhsl,rhs,mpiCommWorld,mpiSUM);
 	      set(Newt,solver=sparsesolver,sparams=ssparams);
 	      dux[] =  (Newt^-1*rhs);
-	      ener=sqrt(abs(int2d(th)(JJ*(Rphys(y,ParamMap)*(abs(duy)^2+abs(dux)^2))))); 
+	      ener=sqrt(abs(int2d(th)(JJ*(Rphys(x,y,ParamMap)*(abs(duy)^2+abs(dux)^2))))); 
 	      if(mpirank==0)
 		{
 		  cout << "iter "<<i<<" | BNorm of u = " << ener << endl;
