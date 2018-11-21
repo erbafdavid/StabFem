@@ -104,10 +104,10 @@ ENDIFMACRO
     cout << "$$#### Number of vertices    " << th.nv <<  endl;	
 
 
-	real Nbvx	= 50000.;		//maximun number of vertices
-	real Thetamax	= 1e-3;			//minimum corner angle in degree
-	real Verbosity	= 1; // warning : must be integer !
-	bool Splitpbedge= false;
+//	real Nbvx	= 100000.;		//maximun number of vertices
+//	real Thetamax	= 1e-3;			//minimum corner angle in degree
+//	real Verbosity	= 1; // warning : must be integer !
+//	bool Splitpbedge= false;
 // NB ALL OTHER PARAMETERS ARE NOW WRITTEN IN THIS FILE :
 	include "Param_Adaptmesh.edp";
 

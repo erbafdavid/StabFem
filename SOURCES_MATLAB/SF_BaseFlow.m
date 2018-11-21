@@ -139,7 +139,7 @@ end %switch
 
 errormessage = 'ERROR : SF_ base flow computation aborted';
 
-if (exist([BFfilename, '.txt']) == 2 && strcmp(p.Results.type, 'NEW') ~= 1 && strcmp(p.Results.type, 'POSTADAPT') ~= 1)
+if (exist([BFfilename, '.txt']) == 2 && strcmpi(p.Results.type, 'NEW') ~= 1 && strcmpi(p.Results.type, 'POSTADAPT') ~= 1)
     mydisp(3, ['Base flow already computed for Re = ', num2str(Re)]);
     mycp([BFfilename, '.txt'], [ffdatadir, 'BaseFlow.txt']); %% in future this should not be necessary
     mycp([BFfilename, '.ff2m'], [ffdatadir, 'BaseFlow.ff2m']); %% in future this should not be necessary
@@ -171,7 +171,7 @@ else
     
     % Copy under the expected name
     
-    if(strcmp(p.Results.type, 'POSTADAPT')==1)
+    if(strcmpi(p.Results.type, 'POSTADAPT')==1)
          myrm([ffdatadir '/BASEFLOWS/*']); % after adapt we clean the "BASEFLOWS" directory as the previous baseflows are no longer compatible 
     end
     mycp([ffdatadir, 'BaseFlow.txt'], [BFfilename, '.txt']);

@@ -1,4 +1,4 @@
-function meshstruct = importFFmesh(fileToRead1, opt)
+function meshstruct = importFFmesh(fileToRead1)
 global ff ffdir ffdatadir sfdir verbosity
 
 %  function importFFmesh
@@ -48,21 +48,21 @@ end
 
 
 if(strcmpi(meshstruct.meshtype,'2DMapped'))
-    mydisp(2,'Mapped mesh ; reading additional file for physical coordinates');
+    mydisp(2,'Mapped mesh ; reading additional file for physical coordinates and mapping jacobians');
     fileToRead4 = [ffdatadir,'Mapping.ff2m'];
     if(exist(fileToRead4))
         m2 = importFFdata(meshstruct,fileToRead4);
-        meshstruct.xphys = m2.xphys;
-        meshstruct.yphys = m2.yphys;
-        meshstruct.Hx = m2.Hx;
-        meshstruct.Hy = m2.Hy;
+        %merge m2 and meshstruct
+        f = fieldnames(m2);
+        for i = 1:length(f)
+            if (~strcmpi(f{i},'filename'))&&(~strcmpi(f{i},'datatype'))&&(~strcmpi(f{i},'mesh'))
+                meshstruct.(f{i}) = m2.(f{i})
+            end
+        end
     end
 end
-
 mydisp(2, ['END FUNCTION importFFmesh.m'])
 end
-
-
 
 function generation = findgeneration(Filename)
 % this function extracts the number in a filename with the form

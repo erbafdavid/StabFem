@@ -20,7 +20,10 @@ function handle = plotFF(FFdata, varargin);
 %   (https://github.com/samplemaker/freefem_matlab_octave_plot)
 %
 %   [PARAM,VALUE] are any couple of name/value parameter accepted by
-%   ffpdeplot. The list of possibilities currently comprises the following :
+%   ffpdeplot. 
+%   The list of accepted parameters are the same as accepted by ffpdeplot,
+%   plus two specific ones : 'symmmetry' and 'logsat'.
+%   NB : parameter 'colomap' accepts  a few custom ones including 'redblue' and 'ice'. 
 %
 %   specifies parameter name/value pairs to control the input file format
 %
@@ -33,6 +36,8 @@ function handle = plotFF(FFdata, varargin);
 %                       'continuous' | 'off' (default)
 %      'ColorMap'    ColorMap value or matrix of such values
 %                       'cool' (default) | colormap name | three-column matrix of RGB triplets
+%                       NB : In addition to default ones ('cool', jet', etc...) 
+%                            we provide a few custom ones ('redblue', 'ice', etc...)
 %      'ColorBar'    Indicator in order to include a colorbar
 %                       'on' (default) | 'off' | 'northoutside' ...
 %      'CBTitle'     Colorbar Title
@@ -78,7 +83,12 @@ function handle = plotFF(FFdata, varargin);
 %
 %       'symmetry'  symmetry property of the flow to plot
 %                       'no' (default) | 'YS' (symmetric w.r.t. Y axis) | 'YA' (antisymmetric w.r.t. Y axis) | 'XS' | 'XA' 
-%                                      | 'XM' (mirror image w/r to X axis) | 'YM'      
+%                                      | 'XM' (mirror image w/r to X axis) | 'YM'  
+%       'logsat'    use nonlinearly scaled colorange using filter function f_S
+%                   colorange is linear when |value|<S and turns into logarithmic when |value|>S  
+%                   (use this option to plot fields with strong spatial amplifications)
+%                   NB : is S = 0 the colorrange is purely logarithmic
+%                   -1 (default, disabled) | S
 %
 %     Notes :
 
@@ -113,7 +123,7 @@ end
 
 % check if 'symmetry' is part of the parameters and recovers it
 symmetry = 'no';
-for i=1:nargin-2
+for i=1:length(varargin)
       if(strcmp(varargin{i},'symmetry'))
            isymmetry = i;
            symmetry = varargin{i+1};
@@ -121,6 +131,19 @@ for i=1:nargin-2
 end
 if (strcmp(symmetry,'no')~=1)
        varargin = { varargin{1:isymmetry-1} ,varargin{isymmetry+2:end}} ;
+end
+
+% check if 'logsat' is part of the parameters and recovers it
+logscaleS = -1;
+for i=1:length(varargin)
+      if(strcmp(varargin{i},'logsat'))
+           ilogscale = i;
+           logscaleS = varargin{i+1};
+           mydisp(2,['using colorrange with logarithmic saturation ; S = ',num2str(logscaleS)]);
+      end    
+end
+if (logscaleS~=-1)
+       varargin = { varargin{1:ilogscale-1} ,varargin{ilogscale+2:end}} ;
 end
 
 
@@ -191,11 +214,13 @@ else % plot mesh in single-entry mode : data
         else
             data = field1;
         end
-        
+        if (logscaleS~=-1)
+            data = logfilter(data,logscaleS);
+        end
         
         if (strcmpi(contourval,'off')~=1&&strcmpi(contourval,'on')~=1)
         varargin{icontour} = 'on';
-        [dumb, field, suffix] = fileparts(contourval); % to extract the suffix
+        [~, field, suffix] = fileparts(contourval); % to extract the suffix
             if (strcmp(suffix, '.im') == 1)
                 xydata = imag(getfield(FFdata, field));
             else
@@ -272,4 +297,8 @@ function cmap = ice()
 colmapdef=[255,255,255; 125,255,255; 0,123,255; 0,0,124; 0,0,0]/255;
 [sz1,~]=size(colmapdef);
 cmap=interp1(linspace(0,1,sz1),colmapdef,linspace(0,1,255));
+end
+
+function y = logfilter(x,S)
+y = S*sign(x).*log(1+abs(x)/S);
 end
