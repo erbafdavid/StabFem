@@ -46,15 +46,6 @@ include "SF_Geom.edp";
 include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
 
-IFMACRO(EIGENSOLVER,SLEPC)
-//load "PETSc-complex"
-//load "SLEPc-complex"                    
-//macro partitioner()metis// 
-//macro dimension(      )2// 
-//include "macro_ddm.idp"                 
-ENDIFMACRO
-
-
 
 IFMACRO(!NormalizeMode)
 macro NormalizeMode(u)
@@ -165,18 +156,22 @@ IFMACRO(EIGENSOLVER,SLEPC)
 if(nev>1) {isshift=0;}; // WARNING the shift should be incorporated in the operator for simple shift-invert and Arpack, but not when using SLEPc !
 ENDIFMACRO
 
+macro rr 
+	Rphys(x,y,ParamMap) 
+//EOM
+
 	varf LNSE([ux,ur,up],[vx,vr,vp],eps=1e-16) = 
 	int2d(th)(
 	(
-	- Rphys(x,y,ParamMap)*vx*(
+	- rr*vx*(
 		(Ubx*dX(ux)+ux*dX(Ubx)+Ubr*dY(ux)+ur*dY(Ubx))	 )  				
-	- Rphys(x,y,ParamMap)*vr*(
+	- rr*vr*(
 		(Ubx*dX(ur)+ux*dX(Ubr)+Ubr*dY(ur)+ur*dY(Ubr))	)	
-	- nu*(Rphys(x,y,ParamMap)*dX(ux)*dX(vx)+Rphys(x,y,ParamMap)*dY(ux)*dY(vx)  
-	      + Rphys(x,y,ParamMap)*dX(ur)*dX(vr)+Rphys(x,y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(x,y,ParamMap)*ur*vr  )  
-	+ up*(Rphys(x,y,ParamMap)*dX(vx)+vr+Rphys(x,y,ParamMap)*dY(vr))
-	- vp*(Rphys(x,y,ParamMap)*dX(ux)+ur+Rphys(x,y,ParamMap)*dY(ur))
-	-Rphys(x,y,ParamMap)*isshift*shift*(vx*ux+vr*ur)
+	- nu*(rr*dX(ux)*dX(vx)+rr*dY(ux)*dY(vx)  
+	      + rr*dX(ur)*dX(vr)+rr*dY(ur)*dY(vr)+1/rr*ur*vr  )  
+	+ up*(rr*dX(vx)+vr+rr*dY(vr))
+	- vp*(rr*dX(ux)+ur+rr*dY(ur))
+	-rr*isshift*shift*(vx*ux+vr*ur)
 	)*JJ ) 
   	+ on(2,ux=0.,ur=0.)	
 	+ on(6,7,ur=0.);
@@ -185,15 +180,15 @@ ENDIFMACRO
 	varf LNSEadjoint([vx,vr,vp],[ux,ur,up],eps=1e-16) = 
 	int2d(th)(
 	(
-	- Rphys(x,y,ParamMap)*vx*(
+	- rr*vx*(
 		(Ubx*dX(ux)+ux*dX(Ubx)+Ubr*dY(ux)+ur*dY(Ubx))	 )  				
-	- Rphys(x,y,ParamMap)*vr*(
+	- rr*vr*(
 		(Ubx*dX(ur)+ux*dX(Ubr)+Ubr*dY(ur)+ur*dY(Ubr))	)	
-	- nu*(Rphys(x,y,ParamMap)*dX(ux)*dX(vx)+Rphys(x,y,ParamMap)*dY(ux)*dY(vx)  
-	      + Rphys(x,y,ParamMap)*dX(ur)*dX(vr)+Rphys(x,y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(x,y,ParamMap)*ur*vr  )  
-	+ up*(Rphys(x,y,ParamMap)*dX(vx)+vr+Rphys(x,y,ParamMap)*dY(vr))
-	- vp*(Rphys(x,y,ParamMap)*dX(ux)+ur+Rphys(x,y,ParamMap)*dY(ur))
-	-Rphys(x,y,ParamMap)*isshift*shift*(vx*ux+vr*ur)	
+	- nu*(rr*dX(ux)*dX(vx)+rr*dY(ux)*dY(vx)  
+	      + rr*dX(ur)*dX(vr)+rr*dY(ur)*dY(vr)+1/rr*ur*vr  )  
+	+ up*(rr*dX(vx)+vr+rr*dY(vr))
+	- vp*(rr*dX(ux)+ur+rr*dY(ur))
+	-rr*isshift*shift*(vx*ux+vr*ur)	
 	)*JJ ) 
   	+ on(2,vx=0.,vr=0.)	
 	+ on(6,7,vr=0.);
@@ -207,7 +202,7 @@ ENDIFMACRO
 //ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
-	varf b([ux,ur,up],[vx,vr,q]) =  int2d(th) (Rphys(x,y,ParamMap)*(vx*ux+vr*ur)*JJ);
+	varf b([ux,ur,up],[vx,vr,q]) =  int2d(th) (rr*(vx*ux+vr*ur)*JJ);
 		matrix<complex> B= b(XXMh,XXMh);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -340,23 +335,23 @@ XXMh<complex> [ux0,ur0,p0],[uxdirect,urdirect,pdirect],[uxadjoint,uradjoint,padj
 
 
 
-	problem ShiftInvert([ux,ur,up],[vx,vr,vp],eps=1e-16,solver=GMRES) = 
+	problem ShiftInvert([ux,ur,up],[vx,vr,vp],eps=1e-16) = 
 	
 	int2d(th)(
 	(
-	- Rphys(x,y,ParamMap)*vx*(
+	- rr*vx*(
 		(Ubx*dX(ux)+ux*dX(Ubx)+Ubr*dY(ux)+ur*dY(Ubx))	 )  				
-	- Rphys(x,y,ParamMap)*vr*(
+	- rr*vr*(
 		(Ubx*dX(ur)+ux*dX(Ubr)+Ubr*dY(ur)+ur*dY(Ubr))	)	
-	- nu*(Rphys(x,y,ParamMap)*dX(ux)*dX(vx)+Rphys(x,y,ParamMap)*dY(ux)*dY(vx)  
-	      + Rphys(x,y,ParamMap)*dX(ur)*dX(vr)+Rphys(x,y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(x,y,ParamMap)*ur*vr  )  
-	+ up*(Rphys(x,y,ParamMap)*dX(vx)+vr+Rphys(x,y,ParamMap)*dY(vr))
-	- vp*(Rphys(x,y,ParamMap)*dX(ux)+ur+Rphys(x,y,ParamMap)*dY(ur))
-	-Rphys(x,y,ParamMap)*shift*(vx*ux+vr*ur)	
+	- nu*(rr*dX(ux)*dX(vx)+rr*dY(ux)*dY(vx)  
+	      + rr*dX(ur)*dX(vr)+rr*dY(ur)*dY(vr)+1/rr*ur*vr  )  
+	+ up*(rr*dX(vx)+vr+rr*dY(vr))
+	- vp*(rr*dX(ux)+ur+rr*dY(ur))
+	-rr*shift*(vx*ux+vr*ur)	
 	)*JJ 
 	) 
 + int2d(th)
-    (-Rphys(x,y,ParamMap)*(vx*ux0+vr*ur0)*JJ)
+    (-rr*(vx*ux0+vr*ur0)*JJ)
 	
 //	+ on(1,uz=0,ur=0.) // no conditions = zero traction (pressure) on inlet
     + on(1,ur=0)
@@ -462,8 +457,8 @@ else if(iadjoint=="S")
 	real errmax=1e-6;
 	complex lambda;
 	
-	varf brhs([ux,ur,up],[vx,vr,q]) = int2d(th)( (ux0*vx+ur0*vr)*Rphys(x,y,ParamMap)*JJ );
-//	varf Bf([ux0,ur0,up0],[vx,vr,q]) =  int2d(th) (Rphys(x,y,ParamMap)*(vx*ux0+vr*ur0)*1/(Gy*G)); // why 
+	varf brhs([ux,ur,up],[vx,vr,q]) = int2d(th)( (ux0*vx+ur0*vr)*rr*JJ );
+//	varf Bf([ux0,ur0,up0],[vx,vr,q]) =  int2d(th) (rr*(vx*ux0+vr*ur0)*1/(Gy*G)); // why 
 
 	defaulttoMUMPS();
 	set(OP,solver=sparsesolver);  //// ?????
@@ -473,7 +468,7 @@ else if(iadjoint=="S")
 	int iter;
 	for (iter=0; ((err>errmax)&&(iter<itmax)); iter++)
 	{
-		string shiftinvert = "solve";
+		string shiftinvert = "toto";
 		if(shiftinvert=="solve")
 		{
 			ShiftInvert;

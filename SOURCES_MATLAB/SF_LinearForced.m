@@ -23,6 +23,7 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 
    p = inputParser;
    addParameter(p,'plot','no',@ischar);  
+   addParameter(p,'solver','default');
    parse(p,varargin{:});
 
 
@@ -56,6 +57,19 @@ switch ffmesh.problemtype
         error(['Error : problemtype ' ffmesh.problemtype ' not recognized']);
 end
 
+if(strcmp(p.Results.solver,'default'))
+    mydisp(2,['      ### USING STANDARD StabFem Solver ',solver]);        
+else
+    if(exist(p.Results.solver)==2)
+        solver = p.Results.solver;
+        
+    elseif(exist([ffdir  p.Results.solver])==2)
+           solver = [ffdir  p.Results.solver];
+    else
+        error(['Error : solver ',p.Results.solver, ' could not be found !']);
+    end
+    mydisp(2,['      ### USING CUSTOM FreeFem++ Solver ',solver]);
+end
 
 paramstring = [' array ' num2str(length(omega))];
 for i=1:length(omega)

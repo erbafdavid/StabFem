@@ -112,16 +112,19 @@ XXMh<complex> [Ubaxix,Ubaxir,Ubaxip];          ///////  -> Base Flow (in case we
 
 real eps = 1e-12; // desingularisation term for matrix B, useful with some solvers
 
-macro div(im,u) (dX(u#x)+dY(u#r)+u#r/Rphys(x,y,ParamMap)+im/Rphys(x,y,ParamMap)*u#phi)// macro for divergence 
+macro rr 
+	Rphys(x,y,ParamMap) 
+//EOM
+macro div(im,u) (dX(u#x)+dY(u#r)+u#r/rr+im/rr*u#phi)// macro for divergence 
 macro Grad(im,u) [
-			[dX(u#x), dY(u#x),  im/Rphys(x,y,ParamMap)*u#x ], 
-			[dX(u#r), dY(u#r),  im/Rphys(x,y,ParamMap)*u#r-u#phi/Rphys(x,y,ParamMap)],
-			[dX(u#phi),dY(u#phi), im/Rphys(x,y,ParamMap)*u#phi+u#r/Rphys(x,y,ParamMap) ]
+			[dX(u#x), dY(u#x),  im/rr*u#x ], 
+			[dX(u#r), dY(u#r),  im/rr*u#r-u#phi/rr],
+			[dX(u#phi),dY(u#phi), im/rr*u#phi+u#r/rr ]
 			] // macro for velocity gradient tensor
 macro D(im,u) [	
-				[dX(u#x), 				.5*(dX(u#r)+dY(u#x)),  .5*(im/Rphys(x,y,ParamMap)*u#x+dX(u#phi)) ], 
-				[.5*(dX(u#r)+dY(u#x)), 	dY(u#r),				.5*(im/Rphys(x,y,ParamMap)*u#r-u#phi/Rphys(x,y,ParamMap)+dY(u#phi))],
-				[.5*(im/Rphys(x,y,ParamMap)*u#x+dX(u#phi)),  .5*(im/Rphys(x,y,ParamMap)*u#r-u#phi/Rphys(x,y,ParamMap)+dY(u#phi)), im/Rphys(x,y,ParamMap)*u#phi+u#r/Rphys(x,y,ParamMap)]
+				[dX(u#x), 				.5*(dX(u#r)+dY(u#x)),  .5*(im/rr*u#x+dX(u#phi)) ], 
+				[.5*(dX(u#r)+dY(u#x)), 	dY(u#r),				.5*(im/rr*u#r-u#phi/rr+dY(u#phi))],
+				[.5*(im/rr*u#x+dX(u#phi)),  .5*(im/rr*u#r-u#phi/rr+dY(u#phi)), im/rr*u#phi+u#r/rr]
 				] // macro for rate-of-deformation tensor
 macro Conv(ima,ua,imb,ub,v) ( 
               (Grad(ima,ua)*[ub#x,ub#r,ub#phi] + Grad(imb,ub)*[ua#x,ua#r,ua#phi])'*[v#x,v#r,v#phi]
@@ -183,9 +186,9 @@ varf   LNSE ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
              + div(1i*m,u)*vp
              - Conv(1i*m,u,0,Ub,v)
              +eps*vp*up
-             )*Rphys(x,y,ParamMap)*JJ
+             )*rr*JJ
              )
- + int2d(th)( -isshift*shift*(ux*vx+ur*vr+uphi*vphi)*Rphys(x,y,ParamMap)*JJ )
+ + int2d(th)( -isshift*shift*(ux*vx+ur*vr+uphi*vphi)*rr*JJ )
  + BoundaryconditionsStability(u,v,m);
  
 varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
@@ -196,20 +199,15 @@ varf   LNSEadjoint ([ux,ur,uphi,up],[vx,vr,vphi,vp]) =
              + div(1i*m,u)*vp
              - Conv(-1i*m,v,0,Ub,u)
              +eps*vp*up
-             )*Rphys(x,y,ParamMap)*JJ
+             )*rr*JJ
              )
- + int2d(th)( -isshift*conj(shift)*(ux*vx+ur*vr+uphi*vphi)*Rphys(x,y,ParamMap)*JJ ) 
+ + int2d(th)( -isshift*conj(shift)*(ux*vx+ur*vr+uphi*vphi)*rr*JJ ) 
  // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
  + BoundaryconditionsStability(u,v,m); 
 
-//complex shiftSave = shift;
-/// SLEPC DOES NOT NEED TO BE SHIFTED WHEN OPERATORS ARE BUILT
-//IFMACRO(EIGENSOLVER,SLEPC)
-//    shift = 0;
-//ENDIFMACRO
 
 ////// BUILD B-MATRIX //////////////////////////////////////////////////////////////
-	varf b([ux,ur,uphi,up],[vx,vr,vphi,vp]) = int2d(th)( Rphys(x,y,ParamMap)*(ux*vx+ur*vr+uphi*vphi)*JJ);
+	varf b([ux,ur,uphi,up],[vx,vr,vphi,vp]) = int2d(th)( rr*(ux*vx+ur*vr+uphi*vphi)*JJ);
 	matrix<complex> B= b(XXXMh,XXXMh);  //////// see freefem++doc.pdf for the solver 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -400,7 +398,7 @@ else if(iadjoint=="S")
 	real errmax=1e-6;
 	complex lambda;
 	
-	varf brhs([ux,ur,uphi,p],[vx,vr,vphi,q]) = int2d(th)( (ux0*vx+ur0*vr+uphi0*vphi)*Rphys(x,y,ParamMap)*JJ );
+	varf brhs([ux,ur,uphi,p],[vx,vr,vphi,q]) = int2d(th)( (ux0*vx+ur0*vr+uphi0*vphi)*rr*JJ );
 	set(OP,solver=sparsesolver);  //// factorize matrix
 	
 	/// ITERATION LOOP
@@ -414,8 +412,8 @@ else if(iadjoint=="S")
 		complex[int] w = OP^-1*rhs;
 		ux[] = w;
 	
-		//complex XnXn1 = int2d(th)((ux0*ux+ur0*ur+uphi0*uphi)*Rphys(x,y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
-		//complex Xn1Xn1 =  int2d(th)((ux*ux+ur*ur+uphi*uphi)*Rphys(x,y,ParamMap)/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+		//complex XnXn1 = int2d(th)((ux0*ux+ur0*ur+uphi0*uphi)*rr/(Hy(y,ParamMap)*Hx(x,ParamMap)));
+		//complex Xn1Xn1 =  int2d(th)((ux*ux+ur*ur+uphi*uphi)*rr/(Hy(y,ParamMap)*Hx(x,ParamMap)));
 
 		complex XnXn1 = int2d(th)(ux0*ux0+ur0*ur0+uphi0*uphi0);
 		complex Xn1Xn1 =  int2d(th)(ux*ux0+ur*ur0+uphi*uphi0);
