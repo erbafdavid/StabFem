@@ -1,0 +1,323 @@
+//
+//
+//
+//
+//
+//
+//////////////////////////////////////
+
+	verbosity = 0;
+	include "Param_Mapping.edp"
+	include"Macros_StabFem.edp";
+
+	
+//
+//////////////////////////////////////
+//
+	
+	mesh th,thS;
+
+
+     real expo1=0.8; //parametro di stretching segmenti 
+     real expo2=1.5; // param stretching archi
+
+		
+    //inlet sponge
+        //border inletsponge(t=pi/2,0){x=-(Lup+LupSponge)*cos(t)+Xup+Rup*cos(Tmaxup); y=((Lup+LupSponge)*sin(t)); label=bcinletsponge;};	
+        border inletsponge(t=1,0){x=-(Lup+LupSponge)+Xup+Rup*cos(Tmaxup); y=(Lup+LupSponge)*t; label=bcinletsponge;};
+        border topsponge(t=0,1){x=(-(Lup+LupSponge))*t+Xup+Rup*cos(Tmaxup); y=(Lup+LupSponge); label=bcinlettop;};
+        border axisinsponge(t=1,0){x=-(Lup+LupSponge)+Xup+Rup*cos(Tmaxup)+LupSponge*(1-t*t); y=0.0; label=bcaxis;};	    
+        border externalwall12sponge(t=0,1){x=Xup+Rup*cos(Tmaxup); y=Lup+LupSponge*t*t;label=bcnoslip;};	// bcslip o bcnoslip
+
+	        
+    // downstream Sponge
+      
+//        border downstreamSponge(t=0,pi/2.0) {x=xout+RSponge*cos(t);y=RSponge*sin(t); label=bcoutletsponge;};
+
+        border downstreamSponge(t=0,1) {x=xout+RSponge;y=RSponge*t; label=bcoutletsponge;};
+        border topdownstreamsponge(t=1,0){x=xout+RSponge*t; y=RSponge; label=bcinlettop;};
+        border bxsponge(t=0,pi/2.0) {x=xout+Rext+(1-cos(t))*(RSponge-Rext);y=0.0; label=bcaxis;};
+        border bysponge(t=0,pi/2.0) {x=Xdown+Rdown*cos(Tmaxdown)+Thick;y=Rext+(1-cos(t))*(RSponge-Rext);label=bcnoslip;};
+
+
+	//cavity-zona interna
+	  //  border axis(t=-Lup,Ltotcav+Ldown) {x=t;y=0.;label=bcaxis;}; 
+    //uptream e downstream wall
+		border externwall11(t=Tminup,Tmaxup) {x=Xup + Rup*cos(t) ;y=Rup*sin(t);label=bcnoslip;};
+		border externwall21(t=Tmaxdown,Tmindown) {x=Xdown +Rdown*cos(t)+Thick;y=Rdown*sin(t);label=bcnoslip;};
+		border edge1(t=Thick,0.) {x=Xup + Rup*cos(Tminup)+t;y=Rholein;label=bcnoslip;};
+		border edge2(t=Thick,0.) {x=t+Xdown +Rdown*cos(Tmindown);y=Rholeout;label=bcnoslip;};
+		border internwall1(t=Tmaxup,Tminup) {x=Xup + Rup*cos(t) +Thick;y=Rup*sin(t);label=bcnoslip;};
+		border internwall2(t=Tmindown,Tmaxdown) {x=Xdown +Rdown*cos(t);y=Rdown*sin(t);label=bcnoslip;};
+    //top of the cavity
+		border cavityUP(t=Xdown +Rdown*cos(Tmaxdown),Xup + Rup*cos(Tmaxup) +Thick){x=t;y=Rcav;label=bcnoslip;};			
+		border hole1(t=1,0){x=Xup + Rup*cos(Tminup); y=Rholein*t; label=bchole1;};
+		border hole2(t=0,1){x=Xdown +Rdown*cos(Tmindown);y=Rholeout*t;label=bchole2;};
+ 
+ 
+ /// zona rifinimento e di calcolo
+        
+        border downstream(t=0,pi/2.0) {x=xout+Rext*cos(t);y=Rext*sin(t); label=bcoutlet;};
+        border downstream1(t=1,0) {x=xout+Rext*t;y=Rext; label=bcoutlet;};
+        border downstream2(t=0,1) {x=xout+Rext;y=Rext*t; label=bcoutlet;};
+
+//      border downstream(t=pi/2.0,0) {x=xout+Rext*cos(pi/2*cos(t)^expo2);y=Rext*sin(pi/2*cos(t)^expo2); label=bcoutlet;};
+        border downstreamrif(t=0,pi/2.0) {x=xout+Rrif*cos(t);y=Rrif*sin(t); label=bcinternal;};
+        border downstreamrif1(t=0,1) {x=xout+Rrif;y=Rrif*t; label=bcinternal;};
+        border downstreamrif2(t=1,0) {x=xout+Rrif*t;y=Rrif; label=bcinternal;};
+        border inlet(t=pi/2,0) {x=-Lup*cos(t)+Xup+Rup*cos(Tmaxup); y=Lup*sin(t); label=bcinlet;};
+        border inlet1(t=0,1) {x=-Lup*t+Xup+Rup*cos(Tmaxup); y=Lup; label=bcinlet;};
+        border inlet2(t=1,0) {x=-Lup+Xup+Rup*cos(Tmaxup); y=Lup*t; label=bcinlet;};
+
+//        border inlet(t=0,pi/2) {x=-Lup*cos(pi/2*cos(t)^expo2)+Xup+Rup*cos(Tmaxup); y=Lup*sin(pi/2*cos(t)^expo2); label=bcinlet;};
+        border inletrif(t=pi/2,0) {x=-Rrif*cos(t)+Xup+Rup*cos(Tmaxup); y=Rrif*sin(t); label=bcinternal;};
+        border inletrif1(t=0,1) {x=-Rrif*t+Xup+Rup*cos(Tmaxup); y=Rrif; label=bcinternal;};
+        border inletrif2(t=1,0) {x=-Rrif+Xup+Rup*cos(Tmaxup); y=Rrif*t; label=bcinternal;};
+
+//	    border externwall12(t=Rrif,Lup) {x=Xup+Rup*cos(Tmaxup);y=t;label=bcnoslip;};
+	    border externwall12(t=0,pi/2) {x=Xup+Rup*cos(Tmaxup);y=Rrif+(Lup-Rrif)*(1+sin(t-pi/2))^expo1;label=bcnoslip;};
+	    border externwall12rif(t=Rcav,Rrif) {x=Xup+Rup*cos(Tmaxup);y=t;label=bcnoslip;};
+	    border externwall22rif(t=Rrif,Rcav) {x=Xdown+Rdown*cos(Tmaxdown)+Thick;y=t;label=bcnoslip;};
+//	    border externwall22(t=Rext,Rrif) {x=Xdown+Rdown*cos(Tmaxdown)+Thick;y=t;label=bcnoslip;};
+        border externwall22(t=0,pi/2) {x=Xdown+Rdown*cos(Tmaxdown)+Thick;y=Rext+(Rrif-Rext)*(sin(t))^expo1;label=bcnoslip;};
+	    border axis1(t=pi/2,0) {x=-Lup+Xup+Rup*cos(Tmaxup)+(-Rrif+Xup+Rup*cos(Tmaxup)+Lup-Xup-Rup*cos(Tmaxup))*cos(t)^expo1;y=0.;label=bcaxis;};
+//      border axis1(t=-Lup+Xup+Rup*cos(Tmaxup),-Rrif+Xup+Rup*cos(Tmaxup)) {x=t;y=0.;label=bcaxis;};
+	    border axis1rif(t=-Rrif+Xup+Rup*cos(Tmaxup),Xup+Rup*cos(Tminup)) {x=t;y=0.;label=bcaxis;};
+	   	border axis2(t=Xup + Rup*cos(Tminup),Xdown +Rdown*cos(Tmindown)) {x=t;y=0.;label=bcaxis;};
+        border axis3rif(t=Xdown+Rdown*cos(Tmindown),Rrif+xout) {x=t;y=0.;label=bcaxis;};
+        border axis3(t=0,pi/2) {x=Rrif+xout+(Ltotcav+Ldown-Rrif-xout)*(1+sin(t-pi/2))^expo1;y=0.;label=bcaxis;};
+      //border axis3(t=Rrif+xout,Ltotcav+Ldown) {x=t;y=0.;label=bcaxis;};
+	////////////////////MESH FLUSSO BASE///////////////
+/*		
+	plot(//ingresso
+	    inletsponge(0.1*Ninit*LupSponge)
+	    +axisinsponge(0.25*Ninit*LupSponge)
+	    +externalwall12sponge(0.25*Ninit*LupSponge)	
+	    +inlet(1.5*Ninit*Lup)
+	    +axis1(1.2*Ninit*(-Xup+Lup))
+	    +axis2(4*Ninit*Ltotcav)
+		+axis3(2.5*Ninit*Ldown)
+		//+axis(Ninit*(Lup+Ltotcav+Ldown))
+		+downstream(0.5*Ninit*pi/2*Rext)
+		+bxsponge(0.15*Ninit*(RSponge-Rext))
+		+bysponge(-0.15*Ninit*(RSponge-Rext))
+		+downstreamSponge(0.15*pi/2*RSponge)
+		//cavita'		
+		+externwall12(2*Ninit*(Lup-Rcav))
+		+externwall22(0.7*Ninit*Ldown)
+		+externwall11(2*Ninit*(Rcav-Rholein))
+		+edge1(6*Ninit*Thick)
+		+hole1(Rholein*4*Ninit)
+		+hole2(Rholeout*4*Ninit)
+		+internwall1(2*Ninit*(Rcav-Rholein))
+		+externwall21(2*Ninit*(Rcav-Rholeout))
+		+edge2(6*Ninit*Thick)
+		+internwall2(2*Ninit*(Rcav-Rholeout))
+		+cavityUP(1.5*Ninit*(Xdown +Rdown*cos(Tmaxdown)-Xup - Rup*cos(Tmaxup) -Thick))
+		
+	    ,wait=debug);
+
+
+	Th = buildmesh(//ingresso
+	    inletsponge(0.05*Ninit*pi/2*(Lup+LupSponge))
+	    +axisinsponge(0.25*Ninit*LupSponge)
+	    +externalwall12sponge(0.25*Ninit*LupSponge)	
+	    +inlet(0.5*pi/2*Ninit*Lup)
+	    +axis1(1.5*Ninit*(-Xup+Lup))
+	    +axis2(4.5*Ninit*Ltotcav)
+		+axis3(2.7*Ninit*Ldown)
+		//+axis(Ninit*(Lup+Ltotcav+Ldown))
+		+downstream(0.5*Ninit*pi/2*Rext)
+		+bxsponge(0.15*Ninit*(RSponge-Rext))
+		+bysponge(-0.15*Ninit*(RSponge-Rext))
+		+downstreamSponge(0.05*Ninit*pi/2*RSponge)
+		//cavita'		
+		+externwall12(1.5*Ninit*(Lup-Rcav))
+		+externwall22(1.5*Ninit*Ldown)
+		+externwall11(2.5*Ninit*(Rcav-Rholein))
+		+edge1(7*Ninit*Thick)
+		+hole1(Rholein*4.5*Ninit)
+		+hole2(Rholeout*4.5*Ninit)
+		+internwall1(3*Ninit*(Rcav-Rholein))
+		+externwall21(2.5*Ninit*(Rcav-Rholeout))
+		+edge2(7*Ninit*Thick)
+		+internwall2(3*Ninit*(Rcav-Rholeout))
+		+cavityUP(3*Ninit*(Xdown +Rdown*cos(Tmaxdown)-Xup - Rup*cos(Tmaxup) -Thick))			
+		);
+
+	plot(Th, wait=debug);
+
+	savemesh(Th,"mesh.msh");
+	savemesh(Th,"Data/Mh.msh");
+*/
+
+////////////////////MESH STABILITY///////////////
+		
+	plot(//ingresso
+	   //sponge
+	    topsponge(0.1*Ninit*pi/2*(LupSponge+Lup))
+	    +inletsponge(0.1*Ninit*pi/2*(LupSponge+Lup))
+	    +externalwall12sponge(0.15*Ninit*LupSponge)	
+	    +axisinsponge(0.15*Ninit*LupSponge)
+	    +topdownstreamsponge(0.1*Ninit*pi/2*(LupSponge+Lup))
+		+downstreamSponge(0.1*pi/2*Ninit*RSponge)
+		+bxsponge(0.15*Ninit*(RSponge-Rext))
+		+bysponge(-0.15*Ninit*(RSponge-Rext))
+	    //zona esterna	
+	    //+inlet(0.6*pi/2*Ninit*Lup)
+	    +inlet1(0.6*Ninit*Lup)
+	    +inlet2(0.6*Ninit*Lup)
+	    //+downstream(0.6*Ninit*pi/2*Rext)
+	   	+downstream1(0.6*Ninit*Rext)
+	    +downstream2(0.6*Ninit*Rext)
+
+	    +externwall12(2.6*Ninit*(Lup-Rrif))
+	    +externwall22(2.6*Ninit*(Rext-Rrif))
+	    +axis1(3*Ninit*(Lup-Rrif))
+		+axis3(3*Ninit*(Ldown-Rrif))
+	    //zona di rifinimento
+	    //+inletrif(6*pi/2*Ninit*Rrif)
+	    +inletrif1(6*Ninit*Rrif)
+	    +inletrif2(6*Ninit*Rrif)
+	    //+downstreamrif(6*Ninit*pi/2*Rrif)
+	    +downstreamrif1(6*Ninit*Rrif)
+	    +downstreamrif2(6*Ninit*Rrif)
+	    +externwall12rif(6*Ninit*Rrif/2)
+	    +externwall22rif(6*Ninit*Rrif/2)
+	    +axis1rif(8*Ninit*Rrif)
+		+axis3rif(8*Ninit*Rrif)
+		//cavita'		
+		+axis2(15*Ninit*Ltotcav)
+		+externwall11(12*Ninit*(Rcav-Rholein))
+		+externwall21(12*Ninit*(Rcav-Rholeout))
+		+edge1(25*Ninit*Thick)
+		+edge2(25*Ninit*Thick)
+		+hole1(16*Rholein*Ninit)
+		+hole2(16*Rholeout*Ninit)
+		+internwall1(14*Ninit*(Rcav-Rholein))
+		+internwall2(14*Ninit*(Rcav-Rholeout))
+		+cavityUP(14*Ninit*(Xdown +Rdown*cos(Tmaxdown)-Xup - Rup*cos(Tmaxup) -Thick))	
+			    ,wait=debug);
+
+
+	th = buildmesh(
+	    //sponge
+	    topsponge(0.1*Ninit*pi/2*(LupSponge+Lup))
+	    +inletsponge(0.1*Ninit*pi/2*(LupSponge+Lup))
+	    +externalwall12sponge(0.2*Ninit*LupSponge)	
+	    +axisinsponge(0.2*Ninit*LupSponge)
+	    +topdownstreamsponge(0.1*Ninit*pi/2*(LupSponge+Lup))
+		+downstreamSponge(0.15*pi/2*Ninit*RSponge)
+		+bxsponge(0.2*Ninit*(RSponge-Rext))
+		+bysponge(-0.2*Ninit*(RSponge-Rext))
+	    //zona esterna	
+	    //+inlet(0.6*pi/2*Ninit*Lup)
+	    +inlet1(0.6*Ninit*Lup)
+	    +inlet2(0.6*Ninit*Lup)
+	    //+downstream(0.6*Ninit*pi/2*Rext)
+	   	+downstream1(0.6*Ninit*Rext)
+	    +downstream2(0.6*Ninit*Rext)
+	    +externwall12(2.6*Ninit*(Lup-Rrif))
+	    +externwall22(2.6*Ninit*(Rext-Rrif))
+	    +axis1(3*Ninit*(Lup-Rrif))
+		+axis3(3*Ninit*(Ldown-Rrif))
+	    //zona di rifinimento
+	    //+inletrif(6*pi/2*Ninit*Rrif)
+	    +inletrif1(6*Ninit*Rrif)
+	    +inletrif2(6*Ninit*Rrif)
+	    //+downstreamrif(6*Ninit*pi/2*Rrif)
+	    +downstreamrif1(6*Ninit*Rrif)
+	    +downstreamrif2(6*Ninit*Rrif)
+	    +externwall12rif(6*Ninit*Rrif/2)
+	    +externwall22rif(6*Ninit*Rrif/2)
+	    +axis1rif(8*Ninit*Rrif)
+		+axis3rif(8*Ninit*Rrif)
+		//cavita'		
+		+axis2(15*Ninit*Ltotcav)
+		+externwall11(12*Ninit*(Rcav-Rholein))
+		+externwall21(12*Ninit*(Rcav-Rholeout))
+		+edge1(25*Ninit*Thick)
+		+edge2(25*Ninit*Thick)
+		+hole1(16*Rholein*Ninit)
+		+hole2(16*Rholeout*Ninit)
+		+internwall1(14*Ninit*(Rcav-Rholein))
+		+internwall2(14*Ninit*(Rcav-Rholeout))
+		+cavityUP(14*Ninit*(Xdown +Rdown*cos(Tmaxdown)-Xup - Rup*cos(Tmaxup) -Thick))			
+		);
+
+	plot(th, wait=debug);
+
+
+// SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+ real SFGeomRinlet = Rin ; 
+ real SFGeomRhole1 = Rholein ; 
+ real SFGeomRhole2 = Rholeout ; 
+ real SFGeomH = Xdown +Rdown*cos(Tmindown)-(Xup +Rdown*cos(Tminup)) ; 
+ real SFGeomXinlet = -Lup ;
+ real SFGeomRcav = Rcav ;
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+            file <<  "### Data generated by Freefem++ ; " << endl;
+            file << "(Auxiliary file with information on initial mesh)" << endl;
+            file << "problemtype AxiCompCOMPLEX" << endl;
+			file << "real Rinlet real Rhole1 real Rhole2 real H real Xin real Rcav " << endl;
+			file <<  Rin  << endl << Rholein << endl << Rholeout << endl << Xdown +Rdown*cos(Tmindown)-(Xup +Rdown*cos(Tminup)) <<  endl;
+			file <<  -Lup  << endl << Rcav <<  endl;
+			
+}
+
+
+// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = "<< 2*Rholein << " ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = " << Uhole << " ; // velocity scale for nondimensionalization"  << endl ;
+            file2 << " real SFGeomRinlet = " << Rin  << " ; " << endl ;
+            file2 << " real SFGeomRhole1 = " << Rholein  << " ; " << endl ;
+            file2 << " real SFGeomRhole2 = " << Rholeout  << " ; " << endl ;
+            file2 << " real SFGeomH = " << Xdown +Rdown*cos(Tmindown)-(Xup +Rdown*cos(Tminup))  << " ; " << endl ;
+            file2 << " real SFGeomXinlet = " << -Lup  << " ; " << endl ;
+            file2 << " real SFGeomRcav = " << Rcav  << " ; " << endl ;
+}
+
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+ 	fespace femp1(th,P1);
+	fespace femp2xfemp2xfemp1(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
+        femp2xfemp2xfemp1 [ux,uy,up,utemp,uro]=[0.0,0.0,1.0,1.0,1.0];
+        real Re = 0;real nu=1; real Ma = 0.01; real gamma = 1.4; // these three are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+      	{
+      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+	    file << ux[] << endl;
+	    file <<  endl << 0 << endl;
+      	}
+      	
+// Save in ff2m format (for StabFem)
+		 cout << "Saving" << endl;
+	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
+	     cout << "Base flow saved" << endl;
+
+
+
+
+		cout << "............................................" << endl;
+		cout << "............................................" << endl;
+		cout << "Maillage termine " << endl << "..." << endl;
+//		cout << "nombre de sommets: "+Th.nv << endl;
+		cout << "............................................" << endl;
+		cout << "............................................" << endl;
+
+
+	

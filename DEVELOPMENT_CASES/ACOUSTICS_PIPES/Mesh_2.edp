@@ -57,7 +57,7 @@ savemesh(th,ffdatadir+"mesh.msh");
 {
             ofstream file(ffdatadir+"SF_Init.ff2m"); 
 			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
-			file << "2D" << endl;
+			file << "AcousticAxi" << endl;
 			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
 			file << "real ZERO" << endl;
 			file <<  0  << endl;

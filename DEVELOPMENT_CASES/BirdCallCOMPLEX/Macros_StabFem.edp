@@ -1,0 +1,524 @@
+/// 
+/// file Macros_StabFem.edp
+///
+/// This file contains the case-dependent Macros for boundary conditions and postprocessing output.
+///
+/// This file can be customized according to requirements but it must contain the following macros :
+///
+/// boundary conditions : 
+/// macro BoundaryconditionsBaseFlow(du,dp,dT,drho) 
+/// macro BoundaryconditionsStability(du,us,dp,dT,drho,symmetry)
+///
+///
+/// For post-processsing purposes :
+/// macro SFWriteBaseFlow(filename,ux,uy,p,type,iter)
+/// macro SFWriteMode(namefile,ux,uy,p,ev,shift,type,iter)
+/// 
+/// The following case is for the 2D cylinder and include the additional macros
+/// required to compute lift and drag forces : Trainee(ux,uy,p,symmetry) and Portance(ux,uy,p,symmetry)
+///
+/// The file must also contain 
+
+
+/// FIRST DEFINE THE SOLVER : IF AVAILABLE MUMPS WILL STRONGLY SPEED UP THE COMPUTATIONS.
+/// IF MUMPS_seg is not insalled 
+
+// TODO! WRITE HERE THE VARIABLES OF THE MESH
+IFMACRO(!EIGENSOLVER)
+macro EIGENSOLVER SLEPC// POSSIBLE OPTIONS : DEFAULT, MUMPS, UMPFACK (to be avoided), SLEPC (not yet implemented)
+ENDIFMACRO
+
+IFMACRO(SOLVER,MUMPS)
+load "MUMPS_seq" 
+cout << " USING MUMPS_seq" << endl;
+ENDIFMACRO
+
+// END DEFINITION OF SOLVER
+IFMACRO(!problemtype)
+macro problemtype "AxiCompCOMPLEX"//EOM
+ENDIFMACRO
+
+// Azimuthal number
+
+real m = 0;
+
+// boundary label
+   int bcinlet=1;
+   int bcoutlet=2;
+   int bcinletsponge=3;  //dove imporre bc in entrata per stabilita'
+   int bcoutletsponge=4;
+   int bcnoslip=5;
+   int bcslip=6;
+   int bcaxis=7;
+   int bchole1=8;
+   int bchole2=9;
+   int bcinternal=10;
+   int bcinlettop=11;
+   
+//
+///////////////////////////////////GEOMETRY/////////////////////////////////////
+//
+
+
+//
+//Geometrie (dimensionless)
+		real Rholein	= 0.5*(3.0/3.0);    		// radius of the hole (dimensionless) ---->real dim of the diameter=3mm
+		real Rhole	= Rholein;		
+		real Rholeout	= 0.5*(2.5/3.0);    		// radius of the hole (dimensionless)
+		real Thick	= 0.3/3;	  	// thickness of the plate
+
+		real Hcav	= 6.0/3.0;  		// intern lenth of the cavity (between the 2 holes)
+		real Ltotcav	= Hcav + 2.*Thick;	// Xdown+Bdown-Xup-Bup+Thick;	// total lengh of the two-hole element
+
+		real Rcav	= 9.0/3.0;   		// radius of the cavity
+		real Ldown	= 10.0;    		// lengh of the mesh downstream
+		real Lup	= 10.0;    		// lengh of the mesh upstream
+		real Rout	= 2.5*Rcav;		// radius of the mesh downstream
+		real Rin	= 1.5*Rcav;		// radius of the mesh upstream
+
+//	paramètres pour une géométrie spherique des bords de la cavité
+		real Rup	= 7.08333;
+		real Xup	= -Rup;
+		real Rdown	= 7.08333;
+		real Xdown	= Hcav+Thick-Rdown;
+		real Tmaxup	= asin(Rcav /Rup);
+		real Tminup	= asin(Rholein /Rup);
+		real Tmaxdown	= asin(Rcav /Rdown);
+		real Tmindown	= asin(Rholeout /Rdown);
+
+		real Vcav	= 2*pi*(Rcav^2*(Xdown-Xup-Thick)/2.
+		             +1./3.*(Rdown^3-Rup^3-(Rdown^2-Rcav^2)^(3./2.)+(Rup^2-Rcav^2)^(3./2.)) );
+				// if Rup=Rdown then Vcav=pi*Rcav^2*Hcav
+
+//  parameter for domain lenght 
+        real Rext=((Ltotcav+Ldown)-(Xdown+Rdown*cos(Tmaxdown)+Thick));
+		real xout=(Ltotcav+Ldown)-Rext;
+        real yout=Rext;
+        
+//zona rifinimento settore circolare
+      real Rrif=1.2*Rcav;   
+        
+//  Sponge inlet lenght
+        real LupSponge=70;                      
+        cout << "Sponge inlet width=" << LupSponge << endl;
+        cout << "xinletSponge=" << Lup+LupSponge << endl;
+        
+//  Sponge lenght
+        real RSponge=Ldown+LupSponge;                    
+        real ls=RSponge-Rext;                  // sponge lenght 
+        real Rinf=xout+RSponge-ls;             // Radius of physical domain (no sponge)
+          
+        cout << "Sponge Rinf=" << Rinf << endl;
+        cout << "xout=" << xout << endl;
+        cout << "Sponge width ls=" << ls << endl;
+        
+        
+   
+//Maillage
+		real Ninit	= 1.6; // 5;			// density of vertices for the initial mesh
+		bool debug = true;			// if plots are "uncommented" and
+							// if debug=true, the user have to push a key for continue the simu after each plot
+
+
+string ffdatadir = "./WORK/";
+// TODO!
+string symmetryBaseFlow = 2; // symmetry propery of base flow :; set "A" (0) antisymmetric set "S"(1) if domain is hzalf domain and "N" (2) if it is full domain
+int symmetryEigenmode;
+
+// Velocity at the inlet
+real Uhole = 1;
+
+//int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
+
+	/*
+	macro Xphys(x,ParamMap) 
+	(
+   	(x<ParamMap#Lm && x>-ParamMap#Lm)?x:
+   	(x>ParamMap#Lm)*(ParamMap#Lm+(x-ParamMap#Lm)/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2*(1
+   		+1i*ParamMap#GC*tanh((x-ParamMap#Lm)^2/ParamMap#LC^2))) +
+   	(x<-ParamMap#Lm)*(ParamMap#Lm+(x+ParamMap#Lm)/(1-(x+ParamMap#Lm)^2/(-ParamMap#LA+ParamMap#Lm)^2)^2*(1
+   		+1i*ParamMap#GC*tanh((x+ParamMap#Lm)^2/ParamMap#LC^2))) 
+   	)
+   	//EOM
+   	
+   	macro Hx(x,ParamMap)
+   	( 
+    (x<ParamMap#Lm && x>-ParamMap#Lm)?1:
+    
+    (x>ParamMap#Lm)*(1/((1/((1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2)+4*(x-ParamMap#Lm)^2/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^3
+    /(ParamMap#LA-ParamMap#Lm)^2)*(1+1i*ParamMap#GC*tanh((x-ParamMap#Lm)^2/ParamMap#LC^2))+
+	2*(ParamMap#Lm+(x-ParamMap#Lm)/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2)*1i*ParamMap#GC*
+	(1-tanh((x-ParamMap#Lm)^2/ParamMap#LC^2)^2)*(x-ParamMap#Lm)/ParamMap#LC^2)) +
+	(x<-ParamMap#Lm)*(1/((1/((1-(x+ParamMap#Lm)^2/(-ParamMap#LA+ParamMap#Lm)^2)^2)
+		+4*(x+ParamMap#Lm)^2/(1-(x+ParamMap#Lm)^2/(-ParamMap#LA+ParamMap#Lm)^2)^3
+    /(-ParamMap#LA+ParamMap#Lm)^2)*(1+1i*ParamMap#GC*tanh((x+ParamMap#Lm)^2/ParamMap#LC^2))+
+	2*(-ParamMap#Lm+(x+ParamMap#Lm)/(1-(x+ParamMap#Lm)^2/(-ParamMap#LA+ParamMap#Lm)^2)^2)*1i*ParamMap#GC*
+	(1-tanh((x+ParamMap#Lm)^2/ParamMap#LC^2)^2)*(x+ParamMap#Lm)/ParamMap#LC^2))
+    )
+    //EOM
+	*/
+/*
+	macro Xphys(x,ParamMap) 
+   	(x<ParamMap#Lm?x:ParamMap#Lm+(x-ParamMap#Lm)/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2*(1+1i*ParamMap#GC*tanh((x-ParamMap#Lm)^2/ParamMap#LC^2)) )
+   	//EOM
+   	
+   	macro Hx(x,ParamMap) 
+    ( (x<ParamMap#Lm)?1: 
+    (1/((1/((1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2)+4*(x-ParamMap#Lm)^2/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^3
+    /(ParamMap#LA-ParamMap#Lm)^2)*(1+1i*ParamMap#GC*tanh((x-ParamMap#Lm)^2/ParamMap#LC^2))+
+	2*(ParamMap#Lm+(x-ParamMap#Lm)/(1-(x-ParamMap#Lm)^2/(ParamMap#LA-ParamMap#Lm)^2)^2)*1i*ParamMap#GC*
+	(1-tanh((x-ParamMap#Lm)^2/ParamMap#LC^2)^2)*(x-ParamMap#Lm)/ParamMap#LC^2)
+	 )
+    )
+    //EOM
+
+
+	macro Dx(a) Hx(x,ParamMap)*dx(a) //EOM
+
+
+// definition of mapping in y direction (real)
+
+    macro Rphys(y,ParamMap) 
+      	 (x<0?y:(y<ParamMap#yA?y: ( ParamMap#yA+(y-ParamMap#yA)/(1-(y-ParamMap#yA)^2/(ParamMap#yB-ParamMap#yA)^2)^2) ) ) 
+      	 //EOM
+   	 
+    macro Hy(y,ParamMap) 
+      	(x<0?1:(y<ParamMap#yA?1: (-(y^2-2*y*ParamMap#yA+2*ParamMap#yB*ParamMap#yA-ParamMap#yB^2)^3/
+      	(3*y^2-6*y*ParamMap#yA+4*ParamMap#yA^2-2*ParamMap#yB*ParamMap#yA+ParamMap#yB^2)/(-ParamMap#yB+ParamMap#yA)^4) ) )
+		//EOM
+ 
+*/
+
+// definition of mapping in y direction (real)
+/*
+    macro Rphys(y,ParamMap) 
+    (
+      	 ((y<ParamMap#yA?y:
+      	  	(ParamMap#yA+(y-ParamMap#yA)/(1-(y-ParamMap#yA)^2/(ParamMap#yB-ParamMap#yA)^2)^2*(1
+   		+1i*ParamMap#GC*tanh((y-ParamMap#yA)^2/(ParamMap#yA+ParamMap#LC)^2)))))
+     )
+      	 //EOM
+      	 
+    macro Hy(y,ParamMap) 
+      	((y<ParamMap#yA?1: 
+      			(1/((1/((1-(y-ParamMap#yA)^2/(ParamMap#yB-ParamMap#yA)^2)^2)
+      			+4*(y-ParamMap#yA)^2/(1-(y-ParamMap#yA)^2/(ParamMap#yB-ParamMap#yA)^2)^3
+    			/(ParamMap#yB-ParamMap#yA)^2)*(1+1i*ParamMap#GC*tanh((y-ParamMap#yA)^2/(ParamMap#LC+ParamMap#yA)^2))+
+				2*(ParamMap#yA+(y-ParamMap#yA)/(1-(y-ParamMap#yA)^2/(ParamMap#yB-ParamMap#yA)^2)^2)*1i*ParamMap#GC*
+				(1-tanh((y-ParamMap#yA)^2/(ParamMap#LC+ParamMap#yA)^2)^2)*(y-ParamMap#yA)/ParamMap#LC^2))))
+		//EOM
+*/
+/*
+	macro Dy(a) Hy(y,ParamMap)*dy(a) //EOM
+	
+// Jacobian of the coordinate change
+	macro JJ 1/(Hx(x,ParamMap)*Hy(y,ParamMap)) //EOM
+
+*/
+
+
+macro Hx(x,ParamMap) 
+    (
+    (x<ParamMap#x0 && x>-ParamMap#x1)?1:
+    (x>ParamMap#x0)*
+    (1.0/((1i*ParamMap#GC*(1.0/cosh((x-ParamMap#x0)^2/(4*ParamMap#LC^2)))^2
+    *(x-ParamMap#x0)^2)/(2*ParamMap#LC^2*(1-(x-ParamMap#x0)^2/ParamMap#LA^2)^2)
+	+(4*(1i*ParamMap#GC*tanh((x-ParamMap#x0)^2/(4*ParamMap#LC^2))+1)*(x-ParamMap#x0)^2)
+	/(ParamMap#LA^2*(1-(x-ParamMap#x0)^2/ParamMap#LA^2)^3)
+	+(1i*ParamMap#GC*tanh((x-ParamMap#x0)^2/(4*ParamMap#LC^2))+1)/(1-(x-ParamMap#x0)^2/ParamMap#LA^2)^2))
+	+(x<-ParamMap#x1)*
+	(1.0/((1i*ParamMap#GC*(1.0/cosh((x+ParamMap#x1)^2/(4*ParamMap#LC^2)))^2
+    *(x+ParamMap#x1)^2)/(2*ParamMap#LC^2*(1-(x+ParamMap#x1)^2/ParamMap#LA^2)^2)
+	+(4*(1i*ParamMap#GC*tanh((x+ParamMap#x1)^2/(4*ParamMap#LC^2))+1)*(x+ParamMap#x1)^2)
+	/(ParamMap#LA^2*(1-(x+ParamMap#x1)^2/ParamMap#LA^2)^3)
+	+(1i*ParamMap#GC*tanh((x+ParamMap#x1)^2/(4*ParamMap#LC^2))+1)/(1-(x+ParamMap#x1)^2/ParamMap#LA^2)^2))
+    )//EOM
+
+
+
+ macro Hy(y,ParamMap) 
+    ( 
+    (y<ParamMap#yo)?1:(1.0/((1i*ParamMap#GCy*(1.0/cosh((y-ParamMap#yo)^2/(4*ParamMap#LCy^2)))^2
+    *(y-ParamMap#yo)^2)/(2*ParamMap#LCy^2*(1-(y-ParamMap#yo)^2/ParamMap#LAy^2)^2)
+	+(4*(1i*ParamMap#GCy*tanh((y-ParamMap#yo)^2/(4*ParamMap#LCy^2))+1)*(y-ParamMap#yo)^2)
+	/(ParamMap#LAy^2*(1-(y-ParamMap#yo)^2/ParamMap#LAy^2)^3)
+	+(1i*ParamMap#GCy*tanh((y-ParamMap#yo)^2/(4*ParamMap#LCy^2))+1)/(1-(y-ParamMap#yo)^2/ParamMap#LAy^2)^2))
+	)//EOM
+
+
+macro Xphys(x,ParamMap) 
+   	(
+   	(x<ParamMap#x0 && x>-ParamMap#x1)?x:
+   	(x>ParamMap#x0)*(ParamMap#x0+(x-ParamMap#x0)/(1-(x-ParamMap#x0)^2/(ParamMap#LA)^2)^2
+   					*(1+1i*ParamMap#GC*tanh((x-ParamMap#x0)^2/(2*ParamMap#LC^2))))
+ 	(x<-ParamMap#x1)*
+ 	(ParamMap#x1+(x+ParamMap#x1)/(1-(x+ParamMap#x1)^2/(ParamMap#LA)^2)^2
+   					*(1+1i*ParamMap#GC*tanh((x+ParamMap#x1)^2/(2*ParamMap#LC^2))))
+   	)//EOM
+   	
+macro Rphys(y,ParamMap)
+	( 
+   	(y<ParamMap#yo)?y:(ParamMap#yo+(y-ParamMap#yo)/(1-(y-ParamMap#yo)^2/(ParamMap#LAy)^2)^2
+   					*(1+1i*ParamMap#GCy*tanh((y-ParamMap#yo)^2/(2*ParamMap#LCy^2))) )
+   	)//EOM
+
+macro Dx(a) Hx(x,ParamMap)*dx(a) //EOM
+macro Dy(a) Hy(y,ParamMap)*dy(a) //EOM
+	
+// Jacobian of the coordinate change
+macro JJ 1/(Hx(x,ParamMap)*Hy(y,ParamMap)) //EOM
+
+
+// boundary label
+
+real Rhoinlet=1.0;
+real Uavholeinc=1.0;
+real Rhoavholeinc=1.0;
+real Mflux=pi*Rhole^2*Uavholeinc*Rhoavholeinc;  //flusso massa per l incomprimibile assumendo uav=1 e rho=1 nel foro
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+real xorig=Xup+Rup*cos(Tmaxup); //per evitare sing in atan2
+real yorig=0.0;
+func R0=sqrt((x-xorig)^2+(y-yorig)^2);
+func Teta0=atan2(y,x);
+func Harris=(3*Mflux/(2*pi*Rhoinlet*R0(x,y)^2))*cos(Teta0(x,y))^2;	
+
+macro BoundaryconditionsBaseFlow(du,dp,dT,drho,Uinlet)
+	         on(bcinletsponge,du#x=-(N.x*Uinlet)-Ubx,duy=0.0-Uby,drho=1.-Rhob)
+	         + on(bcinlettop,du#x=0.0-Ubx,duy=0.0-Uby,drho=1.-Rhob)
+
+	           /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
+	         /*+ on(2,21,22,23,du#x=Uinlet(y)-Ubx,du#y=0.0-Uby,drho=1.-Rhob,dT=1.-Tb) */
+	          /* if you want to try no-penetration boundary (not optimal) */
+	         + on(bcnoslip,du#x=-Ubx,du#y=-Uby)
+             /*+ on(3,31,drho=1.-Rhob,dT=1.-Tb)*/
+      		 + on(bcaxis,du#y=-Uby) 
+             //+ on(21,du#y=-Uby)   
+//EOM 
+
+macro BoundaryconditionsStability(du,us,dp,dT,drho,symmetry)
+	         on(bcinletsponge,dux=0.0,duy=0.0,drho=0.0) 
+	            /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
+	         /* + on(bcoutflow,dux#=0,du#y=0.0,dT=0.0,drho=0.0) */
+	          /* if you want to try no-penetration boundary (not optimal) */
+             + on(bcnoslip,du#x=0.0,du#y=0.0)
+             + on(bcaxis,du#y=0.0)
+             /*+ on(3,31,dux=0.0,duy=0.0,drho=0.0)*/
+             + int1d(th,bcaxis)(((du#x*us#x + dT*Ts + drho*rhos)*1e30*(abs(m)>0)+du#y*us#y*1e30*(abs(m)!=1)))       
+             //EOM
+// HERE ARE SOME MACROS WHICH ARE USEFUL FOR POST-PROCESSING WITH A 2D FLOW OVER A BLUFF BODY
+
+macro Trainee(u,symmetry)   
+	(
+	(1*(symmetry==2)+2*(symmetry==1))
+	*(
+	int1d(th,2,21,22,23)((u#p)/(gamma*Ma^2)*N.x)
+	-nu*int1d(th,2,21,22,23)( (((4./3.)*dx(u#x) - (2./3.)*dy(u#y))*N.x+ (dx(u#y)+dy(u#x))*N.y))
+	)
+	)
+//EOM
+
+macro Portance(u,symmetry)   
+	(
+	(1*(symmetry==2)+2*(symmetry==0))
+	*(
+	int1d(th,2,21,22,23)(((u#p)/(gamma*Ma^2))*N.y)
+	-nu*int1d(th,2,21,22,23)( (((4./3.)*dy(u#y) - (2./3.)*dx(u#x))*N.y+(dx(u#y)+dy(u#x))*N.x))
+	)
+	)
+//EOM
+
+
+
+macro SFWriteMesh(filename,TH)
+{
+     ofstream fileFF(filename);
+     fileFF << "### Data generated by Freefem++ ; " << endl;
+     fileFF << "Mesh for the flow around a 2D cylinder (half-mesh with symmetry condition)" << endl;
+     fileFF << "datatype Mesh meshtype 2D" << endl;
+	 fileFF << "int np int Ndof real deltamin real deltamax" ;
+	 string PostProcessMeshDescription = " real deltaA real deltaB real deltaC real deltaD" ; /*description of customizable part*/
+	 fileFF << PostProcessMeshDescription << endl << endl ;
+     fespace femp1N(TH,P1);
+     fespace femp2xfemp2xfemp1N(TH,[P2,P2,P1]);	  
+     femp2xfemp2xfemp1N [uNx,uNy,uNp];
+	 fileFF << TH.nv <<  endl << uNx[].n << endl ;
+ 	 cout << "#### Mesh information :" << endl;  
+     cout << "## Number of vertices    " << TH.nv <<  endl;
+	 cout << "## Number of DOF : " << uNx[].n << endl << endl;  
+ 	 femp1N delta = hTriangle;
+	cout << "## delta min : " << delta[].min << endl;
+	cout << "## delta max : " << delta[].max << endl;
+	fileFF << delta[].min << endl;
+	fileFF << delta[].max << endl;   
+    /*Next is customizable part ; here determination of the grid size at several points */
+    real[int] xprobe = [0,	2.5,	4,	10];
+    real[int] yprobe = [.5, 	.5,	0,	0]; 
+	cout << "## delta(0,.5) : ( boundary layer) : " << delta(xprobe(0),yprobe(0)) << endl ;
+	cout << "## delta(2.5,.5) : ( sensitivity) : " << delta(xprobe(1),yprobe(1)) << endl ;
+	cout << "## delta(4,0) : ( wake ) : " << delta(xprobe(2),yprobe(2)) << endl << endl ;
+    cout << "## delta(10,0) : ( far wake ) : " << delta(xprobe(3),yprobe(3)) << endl << endl ;
+	for(int ii = 0; ii<4;ii++){ fileFF << delta(xprobe(ii),yprobe(ii)) << endl ;}	
+ 
+}; 	 
+//EOM
+
+
+
+macro SFWriteBaseFlow(filename,u,typeFlow,iter)
+	if(iter>=0)
+	{
+	fespace p1forff2m(th,P1);  
+	p1forff2m xx,yy;
+	xx=x;
+	yy=y;
+    p1forff2m ut,vt,pt,Tt,rhot,vort;
+	ut=u#x;
+	vt=u#y;
+	pt=u#p;
+	Tt=u#temp;
+	rhot=u#ro;
+	vort=dy(u#x)-dx(u#y); /* vorticity */
+	p1forff2m psi,phi;
+/*	solve Laplace(psi,phi, solver = CG) */
+/* 	= int2d(th)(dx(psi)*dx(phi)+dy(psi)*dy(phi)) */
+/* 	- int2d(th)(-vort*phi) */
+/* 	- int1d(th,bcinlet,bcoutflow,bclat,bcwall)((-N.x*ux+N.y*uy)*phi); */   
+	ofstream file(filename);
+   	{
+    file << "### Data generated by Freefem++ ; " << endl;
+    file << typeFlow << " for a 2D-compressible problem " << endl;
+    file << "datatype " << typeFlow << " datastoragemode CxP2P2P1P1P1 " << endl;
+	file << "real Re real Ma P1 ux P1 uy P1 p P1 T P1 rho P1 vort P1 psi real iter " ;
+	string PostProcessBaseFlowDescription = "real Fx real Lx"; /* customizable output */ 
+	file << PostProcessBaseFlowDescription << endl << endl ; 
+	file << Re << endl;
+	file << Ma << endl;
+			for (int j=0;j<ut[].n ; j++) file << ut[][j] << endl;
+			for (int j=0;j<ut[].n ; j++) file << vt[][j] << endl;
+			for (int j=0;j<ut[].n ; j++) file << pt[][j] << endl;
+			for (int j=0;j<ut[].n ; j++) file << Tt[][j] << endl;
+			for (int j=0;j<ut[].n ; j++) file << rhot[][j] << endl;
+			for (int j=0;j<ut[].n ; j++) file << vort[][j] << endl;
+			for (int j=0;j<ut[].n ; j++) file << psi[][j] << endl;
+			file << iter << endl;
+	
+	cout << "#### customisable output for WAKE OF A 2D BLUFF BODY : " << endl; 
+    /* Calcul de la trainee */
+    real DragMode = Trainee(u,symmetryBaseFlow);
+	cout << "#    Fx =  " << DragMode << endl; 
+    file << DragMode << " " ; 
+    real Lx, Uap, Uav;
+    if(iter>0)
+    {
+    /* mesure de la longueur de recirculation */
+		{
+		real dx = 0.001;real Uav = -2e-10;real Uap=-1e-10;int ix;
+			for(ix=1;ix<20000;ix++)
+			{   
+				Uap =u#x(0.5+ix*dx,0);
+				if(Uap*Uav<0){break;};
+				Uav = Uap;	
+			}
+			real xav = 0.5+(ix-1)*dx; 
+			real xap = 0.5+ix*dx;
+			Lx = xav *(Uap)/(Uap-Uav) + xap *(-Uav)/(Uap-Uav);
+		}	
+    }
+    else
+    { 
+    	Lx = 0;
+    };
+    cout << "#    Recirculation length = " << Lx << endl << endl; 
+		file << Lx << endl;
+     
+	}
+	}
+	else
+	{
+	ofstream file(filename);
+	file << "### Data generated by Freefem++ ; " << endl;
+    file << "BaseFlow NOT CONVERGED" << endl;
+    file << "Format : " << endl;	
+	file << "int iter " << endl;
+	file << -1 << endl;
+	};
+//EOM
+	
+	
+	
+macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
+		 {
+		 ofstream file(namefile);
+   		 fespace p1forff2m(th,P1); 
+		 p1forff2m xx,yy;
+		 xx=x;
+		 yy=y;
+		 p1forff2m<complex> ux1,uy1,pp1,vort1,rho1,T1;
+ 		 file << "### Data generated by Freefem++ ; " << endl;
+    	 file << "Eigenmode for a 2D-compressible problem " << endl;
+    	 file << "datatype " << typeFlow <<" datastoragemode CxP2P2P1P1P1 " << endl;
+    	 string descriptionFF;
+    	 if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
+    	 	{  descriptionFF="real Re complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 P1c rho1 P1c T1 real AEnergy complex Fy"; }
+    	 else if(typeFlow=="EigenModeA") 
+    	    {  descriptionFF="real Re complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj P1c rho1Adj P1c T1Adj real AEnergyAdj complex FyAdj"; }
+    	 else if(typeFlow=="SecondHarmonicMode") 
+    	    {  descriptionFF="real Re complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Fx"; }
+	   	file << descriptionFF << endl << endl ; 
+		file << Re  << endl << real(ev) << " " << imag(ev) << " " << real(shift) << " " << imag(shift) << " " << iter << endl << endl;
+ 		ux1=u#x;
+		uy1=u#y;
+		pp1=u#p;
+		rho1 =u#rho;
+		T1 = u#T;
+		vort1=dy(u#x)-dx(u#y);
+		
+		for (int j=0;j<ux1[].n ; j++) file << real(ux1[][j]) << " " << imag(ux1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(uy1[][j]) << " " << imag(uy1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(pp1[][j]) << " " << imag(pp1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(vort1[][j]) << " " << imag(vort1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(rho1[][j]) << " " << imag(rho1[][j]) << endl;
+		for (int j=0;j<ux1[].n ; j++) file << real(T1[][j]) << " " << imag(T1[][j]) << endl;
+		
+		file << endl;
+		if(typeFlow=="EigenModeD"||typeFlow=="EigenModeA")
+		{
+		cout << "#### customisable output for a mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
+		real AEnergyMode = sqrt(int2d(th)(abs(Rhob*u#x)^2+abs(Rhob*u#y)^2+abs(rho1)^2+abs(Rhob*T1)^2));
+		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
+		file << AEnergyMode << endl;
+		complex LiftMode = Portance(u,2); 
+		cout << "#   Fy = " << LiftMode << " exp( lambda t) + c.c. " << endl;
+		file << real(LiftMode) << " " << imag(LiftMode) << endl;
+		}
+		if(typeFlow=="HarmonicMode")
+		{
+		cout << "#### customisable output for a SC mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
+		real AEnergyMode = sqrt(0.5*int2d(th)(abs(Rhob*u#x)^2+abs(Rhob*u#y)^2+abs(rho1)^2+abs(Rhob*T1)^2));  /* here factor 1 because 2 half domaines and time-average of cos^2 and sin^2 = 1/2. */ 
+		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
+		file << AEnergyMode << endl;
+		complex LiftMode = Portance(u,2); 
+		cout << "#   Fy = " << real(LiftMode) << " * cos( omega t) + " << -imag(LiftMode) << " * sin( omega t) + "  << endl;
+		file << real(LiftMode) << " " << imag(LiftMode) << endl;
+		}
+		if(typeFlow=="SecondHarmonicMode")
+		{
+		cout << "#### customisable output for a HB-2 mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
+		real AEnergyMode = sqrt(0.5*int2d(th)(abs(Rhob*u#x)^2+abs(Rhob*u#y)^2+abs(rho1)^2+abs(Rhob*T1)^2));  /* here factor 1 because 2 half domaines and time-average of cos^2 and sin^2 = 1/2. */ 
+		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
+		file << AEnergyMode << endl;
+		complex DragMode = Trainee(u,2); 
+		cout << "#   Fx = " << real(DragMode) << " * cos( 2 omega t) + " << -imag(DragMode) << " * sin( 2 omega t) + "  << endl;
+		file << real(DragMode) << " " << imag(DragMode) << endl;
+		}
+		
+		
+		
+		};
+//EOM	
+
+
+//macro PostProcessBaseFlowOutput(file,u1,u2,p)
+	

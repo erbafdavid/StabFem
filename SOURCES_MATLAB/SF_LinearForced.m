@@ -26,6 +26,7 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
    p = inputParser;
    addParameter(p,'plot','no',@ischar); 
    addParameter(p,'solver','default');
+   addParameter(p,'BC','SOMMERFELD',@ischar);
    parse(p,varargin{:});
 
 
