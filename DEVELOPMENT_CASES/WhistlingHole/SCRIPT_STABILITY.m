@@ -1,5 +1,4 @@
 
-
 %%% This script will produce figures for :
 
 %%% 1/ the base flow 
@@ -115,24 +114,24 @@ plot(Re_tab,real(ev_tab_H1),'g-','linewidth',2);
 %plot(Re_Range,real(EVH2),'r.','linewidth',2);hold on;
 %plot(Re_Range,real(EVH3),'b.','linewidth',2);
 %plot(Re_Range,real(EVH1),'g.','linewidth',2);
-plot(Re_tabI,sigma1_H2_tabI,'ro:','linewidth',1);
-plot(Re_tabI,sigma1_H3_tabI,'bo:','linewidth',1);
+plot(Re_tabI,sigma1_H2_tabI,'r+:','linewidth',1);
+plot(Re_tabI,sigma1_H3_tabI,'b+:','linewidth',1);
 plot(Re_Range,0*real(EVH2),'k:','linewidth',1);
-ylim([-.2 .4]);xlim([1200  2000]);
-xlabel('Re');ylabel('\sigma')
+ylim([-.2 .4]);xlim([1200  2000]);box on;
+xlabel('Re');ylabel('\Omega_i')
 
 subplot(2,1,2);hold off;
 hold on;
-plot(Re_tab(real(ev_tab_H2)>0),imag(ev_tab_H2(real(ev_tab_H2)>0)),'r-','linewidth',2);hold on;
-plot(Re_tab(real(ev_tab_H3)>0),imag(ev_tab_H3(real(ev_tab_H3)>0)),'b-','linewidth',2);
+plot(Re_tab(real(ev_tab_H2)>0),-imag(ev_tab_H2(real(ev_tab_H2)>0)),'r-','linewidth',2);hold on;
+plot(Re_tab(real(ev_tab_H3)>0),-imag(ev_tab_H3(real(ev_tab_H3)>0)),'b-','linewidth',2);
 plot(Re_tab,-imag(ev_tab_H2),'r:');
 plot(Re_tab,-imag(ev_tab_H3),'b:');
 plot(Re_tab,-imag(ev_tab_H1),'g:');
 %plot(Re_Range,imag(EVH2),'r.',Re_Range,imag(EVH3),'b.',Re_Range,imag(EVH1),'g.');hold on;
 %plot(Re_tabI,omega0_H2_tabI,'ro:','linewidth',1);
 %plot(Re_tabI,omega0_H3_tabI,'bo:','linewidth',1);
-ylim([0 5]);xlim([1200  2000]);
-xlabel('Re');ylabel('\omega')
+ylim([0 5]);xlim([1200  2000]);box on;
+xlabel('Re');ylabel('\Omega_r')
 saveas(gcf,'Eigenvalues_onehole_beta1','png')
 saveas(gcf,'Eigenvalues_onehole_beta1','fig')
 

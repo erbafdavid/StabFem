@@ -320,7 +320,8 @@ function [hh,varargout] = ffpdeplot(points,boundary,triangles,varargin)
             end
             view(2);
         end
-        colormap(setcolormap);
+%        colormap(setcolormap);
+        colormap(hax,setcolormap);
         if (isnumeric(colorrange))
             if (min(colorrange) == max(colorrange))
                error('''ColorRange'': Must be a numeric 2-element vector where LIM1 < LIM2');

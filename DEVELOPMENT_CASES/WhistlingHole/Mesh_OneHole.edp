@@ -142,7 +142,12 @@ real ParamMapLm = 1 ;real ParamMapLA = 1e10 ;real ParamMapLC = 1. ;real ParamMap
 // CREATE A guess for the base flow (here starting from zero works very well)
  		fespace femp1(th,P1);
         fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+IFMACRO(COORDINATEMAPPING,YES)
         femp2xfemp2xfemp1<complex> [ux,ur,up]=[0,0,0];
+ENDIFMACRO
+IFMACRO(!COORDINATEMAPPING)
+        femp2xfemp2xfemp1 [ux,ur,up]=[0,0,0];
+ENDIFMACRO
         real Re = 0.1;real nu=1; // these two are useless at this stage but required in the macros 
         
 // Save in txt format (for FreeFem)        

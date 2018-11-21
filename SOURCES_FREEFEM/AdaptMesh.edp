@@ -95,18 +95,19 @@ IFMACRO(FREESURFACE,YES)
 	include "../../SOURCES_FREEFEM/Macros_Geometry_FreeSurface.edp"
 	SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
 	CalcGeomSurf;
+	cout << "Nsurface before ADAPT : " << Nsurface << endl;
 ENDIFMACRO
 
-	
+
 
     cout << endl << "$$#### Mesh information BEFORE ADAPT :" << endl;  
     cout << "$$#### Number of vertices    " << th.nv <<  endl;	
 
 
-	real Nbvx	= 50000.;		//maximun number of vertices
-	real Thetamax	= 1e-3;			//minimum corner angle in degree
-	real Verbosity	= 1; // warning : must be integer !
-	bool Splitpbedge= false;
+//	real Nbvx	= 100000.;		//maximun number of vertices
+//	real Thetamax	= 1e-3;			//minimum corner angle in degree
+//	real Verbosity	= 1; // warning : must be integer !
+//	bool Splitpbedge= false;
 // NB ALL OTHER PARAMETERS ARE NOW WRITTEN IN THIS FILE :
 	include "Param_Adaptmesh.edp";
 
@@ -256,7 +257,15 @@ for(int i=0;i<nfields;i++)
        cout << "$$	Auxiliary SCALARS associated to this field : " << endl << "$$    " ;
 	  for(int j =0;j<scalarnumber(i);j++){ cout << scalars(i,j) << " " ;};
 	  cout << endl;
+	  
+//	 [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] =  [CUSTOMADAPT(x,y)*ADFTAx[nfieldsR],CUSTOMADAPT(x,y)*ADFTAy[nfieldsR],CUSTOMADAPT(x,y)*ADFTAz[nfieldsR]]; 
     };
+
+// Custom choices for AdaptMesh
+// IF YOU WANT TO DO SOMETHING SPECIFIC FOR ADAPTATION IN YOUR CASE, DEFINE A MACRO CUSTOMADAPT  in your Macros_StabFem.edp file, it will be plugged here.      
+IFMACRO(CUSTOMADAPT)
+CUSTOMADAPT;
+ENDIFMACRO
 
 
 ///
@@ -344,14 +353,13 @@ ENDIFMACRO
 IFMACRO(FREESURFACE,YES)
 	if(typesurfacemesh=="plain") 
 	{
-	thsurface = thnew; 	// Maillage 'surface'
+	thsurface = thnew; 	/* Maillage 'surface'*/
 	};
 	if(typesurfacemesh=="empty") 
 	{
-	thsurface = emptymesh(thnew); 	// Maillage 'surface'
+	thsurface = emptymesh(thnew); 	/* Maillage 'surface'*/
 	};
-	SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); // cf. macro
-	CalcGeomSurf;
+	SurfaceNumbering(IndexPointSurf,xPointSurf,yPointSurf,S0PointSurf,Nsurface); 
 ENDIFMACRO
 
 
@@ -364,6 +372,9 @@ cout << endl << "$$#### Mesh information AFTER ADAPT :" << endl;
 
 	savemesh(thnew,ffdatadir+"mesh_adapt.msh");
 	SFWriteMesh(ffdatadir+"mesh_adapt.ff2m",thnew);
+	IFMACRO(COORDINATEMAPPING,YES)
+	SFWriteMapping(ffdatadir+"Mapping.ff2m",thnew);
+	ENDIFMACRO
 
 
 ///	

@@ -29,10 +29,12 @@ bf = SF_Adapt(bf,'Hmax',1);
 bf=SF_Adapt(bf,em,'Hmax',1)
 
 bf = SF_BaseFlow(bf,'Re',2000 );
-%[ev,em] = SF_Stability(bf,'nev',10,'type','A','m',0,'shift', 3i+2,'plotspectrum','yes')
-[ev1,em1]=SF_Stability(bf,'nev',1,'type','A','m',0,'shift', 0.3+2.23i)
-[ev2,em2]=SF_Stability(bf,'nev',1,'type','A','m',0,'shift', 0.22+4.33i)
-
+em1 = SF_LinearForced(bf,2.5);
+em2 = SF_LinearForced(bf,4.5);
 bf=SF_Adapt(bf,em1,em2,'Hmax',1)
+
+em1 = SF_LinearForced(bf,2.5);
+em2 = SF_LinearForced(bf,4.5);
+bf=SF_Adapt(bf,em1,em2,'Hmax',0.25)
 
 end

@@ -96,6 +96,15 @@ macro FlowRate1(u)
 //EOM 
 
 
+IFMACRO(!NormalizeMode)
+macro NormalizeMode(u)
+{
+complex NORM = FlowRate1(u);
+u#x[] = u#x[]/NORM;
+}
+//EOM
+ENDIFMACRO
+
 
 macro SFWriteMesh(filename,TH)
 {
