@@ -255,6 +255,36 @@ switch ffmesh.problemtype
 %        status = mysystem(solvercommand);
          end
          
+    case('AxiCompCOMPLEX')
+         % AxiCompCOMPLEX flow (Whistling jet, etc...)
+
+        % 2D Baseflow / 2D modes
+        mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        mydisp(1,['      ### USING Axi compressible COMPLEX Solver']);
+        if(p.Results.sym == 'A')
+            symmetry = 0;
+        elseif(p.Results.sym == 'S')
+            symmetry = 1;
+        elseif(p.Results.sym == 'N')
+            symmetry = 2;
+        end
+        
+        if(p.Results.type == 'D')
+            typeEig = 0;
+        elseif(p.Results.type == 'A')
+            typeEig = 1;
+        elseif(p.Results.type == 'S')
+            typeEig = 2;
+        else
+            typeEig = 0;
+        end
+        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.Ma) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' num2str(symmetry) ' ' num2str(typeEig) ' ' num2str(p.Results.nev) ' " '];
+        fff = [ ffMPI ];               
+        solver = [ffdir 'Stab_Axi_Comp_COMPLEX_DEBUG.edp'];
+%        solvercommand = ['echo ' argumentstring ' | ',ffMPI,' -np ',num2str(ncores),' ', 'Stab2DComp.edp'];
+%        status = mysystem(solvercommand);
+         
     case('2DComp')
          % 2D flow (cylinder, etc...)
 
@@ -278,7 +308,6 @@ switch ffmesh.problemtype
         else
             typeEig = 0;
         end
-        ncores = p.Results.ncores;
         argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.Ma) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
                              ' ' num2str(symmetry) ' ' num2str(typeEig) ' ' num2str(p.Results.nev) ' " '];
        % fff = [ ffMPI ' -np ',num2str(ncores) ]; does not work with FreeFem++-mpi
@@ -450,12 +479,12 @@ end
                 evA=importFFdata(ffmesh,'EigenmodeA.ff2m');
                 evA.type='A';
             end
-             if (nargout >3)
+             if (nargout >4)
             Endo=importFFdata(ffmesh,'Endogeneity.ff2m');
             Endo.type='S'; % useful ?
               mydisp(2,['  # Endogeneity successfully imported']);
-        end
-        
+             end
+         end
         if(eigenvectors.iter<0) 
             if(verbosity>1)
                 error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1). If you want to continue your loops despite this error (confident mode) use verbosity=1 ']);
@@ -468,6 +497,7 @@ end
         for iev = 1:p.Results.nev
         egv=importFFdata(ffmesh,['Eigenmode' num2str(iev) '.ff2m']);
         egv.type=p.Results.type;
+        %eigenvectors(iev) = egv;
         eigenvectors = [eigenvectors egv];
         end
         eigenvectors=eigenvectors(o);%sort the eigenvectors with the same filter as the eigenvalues
@@ -476,6 +506,7 @@ end
     for iev = 1:p.Results.nev
         egv=importFFdata(ffmesh,['EigenmodeA' num2str(iev) '.ff2m']);
         egv.type=p.Results.type;
+        %eigenvectors(iev) = egv;
         eigenvectors = [eigenvectors egv];
     end
     eigenvectors=eigenvectors(o);%sort the eigenvectors with the same filter as the eigenvalues

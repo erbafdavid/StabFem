@@ -15,6 +15,8 @@ function res = SF_LinearForced(bf,omega,varargin);
 %>
 %>  Parameters : 'plot','yes' => the program will plot the impedance and
 %>                               Nyquist diagram
+%>  Parameters : 'BC','SOMMERFELD' => Boundary condition for the farfield
+%>                                    for the acoustic simulations 
 %>
 %> Copyright D. Fabre, 11 oct 2018
 %> This program is part of the StabFem project distributed under gnu licence.
@@ -22,7 +24,9 @@ function res = SF_LinearForced(bf,omega,varargin);
 global ff ffMPI ffdir ffdatadir sfdir verbosity
 
    p = inputParser;
-   addParameter(p,'plot','no',@ischar);  
+   addParameter(p,'plot','no',@ischar); 
+   addParameter(p,'solver','default');
+   addParameter(p,'BC','SOMMERFELD',@ischar);
    parse(p,varargin{:});
 
 
@@ -43,21 +47,40 @@ switch ffmesh.problemtype
         solver = [ffdir 'LinearForcedAxi_COMPLEX_m0.edp'];
         FFfilename = [ffdatadir 'Field_Impedance_Re' num2str(bf.Re) '_Omega' num2str(omega(1))];
         FFfilenameStat = [ffdatadir 'Impedances_Re' num2str(bf.Re)];
+        paramstring = [' array ' num2str(length(omega))];
     case('AxiXR') % Jet sifflant Axi Incomp.
         solver = [ffdir  'LinearForcedAxi_m0.edp'];
         FFfilename = [ffdatadir 'Field_Impedance_Re' num2str(bf.Re) '_Omega' num2str(omega(1))];
         FFfilenameStat = [ffdatadir 'Impedances_Re' num2str(bf.Re)];
+        paramstring = [' array ' num2str(length(omega))];
     case({'2D','2DMobile'}) % VIV
         solver = [ffdir 'LinearForced2D.edp'];
         FFfilename = [ffdatadir 'Field_Impedance_Re' num2str(bf.Re) '_Omega' num2str(omega(1))];
         FFfilenameStat = [ffdatadir 'Impedances_Re' num2str(bf.Re)];
-    %case('AcousticAxi') A completer  
+        paramstring = [' array ' num2str(length(omega))];
+    case('AcousticAxi') % Acoustic-Axi (Helmholtz).
+        solver = [ffdir  'LinearForcedAcoustic.edp'];
+        FFfilename = [ffdatadir 'Field_Impedance_Re_Omega' num2str(omega(1))];
+        FFfilenameStat = [ffdatadir 'Impedances_Re'];
+        paramstring = [p.Results.BC, ' array ' num2str(length(omega))];
     otherwise
         error(['Error : problemtype ' ffmesh.problemtype ' not recognized']);
 end
 
+if(strcmp(p.Results.solver,'default'))
+    mydisp(2,['      ### USING STANDARD StabFem Solver ',solver]);        
+else
+    if(exist(p.Results.solver)==2)
+        solver = p.Results.solver;
+        
+    elseif(exist([ffdir  p.Results.solver])==2)
+           solver = [ffdir  p.Results.solver];
+    else
+        error(['Error : solver ',p.Results.solver, ' could not be found !']);
+    end
+    mydisp(2,['      ### USING CUSTOM FreeFem++ Solver ',solver]);
+end 
 
-paramstring = [' array ' num2str(length(omega))];
 for i=1:length(omega)
     paramstring = [paramstring ' ' num2str(real(omega(i))),' ',num2str(imag(omega(i))) ]
 end

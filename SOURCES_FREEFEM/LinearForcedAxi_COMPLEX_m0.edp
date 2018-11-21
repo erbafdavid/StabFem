@@ -103,13 +103,13 @@ if(typecalc=="single")
 
 
 
-	
+IFMACRO(!BoundaryConditionsForcedProblem)	
 macro BoundaryConditionsForcedProblem(u,v)
 	on(1,u#x=(SFGeomRhole/SFGeomRcav)^2,u#r=0.)
   	+ on(2,u#x=0.,u#r=0.)	
 	+ on(6,7,u#r=0.) 
 	//EOM 
-	
+ENDIFMACRO
 	
 macro ForcedLinearStatisticsINIT(namefile)
 {
@@ -128,7 +128,7 @@ macro ForcedLinearStatistics(namefile)
 	
 	complex Rate = 2*pi*int1d(th,1)(ux*y);
 	complex pin = int1d(th,1)(y*up)/int1d(th,1)(y); 
-	/*real Energy = int2d(th)(Rphys(x,y,ParamMap)/abs(Hy(y,ParamMap)*Hx(x,ParamMap))*(abs(ux)^2+abs(ur)^2));*/
+	/*real Energy = int2d(th)(rr/abs(Hy(y,ParamMap)*Hx(x,ParamMap))*(abs(ux)^2+abs(ur)^2));*/
 	complex Imp = (pin/Rate);
 	cout << ">>>> JET PULSE :  omega = " << omega << endl;
 	cout << ">>>> Debit Q = " << Rate << endl;
@@ -142,25 +142,27 @@ macro ForcedLinearStatistics(namefile)
 }
 //EOM	
 	
-	
+macro rr 
+	Rphys(x,y,ParamMap) 
+//EOM
 	
 	problem ForcedLinear([ux,ur,up],[vx,vr,q],eps=1e-16) = 
 	int2d(th)(
 	(
-	- Rphys(x,y,ParamMap)*vx*(
+	- rr*vx*(
 		(uxp*dX(ux)+ux*dX(uxp)+urp*dY(ux)+ur*dY(uxp))	
 		  -1i*omega*ux )  				
-	- Rphys(x,y,ParamMap)*vr*(
+	- rr*vr*(
 		(uxp*dX(ur)+ux*dX(urp)+urp*dY(ur)+ur*dY(urp))	
 		-1i*omega*ur )	
-	- nu*(Rphys(x,y,ParamMap)*dX(ux)*dX(vx)+Rphys(x,y,ParamMap)*dY(ux)*dY(vx)  
-	+ Rphys(x,y,ParamMap)*dX(ur)*dX(vr)+Rphys(x,y,ParamMap)*dY(ur)*dY(vr)+1/Rphys(x,y,ParamMap)*ur*vr  )  
-	+ up*(Rphys(x,y,ParamMap)*dX(vx)+vr+Rphys(x,y,ParamMap)*dY(vr))
-	- q*(Rphys(x,y,ParamMap)*dX(ux)+ur+Rphys(x,y,ParamMap)*dY(ur))
+	- nu*(rr*dX(ux)*dX(vx)+rr*dY(ux)*dY(vx)  
+	+ rr*dX(ur)*dX(vr)+rr*dY(ur)*dY(vr)+1/rr*ur*vr  )  
+	+ up*(rr*dX(vx)+vr+rr*dY(vr))
+	- q*(rr*dX(ux)+ur+rr*dY(ur))
 	)*JJ
 	)
 	+ BoundaryConditionsForcedProblem(u,v); 
-
+	
 
 // Initialisation of output files
 string namefile = ffdatadir+"LinearForcedStatistics";

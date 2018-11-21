@@ -60,6 +60,9 @@ for i = istart:nargin
     mydisp(15, ['      Function importFFdata : reading file ', fileToRead]);
     rawData1 = importdata(fileToRead);
     mydisp(15, ['      FUNCTION  importFFdata.m : reading file ', fileToRead]);
+  if(isnumeric(rawData1))
+      error('Error : wrong type of file ! this is designed to open .ff2m files')
+  end
     data = rawData1.data;
     
     if (np > 0) %% && i == istart) DAVID
