@@ -15,24 +15,26 @@ set(groot, 'defaultLegendInterpreter','latex');
 disp('Etape 1 : construction d''un maillage');
 %####
 
-% construction d'un maillage
-bf = SF_Init('Mesh_1.edp');
+%% construction d'un maillage
+%ffmesh = SF_Init('Mesh_1.edp');
+ffmesh = SF_Mesh('Mesh_1.edp');
 
 % pour tracer le maillage : (peut prendre du temps...)
-%plotFF(bf,'mesh');
+SF_Plot(ffmesh);
 
 %disp('Appuyez sur entree pour la suite...')
 %pause; 
  
+%%
 %####
 disp('Etape 2 : resolution d''un pb force pour une valeur de k');
 %#### 
  
 % calcul d'un champ acoustique pour une valeur de k
-%AC = SF_Acoustic(bf,'k',0.1)
-Forced = SF_LinearForced(bf,1,'BC','SOMMERFELD');
-Forced=SF_Adapt(Forced,'Hmax',0.1); % Adaptation du maillage
-Forced = SF_LinearForced(bf,1,'BC','SOMMERFELD');
+%AC = SF_Acoustic(ffmesh,'k',0.1)
+Forced = SF_LinearForced(ffmesh,1,'BC','SOMMERFELD');
+ffmesh = SF_Adapt(ffmesh,Forced,'Hmax',1); % Adaptation du maillage
+Forced = SF_LinearForced(ffmesh,1,'BC','SOMMERFELD');
 
 % trac? de la structure du champ acoustique
 figure();
@@ -43,14 +45,15 @@ SF_Plot(Forced,'p','boundary','on','colormap','redblue');
 
 figure('DefaultAxesFontSize',18);
 SF_Plot(Forced,'mesh');
-hold on;plotFF(Forced,'u','mesh','off','boundary','on','colormap','redblue',...
+hold on;SF_Plot(Forced,'u','mesh','off','boundary','on','colormap','redblue',...
                 'colorbar','northoutside','cbtitle','u''_x','symmetry','YM'); % symmetry = XM means mirror about X-axis
 
 % pour tracer Phi*r on peut faire : 
 % AC.R = sqrt(AC.mesh.X.^2+AC.mesh.Y.^2);
 % AC.PhiR = AC.Phi*AC.R;
-% plotFF(AC,'PhiR')
+% SF_Plot(AC,'PhiR')
 
+%%
 % Pour tracer u et p sur l'axe :
   figure();
   plot(Forced.Xaxis,real(Forced.Paxis),'r-',Forced.Xaxis,imag(Forced.Paxis),'r--',...
@@ -64,7 +67,7 @@ figure();plot(Xaxis',real(Uyaxis'));ylabel('u_x''(x=0,y)'); xlabel('x');
 
 % Remarque : on peut directement faire le calcul et les trac?s avec 
 % la commande suivante :
-% AC = SF_Acoustic(bf,'k',0.1,'plotPhi','yes','plotaxis','yes')
+% AC = SF_Acoustic(ffmesh,'k',0.1,'plotPhi','yes','plotaxis','yes')
 
 % Calcul de l'impedance pour plusieurs valeurs de k
 
@@ -74,9 +77,9 @@ pause;
 %###
 disp('Etape 3 : boucle sur k pour trace de l''impedance');
 %### 
-IMPPML = SF_LinearForced(bf,[0.01:.01:2],'BC','PML','plot','no');
-IMPCM = SF_LinearForced(bf,[0.01:.01:2],'BC','CM','plot','no');
-IMP = SF_LinearForced(bf,[0.01:.01:2],'BC','SOMMERFELD','plot','no');
+IMPPML = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','PML','plot','no');
+IMPCM = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','CM','plot','no');
+IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no');
 
 % trace de Z(k) parties reelles et imaginaires
 figure(2);

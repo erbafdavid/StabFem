@@ -92,11 +92,11 @@ end
  if(length(omega)==1)
     mycp([ffdatadir 'ForcedFlow.ff2m'],[FFfilename, '.ff2m']);
     mycp([ffdatadir 'ForcedFlow.txt'],[FFfilename, '.txt']);
-    res = importFFdata(bf.mesh, [FFfilename, '.ff2m']);
+    res = importFFdata(ffmesh, [FFfilename, '.ff2m']);
     
  else
     mycp([ffdatadir 'LinearForcedStatistics.ff2m'],[FFfilenameStat,'.ff2m']);
-    res = importFFdata(bf.mesh, [FFfilenameStat,'.ff2m']);
+    res = importFFdata(ffmesh, [FFfilenameStat,'.ff2m']);
     
     %plots...
     if(~strcmp(p.Results.plot,'no'))

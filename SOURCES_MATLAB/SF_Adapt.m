@@ -217,7 +217,7 @@ if(strcmp(varargout{1}.datatype,'BaseFlow'))
 end
 
 %% if first input was a mesh, then first output will be the mesh
-if(strcmp(varargin{1}.datatype,'mesh'))
+if(strcmpi(varargin{1}.datatype,'mesh'))
     varargout  = { newmesh varargout{:}};   
 end
 
