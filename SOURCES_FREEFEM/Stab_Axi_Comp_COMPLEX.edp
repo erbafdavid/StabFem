@@ -41,7 +41,7 @@ include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
 load "MUMPS_FreeFem"
 load "scotch"
-load "../SOURCES_OTHER/iovtk"
+//load "../SOURCES_OTHER/iovtk"
 IFMACRO(EIGENSOLVER,SLEPC)
 	load "PETSc-complex"                             // PETSc plugin
 	load "SLEPc-complex"                             // SLEPc plugin

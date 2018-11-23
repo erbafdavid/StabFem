@@ -32,11 +32,16 @@ IFMACRO(SOLVER,MUMPS)
 load "MUMPS_seq" 
 cout << " USING MUMPS_seq" << endl;
 ENDIFMACRO
-
 // END DEFINITION OF SOLVER
-IFMACRO(!problemtype)
-macro problemtype "AxiCompCOMPLEX"//EOM
+
+IFMACRO(!VTK)
+macro VTK YES //
 ENDIFMACRO
+
+//IFMACRO(VTK,YES)
+load "../../SOURCES_OTHER/VTK/iovtk"
+//ENDIFMACRO
+
 
 // Azimuthal number
 
