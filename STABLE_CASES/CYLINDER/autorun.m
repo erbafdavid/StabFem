@@ -16,7 +16,6 @@ if(nargin==0)
 end;
 format long;
 
-isfigures=1;
 run('../../SOURCES_MATLAB/SF_Start.m');verbosity=10;
 myrm('WORK/*')
 myrm('WORK/*/*')
