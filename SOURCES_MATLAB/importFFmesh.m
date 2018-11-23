@@ -56,7 +56,7 @@ if(strcmpi(meshstruct.meshtype,'2DMapped'))
         f = fieldnames(m2);
         for i = 1:length(f)
             if (~strcmpi(f{i},'filename'))&&(~strcmpi(f{i},'datatype'))&&(~strcmpi(f{i},'mesh'))
-                meshstruct.(f{i}) = m2.(f{i})
+                meshstruct.(f{i}) = m2.(f{i});
             end
         end
     end

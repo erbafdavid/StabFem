@@ -1,4 +1,4 @@
-function res = SF_LinearForced(bf,omega,varargin);
+function res = SF_LinearForced(bf,omega,varargin)
 %>
 %> Function SF_LinearForced
 %>
@@ -82,7 +82,7 @@ else
 end 
 
 for i=1:length(omega)
-    paramstring = [paramstring ' ' num2str(real(omega(i))),' ',num2str(imag(omega(i))) ]
+    paramstring = [paramstring ' ' num2str(real(omega(i))),' ',num2str(imag(omega(i))) ];
 end
 
  solvercommand = ['echo ',paramstring,' | ', ff, ' ', solver];
