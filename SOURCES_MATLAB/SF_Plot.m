@@ -235,7 +235,7 @@ else % plot mesh in single-entry mode : data
             if (strcmp(suffix, '.im') == 1)
                 xydata = imag(getfield(FFdata, field));
             else
-                data = real(getfield(FFdata, field));
+                xydata = real(getfield(FFdata, field));
             end
         varargin = { varargin{:} , 'cxydata',xydata } ;
         end
