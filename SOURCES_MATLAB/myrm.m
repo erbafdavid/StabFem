@@ -1,6 +1,6 @@
 function myrm(file)
 % This is a platform-independent tool to copy a file on a different name
-if(exist(file))
+if(exist(file)||length(strfind(file,'*'))>0)
 
 if (isunix || ismac)
     command = ['rm ', file];

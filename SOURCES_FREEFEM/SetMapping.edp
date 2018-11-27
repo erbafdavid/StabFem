@@ -57,6 +57,7 @@ include "Macros_StabFem.edp";
 include "Param_Mapping.edp";
 
 mesh th=readmesh(ffdatadir+"mesh.msh");
+cout << "$$ SetMapping.edp :" << endl << "$$ Reading mesh with nv = " << th.nv << endl;
 SFWriteMapping(ffdatadir+"Mapping.ff2m",th);
 
 // THAT'S ALL TO BE DONE HERE !
