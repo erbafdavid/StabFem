@@ -69,6 +69,9 @@ for i = istart:nargin
         % file contains mesh-related data and is likely associated to a .txt
         % file containing plain freefem data
         [filepath, name, ext] = fileparts(fileToRead);
+        if(length(filepath)==0)
+            filepath = '.';
+        end
         pdestruct.filename = [filepath, '/', name, '.txt'];
     end
     %interprets the first four lines in the file

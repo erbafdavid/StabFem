@@ -62,6 +62,10 @@ mysystem(command, error);
 %mycp('SF_Init.ff2m', [ffdatadir, 'SF_Init.ff2m']);
 
 mesh = importFFmesh([ffdatadir, 'mesh.msh']);
+
+if(exist([ffdatadir, 'MESHES'])==0)
+  mymake( [ffdatadir, 'MESHES']);
+end
 mycp([ffdatadir, 'SF_Init.ff2m'],[ffdatadir, 'MESHES/SF_Init.ff2m']);
 
 mydisp(1, ['      ### INITIAL MESH CREATED WITH np = ', num2str(mesh.np), ' points']);

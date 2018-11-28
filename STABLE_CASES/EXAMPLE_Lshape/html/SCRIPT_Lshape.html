@@ -1,0 +1,242 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>This script is a basic example which illustrates the main functionalities of the StabFem Software</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-26"><meta name="DC.source" content="SCRIPT_Lshape.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>This script is a basic example which illustrates the main functionalities of the StabFem Software</h1><!--introduction--><p>Resolution of the steady and unsteady heat equation on a L-shaped domain</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialization</a></li><li><a href="#2">Generation of the mesh</a></li><li><a href="#4">First problem : steady conduction</a></li><li><a href="#8">Second problem : unsteady conduction</a></li></ul></div><h2>Initialization<a name="1"></a></h2><pre class="codeinput">clear <span class="string">all</span>; close <span class="string">all</span>;
+run(<span class="string">'../../SOURCES_MATLAB/SF_Start.m'</span>);ffdatadir = <span class="string">'./'</span>;verbosity=0;
+mkdir(<span class="string">'FIGURES'</span>);
+</pre><h2>Generation of the mesh<a name="2"></a></h2><pre class="codeinput">Ndensity =40;
+ffmesh=SF_Mesh(<span class="string">'Lshape_Mesh.edp'</span>,<span class="string">'Params'</span>,Ndensity)
+</pre><pre class="codeoutput">
+ffmesh = 
+
+       DataDescription: '(Auxiliary file with information on initial mesh)'
+              datatype: 'Mesh'
+              meshtype: '2D'
+                    np: 1426
+                    nt: 2690
+           problemtype: 'EXAMPLE'
+                     R: 1
+    InitialMeshDensity: 40
+                points: [3x1426 double]
+                bounds: [3x160 double]
+                   tri: [4x2690 double]
+                   nbe: 160
+                labels: 1
+              filename: '././mesh.msh'
+                   seg: []
+        meshgeneration: 0
+
+</pre><pre class="codeinput"><span class="comment">%Plot the mesh</span>
+figure();SF_Plot(ffmesh,<span class="string">'title'</span>,<span class="string">'Mesh for L-shape body'</span>);
+set(gca,<span class="string">'FontSize'</span>, 18); saveas(gca,<span class="string">'FIGURES/Lshape_Mesh'</span>,<span class="string">'png'</span>);
+pause(0.1);
+</pre><img vspace="5" hspace="5" src="SCRIPT_Lshape_01.png" style="width:560px;height:420px;" alt=""> <h2>First problem : steady conduction<a name="4"></a></h2><pre class="codeinput"><span class="comment">% Solves the problem with ff++ and imports the results</span>
+SF_Launch(<span class="string">'Lshape_Steady.edp'</span>,<span class="string">'Mesh'</span>,ffmesh);
+heatS=importFFdata(ffmesh,<span class="string">'Data.ff2m'</span>)
+</pre><pre class="codeoutput">
+heatS = 
+
+               mesh: [1x1 struct]
+           filename: './Data.txt'
+    DataDescription: 'Temperature in a L-Shape domain'
+           datatype: 'EXAMPLE'
+    datastoragemode: 'ReP1'
+                  T: [1426x1 double]
+
+</pre><p>Plot the temperature field</p><pre class="codeinput">figure();SF_Plot(heatS,<span class="string">'T'</span>,<span class="string">'title'</span>, <span class="string">'Solution of the steady heat equation on a L-shaped domain'</span>);
+set(gca,<span class="string">'FontSize'</span>, 18); saveas(gca,<span class="string">'FIGURES/Lshape_T0'</span>,<span class="string">'png'</span>);
+</pre><img vspace="5" hspace="5" src="SCRIPT_Lshape_02.png" style="width:560px;height:420px;" alt=""> <p>Extract the field along a 1D line</p><pre class="codeinput">Ycut = 0.25;Xcut = [0:.01:1];
+Tcut = SF_ExtractData(heatS,<span class="string">'T'</span>,Xcut,Ycut);
+</pre><p>plot this 1D line</p><pre class="codeinput">figure();plot(Xcut,real(Tcut),<span class="string">'r-'</span>,Xcut,imag(Tcut),<span class="string">'b--'</span>);
+pause(0.1);
+</pre><img vspace="5" hspace="5" src="SCRIPT_Lshape_03.png" style="width:560px;height:420px;" alt=""> <h2>Second problem : unsteady conduction<a name="8"></a></h2><p>Solves the problem with FF++</p><pre class="codeinput">heatU=SF_Launch(<span class="string">'Lshape_Unsteady.edp'</span>,<span class="string">'Params'</span>,100,<span class="string">'Mesh'</span>,ffmesh,<span class="string">'DataFile'</span>,<span class="string">'Heat_unsteady.ff2m'</span>);
+<span class="comment">% plot the results</span>
+figure();SF_Plot(heatU,<span class="string">'Tc.re'</span>,<span class="string">'contour'</span>,<span class="string">'Tc.im'</span>,<span class="string">'cstyle'</span>,<span class="string">'patchdashedneg'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'title'</span>,{<span class="string">'Ti: '</span> , <span class="string">'real(colors) and imaginary(levels) parts'</span>})
+set(gca,<span class="string">'FontSize'</span>, 18); saveas(gca,<span class="string">'FIGURES/Lshape_Tc'</span>,<span class="string">'png'</span>);
+</pre><pre class="codeoutput">
+ans = 
+
+  4x1 graphics array:
+
+  ColorBar
+  Patch
+  Contour
+  Contour
+
+</pre><img vspace="5" hspace="5" src="SCRIPT_Lshape_04.png" style="width:560px;height:420px;" alt=""> <p>temperature field along a single line : first method (interpolation is done inside FF++)</p><pre class="codeinput">heatUCut = importFFdata(<span class="string">'HeatU_1Dcut.ff2m'</span>);
+<span class="comment">% Second method : interpolation is done in matlab using SF_ExtractData</span>
+Ycut = 0.25;Xcut = [0:.01:1];
+TIcut = SF_ExtractData(heatU,<span class="string">'Tc'</span>,Xcut,Ycut);
+<span class="comment">% plot and compare the two methods</span>
+figure;
+plot(Xcut,real(TIcut),<span class="string">'r'</span>,Xcut,imag(TIcut),<span class="string">'b'</span>);
+hold <span class="string">on</span>;
+plot(heatUCut.Xcut,real(heatUCut.Tcut),<span class="string">'ro'</span>,heatUCut.Xcut,imag(heatUCut.Tcut),<span class="string">'bo'</span>);
+title({<span class="string">'Unsteady temperature along a line : T(x,y=0.25)'</span>, <span class="string">'Re and Im parts'</span>} );
+set(gca,<span class="string">'FontSize'</span>, 18); saveas(gca,<span class="string">'FIGURES/Lshape_T0_Cut'</span>,<span class="string">'png'</span>);
+hold <span class="string">on</span>;
+
+
+
+<span class="comment">%</span>
+<span class="comment">% % Here is how to do data extraction in Matlab using the SF_ExtractData function</span>
+<span class="comment">% Ycut = 0.25;Xcut = [0:.01:1];</span>
+<span class="comment">% TIcut = SF_ExtractData(heatU,'Tc',Xcut,Ycut);</span>
+<span class="comment">% figure();plot(Xcut,real(TIcut),'r-',Xcut,imag(TIcut),'b--');</span>
+<span class="comment">%</span>
+<span class="comment">% % Here is how to do data extraction directly in the FreeFem program and import the corresponding data from a .txt file (see Lshape_Unsteady.edp).</span>
+<span class="comment">% heatCutI = importFFdata('HeatU_1Dcut.ff2m');</span>
+<span class="comment">% plot(Ycut,real(TIcut','r',Ycut,imag(TIcut),'b');</span>
+<span class="comment">% hold on;</span>
+<span class="comment">% plot(heatCut.Xcut,real(heatCutI.Tcut),'ro',heatCutI.Xcut,imag(heatCutI.Tcut),'bo');</span>
+<span class="comment">% title({'Unsteady temperature along a line : T(x,y=0.25)', 'Re and Im parts'} );</span>
+<span class="comment">% set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_T0_Cut','png');</span>
+<span class="comment">% hold on;</span>
+</pre><img vspace="5" hspace="5" src="SCRIPT_Lshape_05.png" style="width:560px;height:420px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% This script is a basic example which illustrates the main functionalities of the StabFem Software
+%
+% Resolution of the steady and unsteady heat equation on a L-shaped domain
+
+%% Initialization
+clear all; close all;
+run('../../SOURCES_MATLAB/SF_Start.m');ffdatadir = './';verbosity=0;
+mkdir('FIGURES');
+
+%% Generation of the mesh
+Ndensity =40;
+ffmesh=SF_Mesh('Lshape_Mesh.edp','Params',Ndensity)
+
+%% 
+%Plot the mesh
+figure();SF_Plot(ffmesh,'title','Mesh for L-shape body');
+set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_Mesh','png');
+pause(0.1);
+
+%% First problem : steady conduction
+
+% Solves the problem with ff++ and imports the results
+SF_Launch('Lshape_Steady.edp','Mesh',ffmesh);
+heatS=importFFdata(ffmesh,'Data.ff2m')
+
+%% 
+% Plot the temperature field
+figure();SF_Plot(heatS,'T','title', 'Solution of the steady heat equation on a L-shaped domain');
+set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_T0','png');
+
+%%  
+% Extract the field along a 1D line
+Ycut = 0.25;Xcut = [0:.01:1];
+Tcut = SF_ExtractData(heatS,'T',Xcut,Ycut);
+
+%% 
+% plot this 1D line
+figure();plot(Xcut,real(Tcut),'r-',Xcut,imag(Tcut),'bREPLACE_WITH_DASH_DASH');
+pause(0.1);
+
+%% Second problem : unsteady conduction
+% Solves the problem with FF++
+heatU=SF_Launch('Lshape_Unsteady.edp','Params',100,'Mesh',ffmesh,'DataFile','Heat_unsteady.ff2m');
+% plot the results
+figure();SF_Plot(heatU,'Tc.re','contour','Tc.im','cstyle','patchdashedneg','colormap','redblue','title',{'Ti: ' , 'real(colors) and imaginary(levels) parts'})
+set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_Tc','png');
+
+%%
+% temperature field along a single line : first method (interpolation is done inside FF++)
+heatUCut = importFFdata('HeatU_1Dcut.ff2m');
+% Second method : interpolation is done in matlab using SF_ExtractData
+Ycut = 0.25;Xcut = [0:.01:1];
+TIcut = SF_ExtractData(heatU,'Tc',Xcut,Ycut);
+% plot and compare the two methods
+figure;
+plot(Xcut,real(TIcut),'r',Xcut,imag(TIcut),'b');
+hold on;
+plot(heatUCut.Xcut,real(heatUCut.Tcut),'ro',heatUCut.Xcut,imag(heatUCut.Tcut),'bo');
+title({'Unsteady temperature along a line : T(x,y=0.25)', 'Re and Im parts'} );
+set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_T0_Cut','png');
+hold on;
+
+
+
+% 
+% % Here is how to do data extraction in Matlab using the SF_ExtractData function
+% Ycut = 0.25;Xcut = [0:.01:1];
+% TIcut = SF_ExtractData(heatU,'Tc',Xcut,Ycut);
+% figure();plot(Xcut,real(TIcut),'r-',Xcut,imag(TIcut),'bREPLACE_WITH_DASH_DASH');
+% 
+% % Here is how to do data extraction directly in the FreeFem program and import the corresponding data from a .txt file (see Lshape_Unsteady.edp). 
+% heatCutI = importFFdata('HeatU_1Dcut.ff2m');
+% plot(Ycut,real(TIcut','r',Ycut,imag(TIcut),'b');
+% hold on;
+% plot(heatCut.Xcut,real(heatCutI.Tcut),'ro',heatCutI.Xcut,imag(heatCutI.Tcut),'bo');
+% title({'Unsteady temperature along a line : T(x,y=0.25)', 'Re and Im parts'} );
+% set(gca,'FontSize', 18); saveas(gca,'FIGURES/Lshape_T0_Cut','png');
+% hold on;
+
+##### SOURCE END #####
+--></body></html>

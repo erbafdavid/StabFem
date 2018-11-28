@@ -1,88 +1,105 @@
-% initialisation
+%% Acoustic field in a pipe with harmonic forcing at the bottom
+%
+%  This script demonstrates the use of StabFem for a linear acoustics problem
+%
+%  Problem : find the velocity potential $\phi$ such as :
+%
+% *  $\Delta \phi + k^2 \phi = 0 $ (with $k = \omega c_0$ the acoustic wavenuber) 
+%
+% *  $u_z = \partial_z \phi = 1 $ along $\Gamma_{in}$
+%
+% *  $\partial_R \phi + R^{-1} \phi + i k \phi = 0$ (Sommerfeld condition) on $\Gamma_{out}$ 
+%
+% Variational formulation :
+%
+%  $$\forall \phi^*, \int \int_\Omega \left( \nabla \phi \cdot \nabla \phi^* + k^2 \phi \phi^*\right) dV 
+%  + \int_{\Gamma_{out}}  (R^{-1} +i k) \phi \phi^* dV
+%  =  \int_{\Gamma_{in}} \phi^* dS $$   
+
+
+%% initialisation
 clear all
 close all
-
-%SF_Start
 run('../../SOURCES_MATLAB/SF_Start.m');
-
-% Latex plots 
-% In case you do not have installed latex remove these latex
 set(groot, 'defaultAxesTickLabelInterpreter','latex'); 
 set(groot, 'defaultLegendInterpreter','latex');
 
+con
+%% Chapter 1 : building of an adapted mesh
 
-%####
-disp('Etape 1 : construction d''un maillage');
-%####
+ffmesh = SF_Mesh('Mesh_1.edp')
 
-%% construction d'un maillage
-%ffmesh = SF_Init('Mesh_1.edp');
-ffmesh = SF_Mesh('Mesh_1.edp');
-
-% pour tracer le maillage : (peut prendre du temps...)
+%% plot the mesh :
 SF_Plot(ffmesh);
 
-%disp('Appuyez sur entree pour la suite...')
-%pause; 
- 
-%%
-%####
-disp('Etape 2 : resolution d''un pb force pour une valeur de k');
-%#### 
- 
-% calcul d'un champ acoustique pour une valeur de k
-%AC = SF_Acoustic(ffmesh,'k',0.1)
+
+%% Chapter 2 : Resolution of an acoustically forced problem (and mesh adaptation)
+
 Forced = SF_LinearForced(ffmesh,1,'BC','SOMMERFELD');
 ffmesh = SF_Adapt(ffmesh,Forced,'Hmax',1); % Adaptation du maillage
-Forced = SF_LinearForced(ffmesh,1,'BC','SOMMERFELD');
 
-% trac? de la structure du champ acoustique
+Forced = SF_LinearForced(ffmesh,1,'BC','SOMMERFELD')
+
+%% plot the structure
 figure();
-SF_Plot(Forced,'u','boundary','on','colormap','redblue');
-figure();
-SF_Plot(Forced,'p','boundary','on','colormap','redblue');
+SF_Plot(Forced,'u','boundary','on','colormap','redblue','cbtitle','|u''|');
+hold on;
+SF_Plot(Forced,'p','boundary','on','colormap','redblue','symmetry','YM','cbtitle','p''','colorbar','westoutside');
 
 
+%% plot the structure along with the mesh
 figure('DefaultAxesFontSize',18);
 SF_Plot(Forced,'mesh');
 hold on;SF_Plot(Forced,'u','mesh','off','boundary','on','colormap','redblue',...
-                'colorbar','northoutside','cbtitle','u''_x','symmetry','YM'); % symmetry = XM means mirror about X-axis
+                'colorbar','northoutside','cbtitle','|u|','symmetry','YM'); % symmetry = XM means mirror about X-axis
 
-% pour tracer Phi*r on peut faire : 
-% AC.R = sqrt(AC.mesh.X.^2+AC.mesh.Y.^2);
-% AC.PhiR = AC.Phi*AC.R;
-% SF_Plot(AC,'PhiR')
 
-%%
-% Pour tracer u et p sur l'axe :
-  figure();
-  plot(Forced.Xaxis,real(Forced.Paxis),'r-',Forced.Xaxis,imag(Forced.Paxis),'r--',...
-               Forced.Xaxis,real(Forced.Uaxis),'b-',Forced.Xaxis,imag(Forced.Uaxis),'b--');
-           title('Pressure and velocity along the axis ')
-           legend('Re(P)', 'Im(P)','Re(U)','Im(U)'); 
+%% Extract p and |u| along the symmetry axis
            
 Xaxis = [-10 :.1 :10];
 Uyaxis = SF_ExtractData(Forced,'u',0,Xaxis);
-figure();plot(Xaxis',real(Uyaxis'));ylabel('u_x''(x=0,y)'); xlabel('x');
+Paxis = SF_ExtractData(Forced,'p',0,Xaxis);
 
-% Remarque : on peut directement faire le calcul et les trac?s avec 
-% la commande suivante :
-% AC = SF_Acoustic(ffmesh,'k',0.1,'plotPhi','yes','plotaxis','yes')
+%% plot  p and |u| along the symmetry axis
+figure();
+plot(Xaxis,real(Uyaxis),Xaxis,imag(Uyaxis)); hold on;plot(Xaxis,real(Paxis),Xaxis,imag(Paxis));
+xlabel('x');
+legend('Re(u''_z)','Im(u''_z)','Re(p'')','Im(p'')');
+pause(0.1);
 
-% Calcul de l'impedance pour plusieurs valeurs de k
+%% Chapter 3 : loop over k to compute the impedance $Z(k)$ (using SOMMERFELD)
 
-disp('Appuyez sur entree pour la suite...')
-pause; 
+IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no')
 
-%###
-disp('Etape 3 : boucle sur k pour trace de l''impedance');
-%### 
+%% Plot $Z(k)$ 
+figure;
+plot(IMP.omega,real(IMP.Z),'b',IMP.omega,imag(IMP.Z),'b--','DisplayName','Sommerfeld');
+title(['Impedance $Z_r$ and $Z_i$'],'Interpreter','latex','FontSize', 30)
+xlabel('$k$','Interpreter','latex','FontSize', 30);
+ylabel('$Z_r,Z_i$','Interpreter','latex','FontSize', 30);
+set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+pause(0.1);
+
+%% plot in semilog
+figure;
+semilogy(IMP.omega,abs(IMP.Z),'b--','DisplayName','CM');
+xlabel('b'); ylabel('|Z|');
+xlabel('$k$','Interpreter','latex','FontSize', 30);
+ylabel('$|Z|$','Interpreter','latex','FontSize', 30);
+title(['Impedance $|Z|$'],'Interpreter','latex','FontSize', 30)
+leg.FontSize = 20;
+set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+
+pause(0.1);
+
+%% Chapter 4 : trying better kind of boundary conditions : PML, CM
+
 IMPPML = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','PML','plot','no');
 IMPCM = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','CM','plot','no');
 IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no');
 
-% trace de Z(k) parties reelles et imaginaires
-figure(2);
+%% trace de Z(k) parties reelles et imaginaires
+figure;
 plot(IMP.omega,real(IMP.Z),'b',IMP.omega,imag(IMP.Z),'b--','DisplayName','Sommerfeld');
 hold on;
 plot(IMPCM.omega,real(IMPCM.Z),'r',IMPCM.omega,imag(IMPCM.Z),'r--','DisplayName','CM');
@@ -94,8 +111,9 @@ leg=legend('Sommerfeld','CM','PML');
 leg.FontSize = 20;
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 pause(0.1);
-% trace de |Z(k)| en semilog
-figure(3);
+
+%% trace de |Z(k)| en semilog
+figure;
 semilogy(IMP.omega,abs(IMP.Z),'b--','DisplayName','CM');
 hold on;
 semilogy(IMPCM.omega,abs(IMPCM.Z),'r--','DisplayName','CM');
@@ -109,8 +127,8 @@ leg.FontSize = 20;
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 
 pause(0.1);
-
-figure(4);
+%% plot reflection coefficient
+figure;
 semilogy(IMP.omega,IMP.R,'b--','DisplayName','Sommerfeld');
 hold on;
 semilogy(IMPCM.omega,IMPCM.R,'r--','DisplayName','CM');

@@ -1,0 +1,100 @@
+
+//http://www.phys.unsw.edu.au/jw/fluteacoustics.html
+
+verbosity=0;
+include "Macros_StabFem.edp";
+
+
+real cpu=clock();
+
+real Rext=40;		//Rayon du domaine
+real H=20;			//Longueur de la flute
+real Rpipe = 1;		//Rayon de la flute
+real Ep=0.2;		//Epaisseur de la flute
+real a=1.25;		//facteur agissant localement sur la densité
+real k; 			// nombre d'onde k=omega*c0
+
+//paramètres du trou
+real p=3.;			//position du trou
+real D=1;				//Diametre du trou
+real S=pi*(D/2)^2;		//Surface du trou
+real L=S/(2*pi*Rpipe);	//Largeur du trou
+
+//Création du domaine
+
+border axe(t=0,-H){x=0;y=t;label=1;};
+border fond(t=0,Rpipe){x=t;y=-H;label=2;};
+border mur(t=-H,-p-L/2){x=Rpipe;y=t;label=3;};
+border epai(t=Rpipe,Rpipe+Ep){x=t;y=0;label=4;};
+border mur2(t=0,(p-L/2)){x=Rpipe+Ep;y=-t;label=5;};
+border trouh(t=Rpipe+Ep, Rpipe){x=t;y=-p+L/2;label=10;};
+border trouv(t=-p+L/2,0){x=Rpipe;y=t;label=11;};
+border trouh2(t=Rpipe, Rpipe+Ep){x=t;y=-p-L/2;label=12;};
+border mur3(t=0,(H+Ep-p-L/2)^(1/a)){x=Rpipe+Ep;y=-p-L/2-t^a;label=13;};
+border fond2(t=Rpipe+Ep,0){x=t;y=-H-Ep;label=12;};
+border plate(t=0,(-H-Ep+Rext)^(1/a)){x=0;y=-(H+Ep)-t^a;label=7;};
+border sphere(t=-pi/2,pi/2){x=Rext*cos(t);y=Rext*sin(t);label=5;};
+border axe2(t=Rext^(1/a),0){x=0;y=t^a;label=9;};
+
+
+
+
+real d = 4;        // Défini le nombre de mailles par unité 
+
+//création du maillage sur le domaine
+mesh th = buildmesh(axe(d*H)+fond(d*Rpipe)+mur(d*(H-p-L/2))+epai(d*Ep+1)+mur2(d*(p-L/2))
+                    +trouh(d*Ep+1)+trouv(d*(p-L/2))+trouh2(d*Ep+1)+mur3(d*(H-p+Ep-L/2))
+					+fond2(d*(Rpipe+Ep))+plate(d*(Rext-H-Ep))+sphere(pi*Rext/a*d)+axe2(d*Rext));
+
+
+// SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+			file << "2D" << endl;
+			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "real ZERO" << endl;
+			file <<  0  << endl;
+}
+
+
+// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
+
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
+}
+
+
+
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+ 		fespace femp1(th,P1);
+        fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
+        femp2xfemp2xfemp1 [ux,uy,up]=[0,0,0];
+        real Re = 0;real nu=1; // these two are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+      	{
+      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+	    file << ux[] << endl;
+	    file <<  endl << 0 << endl;
+      	}
+      	
+// Save in ff2m format (for StabFem)	    
+	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m");
+		    
+plot(th,ps="maillage.ps");
+

@@ -1,40 +1,29 @@
 
-%  Instability of the wake of a cylinder with STABFEM  
+%%  Instability of the wake of a cylinder with STABFEM  
 %
+% 
 %  this scripts performs the following calculations :
-%  1/ Generation of an adapted mesh
-%  2/ Base-flow properties for Re = [2-40]
-%  3/ Stability curves St(Re) and sigma(Re) for Re = [40-100]
-%  4/ Determination of the instability threshold and Weakly-Nonlinear
-%  analysis
-%  5/ Harmonic-Balance for Re = REc-100
-%  6/ Self-consistent model for Re=100
+% 
+% 
+% # Generation of an adapted mesh
+% # Base-flow properties for Re = [2-40]
+% # Stability curves St(Re) and sigma(Re) for Re = [40-100]
+% # Determination of the instability threshold and Weakly-Nonlinear analysis
+% # Harmonic-Balance for Re = [REc-100]
+% # Self-consistent model for Re = 100
 
-%% CHAPTER 0 : set the global variables needed by the drivers
+%%  CHAPTER 0 : set the global variables needed by the drivers
 
 clear all;
 close all;
-run('../../SOURCES_MATLAB/SF_Start.m');
+run('../../SOURCES_MATLAB/SF_Start.m');verbosity=0;
 figureformat='png'; AspectRatio = 0.56; % for figures
 system('mkdir FIGURES');
-
-meshstrategynonlinear = 'S'; % select 'D' or 'S'
-% 'D' will use mesh adapted on direct eigenmode (mesh M_4): 
-%     this is necessary to compute correctly the structure of the mode (fig. 5a) 
-%     and the energy-amplitude (fig. 7d) 
-% 'S' will use mesh adapted on sensitivity (mesh M_2):
-%     figs. (5a) and (7d) will be wrong, on the other all other results
-%     will be correct and nonlinear computations will be much much faster.
-
+set(groot, 'defaultAxesTickLabelInterpreter','latex'); 
+set(groot, 'defaultLegendInterpreter','latex');
 tic;
 
 %% ##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
-
-%if(exist('mesh_completed')==1)
-%disp(' ADAPTMESH PROCEDURE AS PREVIOUSLY DONE, START WITH EXISTING MESH : '); 
-%bf=SF_BaseFlow(bf,'Re',60);
-%[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
-%else
    
 disp(' STARTING ADAPTMESH PROCEDURE : ');    
 disp(' ');
@@ -42,69 +31,89 @@ disp(' LARGE MESH : [-40:80]x[0:40] ');
 disp(' ');    
 bf=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
 bf=SF_BaseFlow(bf,'Re',1);
+bf=SF_Adapt(bf,'Hmax',2);
 bf=SF_BaseFlow(bf,'Re',10);
 bf=SF_BaseFlow(bf,'Re',60);
 bf=SF_Adapt(bf,'Hmax',2);
-bf=SF_Adapt(bf,'Hmax',2);
-disp(' ');
-disp('mesh adaptation to SENSITIVITY : ') % This is mesh M2 from the appendix
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
-[bf,em]=SF_Adapt(bf,em,'Hmax',2);
-%mesh_completed = 1;
-%end
+meshstrategynonlinear = 'D'; 
+  % select 'D' or 'S'
+ % 'D' will use mesh adapted on direct eigenmode (mesh M_4): 
+ %     this is necessary to compute correctly the structure of the mode (fig. 5a) 
+ %     and the energy-amplitude (fig. 7d) 
+ % 'S' will use mesh adapted on sensitivity (mesh M_2):
+ %     figs. (5a) and (7d) will be wrong, on the other all other results
+ %     will be correct and nonlinear computations will be much much faster.
+if(meshstrategynonlinear=='D')
+     bf=SF_BaseFlow(bf,'Re',60);
+     disp('using mesh adaptated to EIGENMODE (M4) ')
+     [ev,emS,em,emA,emE] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
+     bf=SF_Adapt(bf,em,emE,'Hmax',2);
+     [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D');
+else 
+    disp('mesh adaptation to SENSITIVITY : ') % This is mesh M2 from the appendix
+    [ev,emS,em,emA,emE] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
+    bf = SF_Adapt(bf,emS,'Hmax',2);
+end
 
+ [ev,emS,em,emA,emE] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S'); % compute on last mesh
 
+%% CHAPTER 1b : DRAW FIGURES 
+%  plot the mesh (full size)
 
-%% CHAPTER 1b : DRAW FIGURES
-
-% plot the mesh (full size)
-figure();plotFF(bf,'mesh','xlim',[-40 80],'ylim',[0 40]);
-%title('Initial mesh (full size)');
-box on; %pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+figure();SF_Plot(bf,'mesh','xlim',[-40 80],'ylim',[0 40]);
+title('Initial mesh (full size)');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_Mesh_Full',figureformat); 
 
-% plot the mesh (zoom)
-bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
-figure();plotFF(bf,'mesh','xlim',[-1.5 4.5],'ylim',[0 3]);
-%title('Initial mesh (zoom)');
+%  plot the mesh (zoom)
+figure();SF_Plot(bf,'mesh','xlim',[-1.5 4.5],'ylim',[0 3]);
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_Mesh',figureformat);
     
-% plot the base flow for Re = 60
-%bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
-figure();plotFF(bf,'ux','Contour','on','CLevels',[0 0],'xlim',[-1.5 4.5],'ylim',[0 3]);
-%plotFF(bf,'ux');
-%title('Base flow at Re=60 (axial velocity)');
+%% 
+%   plot the base flow for Re = 60
+
+figure();
+%SF_Plot(bf,'ux','xlim',[-1.5 4.5],'ylim',[-2 2],'colorbar','northoutside','cbtitle','u_x','colormap','redblue',...
+%        'contour','psi','clevels',[-.02 0 .2 1 2 5]);
+%hold on;
+%SF_Plot(bf,'p','xlim',[-1.5 4.5],'ylim',[-2 2],'colorbar','southoutside','cbtitle','p','colormap','jet',...
+%    'contour','psi','clevels',[-.02 0 .2 1 2 5],'symmetry','XM');
+%SF_Plot(bf,'psi','xlim',[-1.5 4.5],'ylim',[-3 3],'contours','on','xystyle','off','symmetry','XA');
+
+SF_Plot(bf,'p','contour','psi','clevels',[-.02 0 .2 1 2 5],'xlim',[-1.5 4.5],'ylim',[0 3],...
+        'cbtitle','p','colormap','redblue','colorrange','centered','boundary','on','bdlabels',2,'bdcolors','k','cstyle','patchdashedneg');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_BaseFlowRe60',figureformat);
 
 
-% plot the eigenmode for Re = 60
-em.xlim = [-2 8]; em.ylim=[0,5];
-figure();plotFF(em,'ux1','xlim',[-2 8],'ylim',[0 5]);
-%title('Eigenmode for Re=60');
+%  plot the eigenmode for Re = 60
+
+figure();SF_Plot(em,'ux1','xlim',[-2 8],'ylim',[0 5],'colormap','redblue','colorrange','cropcentered','boundary','on','bdlabels',2,'bdcolors','k');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_EigenModeRe60_AdaptS',figureformat);  % 
 
-em.xlim = [-2 8]; em.ylim=[0,5];
-figure();plotFF(em,'ux1Adj','xlim',[-2 8],'ylim',[0 5]);
-%title('Adjoint Eigenmode for Re=60');
+figure();SF_Plot(emA,'ux1Adj','xlim',[-2 8],'ylim',[0 5],'colormap','redblue','colorrange','cropcentered','boundary','on','bdlabels',2);
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_EigenModeAdjRe60',figureformat);
 
-em.xlim = [-2 4]; em.ylim=[0,3];
-figure();plotFF(em,'sensitivity','xlim',[-2 4],'ylim',[0 3]);
-%title('Structural sensitivity for Re=60');
+figure();SF_Plot(emS,'sensitivity','xlim',[-2 4],'ylim',[0 3],'colormap','ice','boundary','on','bdlabels',2);
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_SensitivityRe60',figureformat);
 
+figure();SF_Plot(emE,'endogeneity.re','contour','endogeneity.im','xlim',[-2 4],'ylim',[0 3],'colormap','redblue','boundary','on','bdlabels',2);
+%hold on; SF_Plot(emE,'endogeneity.im','xlim',[-2 6],'ylim',[-3 3],'symmetry','XM','colormap','redblue');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_EndogeneityRe60',figureformat);
 pause(0.1);
+
 
 %% CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)
 
@@ -117,7 +126,7 @@ Fx_BF = []; Lx_BF = [];
     end
 
 
-%%% chapter 2B : figures
+% chapter 2B : figures
  
 figure(22);hold off;
 plot(Re_BF,Fx_BF,'b+-','LineWidth',2);
@@ -132,13 +141,10 @@ xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_Lx_baseflow',figureformat);
-
-
 pause(0.1);
 
 
 %% CHAPTER 3 : COMPUTING STABILITY BRANCH
-
 
     disp('COMPUTING STABILITY BRANCH')
 
@@ -189,21 +195,10 @@ disp(' ');
 disp('######     ENTERING NONLINEAR PART       ####### ');
 disp(' ');
 
-if(meshstrategynonlinear=='D')
-    % 4a : adapt mesh to eigenmode (mesh M4 of the appendix)
-    bf=SF_BaseFlow(bf,'Re',60);
-    disp('using mesh adaptated to EIGENMODE (M4) ')
-    [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D');
-    bf=SF_Adapt(bf,em,'Hmax',5);
-    [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D');
-else
-     disp('using mesh adaptated to SENSITIVITY (M2) ')
-     % this is the one previously used
-end
     
 % plot the eigenmode for Re = 60
 em.xlim = [-2 8]; em.ylim=[0,5];
-figure();plotFF(em,'ux1','colorrange',[-.5 .5],'xlim',[-2 8],'ylim',[0 5]);
+figure();SF_Plot(em,'ux1','colorrange',[-.5 .5],'xlim',[-2 8],'ylim',[0 5]);
 %title('Eigenmode for Re=60');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -224,7 +219,8 @@ Lxc=bf.Lx;    Omegac=imag(em.lambda);
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
 [wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.); % Here to generate a starting point for the next chapter
 
-%% PLOTS of WNL predictions
+%% 
+% PLOTS of WNL predictions
 
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);
@@ -263,15 +259,11 @@ pause(0.1);
 disp('SC quasilinear model on the range [Rec , 100]');
 Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
 
-
-
 %%% THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL
 %%% ANALYSIS
 Res = 47. ; 
 
  Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
-%bf=SF_BaseFlow(bf,'Re',Res);
-%[ev,em] = SF_Stability(bf,'shift',Omegac*i);
 
 [meanflow,mode] = SF_HB1(meanflow,mode,'sigma',0.,'Re',Res); 
 
@@ -284,8 +276,8 @@ for Re = Re_HB(2:end)
     Fy_HB = [Fy_HB mode.Fy];
     
     if(Re==60)
-       meanflow.xlim = [-2 4]; meanflow.ylim=[0,3];
-       figure();plotFF(meanflow,'ux','contour','on','clevels',[0 0],'xlim',[-2 4],'ylim',[0 3]);
+       figure();SF_Plot(meanflow,'vort','contour','psi','clevels',[-.02 0 .5 1 2 5],'xlim',[-2 4],'ylim',[0 3],...
+           'colormap','ice','boundary','on','bdlabels',2,'bdcolors','k','cstyle','patchdashedneg');
        box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
        set(gca,'FontSize', 18);
        saveas(gca,'FIGURES/Cylinder_MeanFlowRe60',figureformat); 
@@ -294,6 +286,7 @@ end
 
 
 save('Cylinder_AllFigures.mat');
+
 
 %% chapter 5b : figures
 %load('Cylinder_AllFigures.mat');

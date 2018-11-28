@@ -44,6 +44,8 @@ end
 
 %%
 
+    mycp(ffmesh.filename, [ffdatadir, 'mesh.msh']); % position mesh file
+    
     createMappingParamFile(p.Results.MappingType,p.Results.MappingParams); %% See auxiliary function of this file
     command = [ ff, ' ', ffdir, 'SetMapping.edp'];
     errormsg = 'ERROR : FreeFem SetMapping aborted';

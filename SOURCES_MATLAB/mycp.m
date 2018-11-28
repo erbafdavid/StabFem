@@ -22,5 +22,4 @@ if (strcmp(file1, file2) == 0) % cp will only be called if filenames are differe
     end
     
 end
-
 end

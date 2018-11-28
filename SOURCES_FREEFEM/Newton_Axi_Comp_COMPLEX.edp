@@ -24,7 +24,7 @@
 
 load "MUMPS_FreeFem"
 load "scotch";
-load "../../SOURCES_OTHER/iovtk"
+//load "../../SOURCES_OTHER/VTK/iovtk"
 include "SF_Geom.edp";
 include "Param_Mapping.edp";
 include "Macros_StabFem.edp";
