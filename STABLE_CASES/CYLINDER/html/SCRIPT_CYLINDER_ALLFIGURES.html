@@ -1,0 +1,819 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>SCRIPT_CYLINDER_ALLFIGURES</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-27"><meta name="DC.source" content="SCRIPT_CYLINDER_ALLFIGURES.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1></h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Instability of the wake of a cylinder with STABFEM</a></li><li><a href="#2">CHAPTER 0 : set the global variables needed by the drivers</a></li><li><a href="#3">##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE</a></li><li><a href="#4">CHAPTER 1b : DRAW FIGURES</a></li><li><a href="#6">CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)</a></li><li><a href="#7">CHAPTER 3 : COMPUTING STABILITY BRANCH</a></li><li><a href="#8">CHAPTER 3b : figures</a></li><li><a href="#9">CHAPTER 4 : computation of weakly nonlinear expansion</a></li><li><a href="#11">CHAPTER 5 : SELF CONSISTENT / HB1</a></li><li><a href="#12">THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL</a></li><li><a href="#13">ANALYSIS</a></li><li><a href="#14">chapter 5b : figures</a></li></ul></div><h2>Instability of the wake of a cylinder with STABFEM<a name="1"></a></h2><pre>this scripts performs the following calculations :</pre><div><ol><li>Generation of an adapted mesh</li><li>Base-flow properties for Re = [2-40]</li><li>Stability curves St(Re) and sigma(Re) for Re = [40-100]</li><li>Determination of the instability threshold and Weakly-Nonlinear analysis</li><li>Harmonic-Balance for Re = [REc-100]</li><li>Self-consistent model for Re = 100</li></ol></div><h2>CHAPTER 0 : set the global variables needed by the drivers<a name="2"></a></h2><pre class="codeinput">clear <span class="string">all</span>;
+close <span class="string">all</span>;
+run(<span class="string">'../../SOURCES_MATLAB/SF_Start.m'</span>);verbosity=0;
+figureformat=<span class="string">'png'</span>; AspectRatio = 0.56; <span class="comment">% for figures</span>
+system(<span class="string">'mkdir FIGURES'</span>);
+set(groot, <span class="string">'defaultAxesTickLabelInterpreter'</span>,<span class="string">'latex'</span>);
+set(groot, <span class="string">'defaultLegendInterpreter'</span>,<span class="string">'latex'</span>);
+tic;
+</pre><pre class="codeoutput">mkdir: FIGURES: File exists
+</pre><h2>##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE<a name="3"></a></h2><pre class="codeinput">disp(<span class="string">' STARTING ADAPTMESH PROCEDURE : '</span>);
+disp(<span class="string">' '</span>);
+disp(<span class="string">' LARGE MESH : [-40:80]x[0:40] '</span>);
+disp(<span class="string">' '</span>);
+bf=SF_Init(<span class="string">'Mesh_Cylinder.edp'</span>,[-40 80 40]);
+bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,1);
+bf=SF_Adapt(bf,<span class="string">'Hmax'</span>,2);
+bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,10);
+bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,60);
+bf=SF_Adapt(bf,<span class="string">'Hmax'</span>,2);
+meshstrategynonlinear = <span class="string">'D'</span>;
+  <span class="comment">% select 'D' or 'S'</span>
+ <span class="comment">% 'D' will use mesh adapted on direct eigenmode (mesh M_4):</span>
+ <span class="comment">%     this is necessary to compute correctly the structure of the mode (fig. 5a)</span>
+ <span class="comment">%     and the energy-amplitude (fig. 7d)</span>
+ <span class="comment">% 'S' will use mesh adapted on sensitivity (mesh M_2):</span>
+ <span class="comment">%     figs. (5a) and (7d) will be wrong, on the other all other results</span>
+ <span class="comment">%     will be correct and nonlinear computations will be much much faster.</span>
+<span class="keyword">if</span>(meshstrategynonlinear==<span class="string">'D'</span>)
+     bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,60);
+     disp(<span class="string">'using mesh adaptated to EIGENMODE (M4) '</span>)
+     [ev,emS,em,emA,emE] = SF_Stability(bf,<span class="string">'shift'</span>,0.04+0.76i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'S'</span>);
+     bf=SF_Adapt(bf,em,emE,<span class="string">'Hmax'</span>,2);
+     [ev,em] = SF_Stability(bf,<span class="string">'shift'</span>,0.04+0.76i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'D'</span>);
+<span class="keyword">else</span>
+    disp(<span class="string">'mesh adaptation to SENSITIVITY : '</span>) <span class="comment">% This is mesh M2 from the appendix</span>
+    [ev,emS,em,emA,emE] = SF_Stability(bf,<span class="string">'shift'</span>,0.04+0.76i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'S'</span>);
+    bf = SF_Adapt(bf,emS,<span class="string">'Hmax'</span>,2);
+<span class="keyword">end</span>
+
+ [ev,emS,em,emA,emE] = SF_Stability(bf,<span class="string">'shift'</span>,0.04+0.76i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'S'</span>); <span class="comment">% compute on last mesh</span>
+</pre><pre class="codeoutput"> STARTING ADAPTMESH PROCEDURE : 
+ 
+ LARGE MESH : [-40:80]x[0:40] 
+ 
+rm: ./WORK/BASEFLOWS/*: No such file or directory
+rm: ./WORK/MEANFLOWS/*: No such file or directory
+
+ans =
+
+     0
+
+rm: ./WORK/Eigenmode*: No such file or directory
+rm: ./WORK/Eigenmode*: No such file or directory
+using mesh adaptated to EIGENMODE (M4) 
+      # Stability calculation completed, eigenvalue = 0.046839+0.74518i ; converged in 15 iterations
+</pre><h2>CHAPTER 1b : DRAW FIGURES<a name="4"></a></h2><pre>plot the mesh (full size)</pre><pre class="codeinput">figure();SF_Plot(bf,<span class="string">'mesh'</span>,<span class="string">'xlim'</span>,[-40 80],<span class="string">'ylim'</span>,[0 40]);
+title(<span class="string">'Initial mesh (full size)'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Mesh_Full'</span>,figureformat);
+
+<span class="comment">%  plot the mesh (zoom)</span>
+figure();SF_Plot(bf,<span class="string">'mesh'</span>,<span class="string">'xlim'</span>,[-1.5 4.5],<span class="string">'ylim'</span>,[0 3]);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Mesh'</span>,figureformat);
+</pre><img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_01.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_02.png" style="width:560px;height:314px;" alt=""> <pre class="language-matlab">plot <span class="string">the</span> <span class="string">base</span> <span class="string">flow</span> <span class="string">for</span> <span class="string">Re</span> <span class="string">=</span> <span class="string">60</span>
+</pre><pre class="codeinput">figure();
+<span class="comment">%SF_Plot(bf,'ux','xlim',[-1.5 4.5],'ylim',[-2 2],'colorbar','northoutside','cbtitle','u_x','colormap','redblue',...</span>
+<span class="comment">%        'contour','psi','clevels',[-.02 0 .2 1 2 5]);</span>
+<span class="comment">%hold on;</span>
+<span class="comment">%SF_Plot(bf,'p','xlim',[-1.5 4.5],'ylim',[-2 2],'colorbar','southoutside','cbtitle','p','colormap','jet',...</span>
+<span class="comment">%    'contour','psi','clevels',[-.02 0 .2 1 2 5],'symmetry','XM');</span>
+<span class="comment">%SF_Plot(bf,'psi','xlim',[-1.5 4.5],'ylim',[-3 3],'contours','on','xystyle','off','symmetry','XA');</span>
+
+SF_Plot(bf,<span class="string">'p'</span>,<span class="string">'xlim'</span>,[-1.5 4.5],<span class="string">'ylim'</span>,[0 3],<span class="string">'cbtitle'</span>,<span class="string">'p'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'colorrange'</span>,<span class="string">'centered'</span>,<span class="keyword">...</span>
+        <span class="string">'contour'</span>,<span class="string">'psi'</span>,<span class="string">'clevels'</span>,[-.02 0 .2 1 2 5],<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'bdlabels'</span>,2);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_BaseFlowRe60'</span>,figureformat);
+
+
+<span class="comment">%  plot the eigenmode for Re = 60</span>
+
+figure();SF_Plot(em,<span class="string">'ux1'</span>,<span class="string">'xlim'</span>,[-2 8],<span class="string">'ylim'</span>,[0 5],<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'colorrange'</span>,<span class="string">'cropcentered'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'bdlabels'</span>,2);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_EigenModeRe60_AdaptS'</span>,figureformat);  <span class="comment">%</span>
+
+figure();SF_Plot(emA,<span class="string">'ux1Adj'</span>,<span class="string">'xlim'</span>,[-2 8],<span class="string">'ylim'</span>,[0 5],<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'colorrange'</span>,<span class="string">'cropcentered'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'bdlabels'</span>,2);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_EigenModeAdjRe60'</span>,figureformat);
+
+figure();SF_Plot(emS,<span class="string">'sensitivity'</span>,<span class="string">'xlim'</span>,[-2 4],<span class="string">'ylim'</span>,[0 3],<span class="string">'colormap'</span>,<span class="string">'ice'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'bdlabels'</span>,2);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_SensitivityRe60'</span>,figureformat);
+
+figure();SF_Plot(emE,<span class="string">'endogeneity.re'</span>,<span class="string">'contour'</span>,<span class="string">'endogeneity.im'</span>,<span class="string">'xlim'</span>,[-2 4],<span class="string">'ylim'</span>,[0 3],<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'bdlabels'</span>,2);
+<span class="comment">%hold on; SF_Plot(emE,'endogeneity.im','xlim',[-2 6],'ylim',[-3 3],'symmetry','XM','colormap','redblue');</span>
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_EndogeneityRe60'</span>,figureformat);
+pause(0.1);
+</pre><pre class="codeoutput">Note: To improve runtime build MEX function ffplottri2grid() from ffplottri2grid.c
+Note: To improve runtime build MEX function ffplottri2grid() from ffplottri2grid.c
+</pre><img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_03.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_04.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_05.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_06.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_07.png" style="width:560px;height:314px;" alt=""> <h2>CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)<a name="6"></a></h2><pre class="codeinput">Re_BF = [2 : 2: 50];
+Fx_BF = []; Lx_BF = [];
+    <span class="keyword">for</span> Re = Re_BF
+        bf = SF_BaseFlow(bf,<span class="string">'Re'</span>,Re);
+        Fx_BF = [Fx_BF,bf.Fx];
+        Lx_BF = [Lx_BF,bf.Lx];
+    <span class="keyword">end</span>
+
+
+<span class="comment">% chapter 2B : figures</span>
+
+figure(22);hold <span class="string">off</span>;
+plot(Re_BF,Fx_BF,<span class="string">'b+-'</span>,<span class="string">'LineWidth'</span>,2);
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'Fx'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Fx_baseflow'</span>,figureformat);
+
+figure(23);hold <span class="string">off</span>;
+plot(Re_BF,Lx_BF,<span class="string">'b+-'</span>,<span class="string">'LineWidth'</span>,2);
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'Lx'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Lx_baseflow'</span>,figureformat);
+pause(0.1);
+</pre><img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_08.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_09.png" style="width:560px;height:314px;" alt=""> <h2>CHAPTER 3 : COMPUTING STABILITY BRANCH<a name="7"></a></h2><pre class="codeinput">    disp(<span class="string">'COMPUTING STABILITY BRANCH'</span>)
+
+<span class="comment">% LOOP OVER RE FOR BASEFLOW + EIGENMODE</span>
+Re_LIN = [40 : 2: 100];
+bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,40);
+[ev,em] = SF_Stability(bf,<span class="string">'shift'</span>,-.03+.72i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'D'</span>);
+
+Fx_LIN = []; Lx_LIN = [];lambda_LIN=[];
+    <span class="keyword">for</span> Re = Re_LIN
+        bf = SF_BaseFlow(bf,<span class="string">'Re'</span>,Re);
+        Fx_LIN = [Fx_LIN,bf.Fx];
+        Lx_LIN = [Lx_LIN,bf.Lx];
+        [ev,em] = SF_Stability(bf,<span class="string">'nev'</span>,1,<span class="string">'shift'</span>,<span class="string">'cont'</span>);
+        lambda_LIN = [lambda_LIN ev];
+    <span class="keyword">end</span>
+completed_lambda = 1;
+</pre><pre class="codeoutput">COMPUTING STABILITY BRANCH
+      # Stability calculation completed, eigenvalue = -0.030783+0.72037i ; converged in 5 iterations
+      # Stability calculation completed, eigenvalue = -0.030783+0.72037i ; converged in 3 iterations
+      # Stability calculation completed, eigenvalue = -0.020968+0.72484i ; converged in 13 iterations
+      # Stability calculation completed, eigenvalue = -0.011699+0.72874i ; converged in 5 iterations
+      # Stability calculation completed, eigenvalue = -0.0029368+0.73214i ; converged in 5 iterations
+      # Stability calculation completed, eigenvalue = 0.0053536+0.73508i ; converged in 5 iterations
+      # Stability calculation completed, eigenvalue = 0.013206+0.73761i ; converged in 5 iterations
+      # Stability calculation completed, eigenvalue = 0.020649+0.73977i ; converged in 5 iterations
+      # Stability calculation completed, eigenvalue = 0.027711+0.74157i ; converged in 5 iterations
+      # Stability calculation completed, eigenvalue = 0.034415+0.74306i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.040785+0.74426i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.046839+0.74518i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.052598+0.74585i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.058077+0.74628i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.063293+0.74648i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.068259+0.74648i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.07299+0.74628i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.077498+0.74589i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.081794+0.74534i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.085889+0.74461i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.089794+0.74374i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.093519+0.74271i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.097072+0.74155i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.10046+0.74026i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.1037+0.73884i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.10679+0.7373i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.10974+0.73565i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.11256+0.7339i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.11525+0.73205i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.11783+0.7301i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.12029+0.72807i ; converged in 4 iterations
+      # Stability calculation completed, eigenvalue = 0.12265+0.72595i ; converged in 4 iterations
+</pre><h2>CHAPTER 3b : figures<a name="8"></a></h2><pre class="codeinput">figure(20);
+plot(Re_LIN,real(lambda_LIN),<span class="string">'b+-'</span>);
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'$\sigma$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Sigma_Re'</span>,figureformat);
+
+figure(21);hold <span class="string">off</span>;
+plot(Re_LIN,imag(lambda_LIN)/(2*pi),<span class="string">'b+-'</span>);
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'St'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Strouhal_Re'</span>,figureformat);
+pause(0.1);
+
+
+disp(<span class="string">' '</span>);
+disp(<span class="string">'       cpu time for Linear calculations : '</span>);
+tlin = toc;
+disp([ <span class="string">'   '</span> num2str(tlin) <span class="string">' seconds'</span>]);
+tic;
+</pre><pre class="codeoutput"> 
+       cpu time for Linear calculations : 
+   1091.1413 seconds
+</pre><img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_10.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_11.png" style="width:560px;height:314px;" alt=""> <h2>CHAPTER 4 : computation of weakly nonlinear expansion<a name="9"></a></h2><pre class="codeinput">disp(<span class="string">' '</span>);
+disp(<span class="string">'######     ENTERING NONLINEAR PART       ####### '</span>);
+disp(<span class="string">' '</span>);
+
+
+<span class="comment">% plot the eigenmode for Re = 60</span>
+em.xlim = [-2 8]; em.ylim=[0,5];
+figure();SF_Plot(em,<span class="string">'ux1'</span>,<span class="string">'colorrange'</span>,[-.5 .5],<span class="string">'xlim'</span>,[-2 8],<span class="string">'ylim'</span>,[0 5]);
+<span class="comment">%title('Eigenmode for Re=60');</span>
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'FIGURES/Cylinder_EigenModeRe60_AdaptD'</span>,figureformat);  <span class="comment">%</span>
+
+
+
+
+<span class="comment">% DETERMINATION OF THE INSTABILITY THRESHOLD</span>
+disp(<span class="string">'COMPUTING INSTABILITY THRESHOLD'</span>);
+bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,50);
+[ev,em] = SF_Stability(bf,<span class="string">'shift'</span>,+.75i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'D'</span>);
+[bf,em]=SF_FindThreshold(bf,em);
+Rec = bf.Re;  Fxc = bf.Fx;
+Lxc=bf.Lx;    Omegac=imag(em.lambda);
+
+
+[ev,em] = SF_Stability(bf,<span class="string">'shift'</span>,1i*Omegac,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'S'</span>); <span class="comment">% type "S" because we require both direct and adjoint</span>
+[wnl,meanflow,mode] = SF_WNL(bf,em,<span class="string">'Retest'</span>,47.); <span class="comment">% Here to generate a starting point for the next chapter</span>
+</pre><pre class="codeoutput"> 
+######     ENTERING NONLINEAR PART       ####### 
+ 
+COMPUTING INSTABILITY THRESHOLD
+      # Stability calculation completed, eigenvalue = 0.013206+0.73761i ; converged in 17 iterations
+</pre><img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_12.png" style="width:560px;height:314px;" alt=""> <p>PLOTS of WNL predictions</p><pre class="codeinput">epsilon2_WNL = -0.003:.0001:.005; <span class="comment">% will trace results for Re = 40-55 approx.</span>
+Re_WNL = 1./(1/Rec-epsilon2_WNL);
+A_WNL = wnl.Aeps*real(sqrt(epsilon2_WNL));
+Fy_WNL = wnl.Fyeps*real(sqrt(epsilon2_WNL))*2; <span class="comment">% factor 2 because of complex conjugate</span>
+omega_WNL =Omegac + epsilon2_WNL*imag(wnl.Lambda) <span class="keyword">...</span>
+                  - epsilon2_WNL.*(epsilon2_WNL&gt;0)*real(wnl.Lambda)*imag(wnl.nu0+wnl.nu2)/real(wnl.nu0+wnl.nu2)  ;
+Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  <span class="keyword">...</span>
+                 + wnl.FxA20*real(wnl.Lambda)/real(wnl.nu0+wnl.nu2)*epsilon2_WNL.*(epsilon2_WNL&gt;0) ;
+
+figure(20);hold <span class="string">on</span>;
+plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);hold <span class="string">on</span>;
+
+figure(21);hold <span class="string">on</span>;
+plot(Re_WNL,omega_WNL/(2*pi),<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);hold <span class="string">on</span>;
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'St'</span>);
+
+figure(22);hold <span class="string">on</span>;
+plot(Re_WNL,Fx_WNL,<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);hold <span class="string">on</span>;
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'Fx'</span>);
+
+figure(24); hold <span class="string">on</span>;
+plot(Re_WNL,abs(Fy_WNL),<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'Fy'</span>)
+
+figure(25);hold <span class="string">on</span>;
+plot(Re_WNL,A_WNL,<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'AE'</span>)
+
+pause(0.1);
+</pre><img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_13.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_14.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_15.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_16.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_17.png" style="width:560px;height:420px;" alt=""> <h2>CHAPTER 5 : SELF CONSISTENT / HB1<a name="11"></a></h2><pre class="codeinput">disp(<span class="string">'SC quasilinear model on the range [Rec , 100]'</span>);
+Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
+</pre><h2>THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL<a name="12"></a></h2><h2>ANALYSIS<a name="13"></a></h2><pre class="codeinput">Res = 47. ;
+
+ Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
+
+[meanflow,mode] = SF_HB1(meanflow,mode,<span class="string">'sigma'</span>,0.,<span class="string">'Re'</span>,Res);
+
+<span class="keyword">for</span> Re = Re_HB(2:end)
+    [meanflow,mode] = SF_HB1(meanflow,mode,<span class="string">'Re'</span>,Re);
+    Lx_HB = [Lx_HB meanflow.Lx];
+    Fx_HB = [Fx_HB meanflow.Fx];
+    omega_HB = [omega_HB imag(mode.lambda)];
+    Aenergy_HB  = [Aenergy_HB mode.AEnergy];
+    Fy_HB = [Fy_HB mode.Fy];
+
+    <span class="keyword">if</span>(Re==60)
+       meanflow.xlim = [-2 4]; meanflow.ylim=[0,3];
+       figure();SF_Plot(meanflow,<span class="string">'ux'</span>,<span class="string">'contour'</span>,<span class="string">'on'</span>,<span class="string">'clevels'</span>,[0 0],<span class="string">'xlim'</span>,[-2 4],<span class="string">'ylim'</span>,[0 3]);
+       box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+       set(gca,<span class="string">'FontSize'</span>, 18);
+       saveas(gca,<span class="string">'FIGURES/Cylinder_MeanFlowRe60'</span>,figureformat);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+save(<span class="string">'Cylinder_AllFigures.mat'</span>);
+</pre><pre class="codeoutput">SC quasilinear model on the range [Rec , 100]
+Note: To improve runtime build MEX function ffplottri2grid() from ffplottri2grid.c
+</pre><img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_18.png" style="width:560px;height:314px;" alt=""> <h2>chapter 5b : figures<a name="14"></a></h2><pre class="codeinput"><span class="comment">%load('Cylinder_AllFigures.mat');</span>
+
+figure(21);hold <span class="string">off</span>;
+plot(Re_LIN,imag(lambda_LIN)/(2*pi),<span class="string">'b+-'</span>);
+hold <span class="string">on</span>;
+plot(Re_WNL,omega_WNL/(2*pi),<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);hold <span class="string">on</span>;
+plot(Re_HB,omega_HB/(2*pi),<span class="string">'r+-'</span>,<span class="string">'LineWidth'</span>,2);
+plot(Rec,Omegac/2/pi,<span class="string">'ro'</span>);
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'St'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+legend(<span class="string">'Linear'</span>,<span class="string">'WNL'</span>,<span class="string">'SC'</span>,<span class="string">'Location'</span>,<span class="string">'northwest'</span>);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Strouhal_Re_HB'</span>,figureformat);
+
+figure(22);hold <span class="string">off</span>;
+plot(Re_LIN,Fx_LIN,<span class="string">'b+-'</span>);
+hold <span class="string">on</span>;
+plot(Re_WNL,Fx_WNL,<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);hold <span class="string">on</span>;
+plot(Re_HB,Fx_HB,<span class="string">'r+-'</span>,<span class="string">'LineWidth'</span>,2);
+plot(Rec,Fxc,<span class="string">'ro'</span>)
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'Fx'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+legend(<span class="string">'BF'</span>,<span class="string">'WNL'</span>,<span class="string">'SC'</span>,<span class="string">'Location'</span>,<span class="string">'south'</span>);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Cx_Re_HB'</span>,figureformat);
+
+figure(23);hold <span class="string">off</span>;
+plot(Re_LIN,Lx_LIN,<span class="string">'b+-'</span>);
+hold <span class="string">on</span>;
+plot(Re_HB,Lx_HB,<span class="string">'r+-'</span>,<span class="string">'LineWidth'</span>,2);
+plot(Rec,Lxc,<span class="string">'ro'</span>,<span class="string">'LineWidth'</span>,2);
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'Lx'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+legend(<span class="string">'BF'</span>,<span class="string">'SC'</span>,<span class="string">'Location'</span>,<span class="string">'northwest'</span>);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Lx_Re_HB'</span>,figureformat);
+
+figure(24);hold <span class="string">off</span>;
+plot(Re_WNL,abs(Fy_WNL),<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);
+hold <span class="string">on</span>;
+plot(Re_HB,real(Fy_HB),<span class="string">'r+-'</span>,<span class="string">'LineWidth'</span>,2);
+<span class="comment">%title('Harmonic Balance results');</span>
+xlabel(<span class="string">'Re'</span>);  ylabel(<span class="string">'Fy'</span>)
+box <span class="string">on</span>;  pos = get(gcf,<span class="string">'Position'</span>);  pos(4)=pos(3)*AspectRatio;  set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+legend(<span class="string">'WNL'</span>,<span class="string">'SC'</span>,<span class="string">'Location'</span>,<span class="string">'south'</span>);
+saveas(gca,<span class="string">'FIGURES/Cylinder_Cy_Re_SC'</span>,figureformat);
+
+figure(25);hold <span class="string">off</span>;
+plot(Re_WNL,A_WNL,<span class="string">'g--'</span>,<span class="string">'LineWidth'</span>,2);
+hold <span class="string">on</span>;
+plot(Re_HB,Aenergy_HB,<span class="string">'r+-'</span>,<span class="string">'LineWidth'</span>,2);
+<span class="comment">%title('Harmonic Balance results');</span>
+xlabel(<span class="string">'Re'</span>);ylabel(<span class="string">'A_E'</span>)
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio; set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+legend(<span class="string">'WNL'</span>,<span class="string">'SC'</span>,<span class="string">'Location'</span>,<span class="string">'south'</span>);
+<span class="keyword">if</span>(meshstrategynonlinear==<span class="string">'D'</span>)
+    filename = <span class="string">'FIGURES/Cylinder_Energy_Re_SC_AdaptD'</span>;
+<span class="keyword">else</span>
+    filename = <span class="string">'FIGURES/Cylinder_Energy_Re_SC_AdaptS'</span>;
+<span class="keyword">end</span>
+saveas(gca,filename,figureformat);
+
+
+tnolin = toc;
+disp(<span class="string">' '</span>);
+disp(<span class="string">'       cpu time for Nonlinear calculations : '</span>);
+disp([ <span class="string">'   '</span> num2str(tnolin) <span class="string">' seconds'</span>]);
+
+disp(<span class="string">' '</span>);
+disp(<span class="string">'Total cpu time for the linear &amp; nonlinear calculations and generation of all figures : '</span>);
+disp([ <span class="string">'   '</span> num2str(tlin+tnolin) <span class="string">' seconds'</span>]);
+
+
+save(<span class="string">'Results_Cylinder.mat'</span>);
+</pre><pre class="codeoutput"> 
+       cpu time for Nonlinear calculations : 
+   3735.8861 seconds
+ 
+Total cpu time for the linear &amp; nonlinear calculations and generation of all figures : 
+   4827.0274 seconds
+</pre><img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_19.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_20.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_21.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_22.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_CYLINDER_ALLFIGURES_23.png" style="width:560px;height:314px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+
+%%  Instability of the wake of a cylinder with STABFEM  
+%
+% 
+%  this scripts performs the following calculations :
+% 
+% 
+% # Generation of an adapted mesh
+% # Base-flow properties for Re = [2-40]
+% # Stability curves St(Re) and sigma(Re) for Re = [40-100]
+% # Determination of the instability threshold and Weakly-Nonlinear analysis
+% # Harmonic-Balance for Re = [REc-100]
+% # Self-consistent model for Re = 100
+
+%%  CHAPTER 0 : set the global variables needed by the drivers
+
+clear all;
+close all;
+run('../../SOURCES_MATLAB/SF_Start.m');verbosity=0;
+figureformat='png'; AspectRatio = 0.56; % for figures
+system('mkdir FIGURES');
+set(groot, 'defaultAxesTickLabelInterpreter','latex'); 
+set(groot, 'defaultLegendInterpreter','latex');
+tic;
+
+%% ##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
+   
+disp(' STARTING ADAPTMESH PROCEDURE : ');    
+disp(' ');
+disp(' LARGE MESH : [-40:80]x[0:40] ');
+disp(' ');    
+bf=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
+bf=SF_BaseFlow(bf,'Re',1);
+bf=SF_Adapt(bf,'Hmax',2);
+bf=SF_BaseFlow(bf,'Re',10);
+bf=SF_BaseFlow(bf,'Re',60);
+bf=SF_Adapt(bf,'Hmax',2);
+meshstrategynonlinear = 'D'; 
+  % select 'D' or 'S'
+ % 'D' will use mesh adapted on direct eigenmode (mesh M_4): 
+ %     this is necessary to compute correctly the structure of the mode (fig. 5a) 
+ %     and the energy-amplitude (fig. 7d) 
+ % 'S' will use mesh adapted on sensitivity (mesh M_2):
+ %     figs. (5a) and (7d) will be wrong, on the other all other results
+ %     will be correct and nonlinear computations will be much much faster.
+if(meshstrategynonlinear=='D')
+     bf=SF_BaseFlow(bf,'Re',60);
+     disp('using mesh adaptated to EIGENMODE (M4) ')
+     [ev,emS,em,emA,emE] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
+     bf=SF_Adapt(bf,em,emE,'Hmax',2);
+     [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D');
+else 
+    disp('mesh adaptation to SENSITIVITY : ') % This is mesh M2 from the appendix
+    [ev,emS,em,emA,emE] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
+    bf = SF_Adapt(bf,emS,'Hmax',2);
+end
+
+ [ev,emS,em,emA,emE] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S'); % compute on last mesh
+
+%% CHAPTER 1b : DRAW FIGURES 
+%  plot the mesh (full size)
+
+figure();SF_Plot(bf,'mesh','xlim',[-40 80],'ylim',[0 40]);
+title('Initial mesh (full size)');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_Mesh_Full',figureformat); 
+
+%  plot the mesh (zoom)
+figure();SF_Plot(bf,'mesh','xlim',[-1.5 4.5],'ylim',[0 3]);
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_Mesh',figureformat);
+    
+%% 
+%   plot the base flow for Re = 60
+
+figure();
+%SF_Plot(bf,'ux','xlim',[-1.5 4.5],'ylim',[-2 2],'colorbar','northoutside','cbtitle','u_x','colormap','redblue',...
+%        'contour','psi','clevels',[-.02 0 .2 1 2 5]);
+%hold on;
+%SF_Plot(bf,'p','xlim',[-1.5 4.5],'ylim',[-2 2],'colorbar','southoutside','cbtitle','p','colormap','jet',...
+%    'contour','psi','clevels',[-.02 0 .2 1 2 5],'symmetry','XM');
+%SF_Plot(bf,'psi','xlim',[-1.5 4.5],'ylim',[-3 3],'contours','on','xystyle','off','symmetry','XA');
+
+SF_Plot(bf,'p','xlim',[-1.5 4.5],'ylim',[0 3],'cbtitle','p','colormap','redblue','colorrange','centered',...
+        'contour','psi','clevels',[-.02 0 .2 1 2 5],'boundary','on','bdlabels',2);
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_BaseFlowRe60',figureformat);
+
+
+%  plot the eigenmode for Re = 60
+
+figure();SF_Plot(em,'ux1','xlim',[-2 8],'ylim',[0 5],'colormap','redblue','colorrange','cropcentered','boundary','on','bdlabels',2);
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_EigenModeRe60_AdaptS',figureformat);  % 
+
+figure();SF_Plot(emA,'ux1Adj','xlim',[-2 8],'ylim',[0 5],'colormap','redblue','colorrange','cropcentered','boundary','on','bdlabels',2);
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_EigenModeAdjRe60',figureformat);
+
+figure();SF_Plot(emS,'sensitivity','xlim',[-2 4],'ylim',[0 3],'colormap','ice','boundary','on','bdlabels',2);
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_SensitivityRe60',figureformat);
+
+figure();SF_Plot(emE,'endogeneity.re','contour','endogeneity.im','xlim',[-2 4],'ylim',[0 3],'colormap','redblue','boundary','on','bdlabels',2);
+%hold on; SF_Plot(emE,'endogeneity.im','xlim',[-2 6],'ylim',[-3 3],'symmetry','XM','colormap','redblue');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_EndogeneityRe60',figureformat);
+pause(0.1);
+
+
+%% CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)
+
+Re_BF = [2 : 2: 50];
+Fx_BF = []; Lx_BF = [];
+    for Re = Re_BF
+        bf = SF_BaseFlow(bf,'Re',Re);
+        Fx_BF = [Fx_BF,bf.Fx];
+        Lx_BF = [Lx_BF,bf.Lx];
+    end
+
+
+% chapter 2B : figures
+ 
+figure(22);hold off;
+plot(Re_BF,Fx_BF,'b+-','LineWidth',2);
+xlabel('Re');ylabel('Fx');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_Fx_baseflow',figureformat);
+
+figure(23);hold off;
+plot(Re_BF,Lx_BF,'b+-','LineWidth',2);
+xlabel('Re');ylabel('Lx');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_Lx_baseflow',figureformat);
+pause(0.1);
+
+
+%% CHAPTER 3 : COMPUTING STABILITY BRANCH
+
+    disp('COMPUTING STABILITY BRANCH')
+
+% LOOP OVER RE FOR BASEFLOW + EIGENMODE
+Re_LIN = [40 : 2: 100];
+bf=SF_BaseFlow(bf,'Re',40);
+[ev,em] = SF_Stability(bf,'shift',-.03+.72i,'nev',1,'type','D');
+
+Fx_LIN = []; Lx_LIN = [];lambda_LIN=[];
+    for Re = Re_LIN
+        bf = SF_BaseFlow(bf,'Re',Re);
+        Fx_LIN = [Fx_LIN,bf.Fx];
+        Lx_LIN = [Lx_LIN,bf.Lx];
+        [ev,em] = SF_Stability(bf,'nev',1,'shift','cont');
+        lambda_LIN = [lambda_LIN ev];
+    end  
+completed_lambda = 1;
+
+
+
+%% CHAPTER 3b : figures
+
+figure(20);
+plot(Re_LIN,real(lambda_LIN),'b+-');
+xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_Sigma_Re',figureformat);
+
+figure(21);hold off;
+plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');
+xlabel('Re');ylabel('St');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_Strouhal_Re',figureformat);
+pause(0.1);
+
+
+disp(' ');
+disp('       cpu time for Linear calculations : ');
+tlin = toc;
+disp([ '   ' num2str(tlin) ' seconds']);
+tic;
+
+%% CHAPTER 4 : computation of weakly nonlinear expansion
+
+disp(' ');
+disp('######     ENTERING NONLINEAR PART       ####### ');
+disp(' ');
+
+    
+% plot the eigenmode for Re = 60
+em.xlim = [-2 8]; em.ylim=[0,5];
+figure();SF_Plot(em,'ux1','colorrange',[-.5 .5],'xlim',[-2 8],'ylim',[0 5]);
+%title('Eigenmode for Re=60');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'FIGURES/Cylinder_EigenModeRe60_AdaptD',figureformat);  % 
+
+
+
+
+% DETERMINATION OF THE INSTABILITY THRESHOLD
+disp('COMPUTING INSTABILITY THRESHOLD');
+bf=SF_BaseFlow(bf,'Re',50);
+[ev,em] = SF_Stability(bf,'shift',+.75i,'nev',1,'type','D');
+[bf,em]=SF_FindThreshold(bf,em);
+Rec = bf.Re;  Fxc = bf.Fx; 
+Lxc=bf.Lx;    Omegac=imag(em.lambda);
+
+
+[ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.); % Here to generate a starting point for the next chapter
+
+%% 
+% PLOTS of WNL predictions
+
+epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
+Re_WNL = 1./(1/Rec-epsilon2_WNL);
+A_WNL = wnl.Aeps*real(sqrt(epsilon2_WNL));
+Fy_WNL = wnl.Fyeps*real(sqrt(epsilon2_WNL))*2; % factor 2 because of complex conjugate
+omega_WNL =Omegac + epsilon2_WNL*imag(wnl.Lambda) ...
+                  - epsilon2_WNL.*(epsilon2_WNL>0)*real(wnl.Lambda)*imag(wnl.nu0+wnl.nu2)/real(wnl.nu0+wnl.nu2)  ;
+Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  ...
+                 + wnl.FxA20*real(wnl.Lambda)/real(wnl.nu0+wnl.nu2)*epsilon2_WNL.*(epsilon2_WNL>0) ;
+
+figure(20);hold on;
+plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,'gREPLACE_WITH_DASH_DASH','LineWidth',2);hold on;
+
+figure(21);hold on;
+plot(Re_WNL,omega_WNL/(2*pi),'gREPLACE_WITH_DASH_DASH','LineWidth',2);hold on;
+xlabel('Re');ylabel('St');
+
+figure(22);hold on;
+plot(Re_WNL,Fx_WNL,'gREPLACE_WITH_DASH_DASH','LineWidth',2);hold on;
+xlabel('Re');ylabel('Fx');
+
+figure(24); hold on;
+plot(Re_WNL,abs(Fy_WNL),'gREPLACE_WITH_DASH_DASH','LineWidth',2);
+xlabel('Re');ylabel('Fy')
+
+figure(25);hold on;
+plot(Re_WNL,A_WNL,'gREPLACE_WITH_DASH_DASH','LineWidth',2);
+xlabel('Re');ylabel('AE')
+
+pause(0.1);
+
+
+
+%% CHAPTER 5 : SELF CONSISTENT / HB1
+
+disp('SC quasilinear model on the range [Rec , 100]');
+Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
+
+%%% THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL
+%%% ANALYSIS
+Res = 47. ; 
+
+ Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
+
+[meanflow,mode] = SF_HB1(meanflow,mode,'sigma',0.,'Re',Res); 
+
+for Re = Re_HB(2:end)
+    [meanflow,mode] = SF_HB1(meanflow,mode,'Re',Re);
+    Lx_HB = [Lx_HB meanflow.Lx];
+    Fx_HB = [Fx_HB meanflow.Fx];
+    omega_HB = [omega_HB imag(mode.lambda)];
+    Aenergy_HB  = [Aenergy_HB mode.AEnergy];
+    Fy_HB = [Fy_HB mode.Fy];
+    
+    if(Re==60)
+       meanflow.xlim = [-2 4]; meanflow.ylim=[0,3];
+       figure();SF_Plot(meanflow,'ux','contour','on','clevels',[0 0],'xlim',[-2 4],'ylim',[0 3]);
+       box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+       set(gca,'FontSize', 18);
+       saveas(gca,'FIGURES/Cylinder_MeanFlowRe60',figureformat); 
+    end
+end
+
+
+save('Cylinder_AllFigures.mat');
+
+
+%% chapter 5b : figures
+%load('Cylinder_AllFigures.mat');
+
+figure(21);hold off;
+plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');
+hold on;
+plot(Re_WNL,omega_WNL/(2*pi),'gREPLACE_WITH_DASH_DASH','LineWidth',2);hold on;
+plot(Re_HB,omega_HB/(2*pi),'r+-','LineWidth',2);
+plot(Rec,Omegac/2/pi,'ro');
+xlabel('Re');ylabel('St');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+legend('Linear','WNL','SC','Location','northwest');
+saveas(gca,'FIGURES/Cylinder_Strouhal_Re_HB',figureformat);
+
+figure(22);hold off;
+plot(Re_LIN,Fx_LIN,'b+-');
+hold on;
+plot(Re_WNL,Fx_WNL,'gREPLACE_WITH_DASH_DASH','LineWidth',2);hold on;
+plot(Re_HB,Fx_HB,'r+-','LineWidth',2);
+plot(Rec,Fxc,'ro')
+xlabel('Re');ylabel('Fx');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+legend('BF','WNL','SC','Location','south');
+saveas(gca,'FIGURES/Cylinder_Cx_Re_HB',figureformat);
+
+figure(23);hold off;
+plot(Re_LIN,Lx_LIN,'b+-');
+hold on;
+plot(Re_HB,Lx_HB,'r+-','LineWidth',2);
+plot(Rec,Lxc,'ro','LineWidth',2);
+xlabel('Re');ylabel('Lx');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+legend('BF','SC','Location','northwest');
+saveas(gca,'FIGURES/Cylinder_Lx_Re_HB',figureformat);
+
+figure(24);hold off;
+plot(Re_WNL,abs(Fy_WNL),'gREPLACE_WITH_DASH_DASH','LineWidth',2);
+hold on;
+plot(Re_HB,real(Fy_HB),'r+-','LineWidth',2);
+%title('Harmonic Balance results');
+xlabel('Re');  ylabel('Fy')
+box on;  pos = get(gcf,'Position');  pos(4)=pos(3)*AspectRatio;  set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+legend('WNL','SC','Location','south');
+saveas(gca,'FIGURES/Cylinder_Cy_Re_SC',figureformat);
+
+figure(25);hold off;
+plot(Re_WNL,A_WNL,'gREPLACE_WITH_DASH_DASH','LineWidth',2);
+hold on;
+plot(Re_HB,Aenergy_HB,'r+-','LineWidth',2);
+%title('Harmonic Balance results');
+xlabel('Re');ylabel('A_E')
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio; set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+legend('WNL','SC','Location','south');
+if(meshstrategynonlinear=='D')
+    filename = 'FIGURES/Cylinder_Energy_Re_SC_AdaptD';
+else
+    filename = 'FIGURES/Cylinder_Energy_Re_SC_AdaptS';
+end
+saveas(gca,filename,figureformat);
+
+
+tnolin = toc;
+disp(' ');
+disp('       cpu time for Nonlinear calculations : ');
+disp([ '   ' num2str(tnolin) ' seconds']);
+
+disp(' ');
+disp('Total cpu time for the linear & nonlinear calculations and generation of all figures : ');
+disp([ '   ' num2str(tlin+tnolin) ' seconds']);
+
+
+save('Results_Cylinder.mat');
+
+
+
+##### SOURCE END #####
+--></body></html>

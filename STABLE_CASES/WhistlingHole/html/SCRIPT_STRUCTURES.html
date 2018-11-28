@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>SCRIPT_STRUCTURES</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-27"><meta name="DC.source" content="SCRIPT_STRUCTURES.m"><style type="text/css">
+      --><title>SCRIPT_STRUCTURES</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-28"><meta name="DC.source" content="SCRIPT_STRUCTURES.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -82,7 +82,7 @@ bf = SmartMesh_Hole_MeshM2;
    <span class="keyword">else</span> <span class="comment">% recovery procedure</span>
     myrm(<span class="string">'./WORK/Mapping.ff2m'</span>)
     ffmesh = importFFmesh(<span class="string">'./WORK/MESHES/mesh_adapt7_Re1500.msh'</span>);
-    Params = [4 1e30  1 0. 20 1e30]; <span class="comment">% Lm, LA, LC, gammac, yA, yB</span>
+    Params = [4 1e30  1 0.5 20 1e30]; <span class="comment">% Lm, LA, LC, gammac, yA, yB</span>
     ffmesh = SF_SetMapping(ffmesh,<span class="string">'mappingtype'</span>,<span class="string">'jet'</span>,<span class="string">'mappingparams'</span>,Params);
     bf = importFFdata(ffmesh,<span class="string">'./WORK/MESHES/BaseFlow_adapt7_Re1500.ff2m'</span>);
    <span class="keyword">end</span>
@@ -167,7 +167,7 @@ SF_Plot(foE,<span class="string">'ux1'</span>,<span class="string">'boundary'</s
 pos = get(gcf,<span class="string">'Position'</span>); pos(3) = 800; pos(4)=pos(3)*1.18;set(gcf,<span class="string">'Position'</span>,pos);
 saveas(gcf,[<span class="string">'ForcedModes_chi'</span>, num2str(chi), <span class="string">'_Re'</span>,num2str(Re),<span class="string">'.png'</span>],<span class="string">'png'</span>);
 saveas(gcf,[<span class="string">'ForcedModes_chi'</span>, num2str(chi), <span class="string">'_Re'</span>,num2str(Re), <span class="string">'.fig'</span>],<span class="string">'fig'</span>)
-</pre><img vspace="5" hspace="5" src="SCRIPT_STRUCTURES_02.png" style="width:800px;height:827px;" alt=""> <h2>Chapter 4 : compute Eigenmodes<a name="7"></a></h2><pre class="codeinput">Re =1500;
+</pre><img vspace="5" hspace="5" src="SCRIPT_STRUCTURES_02.png" style="width:800px;height:754px;" alt=""> <h2>Chapter 4 : compute Eigenmodes<a name="7"></a></h2><pre class="codeinput">Re =1500;
 bf = SF_BaseFlow(bf,<span class="string">'Re'</span>,Re);
 [ev,em2D] = SF_Stability(bf,<span class="string">'shift'</span>,-2.1i,<span class="string">'m'</span>,0,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'D'</span>,<span class="string">'solver'</span>,<span class="string">'StabAxi_COMPLEX_m0.edp'</span>);
 
@@ -177,8 +177,8 @@ bf = SF_BaseFlow(bf,<span class="string">'Re'</span>,Re);
 
 exportFF_tecplot(em2D(1),[<span class="string">'Eigenmode_chi'</span>, num2str(chi), <span class="string">'_Re'</span>,num2str(Re),<span class="string">'_ModeH2'</span>,<span class="string">'.plt'</span>]);
 exportFF_tecplot(em3D(1),[<span class="string">'Eigenmode_chi'</span>, num2str(chi), <span class="string">'_Re'</span>,num2str(Re),<span class="string">'_ModeH3'</span>,<span class="string">'.plt'</span>]);
-</pre><pre class="codeoutput">      # Stability calculation completed, eigenvalue = 0.15588-2.1005i ; converged in 32 iterations
-      # Stability calculation completed, eigenvalue = 0.0099396-4.171i ; converged in 18 iterations
+</pre><pre class="codeoutput">      # Stability calculation completed, eigenvalue = 0.010496-2.0687i ; converged in 8 iterations
+      # Stability calculation completed, eigenvalue = 0.0046761-4.1677i ; converged in 9 iterations
 PROGRAM exportFF_tecplot : exporting data in tecplot format
 P1 COMPLEX field : ux1
 P1 COMPLEX field : uy1
@@ -193,7 +193,7 @@ P1 COMPLEX field : p1
 P1 COMPLEX field : vort1
 /bin/bash: tec360: command not found
 END PROGRAM exportFF_tecplot
-</pre><img vspace="5" hspace="5" src="SCRIPT_STRUCTURES_03.png" style="width:800px;height:758px;" alt=""> <pre>Chapter 4b : FIGURES FOR EIGENMODES (figure 14 of the paper)</pre><pre class="codeinput">make_it_tight = true;
+</pre><pre>Chapter 4b : FIGURES FOR EIGENMODES (figure 14 of the paper)</pre><pre class="codeinput">make_it_tight = true;
 subplot = @(m,n,p) subtightplot (m, n, p, [0.05 0.05], [0.05 0.01], [0.05 0.01]);
 <span class="keyword">if</span> ~make_it_tight,  clear <span class="string">subplot</span>;  <span class="keyword">end</span>
 
@@ -225,7 +225,7 @@ pos = get(gcf,<span class="string">'Position'</span>); pos(3) = 800;pos(4)=pos(3
 saveas(gcf,[<span class="string">'EigenModes_chi'</span>, num2str(chi),<span class="string">'.png'</span>],<span class="string">'png'</span>);
 saveas(gcf,[<span class="string">'EigenModes_chi'</span>, num2str(chi),<span class="string">'.fig'</span>],<span class="string">'fig'</span>)
 pause(0.1);
-</pre><img vspace="5" hspace="5" src="SCRIPT_STRUCTURES_04.png" style="width:800px;height:320px;" alt=""> <h2>Chapter 5 : Compute Adjoint Eigenmodes / sensitivity (readapt mesh)<a name="9"></a></h2><pre class="codeinput">Re =1500;
+</pre><img vspace="5" hspace="5" src="SCRIPT_STRUCTURES_03.png" style="width:800px;height:320px;" alt=""> <h2>Chapter 5 : Compute Adjoint Eigenmodes / sensitivity (readapt mesh)<a name="9"></a></h2><pre class="codeinput">Re =1500;
 bf = SF_BaseFlow(bf,<span class="string">'Re'</span>,Re);
 [ev,em2S,em2D,em2A] = SF_Stability(bf,<span class="string">'shift'</span>,-2.1i,<span class="string">'m'</span>,0,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'S'</span>,<span class="string">'solver'</span>,<span class="string">'StabAxi_COMPLEX_m0.edp'</span>);
 bf = SF_Adapt(bf,em2S,em2A,<span class="string">'Hmax'</span>,0.25);
@@ -259,7 +259,7 @@ pos = get(gcf,<span class="string">'Position'</span>); pos(3) = 800;pos(4)=pos(3
 saveas(gcf,[<span class="string">'EigenModes_Adj_chi'</span>, num2str(chi),<span class="string">'.png'</span>],<span class="string">'png'</span>);
 saveas(gcf,[<span class="string">'EigenModes_Adj_chi'</span>, num2str(chi),<span class="string">'.fig'</span>],<span class="string">'fig'</span>)
 pause(0.1);
-</pre><img vspace="5" hspace="5" src="SCRIPT_STRUCTURES_05.png" style="width:800px;height:320px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="SCRIPT_STRUCTURES_04.png" style="width:800px;height:320px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %%  LNS study of a jet flowing across a circular aperture in a thick plate 
 
@@ -284,7 +284,7 @@ bf = SmartMesh_Hole_MeshM2;
    else % recovery procedure
     myrm('./WORK/Mapping.ff2m')
     ffmesh = importFFmesh('./WORK/MESHES/mesh_adapt7_Re1500.msh');
-    Params = [4 1e30  1 0. 20 1e30]; % Lm, LA, LC, gammac, yA, yB
+    Params = [4 1e30  1 0.5 20 1e30]; % Lm, LA, LC, gammac, yA, yB
     ffmesh = SF_SetMapping(ffmesh,'mappingtype','jet','mappingparams',Params); 
     bf = importFFdata(ffmesh,'./WORK/MESHES/BaseFlow_adapt7_Re1500.ff2m');
    end
