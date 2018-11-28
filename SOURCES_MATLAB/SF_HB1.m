@@ -4,8 +4,8 @@ function [meanflow, mode] = SF_HB1(meanflow, mode, varargin)
 %>
 %> usage : [meanflow,mode] = SF_HB1(meanflow,mode,[Param1, Value1,...])
 %>
-%> first argument is either a "baseflow" or 'meanflow"
-%> second argument is either an "eigenmode" or a "selfconsistentmode".
+%> first argument is either a "baseflow" or a "meanflow"
+%> second argument is either an "eigenmode" or a "harmonicmode".
 %>
 %> Parameters include :
 %>
@@ -66,7 +66,8 @@ switch (meanflow.mesh.problemtype)
         
 end
 
-if(exist([filenameBase '.txt'])==2)&&(exist([filenameHB1 '.txt'])==2)&&(exist([filenameHB2 '.txt'])==0)&&(strcmp(p.Results.specialmode,'NEW')==0)
+if(exist([filenameBase '.txt'])==2)&&(exist([filenameHB1 '.txt'])==2)...
+    &&(exist([filenameHB2 '.txt'])==0)&&(strcmpi(p.Results.specialmode,'NEW')==0)&&(p.Results.sigma==0)
     
     %%% Recover results from a previous calculation
     mydisp(1,['#### Self-Consistent (HB1) CALCULATION seems to be previously done... recover files ...' ]);
@@ -109,6 +110,8 @@ else
         mycp([ffdatadir, 'HBMode1.txt'],[filenameHB1 '.txt']);
         mycp([ffdatadir, 'HBMode1.ff2m'],[filenameHB1 '.ff2m']);
         mode = importFFdata(meanflow.mesh,[filenameHB1 '.ff2m']);
+        
+        myrm(filenameHB2); % to avoid possible bad interaction with HB2 
         
     else
         error(['ERROR in SF_HB1 : return code of the FF solver is ',value]);

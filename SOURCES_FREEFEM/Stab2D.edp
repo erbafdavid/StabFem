@@ -133,7 +133,7 @@ ENDIFMACRO
 	
 		if (iadjoint =="D") {cout << "$$ DIRECT PROBLEM" << endl;}
 		else if (iadjoint =="A") {cout << "$$ ADJOINT PROBLEM (discrete)" << endl;}
-		else if (iadjoint =="S") {cout << "$$ DIRECT+ADJOINT (discrete) PROBLEM INCLUDING SENSITIVITY" << endl;}
+		else if (iadjoint =="S"||iadjoint =="E") {cout << "$$ DIRECT+ADJOINT (discrete) PROBLEM INCLUDING SENSITIVITY/Endogeneity" << endl;}
 		else {cout << "$$ ERROR WHEN SELECTING PROBLEM TYPE" << endl;}
 		;
 	
@@ -228,7 +228,7 @@ if(iadjoint=="D")
 	{ OP=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = shift; }
 else if(iadjoint=="A")
 	{ OP=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
-else if(iadjoint=="S"||iadjoint=="cS") 
+else if(iadjoint=="S"||iadjoint=="cS"||iadjoint=="E") 
 	{ cout << "$$ WARNING : in this program option S will work only for nev=1" << endl; }
 ;
 
@@ -310,7 +310,7 @@ else if(iadjoint=="A")
 	directadjointA = 2; directadjointB=2;
 	cout << "$$ Shift-invert algorithm for ADJOINT problem" << endl;
 	}
-else if(iadjoint=="S")
+else if(iadjoint=="S"||iadjoint=="E")
 	{
 	directadjointA = 1; directadjointB=2;
 	cout << "$$ Shift-invert algorithm for BOTH DIRECT AND ADJOINT(discrete) problem" << endl;
@@ -425,23 +425,32 @@ if (testCB==0)
 
 }; //end of loop for direct/adjoint/selection
 
-if(iadjoint=="S")
+if(iadjoint=="S"||iadjoint=="E")
 //
 {
 cout << "$$ Computation of sensitivity after direct and adjoint" << endl;
 
 //	cout << "$$STAT" << uxdirect(2.5,.5) << "$$ " << uxadjoint(2.5,.5) << "$$ " << uydirect(2.5,.5) << "$$ " << uyadjoint(2.5,.5) << endl ;
 
-	fespace p2(th,P2);fespace p1(th,P1);
-	p2 sensitivity;
-	
+
+
 	
 	// Sensitivity
+	fespace p2(th,P2);fespace p1(th,P1);
+	p2 sensitivity;
 	sensitivity = sqrt(abs(uxadjoint)^2+abs(uyadjoint)^2) * sqrt(abs(uxdirect)^2+abs(uydirect)^2);
 	real norm = sensitivity[].max;
 	sensitivity=1/norm*sensitivity;
 	
-	// Endogeneity
+	
+	string namefile,namefileFF;
+   	p1 xx,yy,sensitivityP1;
+	xx=x;
+	yy=y;
+    sensitivityP1 = sensitivity;
+    
+    
+    	// Endogeneity
 	p2<complex> Endogeneity;
 // first method : leads to  wrong and noisy results... what's wrong ? maybe bad idea to multiply by matrix.
 //	XXMh<complex> [Opux,Opuy,Opup],[Bux,Buy,Bup];
@@ -462,15 +471,7 @@ cout << "$$ Computation of sensitivity after direct and adjoint" << endl;
 //	plot(Endogeneity,wait=1);
 	complex sigmacheck = int2d(th)(Endogeneity);
 	cout << "sigma based on Endogeneity : " << sigmacheck << endl;
-	
-		
-	string namefile,namefileFF;
-   	p1 xx,yy,sensitivityP1;
-	xx=x;
-	yy=y;
-    sensitivityP1 = sensitivity;
-    p1<complex> EndogeneityP1 =Endogeneity;
-    
+    p1<complex> EndogeneityP1 = Endogeneity;
     
     // Writing SENSITIVITY to files :
     namefile=ffdatadir+"Sensitivity.txt";   
@@ -486,8 +487,11 @@ cout << "$$ Computation of sensitivity after direct and adjoint" << endl;
      };
 	{
     	ofstream file(namefile);
-		file << Endogeneity[] ;	
+		file << sensitivity[] ;	
     } 
+
+
+
 
 
 // Writing ENDOGENEITY to files :

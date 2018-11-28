@@ -8,7 +8,7 @@
 *.dat
 *.msh
 *.ps
-*.png
+*/*/*/WORK
 */*/WORK
 *CASES/*/FIGURES
 */*/RESULTS/

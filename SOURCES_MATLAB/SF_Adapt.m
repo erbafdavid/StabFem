@@ -210,6 +210,8 @@ if(strcmp(varargout{1}.datatype,'BaseFlow'))
      baseflowNew.filename = [ffdatadir, 'MESHES/BaseFlow',designation, '.txt'];
      varargout{1} = baseflowNew; 
      myrm([ffdatadir '/BASEFLOWS/*']); % after adapt we clean the "BASEFLOWS" directory as the previous baseflows are no longer compatible => Now done in SF_BaseFlow ??? 
+     myrm([ffdatadir '/MEANFLOWS/*']); 
+     
      else
          error('ERROR in SF_Adapt : baseflow recomputation failed');
      end

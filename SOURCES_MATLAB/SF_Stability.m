@@ -1,10 +1,12 @@
-function [eigenvalues,eigenvectors,evD,evA,Endo] = SF_Stability(baseflow,varargin)
+function varargout = SF_Stability(baseflow,varargin)
+
 
 %> StabFem wrapper for Eigenvalue calculations
 %>
 %> usage : 
 %> 1/  [eigenvalues,eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
 %> 2/  [eigenvalues,sensitivity,evD,evA,Endo] = SF_Stability(field,'type','S','nev',1, [...])
+%> 3/  [eigenvalues,Endogeneity,evD,evA] = SF_Stability(field,'type','E','nev',1, [...])
 %>
 %> field is either a "baseflow" structure (with "mesh" structure as a subfield) 
 %> or directly a "mesh" structure (for instance in problems such as sloshing where baseflow is not relevant).
@@ -80,6 +82,10 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 
 persistent sigmaPrev sigmaPrevPrev % for continuation on one branch
 persistent eigenvaluesPrev % for sort of type 'cont'
+
+myrm([ffdatadir 'Eigenmode_guess.txt']) % TODO : add parameter to put a guess file only when required
+
+
 
    if(strcmpi(baseflow.datatype,'Mesh')==1)
        % first argument is a simple mesh
@@ -459,33 +465,32 @@ end
         if (p.Results.type=='D')
             eigenvectors=importFFdata(ffmesh,'Eigenmode.ff2m');
             eigenvectors.type=p.Results.type;
+            iter = eigenvectors.iter;
             disp(['      # Stability calculation completed, eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
         elseif(p.Results.type=='A')
             eigenvectors=importFFdata(ffmesh,'EigenmodeA.ff2m');
             eigenvectors.type=p.Results.type;
+            iter = eigenvectors.iter;
             disp(['      # Stability calculation completed (ADJOINT), eigenvalue = ',num2str(eigenvalues),' ; converged in ', num2str(eigenvectors.iter),' iterations']);
-        elseif(p.Results.type=='S')
-%           eigenvectors=importFFdata(ffmesh,'Eigenmode.ff2m','EigenmodeA.ff2m','Sensitivity.ff2m');
-%           eigenvectors.type=p.Results.type;
-            eigenvectors=importFFdata(ffmesh,'Sensitivity.ff2m');
-            eigenvectors.type='S';
-            eigenvectors.iter = 1;% previous management of non convergence errors ; to be cleaned up
+        elseif(p.Results.type=='S'||p.Results.type=='E')
+            sensitivity=importFFdata(ffmesh,'Sensitivity.ff2m');
+            iter = 1;% previous management of non convergence errors ; to be cleaned up
             if (nargout >2) 
                 evD=importFFdata(ffmesh,'Eigenmode.ff2m');
                 evD.type='D';
-                eigenvectors.iter = evD.iter;% previous management of non convergence errors ; to be cleaned up
+                iter = evD.iter;% previous management of non convergence errors ; to be cleaned up
             end
             if (nargout >3) 
                 evA=importFFdata(ffmesh,'EigenmodeA.ff2m');
                 evA.type='A';
             end
-             if (nargout >4)
+             if (p.Results.type=='E'||(nargout >4) )
             Endo=importFFdata(ffmesh,'Endogeneity.ff2m');
             Endo.type='S'; % useful ?
               mydisp(2,['  # Endogeneity successfully imported']);
              end
          end
-        if(eigenvectors.iter<0) 
+        if(iter<0) 
             if(verbosity>1)
                 error([' ERROR : simple shift-invert iteration failed ; use a better shift of use multiple mode iteration (nev>1). If you want to continue your loops despite this error (confident mode) use verbosity=1 ']);
             else
@@ -515,7 +520,27 @@ end
     end
     
     end
-    
+    switch(nargout)
+        case(1)
+    varargout = eigenvalues;
+        case(2)
+             if(p.Results.type=='S')
+                varargout = {eigenvalues,sensitivity};
+             elseif(p.Results.type=='E')
+                varargout = {eigenvalues,Endo};  
+             else
+                  varargout = {eigenvalues,eigenvectors}; 
+             end
+        case(3)
+    error( 'number of output arguments not valid...' )
+        case(4)
+            if(p.Results.type=='S')
+                varargout = {eigenvalues,sensitivity,evD,evA};  
+            elseif(p.Results.type=='E')
+                varargout = {eigenvalues,Endo,evD,evA};  
+            end
+        case(5)
+            varargout = {eigenvalues,sensitivity,evD,evA,Endo}; 
     % FINALLY : plot the spectrum in figure 100
     
     if(strcmp(p.Results.PlotSpectrum,'yes')==1)

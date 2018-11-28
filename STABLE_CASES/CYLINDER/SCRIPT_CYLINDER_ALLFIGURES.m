@@ -83,8 +83,8 @@ figure();
 %    'contour','psi','clevels',[-.02 0 .2 1 2 5],'symmetry','XM');
 %SF_Plot(bf,'psi','xlim',[-1.5 4.5],'ylim',[-3 3],'contours','on','xystyle','off','symmetry','XA');
 
-SF_Plot(bf,'p','contour','psi','clevels',[-.02 0 .2 1 2 5],'xlim',[-1.5 4.5],'ylim',[0 3],...
-        'cbtitle','p','colormap','redblue','colorrange','centered','boundary','on','bdlabels',2,'bdcolors','k','cstyle','patchdashedneg');
+SF_Plot(bf,'p','contour','psi','clevels',[-.02 0 .2 1 2 5],'cstyle','patchdashedneg','xlim',[-1.5 4.5],'ylim',[0 3],...
+        'cbtitle','p','colormap','redblue','colorrange','centered','boundary','on','bdlabels',2,'bdcolors','k');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_BaseFlowRe60',figureformat);
