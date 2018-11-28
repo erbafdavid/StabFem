@@ -37,7 +37,7 @@
 function FlowP=TriStream(tri,x,y,u,v,x0,y0,verbose,maxits,Ltol,dLtol)
 
 if(nargin<8 )  verbose=0; end; % flag to report progress
-if(nargin<9 ) maxits=1e3; end; % maximum number of iterations
+if(nargin<9 ) maxits=2e3; end; % maximum number of iterations
 if(nargin<10)  Ltol=1e-2; end; % flowpath "out-of-triangle" tolerance
 if(nargin<11) dLtol=5e-1; end; % flowpath "curvature" tolerance
 
