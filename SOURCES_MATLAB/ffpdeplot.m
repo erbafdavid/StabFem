@@ -100,15 +100,14 @@ function [hh,varargout] = ffpdeplot(points,boundary,triangles,varargin)
                  'CGridParam', 'CColor', 'CXYData', 'CLevels', 'CStyle', ...
                  'ColorMap', 'ColorBar', 'CBTitle', 'ColorRange', ...
                  'Title', 'XLim', 'YLim', 'ZLim', 'DAspect', ...
-                 'FlowData', 'FGridParam','Streamlines','StreamlinesX0'...
-                 'StreamlinesY0','StreamlinesFieldX','StreamlinesFieldX'};
+                 'FlowData', 'FGridParam','ColorRangeTicks'};
 
     vararginval = {[], 'interp', 'off', 'off', [], ...
                    'r', 'off', 'off', 'off', ...
                    'auto', [0,0,0], [], 10, 'patch', ...
                    'jet', 'on', [], 'minmax', ...
                    [], 'minmax', 'minmax', 'minmax', 'xyequal', ...
-                   [], 'auto', 'no', [0], [0], 'ux', 'uy'};
+                   [], 'auto',-1};
 
     if (numvarargs>0)
         if (~mod(numvarargs,2))
@@ -133,8 +132,7 @@ function [hh,varargout] = ffpdeplot(points,boundary,triangles,varargin)
      cgridparam, ccolor, contourrawdata, isolevels, contourstyle, ...
      setcolormap, showcolbar, colorbartitle, colorrange, ...
      plottitle, plotxlim, plotylim, plotzlim, axisaspect, ...
-     flowdata, fgridparam] = vararginval{:};
-
+     flowdata, fgridparam,logscaleS] = vararginval{:};
     %"newplot" checks the values of the "NextPlot" properties and takes the
     %appropriate action based on these values.
     %Note: If there is no current figure, newplot creates one
@@ -372,6 +370,23 @@ function [hh,varargout] = ffpdeplot(points,boundary,triangles,varargin)
             if ~isempty(colorbartitle)
                 title(hcb,colorbartitle);
             end
+            % Introduced to comeback to the real ticks in case of logsat
+            if(logscaleS ~= -1)
+                hcb.TickLabelInterpreter = 'tex';
+                S = logscaleS;
+                ticks = round(S*(exp(hcb.Ticks).^(sign(hcb.Ticks)/S)-1),2,'significant');
+                [sTicks2,sTicks] = size(ticks);
+                for i=[2:sTicks]
+                    if(ticks(i) < ticks(i-1))
+                        ticks(i-1) = - ticks(i-1);
+                    end
+                end
+                hcb.TickLabels = arrayfun( @num2str,ticks, 'UniformOutput', false );
+                % Fix the number of ticks independent of the size of the
+                % plot
+                colourRange = caxis();
+                hcb.Ticks = linspace( colourRange(1), colourRange(end), sTicks);
+            end
         end
     %Uncolored, flat 2D mesh plot (no xyrawdata is given)
     else
@@ -422,7 +437,7 @@ function [hh,varargout] = ffpdeplot(points,boundary,triangles,varargin)
             [U,V]=ffplottri2gridint(x,y,xdata,ydata,udata,vdata);
         end
         idx=(~isnan(U)) & (~isnan(V));
-        hq=quiver(X(idx),Y(idx),U(idx),V(idx));
+        hq=quiver(X(idx),Y(idx),U(idx),V(idx),'k','linewidth',1);
         if ~isempty(hh)
             hh=[hh; hq];
         else

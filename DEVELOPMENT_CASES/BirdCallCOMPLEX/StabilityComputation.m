@@ -77,5 +77,5 @@ end
 %% Generation of plots
 y0 = linspace(0,2,20)
 x0 = -1.0*ones(1,20)
-SF_Plot(bf,'ux','Streamlines','yes','Streamlinesx0',x0,'StreamlinesY0',y0)
+SF_Plot(bf,'ux','Streamlines','yes','StreamlinesX0',x0,'StreamlinesY0',y0)
 
