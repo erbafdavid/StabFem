@@ -291,6 +291,35 @@ switch ffmesh.problemtype
 %        solvercommand = ['echo ' argumentstring ' | ',ffMPI,' -np ',num2str(ncores),' ', 'Stab2DComp.edp'];
 %        status = mysystem(solvercommand);
          
+    case('AxiCompCOMPLEX_m')
+         % AxiCompCOMPLEX flow (Whistling jet, etc...)
+
+        % 2D Baseflow / 2D modes
+        mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        mydisp(1,['      ### USING Axi compressible with azimuthal component COMPLEX Solver']);
+        if(p.Results.sym == 'A')
+            symmetry = 0;
+        elseif(p.Results.sym == 'S')
+            symmetry = 1;
+        elseif(p.Results.sym == 'N')
+            symmetry = 2;
+        end
+        
+        if(p.Results.type == 'D')
+            typeEig = 0;
+        elseif(p.Results.type == 'A')
+            typeEig = 1;
+        elseif(p.Results.type == 'S')
+            typeEig = 2;
+        else
+            typeEig = 0;
+        end
+        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.Ma) ' ' num2str(real(shift)) ' ' num2str(imag(shift))... 
+                             ' ' num2str(symmetry) ' ' num2str(typeEig) ' ' num2str(p.Results.nev) ' " '];
+        fff = [ ffMPI ];               
+        solver = [ffdir 'Stab_Axi_Comp_COMPLEX_m.edp'];
+%        solvercommand = ['echo ' argumentstring ' | ',ffMPI,' -np ',num2str(ncores),' ', 'Stab2DComp.edp'];
+%        status = mysystem(solvercommand);
     case('2DComp')
          % 2D flow (cylinder, etc...)
 

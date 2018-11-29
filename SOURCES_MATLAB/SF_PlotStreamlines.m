@@ -1,4 +1,33 @@
+
 function streamlines = SF_PlotStreamlines(FFdata, varargin);
+%  function SF_PlotStreamlines
+%  computes and plots a data field imported from freefem
+%  This function is part of the StabFem project by D. Fabre & coworkers.
+%
+%  Usage :
+%  1/ streamlines=SF_PlotStreamlines(ffdata,'field'); to plot isocontours
+%                 of a P1 field
+%  To be added the capability to plot also the real or imaginary part
+%       (See Below)
+%   The list of accepted parameters are described below.
+%
+%       'StreamlinesInput' A given streamline already computed and ready 
+%                           to be plot
+%       'StreamlinesX0' array that stores the origin in x of streamlines
+%
+%       'StreamlinesY0' array that stores the origin in y of streamlines
+%
+%       'StreamlinesFieldX' string of the field to be taken as reference 
+%                           for the x component. 'ux' (default) 
+%
+%       'StreamlinesFieldY' string of the field to be taken as reference 
+%                           for the x component. 'uy' (default) 
+%       'color'             the code of the color of streamlines (matlab
+%                           convention, 'k'-> Black, 'r' -> Red...)
+%       'compute'           'yes' if you want to compute streamlines 'no'
+%                           if you do not
+%       'plot'              'yes' if you want to plot streamlines 'no' if
+%                           you do not
 
 % Determine the type of input file. mesh
 if(strcmpi(FFdata.datatype,'Mesh')==1)

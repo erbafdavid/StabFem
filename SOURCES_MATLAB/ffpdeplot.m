@@ -363,6 +363,10 @@ function [hh,varargout] = ffpdeplot(points,boundary,triangles,varargin)
         if ~(strcmpi(showcolbar,'off'))
             if strcmpi(showcolbar,'on')
                 hcb=colorbar;
+            elseif strcmpi(showcolbar,'out')
+                hcb=colorbar;
+                hcb.TickDirection = 'out';
+                hcb.Box = 'off';
             else
                 hcb=colorbar(showcolbar);
             end

@@ -89,19 +89,6 @@ function handle = plotFF(FFdata, varargin);
 %                   (use this option to plot fields with strong spatial amplifications)
 %                   NB : is S = 0 the colorrange is purely logarithmic
 %                   -1 (default, disabled) | S
-% 
-%       'Streamlines' Set streamlines of a given vector field (Not
-%                      optimised/ it takes more time than a normal plot)
-%                     'no' (default) | 'yes'
-%       'StreamlinesX0' array that stores the origin in x of streamlines
-%
-%       'StreamlinesY0' array that stores the origin in y of streamlines
-%
-%       'StreamlinesFieldX' string of the field to be taken as reference 
-%                           for the x component. 'ux' (default) 
-%
-%       'StreamlinesFieldY' string of the field to be taken as reference 
-%                           for the x component. 'uy' (default) 
 %     Notes :
 
 
