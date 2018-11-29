@@ -11,11 +11,11 @@
     upx[]=ux[];      
     NewtonIter ;          
     ux[] = ux[]+dux[];
-    real enerl2=dux[].l2;
     res=sqrt(int2d(th)(dux^2+duy^2)/th.area);
-    cout << "$$ Iter = "<< iter+1 << "   Re = " << Re << " ; res = " << res << " ; res l2 = " << enerl2 << endl;
+    cout << "$$ Iter = "<< iter+1 << "   Re = " << Re << " ; res = " << res << endl;
     iter++;
 } ;
+
 
 
 
@@ -25,9 +25,7 @@
 varf   LNSE ([ux,uy,up],[vx,vy,q]) =
 int2d(th)( -2*nu*(D(u):D(v)) + up*div(v) + div(u)*q - Conv(u,Ub,v) - shift*(ux*vx+uy*vy) )
  + BoundaryconditionsStability(u,v,symmetry);
-
 OP=LNSE(XXMh,XXMh,solver=sparsesolver);
-
 varf brhs([ux,uy,p],[vx,vy,q]) = int2d(th)( (ux0*vx+uy0*vy) );
 
 /// Iteration looop
