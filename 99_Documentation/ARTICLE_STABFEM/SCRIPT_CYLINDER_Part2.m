@@ -7,12 +7,12 @@ epsilon2_WNL = -0.003:.0001:.005;
 Re_WNL = 1./(1/Rec-epsilon2_WNL);
 A_WNL = wnl.Aeps*real(sqrt(epsilon2_WNL));
 
-% SC model
+% HB model
 Re_SC = [Rec 47 47.5 48 49 50 55 60 65 70 75 80 85 90 95 100];
 Aenergy_SC  = [0]; 
 
 for Re = Re_SC(2:end)
-    [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'Re',Re);
+    [meanflow,mode] = SF_HB1(meanflow,mode,'Re',Re);
     Aenergy_SC  = [Aenergy_SC mode.AEnergy];
 end
 
