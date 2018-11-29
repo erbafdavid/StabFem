@@ -127,8 +127,11 @@ Fx_BF = []; Lx_BF = [];
 
 
 % chapter 2B : figures
- 
+
+
 figure(22);hold off;
+LiteratureData=csvread('./literature_data/fig3a_Lw_giannetti2004.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2)+0.5,'r+-','LineWidth',2);
 plot(Re_BF,Fx_BF,'b+-','LineWidth',2);
 xlabel('Re');ylabel('Fx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -168,6 +171,8 @@ completed_lambda = 1;
 %% CHAPTER 3b : figures
 
 figure(20);
+LiteratureData=csvread('./literature_data/fig4a_sigma_giannetti2004.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2),'r+-','LineWidth',2);
 plot(Re_LIN,real(lambda_LIN),'b+-');
 xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -175,6 +180,8 @@ set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_Sigma_Re',figureformat);
 
 figure(21);hold off;
+LiteratureData=csvread('./literature_data/fig4b_st_giannetti2004.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2),'r+-','LineWidth',2);
 plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');
 xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -232,6 +239,8 @@ Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  ...
                  + wnl.FxA20*real(wnl.Lambda)/real(wnl.nu0+wnl.nu2)*epsilon2_WNL.*(epsilon2_WNL>0) ;
 
 figure(20);hold on;
+LiteratureData=csvread('./literature_data/fig7a_st_Re_experience.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2),'r+-','LineWidth',2);
 plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,'g--','LineWidth',2);hold on;
 
 figure(21);hold on;
@@ -243,10 +252,14 @@ plot(Re_WNL,Fx_WNL,'g--','LineWidth',2);hold on;
 xlabel('Re');ylabel('Fx');
 
 figure(24); hold on;
+LiteratureData=csvread('./literature_data/fig7d_energy_amplitude.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2),'rx','LineWidth',2);
 plot(Re_WNL,abs(Fy_WNL),'g--','LineWidth',2);
 xlabel('Re');ylabel('Fy')
 
 figure(25);hold on;
+LiteratureData=csvread('./literature_data/fig7e_Lx_mean.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2),'rx','LineWidth',2);
 plot(Re_WNL,A_WNL,'g--','LineWidth',2);
 xlabel('Re');ylabel('AE')
 
