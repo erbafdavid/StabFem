@@ -98,17 +98,34 @@ ENDIFMACRO
 //////////////////----->             Reading input files         <-----///////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-				{
-          ifstream file(ffdatadir+"BaseFlow_guess.txt");
+
+
+
+	int testCB = exec("ls WORK/BaseFlow_guess.txt");
+    	if (testCB!=0)
+		{
+		cout << "$$ No file BaseFlow_guess.txt : strarting from arbitrary initial condition" << endl;
+		IFMACRO(!DefaultGuessForNewton) // if your want something else this macro may be redefined in your Macro_StabFem.idp
+		macro DefaultGuessForNewton
+		[ux,uy,up] = [0,0,0]; //EOM
+		ENDIFMACRO
+		DefaultGuessForNewton;
+		} 
+		else
+		{
+		cout << "$$ Reading file BaseFlow_guess.txt" << endl;
+		 ifstream file(ffdatadir+"BaseFlow_guess.txt");
         file >> ux[];
 		file >> Reans;
-        };
+		cout << "$$ Re of guess field : " << Reans << endl; 
+		};
 
-	cout << "$$ Newton algorithm for Re = " << Re << endl;	
-	cout << "$$ Re of guess field : " << Reans << endl; 
+
+
+	cout << "$$ Starting Newton algorithm for Re = " << Re << endl;	
+	
 
 	real nu=1./Re; // TO BE MODIFIED ???
-//	real eps = 1e-20; // may not be required
 
 
 /////////////////////////////////////////////////////////////////////////////////

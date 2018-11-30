@@ -35,7 +35,7 @@ bf=SF_Adapt(bf,'Hmax',2);
 bf=SF_BaseFlow(bf,'Re',10);
 bf=SF_BaseFlow(bf,'Re',60);
 bf=SF_Adapt(bf,'Hmax',2);
-meshstrategynonlinear = 'D'; 
+meshstrategy = 'D'; 
   % select 'D' or 'S'
  % 'D' will use mesh adapted on direct eigenmode (mesh M_4): 
  %     this is necessary to compute correctly the structure of the mode (fig. 5a) 
@@ -43,7 +43,7 @@ meshstrategynonlinear = 'D';
  % 'S' will use mesh adapted on sensitivity (mesh M_2):
  %     figs. (5a) and (7d) will be wrong, on the other all other results
  %     will be correct and nonlinear computations will be much much faster.
-if(meshstrategynonlinear=='D')
+if(meshstrategy=='D')
      bf=SF_BaseFlow(bf,'Re',60);
      disp('using mesh adaptated to EIGENMODE (M4) ')
      [ev,emS,em,emA,emE] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
@@ -76,13 +76,6 @@ saveas(gca,'FIGURES/Cylinder_Mesh',figureformat);
 %   plot the base flow for Re = 60
 
 figure();
-%SF_Plot(bf,'ux','xlim',[-1.5 4.5],'ylim',[-2 2],'colorbar','northoutside','cbtitle','u_x','colormap','redblue',...
-%        'contour','psi','clevels',[-.02 0 .2 1 2 5]);
-%hold on;
-%SF_Plot(bf,'p','xlim',[-1.5 4.5],'ylim',[-2 2],'colorbar','southoutside','cbtitle','p','colormap','jet',...
-%    'contour','psi','clevels',[-.02 0 .2 1 2 5],'symmetry','XM');
-%SF_Plot(bf,'psi','xlim',[-1.5 4.5],'ylim',[-3 3],'contours','on','xystyle','off','symmetry','XA');
-
 SF_Plot(bf,'p','contour','psi','clevels',[-.02 0 .2 1 2 5],'cstyle','patchdashedneg','xlim',[-1.5 4.5],'ylim',[0 3],...
         'cbtitle','p','colormap','redblue','colorrange','centered','boundary','on','bdlabels',2,'bdcolors','k');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -92,23 +85,36 @@ saveas(gca,'FIGURES/Cylinder_BaseFlowRe60',figureformat);
 
 %  plot the eigenmode for Re = 60
 
-figure();SF_Plot(em,'ux1','xlim',[-2 8],'ylim',[0 5],'colormap','redblue','colorrange','cropcentered','boundary','on','bdlabels',2,'bdcolors','k');
+figure();SF_Plot(em,'ux1','xlim',[-2 8],'ylim',[0 5],'colormap','redblue','colorrange','cropcentered',...
+    'boundary','on','bdlabels',2,'bdcolors','k');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_EigenModeRe60_AdaptS',figureformat);  % 
 
-figure();SF_Plot(emA,'ux1Adj','xlim',[-2 8],'ylim',[0 5],'colormap','redblue','colorrange','cropcentered','boundary','on','bdlabels',2);
+figure();SF_Plot(emA,'ux1Adj','xlim',[-2 8],'ylim',[0 5],'colormap','redblue','colorrange','cropcentered','boundary','on','bdlabels',2,'bdcolors','k');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_EigenModeAdjRe60',figureformat);
 
-figure();SF_Plot(emS,'sensitivity','xlim',[-2 4],'ylim',[0 3],'colormap','ice','boundary','on','bdlabels',2);
+figure();SF_Plot(emS,'sensitivity','xlim',[-2 4],'ylim',[0 3],'colormap','ice','boundary','on','bdlabels',2,'bdcolors','k');
+hold on; 
+SF_Plot(bf,'psi','contour','on','clevels', [0 0],'CColor','b','CStyle','monochrome','ColorBar','off','xlim',[-2 4],'ylim',[0 3],...
+'colormap','ice','colorrange',[min(real(emS.sensitivity)), max(real(emS.sensitivity))]);
+%SF_Plot(bf,'psi','contour','on','clevels', [0 0],'CColor','k','CStyle','monochrome','ColorBar','off');
+
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_SensitivityRe60',figureformat);
 
-figure();SF_Plot(emE,'endogeneity.re','contour','endogeneity.im','xlim',[-2 4],'ylim',[0 3],'colormap','redblue','boundary','on','bdlabels',2);
-%hold on; SF_Plot(emE,'endogeneity.im','xlim',[-2 6],'ylim',[-3 3],'symmetry','XM','colormap','redblue');
+
+figure();SF_Plot(emE,'endogeneity.re','contour','endogeneity.im','xlim',[-2 4],'ylim',[0 3],...
+    'colormap','redblue','cstyle','patchdashedneg','boundary','on','bdlabels',2,'bdcolors','k');
+hold on; 
+SF_Plot(bf,'psi','contour','on','clevels', [0 0],'CColor','b','CStyle','monochrome',...
+    'ColorBar','off','xlim',[-2 4],'ylim',[0 3],'colormap','redblue',...
+    'colorrange',[min(real(emE.endogeneity)), max(real(emE.endogeneity))]);
+%SF_Plot(bf,'psi','contour','on','clevels', [0 0],'CColor','k','CStyle','monochrome','ColorBar','off');
+
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_EndogeneityRe60',figureformat);
@@ -205,7 +211,7 @@ disp(' ');
     
 % plot the eigenmode for Re = 60
 em.xlim = [-2 8]; em.ylim=[0,5];
-figure();SF_Plot(em,'ux1','colorrange',[-.5 .5],'xlim',[-2 8],'ylim',[0 5]);
+figure();SF_Plot(em,'ux1','colorrange',[-.5 .5],'xlim',[-2 8],'ylim',[0 5],'colorscale','cropcentered');
 %title('Eigenmode for Re=60');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -239,8 +245,6 @@ Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  ...
                  + wnl.FxA20*real(wnl.Lambda)/real(wnl.nu0+wnl.nu2)*epsilon2_WNL.*(epsilon2_WNL>0) ;
 
 figure(20);hold on;
-LiteratureData=csvread('./literature_data/fig7a_st_Re_experience.csv'); %read literature data
-plot(LiteratureData(:,1),LiteratureData(:,2),'r+-','LineWidth',2);
 plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,'g--','LineWidth',2);hold on;
 
 figure(21);hold on;
@@ -252,14 +256,10 @@ plot(Re_WNL,Fx_WNL,'g--','LineWidth',2);hold on;
 xlabel('Re');ylabel('Fx');
 
 figure(24); hold on;
-LiteratureData=csvread('./literature_data/fig7d_energy_amplitude.csv'); %read literature data
-plot(LiteratureData(:,1),LiteratureData(:,2),'rx','LineWidth',2);
 plot(Re_WNL,abs(Fy_WNL),'g--','LineWidth',2);
 xlabel('Re');ylabel('Fy')
 
 figure(25);hold on;
-LiteratureData=csvread('./literature_data/fig7e_Lx_mean.csv'); %read literature data
-plot(LiteratureData(:,1),LiteratureData(:,2),'rx','LineWidth',2);
 plot(Re_WNL,A_WNL,'g--','LineWidth',2);
 xlabel('Re');ylabel('AE')
 
@@ -272,8 +272,7 @@ pause(0.1);
 disp('SC quasilinear model on the range [Rec , 100]');
 Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
 
-%%% THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL
-%%% ANALYSIS
+% THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL ANALYSIS
 Res = 47. ; 
 
  Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
@@ -289,8 +288,11 @@ for Re = Re_HB(2:end)
     Fy_HB = [Fy_HB mode.Fy];
     
     if(Re==60)
-       figure();SF_Plot(meanflow,'vort','contour','psi','clevels',[-.02 0 .5 1 2 5],'xlim',[-2 4],'ylim',[0 3],...
-           'colormap','ice','boundary','on','bdlabels',2,'bdcolors','k','cstyle','patchdashedneg');
+       figure();
+       %SF_Plot(meanflow,'vort','contour','psi','clevels',[-.02 0 .5 1 2 5],'xlim',[-2 4],'ylim',[0 3],'colormap','ice','boundary','on','bdlabels',2,'bdcolors','k','cstyle','patchdashedneg');
+       SF_Plot(meanflow,'p','contour','psi','clevels',[-.02 0 .2 1 2 5],'cstyle','patchdashedneg','xlim',[-1.5 4.5],'ylim',[0 3],...
+        'cbtitle','p','colormap','redblue','colorrange','centered','boundary','on','bdlabels',2,'bdcolors','k');
+
        box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
        set(gca,'FontSize', 18);
        saveas(gca,'FIGURES/Cylinder_MeanFlowRe60',figureformat); 
@@ -308,12 +310,13 @@ figure(21);hold off;
 plot(Re_LIN,imag(lambda_LIN)/(2*pi),'b+-');
 hold on;
 plot(Re_WNL,omega_WNL/(2*pi),'g--','LineWidth',2);hold on;
-plot(Re_HB,omega_HB/(2*pi),'r+-','LineWidth',2);
-plot(Rec,Omegac/2/pi,'ro');
-xlabel('Re');ylabel('St');
+plot(Re_HB,omega_HB/(2*pi),'r-','LineWidth',2);
+plot(Rec,Omegac/2/pi,'ko');
+LiteratureData=csvread('./literature_data/fig7a_st_Re_experience.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2),'ko','LineWidth',2);xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('Linear','WNL','SC','Location','northwest');
+legend('Linear','WNL','HB1','Ref. [17]','Location','northwest');
 saveas(gca,'FIGURES/Cylinder_Strouhal_Re_HB',figureformat);
 
 figure(22);hold off;
@@ -325,18 +328,20 @@ plot(Rec,Fxc,'ro')
 xlabel('Re');ylabel('Fx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('BF','WNL','SC','Location','south');
+legend('BF','WNL','HB1','Location','south');
 saveas(gca,'FIGURES/Cylinder_Cx_Re_HB',figureformat);
 
 figure(23);hold off;
 plot(Re_LIN,Lx_LIN,'b+-');
 hold on;
 plot(Re_HB,Lx_HB,'r+-','LineWidth',2);
+LiteratureData=csvread('./literature_data/fig7e_Lx_mean.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2),'ko','LineWidth',2);
 plot(Rec,Lxc,'ro','LineWidth',2);
 xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('BF','SC','Location','northwest');
+legend('BF','HB1','Ref. [15]','Location','northwest');
 saveas(gca,'FIGURES/Cylinder_Lx_Re_HB',figureformat);
 
 figure(24);hold off;
@@ -347,19 +352,21 @@ plot(Re_HB,real(Fy_HB),'r+-','LineWidth',2);
 xlabel('Re');  ylabel('Fy')
 box on;  pos = get(gcf,'Position');  pos(4)=pos(3)*AspectRatio;  set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('WNL','SC','Location','south');
+legend('WNL','HB1','Location','south');
 saveas(gca,'FIGURES/Cylinder_Cy_Re_SC',figureformat);
 
 figure(25);hold off;
 plot(Re_WNL,A_WNL,'g--','LineWidth',2);
 hold on;
 plot(Re_HB,Aenergy_HB,'r+-','LineWidth',2);
+LiteratureData=csvread('./literature_data/fig7d_energy_amplitude.csv'); %read literature data
+plot(LiteratureData(:,1),LiteratureData(:,2),'ko','LineWidth',2);
 %title('Harmonic Balance results');
 xlabel('Re');ylabel('A_E')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio; set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('WNL','SC','Location','south');
-if(meshstrategynonlinear=='D')
+legend('WNL','HB1','Ref. [15]','Location','south');
+if(meshstrategy=='D')
     filename = 'FIGURES/Cylinder_Energy_Re_SC_AdaptD';
 else
     filename = 'FIGURES/Cylinder_Energy_Re_SC_AdaptS';

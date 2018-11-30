@@ -45,7 +45,7 @@ bool fplot=false;
 int comp=0;
 
 
-real Re,Reans,Ma;
+real Re,Reans,Ma,Maans;
 
 if(mpirank==0)
 {
@@ -103,18 +103,31 @@ fespace XH2(th,P2);
 fespace XXxxxH(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
 //fespace XXxH(th,[P2,P2,P1]);	     ///   vel P2 +press P1
 macro def(u,p,T,rho)[u#x,u#y,p,T,rho]//EOF
-
-
+//macro def(u)[u#x,u#y,u#p,u#T,u#rho]//EOF a utiliser pour simplifier (a faire dans l'avenir)
   
 XXxxxH<complex> def(du,dp,dT,drho);
 XXxxxH<complex> def(Ub,Pb,Tb,Rhob);
 XXxxxH<complex> def(Urif,Prif,Trif,Rhorif)=[1.0,0.0,1.0,1.0,1.0];
 
-{
-ifstream file(ffdatadir+"BaseFlow_guess.txt");
-file >> Ubx[];
-file >> Reans;
-};
+	int testCB = exec("ls WORK/BaseFlow_guess.txt");
+    	if (testCB!=0)
+		{
+		cout << "$$ No file BaseFlow_guess.txt : strarting from arbitrary initial condition" << endl;
+		IFMACRO(!DefaultGuessForNewton) // if your want something else this macro may be redefined in your Macro_StabFem.idp
+		macro DefaultGuessForNewton
+		[Ubx,Uby,Pb,Tb,Rhob] = [1.0,0.0,1.0,1.0,1.0]; //EOM
+		ENDIFMACRO
+		DefaultGuessForNewton;
+		} 
+		else
+		{
+		cout << "$$ Reading file BaseFlow_guess.txt" << endl;
+		 ifstream file(ffdatadir+"BaseFlow_guess.txt");
+        file >> Ubx[];
+		file >> Reans;
+		file >> Maans;
+		cout << "$$ Re of guess field : " << Reans << endl; 
+		};
 
 cout << "$$ Newton for Re = " << Re << endl;	
 cout << "$$ Reynolds of the initial condition : " << Reans << endl;
@@ -237,7 +250,7 @@ XXxxxH [urx,ury,urp,urtemp,urro] = [real(Ubx),real(Uby),real(Pb),real(Tb),real(R
 		{
 		  {ofstream file(ffdatadir+"BaseFlow.txt"); // file in .txt format for FreeFem solvers
 		  file << ux[]; 
-		  file << endl << endl << Re;
+		  file << endl << endl << Re << endl << Ma << endl;
 		  }; 
           exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt"); 
          

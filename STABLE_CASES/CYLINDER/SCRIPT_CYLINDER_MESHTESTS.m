@@ -70,16 +70,15 @@ bf=SF_Adapt(bf,em,'Hmax',10);
 
 
 % plot the mesh (full size)
-bf.xlim = [-40 80]; bf.ylim=[0,40];
-SF_Plot(bf,'mesh');
+figure;SF_Plot(bf,'mesh');
 %title('Mesh M2 (full size)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*.4;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_Mesh2_Full',figureformat); 
 
+
 % plot the mesh (zoom)
-bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
-SF_Plot(bf,'mesh');
+figure;SF_Plot(bf,'mesh','xlim',[-1.5 4.5],'ylim',[0,3]);
 %title('Mesh M2 (zoom)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -218,7 +217,6 @@ bf=SF_Adapt(bf,em,'Hmax',10);
 bf=SF_Adapt(bf,em,'Hmax',10);
 
 % plot the mesh (full size)
-bf.xlim = [-40 80]; bf.ylim=[0,40];
 SF_Plot(bf,'mesh');
 %title('Mesh M4 (full size)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*.4;set(gcf,'Position',pos); % resize aspect ratio
@@ -226,8 +224,8 @@ set(gca,'FontSize', 18);
 saveas(gca,'FIGURES/Cylinder_Mesh4_Full',figureformat); 
 
 % plot the mesh (zoom)
-bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
-SF_Plot(bf,'mesh');
+figure;
+SF_Plot(bf,'mesh','xlim',[-1.5 4.5],'ylim',[0,3]);
 %title('Mesh M4 (zoom)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);

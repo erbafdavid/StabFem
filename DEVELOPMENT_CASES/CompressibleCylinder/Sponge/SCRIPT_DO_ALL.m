@@ -9,7 +9,7 @@
 %  5/ Harmonic-Balance for Re = REc-100
 %  6/ Self-consistent model for Re=100
 
-% CHAPTER 0 : set the global variables needed by the drivers
+%% CHAPTER 0 : set the global variables needed by the drivers
 
 clear all;
 % close all;
@@ -38,7 +38,7 @@ nsponge=.15; % density in the sponge region
 %Compressibility to create a mesh 
 Ma = 0.1
 
-
+%% Mesh & BF creation
 disp(' '); 
 disp(' STARTING ADAPTMESH PROCEDURE : ');    
 disp(' ');
@@ -120,7 +120,7 @@ set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_SensitivityRe60',figureformat);
 
 
-%%%% CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)
+%% CHAPTER 2 : DESCRIPTION OF BASE FLOW PROPERTIES (range 2-50)
 
 if(exist('completed_Cx')==0)
 

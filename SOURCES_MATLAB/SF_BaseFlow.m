@@ -198,7 +198,8 @@ switch (problemtype)
     case ('2DComp')
         createMappingParamFile(p.Results.MappingDef,p.Results.MappingParams); %% See auxiliary function of this file
         mydisp(1, '## Entering SF_BaseFlow (2D COMPRESSIBLE) ');
-        solvercommand = ['echo ', num2str(Re), ' ', num2str(p.Results.Mach), ' | ', ffMPI, ' -np ', num2str(ncores), ' ', ffdir, 'Newton_2D_Comp.edp'];
+     %   solvercommand = ['echo ', num2str(Re), ' ', num2str(p.Results.Mach), ' | ', ffMPI, ' -np ', num2str(ncores), ' ', ffdir, 'Newton_2D_Comp.edp'];
+     solvercommand = ['echo ', num2str(Re), ' ', num2str(p.Results.Mach), ' | ', ffMPI, ' ', ffdir, 'Newton_2D_Comp.edp'];
         BFfilename = [ffdatadir, 'BASEFLOWS/BaseFlow_Re', num2str(Re), 'Ma', num2str(Ma)];
         
         % case (other cases...)

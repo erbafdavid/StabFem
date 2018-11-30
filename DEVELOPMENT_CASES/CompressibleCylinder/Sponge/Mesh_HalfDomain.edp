@@ -12,7 +12,7 @@
 //	convention for boundary conditions :
 //  1 = inlet ; 2 (and 21,22,23) = wall ; 3 = outlet ; 6 = axis
 
-//  D. Fabre, June 2017
+//  D. Fabre & J. Sierra, nov 30 2018
 
 
 include "Params.edp"
@@ -41,19 +41,19 @@ cout << " Enter the dimensions xmin, xmax, ymax ? " << endl;
 cin >> xinfm >> xinfv >> yinf ;
 cout << "Xmin = " << xinfm << " ; Xmax = " << xinfv << " ; ymax = " << yinf << endl;  
 
-cout << " Enter the dimensions of the inner domain x1_{L}, x1_{R}, y1 ? " << endl; 
-cin >> x1m >> x1v >> y1 ;
-cout << "X_L = " << x1m << " ; X_R = " << x1v << " ; y1 = " << y1 << endl;  
+//cout << " Enter the dimensions of the inner domain x1_{L}, x1_{R}, y1 ? " << endl; 
+//cin >> x1m >> x1v >> y1 ;
+//cout << "X_L = " << x1m << " ; X_R = " << x1v << " ; y1 = " << y1 << endl;  
 
-cout << " Enter the dimensions of the middle domain x2_{L}, x2_{R}, y2 ? " << endl; 
-cin >> x2m >> x2v >> y2 ;
-cout << "X2_L = " << x2m << " ; X2_R = " << x2v << " ; y2 = " << y2 << endl;  
+//cout << " Enter the dimensions of the middle domain x2_{L}, x2_{R}, y2 ? " << endl; 
+//cin >> x2m >> x2v >> y2 ;
+//cout << "X2_L = " << x2m << " ; X2_R = " << x2v << " ; y2 = " << y2 << endl;  
 
 cout << " Enter the size of the sponge region " << endl; 
 cin >> ls ;
 cout << "Size of the domain = " << ls << endl;  
 
-cout << " Enter the vertical density of the mesh " << endl; 
+cout << " Enter the vertical density of the mesh OUTSIDE " << endl; 
 cin >> n ;
 cout << "Vertical density of the mesh = " << n << endl; 
 
@@ -62,43 +62,53 @@ cout << " Enter the density of the refinement around the cylinder " << endl;
 cin >> ncil ;
 cout << "density around the cylinder = " << ncil << endl; 
 
-cout << " Enter the density of points in the inner domain, middle, outer and sponge zone andl alpha ? " << endl; 
-cin >> n1 >> n2 >> ns >> nsponge >> alpha ;
-cout << "n1 = " << n1 << " ; n2 = " << n2 << " ; ns = " << ns << "; nsponge = " << nsponge << " ; alpha = " << alpha << endl;  
+//cout << " Enter the density of points in the inner domain, middle, outer and sponge zone andl alpha ? " << endl; 
+//cin >> n1 >> n2 >> ns >> nsponge >> alpha ;
+//cout << "n1 = " << n1 << " ; n2 = " << n2 << " ; ns = " << ns << "; nsponge = " << nsponge << " ; alpha = " << alpha << endl;  
+
+real yside = yinf+ls;
+real xinlet = xinfm-ls;
+real xoutlet = xinfv+ls;
+real RADIUS = .5;
+
+border cylinder(t=0,pi){ x=RADIUS*cos(t);y=RADIUS*sin(t);label=2;}
+//border cylref(t=0,2*pi){ x=(RADIUS+RR)*cos(t);y=(RADIUS+RR)*sin(t);label=999;}
+
+border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=1;}
+border axis1(t=0,1){ x=xinlet+(-2*RADIUS-xinlet)*t;y=0;label=6;}
+border axis2(t=0,1){ x=2*RADIUS+(xoutlet-2*RADIUS)*t;y=0;label=6;}
+
+border axis3(t=0,1){ x=-2*RADIUS+RADIUS*t;y=0;label=6;}
+border axis4(t=0,1){ x=RADIUS+RADIUS*t;y=0;label=6;}
+
+border outlet(t=0,1){ x=xoutlet;y=yside*t;label=3;}
+border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=3;} // label 3 : same conditions as at outlet
+
+border internal(t=pi,0){y=2*RADIUS*sin(t); x= 2*RADIUS*cos(t);label=99;}
+border internal2(t=-1,1){y=4*RADIUS;x=t*4*RADIUS;label=99;}
 
 
+/////////////////////////////////////////////////////////////////////////////////
+// plot(inlet(10)+latinf(10)+outlet(10)+latsup(10)+cylref(10)+cylinder(10)+a1(10)+a2(10)+a3(10)+a4(10));
+                         /////// Just to check the borders
+/////////////////////////////////////////////////////////////////////////////////
+// Build a mesh 
+//cout << "toto" << endl;
+plot(axis3(RADIUS*ncil)+axis4(RADIUS*ncil)+cylinder(-ncil)
++internal(pi*2*RADIUS*sqrt(n*ncil)+10)+internal2(n*8*RADIUS)
++inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)
++outlet(2*yside*n)+latsup((xoutlet-xinlet)*n));
 
-border inletsponge(t=0,1){ x=xinfm-ls;y=(yinf+ls)*(1-2*t);label=bcinlet;}
-border latinfsponge(t=0,1){ x=xinfm-ls+(xinfv-xinfm+2*ls)*t;y=-yinf-ls;label=bcinlet;}
-border outletsponge(t=0,1){ x=xinfv+ls;y=-(yinf+ls)*(1-2*t);label=bcoutflow;}
-border latsupsponge(t=0,1){ x=xinfv+ls-(xinfv-xinfm+2*ls)*t;y=yinf+ls;label=bcinlet;}
-
-// geometria cilindro
-
-border cilindro(t=0,2*pi){ x=cos(t)*0.5;y=0.5*sin(t);label=bcwall;}
-// dominio esterno
-border inlet(t=0,1){ x=xinfm;y=yinf*(1-2*t);label=0;}
-border latinf(t=0,1){ x=xinfm+(xinfv-xinfm)*t;y=-yinf;label=0;}
-border outlet(t=0,1){ x=xinfv;y=-yinf*(1-2*t);label=0;}
-border latsup(t=0,1){ x=xinfv-(xinfv-xinfm)*t;y=yinf;label=0;}
-
-// domini di infittimento 1: vicino al cilindro
-border a1(t=0,1){ x=x1m;y=y1*(1-2*t);label=0;}
-border a2(t=0,1){ x=x1m+(x1v-x1m)*t;y=-y1;label=0;}
-border a3(t=0,1){ x=x1v;y=-y1*(1-2*t);label=0;}
-border a4(t=0,1){ x=x1v-(x1v-x1m)*t;y=+y1;label=0;}
-
-// infittimento intermedio
-border b1(t=0,1){ x=x2m;y=y2*(1-2*t);label=0;}
-border b2(t=0,1){ x=x2m+(x2v-x2m)*t;y=-y2;label=0;}
-border b3(t=0,1){ x=x2v;y=-y2*(1-2*t);label=0;}
-border b4(t=0,1){ x=x2v-(x2v-x2m)*t;y=+y2;label=0;}
+mesh th=buildmesh(axis3(RADIUS*ncil)+axis4(RADIUS*ncil)+cylinder(-ncil)
++internal(pi*2*RADIUS*sqrt(n*ncil)+10)+internal2(n*8*RADIUS)
++inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)
++outlet(2*yside*n)+latsup((xoutlet-xinlet)*n));
 
 
-mesh th=buildmesh(inletsponge(2*(yinf+ls)/n*nsponge)+latinfsponge((xinfv-xinfm+2*ls)/n*nsponge)+outletsponge(2*(yinf+ls)/n*nsponge)+latsupsponge((xinfv-xinfm+2*ls)/n*nsponge)+
-inlet(2*yinf/n*ns)+latinf((xinfv-xinfm)/n*ns)+outlet(2*yinf/n*ns)+latsup((xinfv-xinfm)/n*ns)+cilindro(-ncil*pi/n)+a1(n1/n*2*y1)+a2(n1/n*(x1v-x1m))+a3(n1/n*2*y1)+a4(n1/n*(x1v-x1m))+b1(2*y2/n*n2)+b2((x2v-x2m)/n*n2)+b3(2*y2/n*n2)+b4((x2v-x2m)/n*n2));
+//IFMACRO(FREEFEMPLOTS,YES)
+plot(th);
+//ENDIFMACRO
 
-//plot(th);
 savemesh(th,ffdatadir+"mesh.msh");
 
 
@@ -125,6 +135,8 @@ savemesh(th,ffdatadir+"mesh.msh");
 }
 
 
+
+/*
 // CREATE A guess for the base flow (here starting from zero works very well)
  	fespace femp1(th,P1);
 	fespace femp2xfemp2xfemp1(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
@@ -142,6 +154,10 @@ savemesh(th,ffdatadir+"mesh.msh");
 	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
 
 //plot(th,cmm="Mesh",wait=1,ps="Mesh.eps");
+*/
+
+
+
 /*
 fespace Xh(th,P2);
 Xh DELTA=hTriangle;

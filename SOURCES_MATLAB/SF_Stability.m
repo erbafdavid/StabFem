@@ -5,8 +5,8 @@ function varargout = SF_Stability(baseflow,varargin)
 %>
 %> usage : 
 %> 1/  [eigenvalues,eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
-%> 2/  [eigenvalues,sensitivity,evD,evA] = SF_Stability(field,'type','S','nev',1, [...])
-%> 3/  [eigenvalues,Endogeneity,evD,evA] = SF_Stability(field,'type','E','nev',1, [...])
+%> 2/  [eigenvalues,sensitivity[,evD,evA]] = SF_Stability(field,'type','S','nev',1, [...])
+%> 3/  [eigenvalues,Endogeneity[,evD,evA]] = SF_Stability(field,'type','E','nev',1, [...])
 %> 4/  [eigenvalues,sensitivity,evD,evA,Endo] = SF_Stability(field,'type','S','nev',1, [...]) (not recommended)
 %>
 %> field is either a "baseflow" structure (with "mesh" structure as a subfield) 

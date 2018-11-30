@@ -1,4 +1,4 @@
-function handle = plotFF(FFdata, varargin);
+function handle = SF_Plot(FFdata, varargin);
 %  function plotFF
 %  plots a data field imported from freefem.
 %  This function is part of the StabFem project by D. Fabre & coworkers.
