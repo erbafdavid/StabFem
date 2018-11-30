@@ -158,7 +158,7 @@ in two ways:
 First, we give a concise but self-contained exposition of the main concepts and 
 specific numerical methods pertaining to global stability, including basic linear stability, adjoint-based sensitivity, as well as the most recent nonlinear developments.
 \item[-]
-Secondly we offer an open-source and user-friendly software called  {\em StabFem} %\cprotect 
+Secondly we offer an open-source and user-friendly software called  {\sf StabFem} %\cprotect 
 \footnote{The StabFem software may be obtained at the following url : \\
 \url{https://www.gitlab.com/stabfem/StabFem}. 
 } 
@@ -240,7 +240,7 @@ and ${\cal C}$ is the convection operator defined by
 {\cal C}( {\bf U} , {\bf u}) = \left( {\bf U} \cdot \nabla \right) {\bf u} + \left( {\bf u} \cdot \nabla \right)  {\bf U}.
 \ee
 This problem can now be discretized by projecting upon a basis of Taylor-Hood $(u,v,p) \rightarrow (P2,P2,P1)$ finite elements. Noting $\delta X$ the discretization of $[\delta {\bf u}_b,\delta p_b]$ this eventually leads to a matricial problem of the form $A \cdot \delta X = Y$. The procedure of Newton iteration is to solve iteratively this set of equations up to convergence.
-In our implementation, the algorithm for a 2D incompressible flow is written in the Freefem++ solver {\em Newton\_2D.edp} (an extract of this code featuring the implementation of the Newton loop is given in appendix E). This FreeFem++ solver is wrapped by the Octave/Matlab driver {\sf SF\_BaseFlow.m}.
+In our implementation, the algorithm for a 2D incompressible flow is written in the Freefem++ solver {\sf Newton\_2D.edp} (an extract of this code featuring the implementation of the Newton loop is given in appendix E). This FreeFem++ solver is wrapped by the Octave/Matlab driver {\sf SF\_BaseFlow.m}.
 
 \subsection{Linear stability}
 \vspace{.2cm}
@@ -326,7 +326,7 @@ where $\hat{X}$ is the eigenmode with largest ${\lambda^*}^{-1}$ (i.e. the one w
 
 When a good estimation of the eigenvalue is available, this method is very efficient and converges very rapidly. On the other hand, it can only provide a single eigenvalue. If we want to compute a larger number of eigenvalues, we can revert to a generalized version of iterative methods, called Arnoldi methods\cite{Arnoldi51}. The shift-invert version of the Arnoldi method is in fact the most commonly used method of the current time and is at the basis of both the popular Octave/Matlab function {\tt{eigs}} and the standard eigenvalue solver of FreeFem (i.e. ARPACK++). 
 %Our implementation in StabFem allows to chose between single eigenvalue computation (power method) and multiple eigenvalue computation (Arnoldi). 
-For the case of the 2D incompressible flow, resolution of the eigenvalue problem (including adjoint, sensitivity and endogeneity) is done by the FreeFem++ solver {\em Stab2D.edp}; an extract of this solver featuring the implementation of the shift-invert algorithm is displayed in appendix E. The latter is wrapped by the Octave/Matlab driver {\em SF\_Stability.m} which accepts a number of optional parameters. For instance, the selection between shfift-invert and Arnoldi is made according to the parameter \verb|nev|  (i.e. number of requested eigenvalues) transmitted to the driver.
+For the case of the 2D incompressible flow, resolution of the eigenvalue problem (including adjoint, sensitivity and endogeneity) is done by the FreeFem++ solver {\sf  Stab2D.edp}; an extract of this solver featuring the implementation of the shift-invert algorithm is displayed in appendix E. The latter is wrapped by the Octave/Matlab driver {\sf  SF\_Stability.m} which accepts a number of optional parameters. For instance, the selection between shfift-invert and Arnoldi is made according to the parameter \verb|nev|  (i.e. number of requested eigenvalues) transmitted to the driver.
 (an extract of this code featuring the implementation of the Newton loop is given in appendix E).
 
 
@@ -335,7 +335,7 @@ For the case of the 2D incompressible flow, resolution of the eigenvalue problem
 \lstinputlisting{Script_Cylinder_Part1.m}
  \normalsize
 \caption{Illustration of the usage of the StabFem software to produce an adapted mesh and study the base flow and the linear stability properties of the wake flow around a cylinder 
-(extract from script {\em SCRIPT\_CYLINDER\_ALLFIGURES.m})}
+(extract from script {\sf  SCRIPT\_CYLINDER\_ALLFIGURES.m})}
 \label{Listing2}
 \end{figure*}
 
@@ -369,7 +369,7 @@ In short, the classical Delaunay-Voronoi algorithm produces a mesh with gridpoin
 To build an optimal mesh for the base-flow calculation, the idea is to use as the objective function $u_h$ the solution ${\bf u}_b$ itself, as computed on a previous mesh.%The procedure thus ensures that the mesh will be locally adapted to the gradients of the base flow. 
 The base flow is then recomputed on the adapted mesh, providing a better approximation of the solution. The procedure can be repeated a few steps to ensure a right convergence.
 
-The mesh generated in the previous way may not be optimal for the stability calculations as the structure of the eigenmode may be more complex than that of the base flow. To remedy with this, the idea is to subsequently adapt the mesh to both the mesh flow and the results of the stability calculation. This is easily done with FreeFem, as the  AdaptMesh procedure can be used with several objective functions. We have experimented four different strategies. The first (D strategy) is to adapt the mesh to the base flow and the structure of the leading direct eigenmode. A second strategy (A) is to use the adjoint mode instead of the direct mode for mesh adaptation. However, as the sensitivity of the eigenvalue to perturbations of the operator (including discretization errors) is more closely linked to structural sensitivity concepts, it sounds a better idea to use either the 'wavemaker' $S_w$ or the endogeneity $S_e$ to adapt the mesh, leading to the two last experimented strategies, called S and E. Note that using the S strategy was already experimented in {\em \cite{GiannettiLuchini} for the wake of a cylinder (IS THAT THE RIGHT REFERENCE ??}). Mesh adaptation using the scalar product of the direct and adjoint eigenmodes (which turns out to be equivalent to the E strategy introduced here considering the definition of the endogeneity) was also proposed in {(\em DIOGO PLEASE PUT THE REF OF THE PAPER OLIVIER SHOWED US, AND COMPLETE THE SENTENCE}. A detailed comparison of the four strategies is reported in appendix A. It is shown that for the case of a cylinder, all strategies give the same values for base-flow drag, eigenvalues and several properties of the nonlinear limit cycle (see sec. 4) with less than $0,3\%$ deviation, but that the A, E and especially the S strategy lead to significantly lower number of grid points compared to the D strategy. The practical conclusions of this study are the following recommendations :
+The mesh generated in the previous way may not be optimal for the stability calculations as the structure of the eigenmode may be more complex than that of the base flow. To remedy with this, the idea is to subsequently adapt the mesh to both the mesh flow and the results of the stability calculation. This is easily done with FreeFem, as the  AdaptMesh procedure can be used with several objective functions. We have experimented four different strategies. The first (D strategy) is to adapt the mesh to the base flow and the structure of the leading direct eigenmode. A second strategy (A) is to use the adjoint mode instead of the direct mode for mesh adaptation. However, as the sensitivity of the eigenvalue to perturbations of the operator (including discretization errors) is more closely linked to structural sensitivity concepts, it sounds a better idea to use either the 'wavemaker' $S_w$ or the endogeneity $S_e$ to adapt the mesh, leading to the two last experimented strategies, called S and E. Note that using the S strategy was already experimented in {\em \cite{GiannettiLuchini} for the wake of a cylinder (IS THAT THE RIGHT REFERENCE ??}). Mesh adaptation using the scalar product of the direct and adjoint eigenmodes (which turns out to be equivalent to the E strategy introduced here considering the definition of the endogeneity) was also proposed in \cite{mavripilis2015adjoint}.  A detailed comparison of the four strategies is reported in appendix A. It is shown that for the case of a cylinder, all strategies give the same values for base-flow drag, eigenvalues and several properties of the nonlinear limit cycle (see sec. 4) with less than $0,3\%$ deviation, but that the A, E and especially the S strategy lead to significantly lower number of grid points compared to the D strategy. The practical conclusions of this study are the following recommendations :
 
 \begin{itemize}
 \item[-] 
@@ -378,7 +378,7 @@ First, if one is interested only in the eigenvalues, for instance to plot growth
 The situation is different if one wants to design a mesh allowing to study the structure of the flow in the whole domain (for instance for plotting its structure). In that case, using A,E or S strategy will allow to accurately compute the eigenvalue and the structure of the mode in the wavemaker region, but will not allow a proper resolution in the regions located far away where the direct mode may reach large amplitude. This is particularly the case for open flows characterized by large spatial convective amplifications. In such cases the D strategy is the only way to get a proper description of the eigenmode in the whole domain.
 \end{itemize}
 
-In our implementation, the whole process of mesh adaptation (including projection and recomputation of the base flow on the new mesh) is monitored using the Octave/Matlab driver {\em SF\_AdaptMesh.m} ; the kind of adaptation  (to base flow only (BF), or D, A, S , E strategies) is decided by the the nature of the objects transmitted to this function. In the current implementation it is possible to adapt the mesh to as much as 8 fields of diverse nature (for instance, multiple eigenmodes along with their adjoint fields, harmonic-balance fourirer components, etc...)
+In our implementation, the whole process of mesh adaptation (including projection and recomputation of the base flow on the new mesh) is monitored using the Octave/Matlab driver {\sf  SF\_AdaptMesh.m} ; the kind of adaptation  (to base flow only (BF), or D, A, S , E strategies) is decided by the the nature of the objects transmitted to this function. In the current implementation it is possible to adapt the mesh to as much as 8 fields of diverse nature (for instance, multiple eigenmodes along with their adjoint fields, harmonic-balance fourirer components, etc...)
 
 
 
@@ -440,7 +440,7 @@ Note that the object \verb|bf| is defined as a structure with fields \verb|Fx| a
 The resulting plots are given in figure \ref{fig:LxandDrag}, and are in good agreement with known results for this classical problem.
 In particular, for low Reynolds, the recirculation $L_x(Re)$ is equal to $0.5$ (which is the radius of the cylinder) indicating the absence of a recirculation region. The latter appears for $Re > 4.8$, in accordance with known results.
 
-An illustration of the structure of the base flow is given in figure \ref{fig:Baseflow},  for the case $Re = 60$. This figure is obtained using the Matlab/Octave function {\em SF\_Plot.m}, which is built over the function {\em ffpdeplot.m} developed by M. Meister and also distributed on an open-source basis
+An illustration of the structure of the base flow is given in figure \ref{fig:Baseflow},  for the case $Re = 60$. This figure is obtained using the Matlab/Octave function {\sf  SF\_Plot.m}, which is built over the function {\sf  ffpdeplot.m} developed by M. Meister and also distributed on an open-source basis
 \footnote{\url{https://github.com/samplemaker/freefem\_matlab\_octave\_plot}}.  
 This function allows a number of possibilities for plotting data on unstructured meshes, including color plots, isolevels, streamlines, quiver plots, etc.. The choice of parameters used here (lines 8-10 of the script in figure \ref{Listing2})  allows to plot both the pressure field and selection of streamlines (through isocontours of the streamfunction $\psi$). This representation allows to easily visualize the extension of the recirculation region. In accordance with figure \ref{fig:LxandDrag}$(b)$, for $Re = 60$ the recirculation length is $L_x = \approx 4.07$.
 
@@ -465,7 +465,7 @@ This function allows a number of possibilities for plotting data on unstructured
 %\vspace{-.5cm}\vspace{-.5cm}
 %\includegraphics[width=.9 \linewidth]{Cylinder_SensitivityRe60.png}
 %\vspace{-.5cm}
-\caption{Contour plot of the streamwise velocity component: $(a)$ (Direct) Eigenmode; $(b)$ Adjoint mode at $Re=Re_c = 46.7$.}
+\caption{Contour plot of the streamwise velocity component: $(a)$ (Direct) Eigenmode; $(b)$ Adjoint mode at $Re=Re_c = 60$.}
 \label{fig:Eigenmode}
 \end{figure}
 
@@ -473,7 +473,7 @@ This function allows a number of possibilities for plotting data on unstructured
 \includegraphics[width=.9 \linewidth]{Cylinder_SensitivityRe60.png}
 \includegraphics[width=.9 \linewidth]{Cylinder_EndogeneityRe60.png}
 %\vspace{-.5cm}
-\caption{ ($a$) {\em Wavemaker}  field $S_w$ and $(b)$ {\em Endogeneity} field $S_e$ (color : real part ; levels: imaginary part) for the cylinder's wake at $Re=Re_c = 46.7$. The red line represents the streamline bounding the recirculation region.}
+\caption{ ($a$) {\em Wavemaker}  field $S_w$ and $(b)$ {\em Endogeneity} field $S_e$ fields for the cylinder's wake at $Re=Re_c = 60$.  In plot $(b)$ the color scale indicates real part and levels indicate imaginary part (10 equidistant levels, the maximum value being +0.240). The red line represents the streamline bounding the recirculation region.}
 \label{fig:StructEndo}
 \end{figure}
 
@@ -490,7 +490,7 @@ This function allows a number of possibilities for plotting data on unstructured
 
 \paragraph{Linear stability results}
 
-We investigate the stability of the base flow field by performing a parametric study of the eigenproblem (\ref{LEP}). In this way, we determine the critical Reynolds number $Re_c$ at with the steady base flow first becomes unstable: to this end it is useful to remember that a flow state is linearly unstable when the real part of  the leading eigenvalue, i.e. the growth rate, is positive. In our implementation, parametric study is done by the loop over Reynolds corresponding to lines 21-30 of the script in figure \ref{Listing2}. Note that at line 26 the options {\em 'shift, 'cont' ,'guess', em} transmitted to the driver {\em SF\_Stability} allow to use an optimum value for the shift interpolated using the previous computations, and a guess value to initialize the shift-invert procedure corresponding to the previously computed eigenmode. Both these ideas very efficiently accelerate the calculations (the shift-invert procedure typically converges after only 2-3 iterations).
+We investigate the stability of the base flow field by performing a parametric study of the eigenproblem (\ref{LEP}). In this way, we determine the critical Reynolds number $Re_c$ at with the steady base flow first becomes unstable: to this end it is useful to remember that a flow state is linearly unstable when the real part of  the leading eigenvalue, i.e. the growth rate, is positive. In our implementation, parametric study is done by the loop over Reynolds corresponding to lines 21-30 of the script in figure \ref{Listing2}. Note that at line 26 the options {\sf  'shift, 'cont' ,'guess', em} transmitted to the driver {\sf  SF\_Stability} allow to use an optimum value for the shift interpolated using the previous computations, and a guess value to initialize the shift-invert procedure corresponding to the previously computed eigenmode. Both these ideas very efficiently accelerate the calculations (the shift-invert procedure typically converges after only 2-3 iterations).
 
  Figure \ref{fig:SigmaOmega} shows growth rate and the Strouhal number $St=a\omega/2 \pi U_{\infty}$ as a function of the Reynolds number. It is easy to check that the critical Reynolds number is about 47 for the first mode. The associated direct eigenmode is depicted in figure \ref{fig:Eigenmode}. The spatial structure of this mode extends downstream of the bluff body and is characterized by streamwise extended spatial disturbances.  On the other hand, the adjoint mode is highly localized near the cylinder  on the upper (and lower) side of the body surface. We recall that the adjoint field provides useful information about the mechanism to flow receptivity to momentum forcing and mass injection. We note also that this receptivity decays rapidly both upstream and downstream of the bluff body.
 
@@ -897,7 +897,7 @@ Injecting and developing up to linear order leads to the following equations:
 After discretization, this leads to a linear problem of the form $A X = Y$ where $X$ is the discretized version of the unknowns  $[\delta {\bf u }_m, \delta {\bf u }_{1,c}, \delta {\bf u }_{1,s}, \delta \omega]$, and $A$ is a matrix of dimension $3 N_{dof} +1$, where $N_{dof}$ is the dimension of the Taylor-Hood basis of finite elements describing each of the three $[{\bf u},p]$ fields.  This system is solved iteratively in the same way as explained in section 2.1 for determination of the base flow. %Using the adapted mesh described in figure 2, the dimension of the system is $3 N_{dof} +1 \approx 58 000$ and the resolution remains possible at very reasonable computational costs. 
 Mesh convergence issues for the nonlinear calculations are discussed in appendix A. It is shown that the mesh $\mathbf{M}_2$ designed using 'S' strategy is sufficient to yield converged results within $0.3\%$ accuracy for all quantities considered here, with the exception of the energy-amplitude $A_E$ which requires the more refined mesh $\mathbf{M}_4$ obtained using 'D' strategy.\footnote{In terms of computational cost, on a standard laptop the program  \ref{fig:listingNL} requires approximatively 413 seconds using  mesh $\mathbf{M}_2$ and 31 minutes using mesh $\mathbf{M}_4$.} 
  
-I n the proposed implementation, resolution of the problem is done by the FreeFem++ program {\em HB1\_2D.edp} which is wrapped by the Octave/Matlab function {\em SF\_HB1.m}. Note that the interested reader will also find within the sources of StabFem project a driver {\em SF\_HB2.m} implementing the same direct resolution method for the order-2 truncated harmonic balance. Generalization to higher orders is planned for future developments of the project.
+In the proposed implementation, resolution of the problem is done by the FreeFem++ program {\sf  HB1\_2D.edp} which is wrapped by the Octave/Matlab function {\sf  SF\_HB1.m}. Note that the interested reader will also find within the sources of StabFem project a driver {\sf  SF\_HB2.m} implementing the same direct resolution method for the order-2 truncated harmonic balance. Generalization to higher orders is planned for future developments of the project.
   
  \paragraph{Results for a cylinder}
  
@@ -925,10 +925,11 @@ Figure \ref{fig:HB_SC_DATA_COMP} shows the comparison between the WNL (green) an
 \footnote{Figure   \ref{fig:HB_SC_DATA_COMP} is obtained by line 19 of the script displayed in figure \ref{fig:listingNL}. The other figures are processed in a similar way. The entire set of commands to obtain all figures is provided in the script {\sf SCRIPT\_CYLINDER\_ALLFIGURES.m} .}.
 Concerning the quantities $St$, $A_E$ and $L_x$, differences between HB1/SC, WNL models have already been commented in  \cite{MLugo2014} and \cite{FDR2016}. 
 
-{\em DIOGO : replace this paragraph by a description of figures displaying the comparison.
+{\em DIOGO : replace this paragraph by a description of figures displaying the comparison
 The predictions of the SC models were also compared to numerical simulations results showing excellent agreement in the range $Re \in [Re_c,100]$. Regarding the forces exerted on the body, we can remark that the predictions of the WNL and HB1/SC models rapidly depart from each other as soon as $Re-Re_c \gtrsim 1$. Comparison of these results with DNS simulations is not provided here (consistently with the objectives of the present paper) but the reader may verify that the SC model correctly predicts these quantities in the range of Reynolds number considered here.
 }
 
+\cite{williamson1988defining}
 
 %\clearpage
 
@@ -1296,14 +1297,14 @@ such that $0< \sigma_{SC}(A) < \sigma_{lin}$.
 \small
 \lstinputlisting[firstline=2, lastline=19]{Extract_From_Stab2D.edp}
  \normalsize
-\caption{Illustration of the implementation of the Newton algorithm for base-flow computation (extract from FreeFem++ program {\em Newton2D.edp}).}
+\caption{Illustration of the implementation of the Newton algorithm for base-flow computation (extract from FreeFem++ program {\sf  Newton2D.edp}).}
 \label{Listing3}
 \end{figure*}
 
 
 
 Note that in our numerical implementation, the programs can actually be used to solve the SC model in the general case (with $\sigma\ne0$). 
-This can be controlled by assigning a nonzero value to the optional parameter \verb|sigma| of the  {\sf SF\_SelfConsistent.m} Octave/Matlab function. The interested reader will find on the website of the {\em StabFem} project a program {\sf SCRIPT\_CYLINDER\_NONLINEAR.m} which computes $A$ as function of $\sigma$ for $Re=100$, yielding identical results as displayed in figure 3 of \cite{MLugo2014}.
+This can be controlled by assigning a nonzero value to the optional parameter \verb|sigma| of the  {\sf SF\_SelfConsistent.m} Octave/Matlab function. The interested reader will find on the website of the {\sf  StabFem} project a program {\sf SCRIPT\_CYLINDER\_NONLINEAR.m} which computes $A$ as function of $\sigma$ for $Re=100$, yielding identical results as displayed in figure 3 of \cite{MLugo2014}.
 
 \section{Details of the weak formulation}
 
@@ -1349,7 +1350,7 @@ Note that the Neumann boundary conditions do not appear any more thanks to the i
 \small
 \lstinputlisting[firstline = 24]{Extract_From_Stab2D.edp}
  \normalsize
-\caption{Illustration of the implementation of the shift-invert algorithm for single eigenmode computation (extract from FreeFem++ program {\em Stab2D.edp}).}
+\caption{Illustration of the implementation of the shift-invert algorithm for single eigenmode computation (extract from FreeFem++ program {\sf  Stab2D.edp}).}
 \label{Listing4}
 \end{figure*}
 
@@ -1358,11 +1359,11 @@ Note that the Neumann boundary conditions do not appear any more thanks to the i
 
 In this appendix, we provide pieces of codes illustrating how the basic algorithms are implemented in the FreeFem++ solvers. These expanations will be useful for both people codes who whish to use directly FreeFem++ solvers without using the overlayer of Octave/Matlab drivers provided by the StabFem software, and also for persons who want to understand the logics of the implementation and customize the software to implement their own cases. The full version of the codes is available in the web repository of the StabFem project. A full documentation of the software is also in progress \footnote{\url{https://gitlab.com/stabfem/StabFem/blob/master/99_Documentation/MANUAL/main.pdf}}.
 
-Figure \ref{Listing3} details the implementation of the Newton algorithm for base-flow computation, as implemented in the FreeFem++ solver {\em Newton2D.edp} which is a generic solver usable for the whole class of 2D incompressible problems. Note that the syntax makes use of macros {\em D, div, Conv}, resulting in a very similar to the weak formulation written in the previous appendix. The boundary conditions are also coded using a macro {\em BoundaryconditionsBaseFlow}. To allow an easy customization, this macro is not defined in the generic solver {\em Newton2D.edp} but is reported in a file {\em Macros\_StabFem.idp} regrouping case-dependant macros (essentially boundary conditions and postprocessing options).
+Figure \ref{Listing3} details the implementation of the Newton algorithm for base-flow computation, as implemented in the FreeFem++ solver {\sf  Newton2D.edp} which is a generic solver usable for the whole class of 2D incompressible problems. Note that the syntax makes use of macros {\sf  D, div, Conv}, resulting in a very similar to the weak formulation written in the previous appendix. The boundary conditions are also coded using a macro {\sf  BoundaryconditionsBaseFlow}. To allow an easy customization, this macro is not defined in the generic solver {\sf  Newton2D.edp} but is reported in a file {\sf  Macros\_StabFem.idp} regrouping case-dependant macros (essentially boundary conditions and postprocessing options).
 
-Figure \ref{Listing4} details the implementation of the shift-invert algorithm for eigenvalue computation, as implemented in the generic solver {\em Stab2D.edp} for 2D incompressible flows.  Here again, the boundary conditions (which may differ from a case to an other within the generic class of 2D incompressible flows) is given by a macro {\em BoundaryconditionsBaseFlow} which has to be defined in the  {\em Macros\_StabFem.idp} file.
+Figure \ref{Listing4} details the implementation of the shift-invert algorithm for eigenvalue computation, as implemented in the generic solver {\sf  Stab2D.edp} for 2D incompressible flows.  Here again, the boundary conditions (which may differ from a case to an other within the generic class of 2D incompressible flows) is given by a macro {\sf  BoundaryconditionsStability} which has to be defined in the  {\sf  Macros\_StabFem.idp} file.
 
-We do not provide here the listing for the Newton resolution of the HB1 model, but the interested reader is encouraged to look at the program {\em HB1\_2D.edp} on the project's site.
+We do not provide here the listing for the Newton resolution of the HB1 model, but the interested reader is encouraged to look at the program {\sf  HB1\_2D.edp} on the project site.
 
 %In this appendix we compare the results obtained with 8 different meshes, to demonstrate the efficency of the mesh adaptation process. The whole results can be obtained using the script {\em SCRIPT\_CYLINDER\_MESHCONVERGENCE.m} available in the StabFem repository.
 

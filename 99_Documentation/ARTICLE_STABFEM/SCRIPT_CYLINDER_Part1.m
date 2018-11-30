@@ -1,5 +1,5 @@
-bf = SF_Init('Mesh_Cylinder_Large.edp');
-bf = SF_BaseFlow(bf,'Re',1);
+mesh = SF_Mesh('Mesh_Cylinder_Large.edp');
+bf = SF_BaseFlow(mesh,'Re',1);
 bf = SF_BaseFlow(bf,'Re',10);
 bf = SF_BaseFlow(bf,'Re',60);
 bf = SF_Adapt(bf,'Hmax',10,'InterpError',0.01);

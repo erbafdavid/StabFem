@@ -5,24 +5,32 @@
 %> @param[in] varargin: list of parameters and associated values
 %> @param[out] baseflow: baseflow solved by Newton iterations
 %>
-%> usage: <code>baseflow = SF_BaseFlow(baseflow1,['Param1',Value1,...])</code>
+%> usage: 
+%> 1/ baseflow = SF_BaseFlow(baseflow,['Param1',Value1,...])
+%> 2/ baseflow = SF_BaseFlow(ffmesh,['Param1',Value1,...])
+%>
+%> in mode 1 (first argument is a previously computed baseflow) 
+%             this previous baseflow will be used to initialmize the Newton iter.  
+%> in mode 2 (first argument is a mesh) 
+%>              No initial condition is prescribed. The solver will use a default one 
+%>             unless a macro "DefaultGuessForNewton" is defined in your Macro_StabFem.idp  
 %>
 %> This wrapper will launch the Newton FreeFem++ program of the corresponding
 %>  case. Nota Bene: if baseflow was already created, it is simply copied from
 %>  the "BASEFLOW" directory (unless specified otherwise by parameter 'Type').
 %>
 %> List of valid parameters:
-%>   - <code>Re</code>          Reynolds number
-%>   - <code>Ma</code>          Mach number (for compressible cases)
-%>   - <code>Omegax</code>      Rotation rate (for swirling axisymetric or 2D body)
-%>   - <code>Darcy</code>       Darcy number (for cases with porous body)
-%>   - <code>Porosity</code> \t\t    Porosity (for cases with porous body)
-%>   - <code>Type</code>
-%>      - <code>'Normal'</code> (default) ;
-%>      - <code>'NEW'</code> to force new computation ;
-%>      - <code>'POSTADAPT'</code> for recomputing baseflow after mesh adaptation ;
-%>      - <code>'PREV'</code> if connection was lost (obsolete ?)
-%>   - <code>ncores</code>      Number of cores (for parallel computations)
+%>   - Re          Reynolds number
+%>   - Ma          Mach number (for compressible cases)
+%>   - Omegax      Rotation rate (for swirling axisymetric or 2D body)
+%>   - Darcy       Darcy number (for cases with porous body)
+%>   - Porosity \t\t    Porosity (for cases with porous body)
+%>   - Type
+%>      - 'Normal' (default) ;
+%>      - 'NEW' to force new computation ;
+%>      - 'POSTADAPT' for recomputing baseflow after mesh adaptation ;
+%>      - 'PREV' if connection was lost (obsolete ?)
+%>   - ncores      Number of cores (for parallel computations)
 %>
 %> SF IMPLEMENTATION:
 %> Depending on set parameters, this wrapper will select and launch one of the
@@ -31,18 +39,20 @@
 %>       'Newton_AxiSWIRL.edp'
 %>       'Newton_2D.edp'
 %>       'Newton_2D_Comp.edp'
+%>         (... maybe many others...)
 %>
 %> Nota Bene: if for some reason the mesh/baseflow compatibility was lost, use
-%>  <CODE>SF_BaseFlow(baseflow,'Re',Re,'type','PREV')</CODE> to reconstruct the structure and
+%>  SF_BaseFlow(baseflow,'Re',Re,'type','PREV') to reconstruct the structure and
 %>  relocate files correctly. Similarly, to force recomputation even if files exist,
-%>  (for instance, just after adaptmesh), use <code>SF_BaseFlow(baseflow,'Re',Re,'type','NEW')</code>.
+%>  (for instance, just after adaptmesh), use SF_BaseFlow(baseflow,'Re',Re,'type','NEW').
 %>
-%> This syntax allows to do <CODE>baseflow=SF_BaseFlow(baseflow)</CODE> which is useful
-%>  for instance to recomputed the baseflow after mesh adaptation.
+%> This syntax allows to do baseflow=SF_BaseFlow(baseflow) which is useful
+%>  for instance to recompute the baseflow after mesh adaptation.
 %>
 %> @author David Fabre
 %> @date 2017-2018
 %> @copyright GNU Public License
+
 function baseflow = SF_BaseFlow(baseflow, varargin)
 global ff ffMPI ffdir ffdatadir sfdir verbosity
 
@@ -56,6 +66,7 @@ mydisp(2, '### ENTERING FUNCTION SF_BaseFlow ');
 % baseflow, we take these values
 %      (for instance SF_BaseFlow(bf) is equivalent to SF_Baseflow(bf,'Re',bf.Re) )
 % (Mode 3) if no previous value we will define default values set in the next lines.
+
 
 p = inputParser;
 if (isfield(baseflow, 'Re')) ReDefault = baseflow.Re;
@@ -100,10 +111,26 @@ Porosity = p.Results.Porosity;
 ncores = p.Results.ncores; % By now only for the 2D compressible
 
 
+%%% Position input files
+
+    if (strcmpi(baseflow.datatype,'baseflow'))
+        mydisp(3, ['Computing base flow for Re = ', num2str(Re), 'starting from guess']);
+        mycp(baseflow.filename, [ffdatadir, 'BaseFlow_guess.txt']);
+        mycp(baseflow.mesh.filename, [ffdatadir, 'mesh.msh']);
+        mesh = baseflow.mesh;
+        problemtype = baseflow.mesh.problemtype;
+    elseif (strcmpi(baseflow.datatype,'mesh'))
+        mydisp(3, ['Computing base flow for Re = ', num2str(Re), 'starting from guess']);
+        myrm([ffdatadir, 'BaseFlow_guess.txt']);
+        problemtype = baseflow.problemtype;
+        mesh = baseflow;
+    else
+        error('wrong type of argument to SF_BaseFlow')
+    end
+
 %%% SELECTION OF THE SOLVER TO BE USED DEPENDING ON THE CASE
 
-switch (baseflow.mesh.problemtype)
-    
+switch (problemtype)
     case ('AxiXR') % Newton calculation for axisymmetric base flow
         mydisp(1, '## Entering SF_BaseFlow (axisymmetric case)');
         solvercommand = ['echo ', num2str(Re), ' | ', ff, ' ', ffdir, 'Newton_Axi.edp'];
@@ -188,23 +215,7 @@ if (exist([BFfilename, '.txt']) == 2 && strcmpi(p.Results.type, 'NEW') ~= 1 && s
     baseflow.iter = 0;
     
 else
-    
-    
-    %  POSITION THE "GUESS" FILE
-%    if (strcmp(p.Results.type, 'POSTADAPT') ~= 1)
-        mydisp(3, ['Computing base flow for Re = ', num2str(Re)]);
-        mycp(baseflow.filename, [ffdatadir, 'BaseFlow_guess.txt']);
-        mycp(baseflow.mesh.filename, [ffdatadir, 'mesh.msh']);
-%    else
-%        mydisp(3, ['Recomputing base flow after adaptmesh for Re = ', num2str(Re)]);
-%        mycp([ffdatadir, 'BaseFlow_adaptguess.txt'], [ffdatadir, 'BaseFlow_guess.txt']);
-%        mycp(baseflow.filename, [ffdatadir, 'BaseFlow_guess.txt']);
-%        mycp([ffdatadir, 'mesh_adapt.msh'], [ffdatadir, 'mesh.msh']);
-%        baseflow.mesh = importFFmesh([ffdatadir, 'mesh.msh']);
-%    end
-    
-    %%% TO BE MODIFIED
-    
+        
     % CALL NEWTON SOLVER
     mysystem(solvercommand, errormessage);
     if (exist([ffdatadir, 'BaseFlow.txt']) == 0);
@@ -222,7 +233,7 @@ else
 end
 
 % import data
-baseflow = importFFdata(baseflow.mesh, [BFfilename, '.ff2m']);
+baseflow = importFFdata(mesh, [BFfilename, '.ff2m']);
 baseflow.filename = [BFfilename, '.txt']; %maybe redundant ?
 
 if(strcmpi(baseflow.mesh.meshtype,'2DMapped'))

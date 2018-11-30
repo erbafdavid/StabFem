@@ -5,8 +5,9 @@ function varargout = SF_Stability(baseflow,varargin)
 %>
 %> usage : 
 %> 1/  [eigenvalues,eigenvectors] = SF_Stability(field, [,param1,value1] [,param2,value2] [...])
-%> 2/  [eigenvalues,sensitivity,evD,evA,Endo] = SF_Stability(field,'type','S','nev',1, [...])
+%> 2/  [eigenvalues,sensitivity,evD,evA] = SF_Stability(field,'type','S','nev',1, [...])
 %> 3/  [eigenvalues,Endogeneity,evD,evA] = SF_Stability(field,'type','E','nev',1, [...])
+%> 4/  [eigenvalues,sensitivity,evD,evA,Endo] = SF_Stability(field,'type','S','nev',1, [...]) (not recommended)
 %>
 %> field is either a "baseflow" structure (with "mesh" structure as a subfield) 
 %> or directly a "mesh" structure (for instance in problems such as sloshing where baseflow is not relevant).
@@ -39,6 +40,10 @@ function varargout = SF_Stability(baseflow,varargin)
 %>               (e.g. myStab2D.edp instead of Stab2D.edp)
 %>               Useful in developpment/debugging mode ; the alternative
 %>               solver has to use the same input parameters is the standard.
+%>  guess :      eigenmode object used as initial condition for shift-invert (if nev=1)
+%>  guessAdj :   same for the adjoint problem (if nev=1 and type = A,S or E)
+%
+%
 %>
 %>  3/ Physical parameters
 %>
@@ -82,21 +87,6 @@ global ff ffMPI ffdir ffdatadir sfdir verbosity
 
 persistent sigmaPrev sigmaPrevPrev % for continuation on one branch
 persistent eigenvaluesPrev % for sort of type 'cont'
-
-myrm([ffdatadir 'Eigenmode_guess.txt']) % TODO : add parameter to put a guess file only when required
-
-
-
-   if(strcmpi(baseflow.datatype,'Mesh')==1)
-       % first argument is a simple mesh
-       ffmesh = baseflow; 
-       mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
-   else
-       % first argument is a base flow
-       ffmesh = baseflow.mesh;
-       mycp(baseflow.filename,[ffdatadir 'BaseFlow.txt']);
-       mycp(baseflow.mesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
-   end
   
 %% Chapter 1 : management of optionnal parameters
     p = inputParser;
@@ -149,6 +139,8 @@ myrm([ffdatadir 'Eigenmode_guess.txt']) % TODO : add parameter to put a guess fi
    addParameter(p,'nev',1,@isnumeric);
    addParameter(p,'type','D',@ischar); 
    addParameter(p,'solver','default',@ischar);
+   addParameter(p,'guess','no',@isstruct);
+   addParameter(p,'guessadj','no',@isstruct);
    
    %parameters for mpirun
    addParameter(p,'ncores',1,@isnumeric);
@@ -178,6 +170,30 @@ myrm([ffdatadir 'Eigenmode_guess.txt']) % TODO : add parameter to put a guess fi
        error('   # ERROR in SF_Stabilty while specifying the shift')
    end
  
+%% position input files
+
+   if(strcmpi(baseflow.datatype,'mesh')==1)
+       % first argument is a simple mesh
+       ffmesh = baseflow; 
+       mycp(ffmesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
+   else
+       % first argument is a base flow
+       ffmesh = baseflow.mesh;
+       mycp(baseflow.filename,[ffdatadir 'BaseFlow.txt']);
+       mycp(baseflow.mesh.filename,[ffdatadir 'mesh.msh']); % this should be done in this way in the future
+   end
+   
+   if(isstruct(p.Results.guess))
+      mycp(p.Results.guess.filename,[ffdatadir 'Eigenmode_guess.txt']); 
+   else
+      myrm([ffdatadir 'Eigenmode_guess.txt']) % TODO : add parameter to put a guess file only when required
+   end
+   
+    if(isstruct(p.Results.guessadj))
+      mycp(p.results.guessadj.filename,[ffdatadir 'EigenmodeAdj_guess.txt']); 
+   else
+      myrm([ffdatadir 'EigenmodeAdj_guess.txt']) % TODO : add parameter to put a guess file only when required
+   end
    
 %% Chapter 2 : select the relevant freefem script
 
