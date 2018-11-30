@@ -92,9 +92,9 @@
 \title{A practical review on linear and nonlinear global approaches to flow instabilities}
 
 %%% first author
-\author{D. Fabre$^{(a)}$,  V. Citro$^{(b,a)}$,  D. Ferreira Sabino$^{(a)}$, P. Bonnefis$^{(a)}$,  F. Giannetti$^{(b)}$ \& M. Pigou$^(a)$ 
+\author{D. Fabre$^{(a)}$,  V. Citro$^{(b,a)}$,  D. Ferreira Sabino$^{(a)}$, P. Bonnefis$^{(a)}$,  F. Giannetti$^{(b)}$ \& M. Pigou$^{(a)}$ 
     \affiliation{
-	$^{(a)}$ Institut de Mécanique des fluides de Toulouse (IMFT), University of Toulouse \\
+	$^{(a)}$ Institut de M\'ecanique des fluides de Toulouse (IMFT), University of Toulouse \\
 	$^{(b)}$ Dipartimento do Ingegneria (DIIN), Universit\`a} di Salerno. 
 }
 
@@ -183,9 +183,9 @@ The most notable originalities are the systematic use of mesh adaptation (\S 2 a
 \subsection{Computing a base-flow with Newton iteration}
 \vspace{.2cm}
 
-\paragraph{Navier-Stokes equations and weak form}
+\paragraph{Navier--Stokes equations and weak form}
 
-We start from the general problem of a flow field $[{\bf u},p]$ satisfying the incompressible Navier-Stokes equations on a domain $\Omega$,
+We start from the general problem of a flow field $[{\bf u},p]$ satisfying the incompressible Navier--Stokes equations on a domain $\Omega$,
 \begin{eqnarray} \label{NSprimitive}
 \partial_t {\bf u} = {\cal NS} ({\bf u},p)
 \equiv - {\bf u} \cdot \nabla {\bf u} - \nabla p + \frac{2}{Re}  \nabla \cdot {\mathsf{D}}({\bf u}),  \\
@@ -203,7 +203,7 @@ $\left< \phi_1, \phi_2 \right> $:
 $$
 \left< \phi_1, \phi_2 \right> = \int_\Omega \overline{\phi}_1 \cdot \phi_2   \mbox{ d} \Omega,
 $$
-The weak form of the Navier-Stokes equations is readily defined by introducing test functions 
+The weak form of the Navier--Stokes equations is readily defined by introducing test functions 
 $[{\bf v},q]$ associated with the momentum and continuity equations, and integrating over the domain\footnote{In the simple presentation given here we have omitted the issue of boundary conditions. Details on way boundary conditions can be incorporated in the weak formulation through integration by parts can be found in appendix D.}
 \be{NSweak}
 \forall [{\bf v},q], \quad \partial_t \left< {\bf v}, {\bf u}\right> = \left< {\bf v} , {\cal NS} ({\bf u},p) \right> + \left< q, \nabla \cdot {\bf u}\right>.
@@ -216,21 +216,21 @@ $[{\bf v},q]$ associated with the momentum and continuity equations, and integra
 \paragraph{Newton iteration}
 
 
-We look for a steady base-flow $[{\bf u}_b,p_b]$ satisfying the steady Navier-Stokes equations, i.e. 
+We look for a steady base-flow $[{\bf u}_b,p_b]$ satisfying the steady Navier--Stokes equations, i.e. 
 %${\cal NS} ({\bf u}_b,p_b) = 0$.
 ${\cal NS} ({\bf u}_b,p_b) = 0$.
 Suppose that we have a {\em guess}  for the base flow $[{\bf u}_b^g,p_b^g]$  which almost satisfies the equations.  We look for a better approximation under the form
 \be{Newton1}
 [{\bf u}_b,p_b]  = [{\bf u}_b^g,p_b^g] + [\delta {\bf u}_b, \delta p_b].
 \ee
-Injecting (\ref{Newton1}) into the weak form (\ref{NSweak}) of the Navier-Stokes equations and linearizing leads to  
+Injecting (\ref{Newton1}) into the weak form (\ref{NSweak}) of the Navier--Stokes equations and linearizing leads to  
 ${\cal NS}  ({\bf u}_b^g,p_b^g) +  {\cal LNS} _{{\bf u}_b^g}(\delta {\bf u}_b,\delta p_b)$, which can also be written in weak form as :
 \bes{Newton2}
 &\left< {\bf v}, {\cal NS} ({\bf u}_b^g,p_b^g)\right> + \left<q, \nabla \cdot {\bf u}_b^g\right>  
 \\
 + &\left< { \bf v}, {\cal LNS} _{{\bf u}_b^g}( \delta {\bf u}_b,\delta p_b) \right> + \left<q, \nabla \cdot \delta{\bf u}_b\right> = 0,
 \ees
-where ${\cal LNS}$ is the linearised Navier-Stokes operator, defined by its action on a flow field $[{\bf u} , p]$ as follows 
+where ${\cal LNS}$ is the linearised Navier--Stokes operator, defined by its action on a flow field $[{\bf u} , p]$ as follows 
 \be{defNSL}
  {\cal LNS}_{{\bf U}}( {\bf u}, p) = - {\cal C}( {\bf U} , {\bf u}) -\nabla p
 +\frac{2}{Re} \nabla  \cdot {\mathsf{D}}({\bf u}), %\quad ( \mbox{ with } \nabla \cdot {\bf u } = 0 \, ).
@@ -239,7 +239,7 @@ and ${\cal C}$ is the convection operator defined by
 \be{defC}
 {\cal C}( {\bf U} , {\bf u}) = \left( {\bf U} \cdot \nabla \right) {\bf u} + \left( {\bf u} \cdot \nabla \right)  {\bf U}.
 \ee
-This problem can now be discretized by projecting upon a basis of Taylor-Hood $(u,v,p) \rightarrow (P2,P2,P1)$ finite elements. Noting $\delta X$ the discretization of $[\delta {\bf u}_b,\delta p_b]$ this eventually leads to a matricial problem of the form $A \cdot \delta X = Y$. The procedure of Newton iteration is to solve iteratively this set of equations up to convergence.
+This problem can now be discretized by projecting upon a basis of Taylor--Hood $(u,v,p) \rightarrow (P2,P2,P1)$ finite elements. Noting $\delta X$ the discretization of $[\delta {\bf u}_b,\delta p_b]$ this eventually leads to a matricial problem of the form $A \cdot \delta X = Y$. The procedure of Newton iteration is to solve iteratively this set of equations up to convergence.
 In our implementation, the algorithm for a 2D incompressible flow is written in the Freefem++ solver {\sf Newton\_2D.edp} (an extract of this code featuring the implementation of the Newton loop is given in appendix E). This FreeFem++ solver is wrapped by the Octave/Matlab driver {\sf SF\_BaseFlow.m}.
 
 \subsection{Linear stability}
@@ -268,7 +268,7 @@ where ${\mathsf{A}}$ is the matrix resulting from the discretization of ${\cal L
 
 \paragraph{Adjoint eigenvalue problem, structural sensitivity, and wavemaker characterization}
 Developed in the two past decades, the concept adjoint eigenmodes has now become an unavoidable complement to the linear global stability approach. We here give a short summary of the definition and usefulness of this concept and refer the reader to Luchini \& Bottaro\cite{LucBott2014} for further details.
-First of all, the {\em adjoint linearised Navier-Stokes operator} ${\cal LNS}^\dag$ is defined thanks to the following 
+First of all, the {\em adjoint linearised Navier--Stokes operator} ${\cal LNS}^\dag$ is defined thanks to the following 
 property:
 \bes{NSLAdj}
 \forall ( {\bf u}, p ; {\bf v}, q), & \left< {\cal LNS}^\dag_{\bf U}( {\bf v},q) ,{\bf u}\right> + \left< \nabla \cdot {\bf v},p\right>  \\
@@ -366,7 +366,7 @@ In our implementation, we used an automatic mesh adaptation method. %which provi
 The implementation relies on the AdaptMesh procedure of the FreeFem++ software. This procedure is detailed in detail in ref. \cite{adapt}. 
 In short, the classical Delaunay-Voronoi algorithm produces a mesh with gridpoint distribution specified by a {\em Metric } matrix $\cal M$. The AdaptMesh algorithm consists of using as a metric the {\em Hessian} (second-order spatial derivatives) of an objective function $u_h$ defined over the domain, i.e. ${\cal M} = \nabla \nabla u_h$. The precision can be controlled by specifying an objective value for the interpolation error of the function on the new mesh.
 
-To build an optimal mesh for the base-flow calculation, the idea is to use as the objective function $u_h$ the solution ${\bf u}_b$ itself, as computed on a previous mesh.%The procedure thus ensures that the mesh will be locally adapted to the gradients of the base flow. 
+To build an optimal mesh for the base-flow calculation, the idea is to use as the objective function $u_h$ the solution ${\bf u}_b$ itself, as computed on a previous mesh. %The procedure thus ensures that the mesh will be locally adapted to the gradients of the base flow. 
 The base flow is then recomputed on the adapted mesh, providing a better approximation of the solution. The procedure can be repeated a few steps to ensure a right convergence.
 
 The mesh generated in the previous way may not be optimal for the stability calculations as the structure of the eigenmode may be more complex than that of the base flow. To remedy with this, the idea is to subsequently adapt the mesh to both the mesh flow and the results of the stability calculation. This is easily done with FreeFem, as the  AdaptMesh procedure can be used with several objective functions. We have experimented four different strategies. The first (D strategy) is to adapt the mesh to the base flow and the structure of the leading direct eigenmode. A second strategy (A) is to use the adjoint mode instead of the direct mode for mesh adaptation. However, as the sensitivity of the eigenvalue to perturbations of the operator (including discretization errors) is more closely linked to structural sensitivity concepts, it sounds a better idea to use either the 'wavemaker' $S_w$ or the endogeneity $S_e$ to adapt the mesh, leading to the two last experimented strategies, called S and E. Note that using the S strategy was already experimented in {\em \cite{GiannettiLuchini} for the wake of a cylinder (IS THAT THE RIGHT REFERENCE ??}). Mesh adaptation using the scalar product of the direct and adjoint eigenmodes (which turns out to be equivalent to the E strategy introduced here considering the definition of the endogeneity) was also proposed in \cite{mavripilis2015adjoint}.  A detailed comparison of the four strategies is reported in appendix A. It is shown that for the case of a cylinder, all strategies give the same values for base-flow drag, eigenvalues and several properties of the nonlinear limit cycle (see sec. 4) with less than $0,3\%$ deviation, but that the A, E and especially the S strategy lead to significantly lower number of grid points compared to the D strategy. The practical conclusions of this study are the following recommendations :
@@ -503,10 +503,10 @@ The wavemaker $S_w$ and endogeneity $S_e$ fields, introduced in section 2.2, are
 
 %For $Re\right>Re_c$, the linear stability analysis based on the {\em base flow} does not allow to predict the properties of the limit cycle; in particular the Strouhal number is substantially underestimated. %It has been shown that investigating the stability properties of the {\em mean flow} obtained by averaging time-marching solution gives a better accordance. Attempts to on a rigourous basis  
 
-In the past decade, efforts have been devoted to extend the range of validity of global approaches into the nonlinear regime for $Re>Re_c$, with the double objective to describe the properties of the limit cycle reached after saturation and to derive amplitude equations describing the transitent dynamics towards this cycle. The two main milestones in this direction  are the {\em weakly nonlinear model}  (WNL) of Sipp \& Lebedev \cite{SippLebedev} and the {\em self-consistent model} (SC) of Manti\v{c}-Lugo et al \cite{MLugo2014}.
+In the past decade, efforts have been devoted to extend the range of validity of global approaches into the nonlinear regime for $Re>Re_c$, with the double objective to describe the properties of the limit cycle reached after saturation and to derive amplitude equations describing the transient dynamics towards this cycle. The two main milestones in this direction  are the {\em weakly nonlinear model}  (WNL) of Sipp \& Lebedev \cite{SippLebedev} and the {\em self-consistent model} (SC) of Manti\v{c}-Lugo et al \cite{MLugo2014}.
  In this review, we will address only the first of the two questions, namely  the description of the saturated cycle, and leave aside the question of transient dynamics. We will successively review the two aforementioned models, in a simplified formulation devoted to describe only the saturated cycle. We also provide a simple implementation of these two models. Finally, in line with the previous section, we will again illustrate with results obtained for the wake of a cylinder.
   
- In this part, to simplify the notations, we symbolically write the Navier-Stokes equations as $\partial_t {\bf u} = {\cal NS} ({\bf u})$, therefore dropping the systematic reference to the incompressibility constraint and associated pressure field. The same is done with the linearized operator ${\cal LNS}_{{\bf U}}( {\bf u})$. 
+ In this part, to simplify the notations, we symbolically write the Navier--Stokes equations as $\partial_t {\bf u} = {\cal NS} ({\bf u})$, therefore dropping the systematic reference to the incompressibility constraint and associated pressure field. The same is done with the linearized operator ${\cal LNS}_{{\bf U}}( {\bf u})$. 
 
 \subsection{General definitions in the nonlinear regime}
 
@@ -531,7 +531,7 @@ A_E = \sqrt{\frac{1}{T} \int_0^{T} \left( \int_\Omega | {\bf u}' |^2 \, dS \righ
 \ee
 
 In the next sections we will document the predictions of the WNL and SC models regarding the quantities $A_E$ and $L_x$ adopted in past studies. In addition, we will document two other quantities of practical interest : the Drag and Lift forces $F_x$ and $F_y$ exerted on the cylinder. 
-Both are periodic functions of time and; owing to symmetry consideration, the drag contains only even harmonics and the lift only odd harmonics:
+Both are periodic functions of time and, owing to symmetry consideration, the drag contains only even harmonics and the lift only odd harmonics:
 
 %\be{drag_lift_def}
 %\begin{cases}
@@ -598,7 +598,7 @@ show how they can be predicted from the nonlinear global approaches.
 
 We first review the weakly nonlinear model of Sipp \& 
 Lebedev\cite{SippLebedev}, also discussed by Gallaire et al. \cite{FDR2016}.  
-The initial derivation of \cite{SippLebedev} makes use of a multiple scale method in order to obtained an amplitude equation.
+The initial derivation of \cite{SippLebedev} makes use of a multiple scale method in order to obtain an amplitude equation.
 This complete analysis is reproduced in appendix B. In the present paragraph, we give a simplified derivation of this model restricted to the description of the periodic saturated cycle.
 The starting point can be taken as the following expansion of the velocity flow field:
 \be{WNL1}
@@ -788,7 +788,7 @@ We thus start with a truncated Fourier decomposition of the limit cycle under th
 \ee
 where ${\bf u }_{1,c}$ and ${\bf u }_{1,s}$ are two {\em real} fields describing the nonlinear perturbation at two instants separated by a quarter-period of oscillation, and $\omega$ is the (real) oscillation frequency of the limit cycle (which is not known a priori).  
 
-Injecting this ansatz into the Navier-Stokes equations and taking the mean value and the first Fourier component leads to the following coupled equations:
+Injecting this ansatz into the Navier--Stokes equations and taking the mean value and the first Fourier component leads to the following coupled equations:
 \begin{subequations}\label{eq_principal}
 \begin{eqnarray}
 {\cal NS}(  {\bf u }_m ) = \frac{{\cal C}( {\bf u }_{1,c}, {\bf u }_{1,c}) +{\cal C}( {\bf u }_{1,s}, {\bf u }_{1,s})}{4}, 
@@ -805,7 +805,7 @@ Injecting this ansatz into the Navier-Stokes equations and taking the mean value
 %Note {\color{red} that,} contrary to the SC model, the amplitude $A_{HB}$ of the oscillation} can easily be computed a posteriori as ${\color{red}A_{HB}} = \sqrt{2 ||{\bf u }_1||}$. 
 %On the other hand, the Fourier description of the limit cycle is invariant with respect to the phase $\phi$ (i.e. the equations are unchanged when replacing ${\color{red} {\bf u }_1 }$ by  ${\color{red} {\bf u }_1 e^{i\phi}}$). 
 
-Note that this system of equations contains three unknown fields (discretized on the Taylor-Hood basis) plus an extra scalar unknown, 
+Note that this system of equations contains three unknown fields (discretized on the Taylor--Hood basis) plus an extra scalar unknown, 
 namely the frequency $\omega$. 
 In order to solve this coupled problem, we thus need an extra scalar equation. The latter is provided by fixing {\em phase} of the cycle. Several choices are possible, but a convenient one is to decide that the instant $t=0$ corresponds to a maximum of the lift force.
 This condition reads:
@@ -836,7 +836,7 @@ $A_{sc} = \sqrt{2 \int_\Omega ( |{\bf u }_{1,c}|^2+ |{\bf u }_{1,s}|^2) d S} $.
 \paragraph{SC/HB1 model: a direct algorithm }
 
 
-When reformulated in this way, the nonlinear problem addressed by the self-consistent model actually reduces to the restriction to order one of a more general class of methods called  harmonic balance methods (HB) (DIOGO PUT A FEW REFERENCES HERE \cite{}). The development of such methods, or related ones such the time-spectral method (REFS ?)  and the search for efficient numerical implementation to solve such problems is currently an active field of development in the fluid dynamics community. When considering HB development with a large order of terms, direct resolution by inversion of the full matrix is not achievable. Methods including iterative solvers and efficient preconditioning are currently under development (O. Marquet, personal communication). 
+When reformulated in this way, the nonlinear problem addressed by the self-consistent model actually reduces to the restriction to order one of a more general class of methods called harmonic balance methods (HB). One of the first aplications of these methods in the domain of fluid mechanics has done by Carte and Du\v{s}ek (\cite{CarteDusek1995},\cite{CarteDusekfraunie1996}). The development of such methods, or related ones such the time-spectral method (\cite{HallThomasClark2002}) and the search for efficient numerical implementation to solve such problems is currently an active field of development in the fluid dynamics community. When considering HB development with a large order of terms, direct resolution by inversion of the full matrix is not achievable. Methods including iterative solvers and efficient preconditioning are currently under development (O. Marquet, personal communication). 
 
 On the other hand, when restricting as here to a truncation to order one (HB1 method), the use of adapted meshes makes the building and inversion of the matrix accessible on standard computers. We thus propose here a simple algorithm based on a direct resolution using a Newton iteration, just as explained for the base flow in section 2. This method is proposed as an efficient alternative compared to the double-loop resolution procedure of \cite{MLugo2014}.
 
@@ -894,7 +894,7 @@ Injecting and developing up to linear order leads to the following equations:
 \end{align}
 \end{subequations}
 
-After discretization, this leads to a linear problem of the form $A X = Y$ where $X$ is the discretized version of the unknowns  $[\delta {\bf u }_m, \delta {\bf u }_{1,c}, \delta {\bf u }_{1,s}, \delta \omega]$, and $A$ is a matrix of dimension $3 N_{dof} +1$, where $N_{dof}$ is the dimension of the Taylor-Hood basis of finite elements describing each of the three $[{\bf u},p]$ fields.  This system is solved iteratively in the same way as explained in section 2.1 for determination of the base flow. %Using the adapted mesh described in figure 2, the dimension of the system is $3 N_{dof} +1 \approx 58 000$ and the resolution remains possible at very reasonable computational costs. 
+After discretization, this leads to a linear problem of the form $A X = Y$ where $X$ is the discretized version of the unknowns  $[\delta {\bf u }_m, \delta {\bf u }_{1,c}, \delta {\bf u }_{1,s}, \delta \omega]$, and $A$ is a matrix of dimension $3 N_{dof} +1$, where $N_{dof}$ is the dimension of the Taylor--Hood basis of finite elements describing each of the three $[{\bf u},p]$ fields.  This system is solved iteratively in the same way as explained in section 2.1 for determination of the base flow. %Using the adapted mesh described in figure 2, the dimension of the system is $3 N_{dof} +1 \approx 58 000$ and the resolution remains possible at very reasonable computational costs. 
 Mesh convergence issues for the nonlinear calculations are discussed in appendix A. It is shown that the mesh $\mathbf{M}_2$ designed using 'S' strategy is sufficient to yield converged results within $0.3\%$ accuracy for all quantities considered here, with the exception of the energy-amplitude $A_E$ which requires the more refined mesh $\mathbf{M}_4$ obtained using 'D' strategy.\footnote{In terms of computational cost, on a standard laptop the program  \ref{fig:listingNL} requires approximatively 413 seconds using  mesh $\mathbf{M}_2$ and 31 minutes using mesh $\mathbf{M}_4$.} 
  
 In the proposed implementation, resolution of the problem is done by the FreeFem++ program {\sf  HB1\_2D.edp} which is wrapped by the Octave/Matlab function {\sf  SF\_HB1.m}. Note that the interested reader will also find within the sources of StabFem project a driver {\sf  SF\_HB2.m} implementing the same direct resolution method for the order-2 truncated harmonic balance. Generalization to higher orders is planned for future developments of the project.
@@ -913,23 +913,25 @@ Lines 10-17 of the script shown in figure \ref{fig:listingNL}  explain how to to
 
 
 
-Figure \ref{fig:MF60} illustrates the structure of the mean flow for $Re=60$. As already identified by  \cite{MLugo2014}, the recirculation region associated with this mean flow is notably shorter than the one associated with the base flow (figure 2). 
+Figure \ref{fig:MF60} illustrates the structure of the mean flow for $Re=60$. As already identified by  \cite{MLugo2014}, the recirculation region associated with this mean flow is notably shorter than the one associated with the base flow (figure \ref{fig:Baseflow}). 
 
 
 %Line 19 shows how to plot the results along with the 
-
- 
 %\ref{HBEq0,HBEq1,HBphase}
 
 Figure \ref{fig:HB_SC_DATA_COMP} shows the comparison between the WNL (green) and HB1/SC (red) models for the quantities of interest identified in this paper, namely the Strouhal number, the mean drag, the maximum lift, the energy-amplitude, and the recirculation length associated to the mean flow. When relevant, results concerning the base flow and the linear approach are also displayed (blue)
 \footnote{Figure   \ref{fig:HB_SC_DATA_COMP} is obtained by line 19 of the script displayed in figure \ref{fig:listingNL}. The other figures are processed in a similar way. The entire set of commands to obtain all figures is provided in the script {\sf SCRIPT\_CYLINDER\_ALLFIGURES.m} .}.
 Concerning the quantities $St$, $A_E$ and $L_x$, differences between HB1/SC, WNL models have already been commented in  \cite{MLugo2014} and \cite{FDR2016}. 
 
-{\em DIOGO : replace this paragraph by a description of figures displaying the comparison
-The predictions of the SC models were also compared to numerical simulations results showing excellent agreement in the range $Re \in [Re_c,100]$. Regarding the forces exerted on the body, we can remark that the predictions of the WNL and HB1/SC models rapidly depart from each other as soon as $Re-Re_c \gtrsim 1$. Comparison of these results with DNS simulations is not provided here (consistently with the objectives of the present paper) but the reader may verify that the SC model correctly predicts these quantities in the range of Reynolds number considered here.
-}
+%replace this paragraph by a description of figures displaying the comparison
 
-\cite{williamson1988defining}
+The present results are also compared with the available literature, namely with the experiments of \cite{williamson1988defining} for the $St$ number and  with the DNS results of \cite{MLugo2014} for $A_E$ and $L_x$.
+The predictions of the SC/HB1 model show an excellent agreement in the range $Re \in [Re_c,100]$ with the rReferences. %Regarding the forces exerted on the body, 
+However, we can remark that the predictions of the WNL model rapidly depart from the previous ones as soon as $Re-Re_c \gtrsim 1$.
+
+%Comparison of these results with DNS simulations is not provided here (consistently with the objectives of the present paper) but the reader may verify that the SC model correctly predicts these quantities in the range of Reynolds number considered here.
+
+
 
 %\clearpage
 
@@ -1023,13 +1025,13 @@ $$
 \hline
 \end{array}
 $$
-\caption{Description of meshes used for validation of mesh adaptation strategy : number of vertices $N_p$ ; number of degrees of freedom of the P2-P2-P1 Taylor-hood basis $N_{dof}$ ; cell size (minimum and maximum value, and value at four characteristic point A,B,C,D as defined in the text). 
+\caption{Description of meshes used for validation of mesh adaptation strategy : number of vertices $N_p$ ; number of degrees of freedom of the P2-P2-P1 Taylor--Hood basis $N_{dof}$ ; cell size (minimum and maximum value, and value at four characteristic point A,B,C,D as defined in the text). 
  }
 \label{tab:conv1}
 \end{table*}
 
 
-Fx = 0.6447; Lx = 4.0736
+%Fx = 0.6447; Lx = 4.0736
 \begin{table*}
 $$
 \begin{array}{|c||c|c||c||c|c||c|c|c|}
@@ -1069,7 +1071,7 @@ Mesh $\mathbf{M}_2'$ was obtained by a subsequent refinement of mesh $\mathbf{M}
 Mesh $\mathbf{M}_3$ was adapted to both the base flow and endogeneity (strategy E).
 Meshes $\mathbf{M}_4$ and $\mathbf{M}_5$ were obtained by adapting to the structure of the direct eigenmode (strategy D) and of the adjoint eigenmode (strategy A). In each case, the adaptmesh process was repeated twice in order to ensure a correct convergence.
 
-Figures \ref{fig:mesh2} and \ref{fig:mesh4} illustrate the structure of meshes $\mathbf{M}_2$ and $\mathbf{M}_4$. As can be observed, these two mesh adaptation strategies lead to meshes with comparable densities in the region close to the cylinder. On the other hand, when moving downwards in the wake, mesh $\mathbf{M}_2$ quickly gets rather coarse, while mesh $\mathbf{M}_4$ maintains a significant density  
+Figures \ref{fig:mesh2} and \ref{fig:mesh4} illustrate the structure of meshes $\mathbf{M}_2$ and $\mathbf{M}_4$. As can be observed, these two mesh adaptation strategies lead to meshes with comparable densities in the region close to the cylinder. On the other hand, when moving downwards in the wake, mesh $\mathbf{M}_2$ quickly gets rather coarse, while mesh $\mathbf{M}_4$ maintains a significant density.
 
 Table \ref{tab:conv1} gives numerical informations about the geometry of these meshes. In particular, we document the minimum and maximum cell size, as well as the cell size at four point A,B,C,D defined with by their coordinates as follows : $(x_A,y_A) = (0,0.5)$ (within the boundary layer at the cylinder wall); $(x_B,y_B) = (2.5,0.5)$ (in the region of maximum structural sensitivity); $(x_C,y_C) = (4,0)$ (in the near wake); $(x_D,y_D) = (10,0)$ (in the far wake). Results confirm that mesh all meshes have similar densities in the near wake (cell size at points A,B,C are comparable) 
 while $\mathbf{M}_4$ has maximum resolution in the far wake (in the vicinity of point D).
@@ -1077,7 +1079,7 @@ while $\mathbf{M}_4$ has maximum resolution in the far wake (in the vicinity of 
 Table  \ref{tab:conv2} compares the results obtained with the six meshes. For base-flow characteristics $L_x$ and $F_x$, all values agree with a relative dispersion of less than $0.15\%$, confiming that all adaptation stategies are successful to correctly compute the base flow. 
 The performances of meshes for linear stability calculations can then be evaluated by comparing the eigenvalues. Meshes $\mathbf{M}_2$ to $\mathbf{M}_5$ all give values within less than $0.1\%$ dispersion. The value obtained with mesh  $\mathbf{M}_1$, which is not adapted to the eigenmode, is a bit farther from the others but still rather good. The table also displays results allowing to compare the performances of meshes for nonlinear self-consistent calculations. As for the frequency and the maximum lift, meshes $\mathbf{M}_2$ to $\mathbf{M}_5$ again give almost identical values within less than $0.1\%$ dispersion. The dispersion is much larger concerning the energy-amplitude of the perturbation $A_E$ displayed in the last column. Only the mesh $\mathbf{M}_4$ is able to correctly compute this quantities, while all other meshes significantly underestimate it. This is not surprising since this quantity is an integral one which depends upon the structure of the nonlinear perturbation in the whole wake, not only the near-wake region.
 
-From this study we can conclude that if we are only interested in predicting the frequency of the mode and the forces exerted on the cylinder (in both linear and nonlinear regimes), the strategies S (mesh $\mathbf{M}_2$) and E (mesh $\mathbf{M}_3$) are the most efficient and lead to a very light mesh (here only 2048 vertices for mesh $\mathbf{M}_2$). On the other hand, if we are interested in describing the structure of the perturbation in the whole domain (and being able to correctly evaluate its energy), mesh adaptation to the eigenmode structure is preferable. However this second strategy produces a much heavier mesh (here 12080 point).
+From this study we can conclude that if we are only interested in predicting the frequency of the mode and the forces exerted on the cylinder (in both linear and nonlinear regimes), the strategies S (mesh $\mathbf{M}_2$) and E (mesh $\mathbf{M}_3$) are the most efficient and lead to a very light mesh (here only 2038 vertices for mesh $\mathbf{M}_2$). On the other hand, if we are interested in describing the structure of the perturbation in the whole domain (and being able to correctly evaluate its energy), mesh adaptation to the eigenmode structure is preferable. However this second strategy produces a much heavier mesh (here 12080 point).
  
  
  \begin{table*}
@@ -1133,7 +1135,7 @@ The starting point can be taken as the following expansion of the velocity flow 
 Note that compared to the simplified version given in the main text by eq. \ref{WNL1}, the amplitude $A_{wnl}$ depends upon a slow time scale 
 $\tau = \epsilon^2 t$.
 
-Substituting the expansion \ref{WNL2} into the Navier-Stokes equations \ref{NSprimitive} and grouping terms multiplied by the same power of $\epsilon$, a hierarchy of equations is obtained. The order $\epsilon^0$ gives directly the base flow at $Re_c$. The order $\epsilon^1$
+Substituting the expansion \ref{WNL2} into the Navier--Stokes equations \ref{NSprimitive} and grouping terms multiplied by the same power of $\epsilon$, a hierarchy of equations is obtained. The order $\epsilon^0$ gives directly the base flow at $Re_c$. The order $\epsilon^1$
 corresponds to the linear neutral eigenmode as computed in the first part of this article.
 The order $\epsilon^2$ contains three terms respectively computed as the solutions of the following linear problems:
 \begin{eqnarray}
@@ -1241,7 +1243,7 @@ with $ |F_{y,1}| =  \sqrt{F_{y,1,c}^2 + F_{y,1,s}^2}$. The last column of the ta
 
 \section{Additional details about the self-consistent method}
 
-The objective of this appendix is to provide additional details about the  SC model in its original form as given by \cite{MLugo2014}, and to explain the connection with the simpler version discussed in section 4.2. The full model is obtained by introducing the decomposition (\ref{SC}) into the Navier-Stokes equations, leading to :
+The objective of this appendix is to provide additional details about the  SC model in its original form as given by \cite{MLugo2014}, and to explain the connection with the simpler version discussed in section 4.2. The full model is obtained by introducing the decomposition (\ref{SC}) into the Navier--Stokes equations, leading to :
 \begin{subequations}\label{sc12}
 \begin{eqnarray}
 {\cal NS}(  {\bf u }_m ) - A^2 {\cal C}( \tilde{{\bf u }}_1, \overline{\tilde{\bf u }_1}) = 0, 
@@ -1308,7 +1310,7 @@ This can be controlled by assigning a nonzero value to the optional parameter \v
 
 \section{Details of the weak formulation}
 
-In the presentation of the numerical methods in sections 2.1 and 2.2, and introduction of the {\em weak form}, we have omitted an important point, namely the issue of boundary conditions. In this appendix we explain more rigorously how the weak formulation is obtained. We consider here the full time-dependent nonlinear Navier-Stokes equations, but the treatment of the base-flow equations and the linearised equations is essentially the same.
+In the presentation of the numerical methods in sections 2.1 and 2.2, and introduction of the {\em weak form}, we have omitted an important point, namely the issue of boundary conditions. In this appendix we explain more rigorously how the weak formulation is obtained. We consider here the full time-dependent nonlinear Navier--Stokes equations, but the treatment of the base-flow equations and the linearised equations is essentially the same.
 
 Noting $\Gamma$ the boundary of the numerical domain, the latter can be decomposed in five parts : 
 $\Gamma = \Gamma_{in} \cup \Gamma_{cyl} \cup \Gamma_{axis} \cup \Gamma_{out} \cup \Gamma_{lat}$. 
@@ -1334,7 +1336,7 @@ Instead of the simplified version \ref{NSweak}, the more precise form of the wea
 + && \left< {\bf v}, \sigma \cdot {\bf n} \right>_{\Gamma_{out} \cup  \Gamma_{lat} \cup \Gamma_{axis} }  \nonumber 
 \end{eqnarray}
 where $\epsilon=10^{-30}$ is a small parameter used to impose the Dirichlet boundary conditions by penalization.
-An integration by parts of the pressure gradient and viscous stress terms of the Navier-Stokes equation eventually 
+An integration by parts of the pressure gradient and viscous stress terms of the Navier--Stokes equation eventually 
 leads to the weak form effectively used in the programs {\sf Newton2D.edp} and {\sf Stab2D.edp}:
 \begin{eqnarray}
 \forall [{\bf v},q], &&\, \partial_t \left< {\bf v}, {\bf u}\right> = - \left< {\bf v} , {\cal C}({\bf u},{\bf u})/2 \right>
