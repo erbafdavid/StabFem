@@ -68,4 +68,8 @@ if(exist([ffdatadir, 'MESHES'])==0)
 end
 mycp([ffdatadir, 'SF_Init.ff2m'],[ffdatadir, 'MESHES/SF_Init.ff2m']);
 
+if(exist([ffdatadir, 'BASEFLOWS'],'dir')==7)
+  myrm([ffdatadir, 'BASEFLOWS/*']);
+end
+
 mydisp(1, ['      ### INITIAL MESH CREATED WITH np = ', num2str(mesh.np), ' points']);

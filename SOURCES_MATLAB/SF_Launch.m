@@ -3,6 +3,8 @@ function Data = SF_Launch(file, varargin)
 %
 % usage : mesh = SF_Launch('File.edp', {Param1, Value1, Param2, Value2, etc...})
 %
+% First argument must be a valid FreeFem++ script
+%
 % Couples of optional parameters/values comprise :
 %   'Params' -> a list of input parameters for the FreeFem++ script
 %           for instance SF_Launch('File.edp','Params',[10 100]) will be
@@ -11,42 +13,55 @@ function Data = SF_Launch(file, varargin)
 %   'Mesh' -> a mesh associated to the data
 %           (either a mesh struct or the name of a file)
 %   'DataFile' -> the name of the resulting file
+%   'Type' -> a string specifying the type of computation for the FreeFe++ script 
 %
 % 'Mesh.edp' must be a FreeFem script which generates a file "mesh.msh",
 % a description file "mesh.ff2m", a geometrical parameter file "SF_Init.ff2m"
 %
-% Version 2.0 by D. Fabre ,  june 2017
+% Explanation : 
+%   1/if Type and Params are both present, this driver will launch 
+%       'echo "Type Params" | ff++ file
+%   2/if Param is absent but Params is present, this driver will launch 
+%       'echo "Params" | ff++ file
+%   3/if both are absent we simply launch
+%        'ff++ file
+%
+%
+% by D. Fabre ,  june 2017, redesigned dec. 2018
+%
+
 
 p = inputParser;
 addParameter(p, 'Params', NaN);
 addParameter(p, 'Mesh', 0);
 addParameter(p, 'DataFile', 'Data.ff2m');
+addParameter(p, 'Type', 'none');
 parse(p, varargin{:})
 
 global ff ffdir ffdatadir sfdir verbosity
 
 mydisp(2, ['### Starting SF_Launch ', file]);
 
-%if(isstring(p.Results.Mesh)) % in case I find a way to pass as a file...
-%    mydisp(5,'Mesh read from file');
-%    system(['cp ' p.Results.Mesh ' mesh.msh'])
-%    ffmesh = imporFFmesh('mesh.msh'
-%end
-
 if (isstruct(p.Results.Mesh))
     mydisp(5, 'Mesh passed as structure');
     ffmesh = p.Results.Mesh;
-    %system(['cp ' p.Results.Mesh.namefile ' mesh.msh'])
     mycp(p.Results.Mesh.filename, 'mesh.msh')
 end
 
-if ((p.Results.Params) == NaN)
-    command = [ff, ' ', file];
-else
-    stringparam = [];
+stringparam = [];
+if (~strcmpi(p.Results.Type,'none'))
+        stringparam = [p.Results.Type '  '];
+end
+
+if ((p.Results.Params)~=NaN)
     for pp = p.Results.Params;
         stringparam = [stringparam, num2str(pp), '  '];
     end
+end
+
+if (length(stringparam)==0)
+    command = [ff, ' ', file];
+else
     command = ['echo   ', stringparam, '  | ', ff, ' ', file];
 end
 

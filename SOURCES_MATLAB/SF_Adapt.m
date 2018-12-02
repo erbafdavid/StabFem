@@ -30,6 +30,7 @@
 function varargout = SF_Adapt(varargin)
 global ff ffdir ffdatadir sfdir verbosity
 
+varargout = {}; % introduced to avoid a bug at line 227 in some cases (to be rationalized)
 
 mydisp(1, '### ENTERING SF_ADAPT')
 
@@ -184,8 +185,12 @@ newmesh = importFFmesh(['MESHES/mesh',designation,'.msh']);
 newmesh.meshgeneration=flowforadapt(1).mesh.meshgeneration+1;
 
 
-
-for i = 1:nargout
+if(strcmpi(varargin{1}.datatype,'mesh')) % UGLY FIX TO BE DONE BETTER
+    nargoutF=nargout-1;
+else
+    nargoutF=nargout;
+end
+for i = 1:nargoutF
     varargout{i} = flowforadapt(i); %  copies the structure but the fields may be wrong !
     varargout{i}.filename = [ffdatadir,'FlowFieldAdapted',num2str(i),'.txt'];
     varargout{i}.mesh = newmesh;
@@ -200,7 +205,7 @@ end
 
 %% if first field is a base flow we have to recompute it !     
     
-if(strcmp(varargout{1}.datatype,'BaseFlow')) 
+if(strcmp(varargin{1}.datatype,'BaseFlow')) 
     mydisp(2,' SF_Adapt : recomputing base flow');
     baseflowNew = SF_BaseFlow(varargout{1}, 'type', 'POSTADAPT'); 
      if (baseflowNew.iter > 0)

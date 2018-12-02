@@ -100,8 +100,7 @@ ENDIFMACRO
 
 
 
-    cout << endl << "$$#### Mesh information BEFORE ADAPT :" << endl;  
-    cout << "$$#### Number of vertices    " << th.nv <<  endl;	
+
 
 
 //	real Nbvx	= 100000.;		//maximun number of vertices
@@ -114,7 +113,8 @@ ENDIFMACRO
 
 // Declaration of possible data types 
 
-    fespace p2(th,P2);   
+    fespace p2(th,P2);  
+    fespace p2xp2(th,[P2,P2]);   
     fespace p1(th,P1);
     fespace p0(th,P0);
     fespace p2xp2xp1(th,[P2,P2,P1]);
@@ -265,6 +265,17 @@ for(int i=0;i<nfields;i++)
           [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),0,0];nfieldsR++;
           [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),0,0];nfieldsR++;
 		}
+ else if(datastoragemode[i]=="CxP2P2")
+	   {
+          p2xp2<complex> [uBx,uBy];
+          file >> uBx[]; 
+          for(int j = 0;j<scalarnumber(i);j++){file >> scalars(i,j);};
+          cout << "$$    Dimension of read file : " << uBx[].n << " + " << scalarnumber(i) << endl << endl;	
+          [FTAx[i],FTAy[i],FTAz[i],FTAp[i],FTAr[i],FTAT[i]] = [uBx,uBy,(0+0i),(1+0i),(0+0i),(0+0i)];
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [real(uBx),real(uBy),0];nfieldsR++;
+          [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] = [imag(uBx),imag(uBy),0];nfieldsR++;
+		}
+
 	else if(datastoragemode[i]=="ReP1")
      {
           p1 uBx;
@@ -293,6 +304,8 @@ for(int i=0;i<nfields;i++)
         cout << "$$ ERROR in AdaptMesh : wrong type of storage mode : " << datastoragemode[i] << endl;   
         exit(-1);
        };
+       
+       
        cout << "$$	Auxiliary SCALARS associated to this field : " << endl << "$$    " ;
 	  for(int j =0;j<scalarnumber(i);j++){ cout << scalars(i,j) << " " ;};
 	  cout << endl;
@@ -300,12 +313,17 @@ for(int i=0;i<nfields;i++)
 //	 [ADFTAx[nfieldsR],ADFTAy[nfieldsR],ADFTAz[nfieldsR]] =  [CUSTOMADAPT(x,y)*ADFTAx[nfieldsR],CUSTOMADAPT(x,y)*ADFTAy[nfieldsR],CUSTOMADAPT(x,y)*ADFTAz[nfieldsR]]; 
     };
 
+
+
 // Custom choices for AdaptMesh
 // IF YOU WANT TO DO SOMETHING SPECIFIC FOR ADAPTATION IN YOUR CASE, DEFINE A MACRO CUSTOMADAPT  in your Macros_StabFem.edp file, it will be plugged here.      
 IFMACRO(CUSTOMADAPT)
 CUSTOMADAPT;
 ENDIFMACRO
 
+
+    cout << endl << "$$#### Mesh information BEFORE ADAPT :" << endl;  
+    cout << "$$#### Number of vertices    " << th.nv <<  endl;	
 
 ///
 /// declaration of new mesh(es)
@@ -331,6 +349,7 @@ thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],
 }
 else if(nfieldsR==2)
 {
+cout << ADFTAx[0][].min << " " << ADFTAx[1][].max << endl;
 thnew = adaptmesh(th,[ADFTAx[0],ADFTAy[0],ADFTAz[0]],[ADFTAx[1],ADFTAy[1],ADFTAz[1]],
 						nbvx=Nbvx,err=error,ratio=Ratio,hmax=Hmax,hmin=Hmin,thetamax=Thetamax,
 						verbosity=Verbosity,splitpbedge=Splitpbedge,splitin2=Splitin2);	
@@ -422,7 +441,8 @@ cout << endl << "$$#### Mesh information AFTER ADAPT :" << endl;
 
 	
 
-    fespace p2N(thnew,P2);   
+    fespace p2N(thnew,P2); 
+    fespace p2xp2N(thnew,[P2,P2]);   
     fespace p1N(thnew,P1);
     fespace p0N(thnew,P0);
  	  fespace p2xp2xp1N(thnew,[P2,P2,P1]);
@@ -534,6 +554,35 @@ for(int i=0;i<nfields;i++)
           for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
           cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
 		}
+	else if(datastoragemode[i]=="CxP1")
+	   {
+	   	  p1N<complex> uBNx=FTAx[i];        
+          U << uBNx[];
+          U << endl; 
+          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+		}	
+	else if(datastoragemode[i]=="ReP1")
+	   {
+	   	  p1N uBNx=real(FTAx[i]);        
+          U << uBNx[];
+          U << endl; 
+          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+		}		
+	else if(datastoragemode[i]=="CxP2P2")
+	   {
+	   	  p2xp2N<complex> [uBNx,uNBy]=[FTAx[i],FTAy[i]];        
+          U << uBNx[];
+          U << endl; 
+          for(int j=0;j<scalarnumber(i);j++) {U << scalars(i,j) << endl;};
+          cout << "$$    Dimension of written file : " << uBNx[].n << " + " << scalarnumber(i) << endl << endl;
+		}
+		    else
+       {
+        cout << "$$ ERROR in AdaptMesh : wrong type of storage mode at output : " << datastoragemode[i] << endl;   
+        exit(-1);
+       };
    }
 
 cout << "$$ FreeFem : Successfully Leaving function   SplitMesh.edp   "  <<  endl;
