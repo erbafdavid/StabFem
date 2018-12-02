@@ -41,19 +41,19 @@ cout << " Enter the dimensions xmin, xmax, ymax ? " << endl;
 cin >> xinfm >> xinfv >> yinf ;
 cout << "Xmin = " << xinfm << " ; Xmax = " << xinfv << " ; ymax = " << yinf << endl;  
 
-//cout << " Enter the dimensions of the inner domain x1_{L}, x1_{R}, y1 ? " << endl; 
-//cin >> x1m >> x1v >> y1 ;
-//cout << "X_L = " << x1m << " ; X_R = " << x1v << " ; y1 = " << y1 << endl;  
+cout << " Enter the dimensions of the inner domain x1_{L}, x1_{R}, y1 ? " << endl; 
+cin >> x1m >> x1v >> y1 ;
+cout << "X_L = " << x1m << " ; X_R = " << x1v << " ; y1 = " << y1 << endl;  
 
-//cout << " Enter the dimensions of the middle domain x2_{L}, x2_{R}, y2 ? " << endl; 
-//cin >> x2m >> x2v >> y2 ;
-//cout << "X2_L = " << x2m << " ; X2_R = " << x2v << " ; y2 = " << y2 << endl;  
+cout << " Enter the dimensions of the middle domain x2_{L}, x2_{R}, y2 ? " << endl; 
+cin >> x2m >> x2v >> y2 ;
+cout << "X2_L = " << x2m << " ; X2_R = " << x2v << " ; y2 = " << y2 << endl;  
 
 cout << " Enter the size of the sponge region " << endl; 
 cin >> ls ;
 cout << "Size of the domain = " << ls << endl;  
 
-cout << " Enter the vertical density of the mesh OUTSIDE " << endl; 
+cout << " Enter the vertical density of the mesh " << endl; 
 cin >> n ;
 cout << "Vertical density of the mesh = " << n << endl; 
 
@@ -62,49 +62,81 @@ cout << " Enter the density of the refinement around the cylinder " << endl;
 cin >> ncil ;
 cout << "density around the cylinder = " << ncil << endl; 
 
-//cout << " Enter the density of points in the inner domain, middle, outer and sponge zone andl alpha ? " << endl; 
-//cin >> n1 >> n2 >> ns >> nsponge >> alpha ;
-//cout << "n1 = " << n1 << " ; n2 = " << n2 << " ; ns = " << ns << "; nsponge = " << nsponge << " ; alpha = " << alpha << endl;  
-
-real yside = yinf+ls;
-real xinlet = xinfm-ls;
-real xoutlet = xinfv+ls;
-real RADIUS = .5;
-
-border cylinder(t=0,pi){ x=RADIUS*cos(t);y=RADIUS*sin(t);label=2;}
-//border cylref(t=0,2*pi){ x=(RADIUS+RR)*cos(t);y=(RADIUS+RR)*sin(t);label=999;}
-
-border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=1;}
-
-border axis1(t=0,1){ x=xinlet+(-4*RADIUS-xinlet)*t;y=0;label=6;}
-border axis2(t=0,1){ x=4*RADIUS+(xoutlet-4*RADIUS)*t;y=0;label=6;}
-
-border axis3(t=0,1){ x=-4*RADIUS+3*RADIUS*t;y=0;label=6;}
-border axis4(t=0,1){ x=RADIUS+3*RADIUS*t;y=0;label=6;}
-
-border outlet(t=0,1){ x=xoutlet;y=yside*t;label=3;}
-border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=3;} // label 3 : same conditions as at outlet
-
-border internal(t=pi,0){y=4*RADIUS*sin(t); x= 4*RADIUS*cos(t);label=99;}
-border internal2(t=-1,1){y=6*RADIUS;x=t*6*RADIUS;label=99;}
+cout << " Enter the density of points in the inner domain, middle, outer and sponge zone andl alpha ? " << endl; 
+cin >> n1 >> n2 >> ns >> nsponge >> alpha ;
+cout << "n1 = " << n1 << " ; n2 = " << n2 << " ; ns = " << ns << "; nsponge = " << nsponge << " ; alpha = " << alpha << endl;  
 
 
-/////////////////////////////////////////////////////////////////////////////////
-// plot(inlet(10)+latinf(10)+outlet(10)+latsup(10)+cylref(10)+cylinder(10)+a1(10)+a2(10)+a3(10)+a4(10));
-                         /////// Just to check the borders
-/////////////////////////////////////////////////////////////////////////////////
-// Build a mesh 
-//cout << "toto" << endl;
-plot(axis3(RADIUS*ncil)+axis4(RADIUS*ncil)+cylinder(-ncil)
-+internal(pi*2*RADIUS*sqrt(n*ncil)+10)+internal2(n*12*RADIUS)
-+inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)
-+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n));
 
-mesh th=buildmesh(axis3(RADIUS*ncil)+axis4(RADIUS*ncil)+cylinder(-ncil)
-+internal(pi*2*RADIUS*sqrt(n*ncil)+10)+internal2(n*8*RADIUS)
-+inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)
-+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n));
 
+// geometria cilindro
+
+border cilindro(t=pi,0){ x=cos(t)*0.5;y=0.5*sin(t);label=bcwall;}
+
+// border of splnge zone
+border inletsponge(t=0,1){ x=xinfm-ls;y=(yinf+ls)*(1-t);label=bcinlet;}
+border outletsponge(t=0,1){ x=xinfv+ls;y=(yinf+ls)*t;label=bcoutflow;}
+border latsupsponge(t=0,1){ x=xinfv+ls-(xinfv-xinfm+2*ls)*t;y=yinf+ls;label=bcinlet;}
+
+// dominio esterno
+border inlet(t=0,1){ x=xinfm;y=yinf*(1-t);label=9;}
+border outlet(t=0,1){ x=xinfv;y=yinf*t;label=9;}
+border latsup(t=0,1){ x=xinfv-(xinfv-xinfm)*t;y=yinf;label=9;}
+
+// domini di infittimento 1: vicino al cilindro
+border a1(t=0,1){ x=x1m;y=y1*(1-t);label=9;}
+//border a2(t=0,1){ x=x1m+(x1v-x1m)*t;y=-y1;label=9;}
+border a3(t=0,1){ x=x1v;y=y1*t;label=9;}
+border a4(t=0,1){ x=x1v-(x1v-x1m)*t;y=+y1;label=9;}
+
+// infittimento intermedio
+border b1(t=0,1){ x=x2m;y=y2*(1-t);label=9;}
+//border b2(t=0,1){ x=x2m+(x2v-x2m)*t;y=-y2;label=9;}
+border b3(t=0,1){ x=x2v;y=y2*t;label=9;}
+border b4(t=0,1){ x=x2v-(x2v-x2m)*t;y=+y2;label=9;}
+
+//border latinfsponge(t=0,1){ x=xinfm-ls+(xinfv-xinfm+2*ls)*t;y=0;label=6;}
+//border latinf(t=0,1){ x=xinfm+(xinfv-xinfm)*t;y=-yinf;label=9;}
+
+border axis0(t=0,1){y=0; x=xinfm-ls+ls*t;label=6;};
+border axis1(t=0,1){y=0; x=xinfm+(x2m-xinfm)*t;label=6;};
+border axis2(t=0,1){y=0; x=x2m+(x1m-x2m)*t;label=6;};
+border axis3(t=0,1){y=0; x=x1m+(-0.5-x1m)*t;label=6;};
+
+border axis6(t=0,1){y=0; x=0.5+(x1v-0.5)*t;label=6;};
+border axis5(t=0,1){y=0; x=x1v+(x2v-x1v)*t;label=6;};
+border axis4(t=0,1){y=0; x=x2v+(xinfv-x2v)*t;label=6;};
+border axis7(t=0,1){y=0; x=xinfv+ls*t;label=6;};
+
+//IFMACRO(FREEFEMPLOTS,YES)
+plot(
+inletsponge(2*(yinf+ls)/n*nsponge)+outletsponge(2*(yinf+ls)/n*nsponge)+latsupsponge((xinfv-xinfm+2*ls)/n*nsponge)
++inlet(2*yinf/n*ns)+outlet(2*yinf/n*ns)+latsup((xinfv-xinfm)/n*ns)
++cilindro(-ncil*pi/n)
++a1(n1/n*2*y1)+a4(n1/n*(x1v-x1m))+a3(n1/n*2*y1)
++b1(2*y2/n*n2)+b4((x2v-x2m)/n*n2)+b3(2*y2/n*n2)
++ axis1(-(x2m-xinfm)/n*nsponge)+axis2(-(x1m-x2m)/n*n1)+axis3((-0.5-x1m)/n*n2)
++ axis4(-(x2m-xinfm)/n*nsponge)+axis5(-(x1m-x2m)/n*n1)+axis6((-0.5-x1m)/n*n2)
++ axis0(ls/n*nsponge)+ axis7(ls/n*nsponge),wait=1
+);
+//ENDIFMACRO
+
+
+mesh th=buildmesh(
+cilindro(ncil*pi/n)
++a1(ncil/n*y1)+a4(n1/n*(x1v-x1m))+a3(n1/n*y1)
++axis3((-0.5-x1m)/n*n1)+axis6((x1v-0.5)/n*n1)
+
++b1(y2/n*n2)+b4((x2v-x2m)/n*n2)+b3(y2/n*n2)
++axis2((x1m-x2m)/n*n2)+axis5((x2v-x1v)/n*n2)
+
++inlet(yinf/n*ns)+outlet(yinf/n*ns)+latsup((xinfv-xinfm)/n*ns)
++ axis4((x2m-xinfm)/n*ns)+ axis1((xinfv-x2v)/n*ns)
+
++ axis0(ls/n*nsponge)+ axis7(ls/n*nsponge)
++inletsponge((yinf+ls)/n*nsponge)+outletsponge((yinf+ls)/n*nsponge)
++latsupsponge((xinfv-xinfm+2*ls)/n*nsponge)
+);
 
 //IFMACRO(FREEFEMPLOTS,YES)
 plot(th);
