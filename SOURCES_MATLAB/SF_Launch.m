@@ -53,6 +53,14 @@ if (~strcmpi(p.Results.Type,'none'))
         stringparam = [p.Results.Type '  '];
 end
 
+if ~(exist(file,'file'))
+    if(exist([ffdir file],'file'))
+        file = [ffdir file];
+    else
+        error([' Error in SF_Launch : FreeFem++ program ' ,file, ' not found']);
+    end
+end
+
 if ((p.Results.Params)~=NaN)
     for pp = p.Results.Params;
         stringparam = [stringparam, num2str(pp), '  '];
@@ -65,8 +73,8 @@ else
     command = ['echo   ', stringparam, '  | ', ff, ' ', file];
 end
 
-error = 'ERROR : SF_Launch not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
-mysystem(command, error);
+errormsg = 'ERROR : SF_Launch not working ! \n Possible causes : \n 1/ your "ff" variable is not correctly installed (check SF_Start.m) ; \n 2/ Your Freefem++ script is bugged (try running it outside the Matlab driver) ';
+mysystem(command, errormsg);
 
 
 if (isnumeric(p.Results.Mesh) == 1)

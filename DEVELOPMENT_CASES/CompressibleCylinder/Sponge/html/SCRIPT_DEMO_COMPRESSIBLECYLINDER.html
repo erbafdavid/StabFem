@@ -1,0 +1,455 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>SCRIPT_DEMO_COMPRESSIBLECYLINDER</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-12-04"><meta name="DC.source" content="SCRIPT_DEMO_COMPRESSIBLECYLINDER.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">CHAPTER 0 : set the global variables needed by the drivers</a></li><li><a href="#3">Chapter 1 : Italian-style mesh (multiple imbricated zones)</a></li><li><a href="#4">1A : mesh creation</a></li><li><a href="#6">1B. Computation of a BF for Re = 150, Ma = 0.2</a></li><li><a href="#7">Chapter 1C : Compute eigenmode</a></li><li><a href="#8">Chapter 2 : New adapted mesh using flow structures and "masks".</a></li><li><a href="#9">2.A : mesh generation</a></li><li><a href="#10">Chapter 2B : plot the mesh and BF</a></li><li><a href="#12">2.C : compute and plot eigenmode</a></li><li><a href="#13">2.D : Extract P along the the direction theta = (3*pi/4)</a></li></ul></div><pre class="codeinput"><span class="syscmd">!l</span>
+</pre><h2>CHAPTER 0 : set the global variables needed by the drivers<a name="2"></a></h2><pre class="codeinput">clear <span class="string">all</span>;
+close <span class="string">all</span>;
+run(<span class="string">'../../../SOURCES_MATLAB/SF_Start.m'</span>);
+figureformat=<span class="string">'png'</span>; AspectRatio = 0.56; <span class="comment">% for figures</span>
+tinit = tic;
+verbosity=0;
+Ma = 0.2;
+Re = 150;
+
+<span class="comment">% NB the drivers may produce warning messages such as "rm: ./WORK/*.txt: No such file or directory"</span>
+<span class="comment">% don't mind them, this should disapear in future evolutions of StabFem</span>
+</pre><pre class="codeoutput">/bin/bash: l: command not found
+</pre><h2>Chapter 1 : Italian-style mesh (multiple imbricated zones)<a name="3"></a></h2><h2>1A : mesh creation<a name="4"></a></h2><pre class="codeinput"><span class="comment">% Mesh in the style of that used by Fani et al, but on half-domain</span>
+<span class="comment">% parameters for mesh creation ; Italian method</span>
+xinfm=-100.; xinfv=100.; yinf=100.;<span class="comment">% Outer Domain</span>
+x1m=-1; x1v=30.; y1=1;<span class="comment">% Inner domain</span>
+x2m=-5.;x2v=60.;y2=5;<span class="comment">% Middle domain</span>
+ls=300.0; <span class="comment">% Sponge extension</span>
+<span class="comment">% Refinement parameters</span>
+n=1.8; <span class="comment">% Vertical density of the outer domain</span>
+ncil=60; <span class="comment">% Refinement density around the cylinder</span>
+n1=30; <span class="comment">% Density in the inner domain</span>
+n2=3; <span class="comment">% Density in the middle domain</span>
+ns=.5; <span class="comment">% Density in the outer domain</span>
+nsponge=.05; <span class="comment">% density in the sponge region</span>
+ParamsForSponge = [xinfm,xinfv,yinf,x1m,x1v,y1,x2m,x2v,y2,ls,n,ncil,n1,n2,ns,nsponge];
+mesh = SF_Mesh(<span class="string">'Mesh_HalfDomain_WITHSUBZONES.edp'</span>,<span class="string">'Params'</span>,ParamsForSponge);
+<span class="comment">% Number of vertices in this mesh :</span>
+mesh.np
+bf=SF_BaseFlow(mesh,<span class="string">'Re'</span>,1,<span class="string">'Mach'</span>,0.2);
+bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,60,<span class="string">'Mach'</span>,0.2);
+</pre><pre class="codeoutput">
+ans =
+
+       21112
+
+</pre><p>Plot this mesh</p><pre class="codeinput">figure;
+subplot(2,2,1);SF_Plot(mesh);
+subplot(2,2,2);SF_Plot(mesh,<span class="string">'xlim'</span>,[-100 100],<span class="string">'ylim'</span>,[0 100]);
+subplot(2,2,3);SF_Plot(mesh,<span class="string">'xlim'</span>,[-5 15],<span class="string">'ylim'</span>,[0 10]);
+subplot(2,2,4);SF_Plot(mesh,<span class="string">'xlim'</span>,[-1 1],<span class="string">'ylim'</span>,[0 1]);
+suptitle(<span class="string">'mesh at various scales (italian strategy)'</span>);
+pause(1);
+box <span class="string">on</span>;
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'Cylinder_Compressible_ItalianMesh'</span>,figureformat);
+pause(0.1);
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_01.png" style="width:560px;height:420px;" alt=""> <h2>1B. Computation of a BF for Re = 150, Ma = 0.2<a name="6"></a></h2><pre class="codeinput">bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,150,<span class="string">'Mach'</span>,0.2);
+
+figure();
+SF_Plot(bf,<span class="string">'ux'</span>,<span class="string">'xlim'</span>,[-5 15],<span class="string">'ylim'</span>,[0 5]);
+title(<span class="string">'Base flow at Re=150 (axial velocity)'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'Cylinder_BaseFlowRe60Ma02'</span>,figureformat);
+pause(0.1);
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_02.png" style="width:560px;height:314px;" alt=""> <h2>Chapter 1C : Compute eigenmode<a name="7"></a></h2><pre class="codeinput"><span class="comment">%Plot eigenmode (figure 6 of Fani et al)</span>
+[ev,emD] = SF_Stability(bf,<span class="string">'shift'</span>,0.152 + 0.642i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'D'</span>,<span class="string">'sym'</span>,<span class="string">'A'</span>);
+
+figure;
+SF_Plot(emD,<span class="string">'vort1'</span>,<span class="string">'xlim'</span>,[-2 5],<span class="string">'ylim'</span>,[0 3],<span class="string">'colorrange'</span>,<span class="string">'cropcentered'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'Cylinder_EigenmodeRe60Ma02_vort'</span>,figureformat);
+pause(0.1);
+
+<span class="comment">%</span>
+figure;
+SF_Plot(emD,<span class="string">'p1'</span>,<span class="string">'xlim'</span>,[-100 100],<span class="string">'ylim'</span>,[-100 100],<span class="string">'colorrange'</span>,[-1e-6,1e-6],<span class="string">'colormap'</span>,<span class="string">'redblue'</span>);
+hold <span class="string">on</span>;
+SF_Plot(emD,<span class="string">'p1.im'</span>,<span class="string">'xlim'</span>,[-100 100],<span class="string">'ylim'</span>,[-100 100],<span class="string">'colorrange'</span>,[-1e-6,1e-6],<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'symmetry'</span>,<span class="string">'XM'</span>);
+box <span class="string">on</span>;
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'Cylinder_EigenmodeRe60Ma02_p'</span>,figureformat);
+pause(0.1);
+</pre><pre class="codeoutput">      # Stability calculation completed, eigenvalue = 0.15273+0.64482i ; converged in 3 iterations
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_03.png" style="width:560px;height:314px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_04.png" style="width:560px;height:420px;" alt=""> <h2>Chapter 2 : New adapted mesh using flow structures and "masks".<a name="8"></a></h2><h2>2.A : mesh generation<a name="9"></a></h2><pre class="codeinput"><span class="comment">% First create an initial mesh in the simplest way</span>
+mesh = SF_Mesh(<span class="string">'Mesh_HalfDomain.edp'</span>,<span class="string">'Params'</span>,[-100,100,100,200,.1,60]);
+bf=SF_BaseFlow(mesh,<span class="string">'Re'</span>,1,<span class="string">'Mach'</span>,0.2);
+
+<span class="comment">% First adaptation with only one mask and BF (do it twice)</span>
+Mask = SF_Launch(<span class="string">'AdaptationMask.edp'</span>,<span class="string">'Type'</span>,<span class="string">'rectangle'</span>,<span class="string">'Params'</span>,[-100 100 -100 100 4],<span class="string">'Mesh'</span>,bf.mesh,<span class="string">'DataFile'</span>,<span class="string">'Mask.ff2m'</span>)
+bf = SF_Adapt(bf,Mask,<span class="string">'Hmax'</span>,50);
+Mask = SF_Launch(<span class="string">'AdaptationMask.edp'</span>,<span class="string">'Type'</span>,<span class="string">'rectangle'</span>,<span class="string">'Params'</span>,[-100 100 -100 100 4],<span class="string">'Mesh'</span>,bf.mesh,<span class="string">'DataFile'</span>,<span class="string">'Mask.ff2m'</span>)
+bf = SF_Adapt(bf,Mask,<span class="string">'Hmax'</span>,50);
+
+<span class="comment">% Raise the Re to 150</span>
+bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,60,<span class="string">'Mach'</span>,0.2);
+bf=SF_BaseFlow(bf,<span class="string">'Re'</span>,150,<span class="string">'Mach'</span>,0.2);
+
+<span class="comment">% Compute the eigenmode and two 'masks'</span>
+<span class="comment">% eigenmode</span>
+[ev,emD] = SF_Stability(bf,<span class="string">'shift'</span>,0.152 + 0.642i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'D'</span>,<span class="string">'sym'</span>,<span class="string">'A'</span>); <span class="comment">% NB PROBLEM in type='A' mode</span>
+
+<span class="comment">% First 'mask' function to enforce Hmax = 4 on [-100,100]x[0,100]</span>
+Mask = SF_Launch(<span class="string">'AdaptationMask.edp'</span>,<span class="string">'Type'</span>,<span class="string">'rectangle'</span>,<span class="string">'Params'</span>,[-100 100 -100 100 4],<span class="string">'Mesh'</span>,bf.mesh,<span class="string">'DataFile'</span>,<span class="string">'Mask.ff2m'</span>)
+<span class="comment">% NB don't mind the three next lines ; such filename manipulations will be</span>
+<span class="comment">% integrated automatically in the driver in due time !</span>
+mycp(<span class="string">'WORK/Mask.txt'</span>,<span class="string">'WORK/Mask1.txt'</span>);
+mycp(<span class="string">'WORK/Mask.ff2m'</span>,<span class="string">'WORK/Mask1.ff2m'</span>);
+Mask.filename = <span class="string">'WORK/Mask1.txt'</span>;
+
+<span class="comment">% Second 'mask' function to enforce Hmax = .25 on [-2,10]x[0,3]</span>
+Mask2 = SF_Launch(<span class="string">'AdaptationMask.edp'</span>,<span class="string">'Type'</span>,<span class="string">'rectangle'</span>,<span class="string">'Params'</span>,[-5 80 -5 5 .25],<span class="string">'Mesh'</span>,bf.mesh,<span class="string">'DataFile'</span>,<span class="string">'Mask.ff2m'</span>)
+
+<span class="comment">% mesh adaptation to bf, eigenmodes and the two masks !</span>
+bf = SF_Adapt(bf,emD,Mask,Mask2,<span class="string">'Hmax'</span>,50);
+
+<span class="comment">% Number of vertices in this mesh :</span>
+bf.mesh.np
+</pre><pre class="codeoutput">
+Mask = 
+
+               mesh: [1x1 struct]
+           filename: './WORK/Mask.txt'
+    DataDescription: 'Adaptation Mask'
+           datatype: 'MASK'
+    datastoragemode: 'CxP2P2'
+              Maskx: [3191x1 double]
+              Masky: [3191x1 double]
+
+rm: ./WORK//MEANFLOWS/*: No such file or directory
+rm: ./WORK/Eigenmode*: No such file or directory
+
+Mask = 
+
+               mesh: [1x1 struct]
+           filename: './WORK/Mask.txt'
+    DataDescription: 'Adaptation Mask'
+           datatype: 'MASK'
+    datastoragemode: 'CxP2P2'
+              Maskx: [4369x1 double]
+              Masky: [4369x1 double]
+
+rm: ./WORK//BASEFLOWS/*: No such file or directory
+rm: ./WORK//MEANFLOWS/*: No such file or directory
+rm: ./WORK/Eigenmode*: No such file or directory
+      # Stability calculation completed, eigenvalue = 0.13871+0.63824i ; converged in 5 iterations
+
+Mask = 
+
+               mesh: [1x1 struct]
+           filename: './WORK/Mask.txt'
+    DataDescription: 'Adaptation Mask'
+           datatype: 'MASK'
+    datastoragemode: 'CxP2P2'
+              Maskx: [4791x1 double]
+              Masky: [4791x1 double]
+
+
+Mask2 = 
+
+               mesh: [1x1 struct]
+           filename: './WORK/Mask.txt'
+    DataDescription: 'Adaptation Mask'
+           datatype: 'MASK'
+    datastoragemode: 'CxP2P2'
+              Maskx: [4791x1 double]
+              Masky: [4791x1 double]
+
+rm: ./WORK//MEANFLOWS/*: No such file or directory
+
+ans =
+
+       16329
+
+</pre><h2>Chapter 2B : plot the mesh and BF<a name="10"></a></h2><pre class="codeinput">figure;
+subplot(2,2,1);SF_Plot(bf.mesh,<span class="string">'xlim'</span>,[-300 300],<span class="string">'ylim'</span>,[0 300]);
+subplot(2,2,2);SF_Plot(bf.mesh,<span class="string">'xlim'</span>,[-100 100],<span class="string">'ylim'</span>,[0 100]);
+subplot(2,2,3);SF_Plot(bf.mesh,<span class="string">'xlim'</span>,[-5 15],<span class="string">'ylim'</span>,[0 10]);
+subplot(2,2,4);SF_Plot(bf.mesh,<span class="string">'xlim'</span>,[-1 1],<span class="string">'ylim'</span>,[0 1]);
+suptitle(<span class="string">'mesh at various scales (French strategy)'</span>);
+pause(1);
+box <span class="string">on</span>;
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'Cylinder_Compressible_FrenchMesh'</span>,figureformat);
+pause(0.1);
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_05.png" style="width:560px;height:420px;" alt=""> <p>Plot base flow (figure 2 of Fani et al)</p><pre class="codeinput">figure();
+SF_Plot(bf,<span class="string">'ux'</span>,<span class="string">'xlim'</span>,[-5 15],<span class="string">'ylim'</span>,[0 5]);
+title(<span class="string">'Base flow at Re=150 (axial velocity)'</span>);
+box <span class="string">on</span>; pos = get(gcf,<span class="string">'Position'</span>); pos(4)=pos(3)*AspectRatio;set(gcf,<span class="string">'Position'</span>,pos); <span class="comment">% resize aspect ratio</span>
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'Cylinder_BaseFlowRe60Ma02'</span>,figureformat);
+pause(0.1);
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_06.png" style="width:560px;height:314px;" alt=""> <h2>2.C : compute and plot eigenmode<a name="12"></a></h2><pre class="codeinput"><span class="comment">%Plot eigenmode (figure 6 of Fani et al)</span>
+[ev,emD] = SF_Stability(bf,<span class="string">'shift'</span>,0.152 + 0.642i,<span class="string">'nev'</span>,1,<span class="string">'type'</span>,<span class="string">'D'</span>,<span class="string">'sym'</span>,<span class="string">'A'</span>);
+
+figure;SF_Plot(emD,<span class="string">'vort1'</span>,<span class="string">'xlim'</span>,[-2 5],<span class="string">'ylim'</span>,[0 3],<span class="string">'colorrange'</span>,<span class="string">'cropcentered'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>);
+box <span class="string">on</span>;
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'Cylinder_EigenmodeRe60Ma02_vort'</span>,figureformat);
+pause(0.1);
+<span class="comment">%</span>
+figure;
+SF_Plot(emD,<span class="string">'p1'</span>,<span class="string">'xlim'</span>,[-100 100],<span class="string">'ylim'</span>,[-100 100],<span class="string">'colorrange'</span>,[-1e-6,1e-6],<span class="string">'colormap'</span>,<span class="string">'redblue'</span>);
+hold <span class="string">on</span>;
+SF_Plot(emD,<span class="string">'p1.im'</span>,<span class="string">'xlim'</span>,[-100 100],<span class="string">'ylim'</span>,[-100 100],<span class="string">'colorrange'</span>,[-1e-6,1e-6],<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'symmetry'</span>,<span class="string">'XM'</span>);
+box <span class="string">on</span>;
+set(gca,<span class="string">'FontSize'</span>, 18);
+saveas(gca,<span class="string">'Cylinder_EigenmodeRe60Ma02_p'</span>,figureformat);
+pause(0.1);
+</pre><pre class="codeoutput">      # Stability calculation completed, eigenvalue = 0.15275+0.64492i ; converged in 4 iterations
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_07.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_08.png" style="width:560px;height:420px;" alt=""> <h2>2.D : Extract P along the the direction theta = (3*pi/4)<a name="13"></a></h2><pre class="codeinput">Rray= [4:.1:200];
+Xray = Rray*cos(3*pi/4);Yray = Rray*sin(3*pi/4);
+Pray = SF_ExtractData(emD,<span class="string">'p1'</span>,Xray,Yray);
+figure;plot(Rray,real(Pray),<span class="string">'r-'</span>,Rray,imag(Pray),<span class="string">'r--'</span>)
+title(<span class="string">'Pressure along \theta = 3 \pi/4 ; real and imaginary parts'</span>)
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_COMPRESSIBLECYLINDER_09.png" style="width:560px;height:420px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+!l
+%% CHAPTER 0 : set the global variables needed by the drivers
+
+clear all;
+close all;
+run('../../../SOURCES_MATLAB/SF_Start.m');
+figureformat='png'; AspectRatio = 0.56; % for figures
+tinit = tic;
+verbosity=0;
+Ma = 0.2;
+Re = 150;
+
+% NB the drivers may produce warning messages such as "rm: ./WORK/*.txt: No such file or directory"
+% don't mind them, this should disapear in future evolutions of StabFem
+
+%% Chapter 1 : Italian-style mesh (multiple imbricated zones)
+
+%% 1A : mesh creation
+
+% Mesh in the style of that used by Fani et al, but on half-domain
+% parameters for mesh creation ; Italian method
+xinfm=-100.; xinfv=100.; yinf=100.;% Outer Domain 
+x1m=-1; x1v=30.; y1=1;% Inner domain
+x2m=-5.;x2v=60.;y2=5;% Middle domain
+ls=300.0; % Sponge extension
+% Refinement parameters
+n=1.8; % Vertical density of the outer domain
+ncil=60; % Refinement density around the cylinder
+n1=30; % Density in the inner domain
+n2=3; % Density in the middle domain
+ns=.5; % Density in the outer domain
+nsponge=.05; % density in the sponge region
+ParamsForSponge = [xinfm,xinfv,yinf,x1m,x1v,y1,x2m,x2v,y2,ls,n,ncil,n1,n2,ns,nsponge];
+mesh = SF_Mesh('Mesh_HalfDomain_WITHSUBZONES.edp','Params',ParamsForSponge);
+% Number of vertices in this mesh : 
+mesh.np
+bf=SF_BaseFlow(mesh,'Re',1,'Mach',0.2);
+bf=SF_BaseFlow(bf,'Re',60,'Mach',0.2);
+%%
+% Plot this mesh
+figure;
+subplot(2,2,1);SF_Plot(mesh);
+subplot(2,2,2);SF_Plot(mesh,'xlim',[-100 100],'ylim',[0 100]);
+subplot(2,2,3);SF_Plot(mesh,'xlim',[-5 15],'ylim',[0 10]);
+subplot(2,2,4);SF_Plot(mesh,'xlim',[-1 1],'ylim',[0 1]);
+suptitle('mesh at various scales (italian strategy)');
+pause(1);
+box on; 
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_Compressible_ItalianMesh',figureformat);
+pause(0.1);
+
+%% 1B. Computation of a BF for Re = 150, Ma = 0.2
+
+bf=SF_BaseFlow(bf,'Re',150,'Mach',0.2);
+
+figure();    
+SF_Plot(bf,'ux','xlim',[-5 15],'ylim',[0 5]);
+title('Base flow at Re=150 (axial velocity)');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_BaseFlowRe60Ma02',figureformat);
+pause(0.1);
+
+%% Chapter 1C : Compute eigenmode
+%Plot eigenmode (figure 6 of Fani et al)
+[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','A'); 
+
+figure;
+SF_Plot(emD,'vort1','xlim',[-2 5],'ylim',[0 3],'colorrange','cropcentered','colormap','redblue');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_EigenmodeRe60Ma02_vort',figureformat);
+pause(0.1);
+
+%
+figure;
+SF_Plot(emD,'p1','xlim',[-100 100],'ylim',[-100 100],'colorrange',[-1e-6,1e-6],'colormap','redblue');
+hold on;
+SF_Plot(emD,'p1.im','xlim',[-100 100],'ylim',[-100 100],'colorrange',[-1e-6,1e-6],'colormap','redblue','symmetry','XM');
+box on; 
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_EigenmodeRe60Ma02_p',figureformat);
+pause(0.1);
+
+%% Chapter 2 : New adapted mesh using flow structures and "masks".
+
+%% 2.A : mesh generation
+
+% First create an initial mesh in the simplest way
+mesh = SF_Mesh('Mesh_HalfDomain.edp','Params',[-100,100,100,200,.1,60]);
+bf=SF_BaseFlow(mesh,'Re',1,'Mach',0.2);
+
+% First adaptation with only one mask and BF (do it twice)
+Mask = SF_Launch('AdaptationMask.edp','Type','rectangle','Params',[-100 100 -100 100 4],'Mesh',bf.mesh,'DataFile','Mask.ff2m')
+bf = SF_Adapt(bf,Mask,'Hmax',50);
+Mask = SF_Launch('AdaptationMask.edp','Type','rectangle','Params',[-100 100 -100 100 4],'Mesh',bf.mesh,'DataFile','Mask.ff2m')
+bf = SF_Adapt(bf,Mask,'Hmax',50);
+
+% Raise the Re to 150
+bf=SF_BaseFlow(bf,'Re',60,'Mach',0.2);
+bf=SF_BaseFlow(bf,'Re',150,'Mach',0.2);
+
+% Compute the eigenmode and two 'masks'
+% eigenmode
+[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','A'); % NB PROBLEM in type='A' mode
+
+% First 'mask' function to enforce Hmax = 4 on [-100,100]x[0,100]
+Mask = SF_Launch('AdaptationMask.edp','Type','rectangle','Params',[-100 100 -100 100 4],'Mesh',bf.mesh,'DataFile','Mask.ff2m')
+% NB don't mind the three next lines ; such filename manipulations will be
+% integrated automatically in the driver in due time !
+mycp('WORK/Mask.txt','WORK/Mask1.txt');
+mycp('WORK/Mask.ff2m','WORK/Mask1.ff2m');
+Mask.filename = 'WORK/Mask1.txt';
+
+% Second 'mask' function to enforce Hmax = .25 on [-2,10]x[0,3]
+Mask2 = SF_Launch('AdaptationMask.edp','Type','rectangle','Params',[-5 80 -5 5 .25],'Mesh',bf.mesh,'DataFile','Mask.ff2m')
+
+% mesh adaptation to bf, eigenmodes and the two masks !
+bf = SF_Adapt(bf,emD,Mask,Mask2,'Hmax',50);
+
+% Number of vertices in this mesh : 
+bf.mesh.np
+
+
+%% Chapter 2B : plot the mesh and BF
+figure;
+subplot(2,2,1);SF_Plot(bf.mesh,'xlim',[-300 300],'ylim',[0 300]);
+subplot(2,2,2);SF_Plot(bf.mesh,'xlim',[-100 100],'ylim',[0 100]);
+subplot(2,2,3);SF_Plot(bf.mesh,'xlim',[-5 15],'ylim',[0 10]);
+subplot(2,2,4);SF_Plot(bf.mesh,'xlim',[-1 1],'ylim',[0 1]);
+suptitle('mesh at various scales (French strategy)');
+pause(1);
+box on; 
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_Compressible_FrenchMesh',figureformat);
+pause(0.1);
+
+%%
+% Plot base flow (figure 2 of Fani et al)
+figure();    
+SF_Plot(bf,'ux','xlim',[-5 15],'ylim',[0 5]);
+title('Base flow at Re=150 (axial velocity)');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_BaseFlowRe60Ma02',figureformat);
+pause(0.1);
+
+%% 2.C : compute and plot eigenmode
+
+%Plot eigenmode (figure 6 of Fani et al)
+[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','A'); 
+
+figure;SF_Plot(emD,'vort1','xlim',[-2 5],'ylim',[0 3],'colorrange','cropcentered','colormap','redblue');
+box on; 
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_EigenmodeRe60Ma02_vort',figureformat);
+pause(0.1);
+%
+figure;
+SF_Plot(emD,'p1','xlim',[-100 100],'ylim',[-100 100],'colorrange',[-1e-6,1e-6],'colormap','redblue');
+hold on;
+SF_Plot(emD,'p1.im','xlim',[-100 100],'ylim',[-100 100],'colorrange',[-1e-6,1e-6],'colormap','redblue','symmetry','XM');
+box on; 
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_EigenmodeRe60Ma02_p',figureformat);
+pause(0.1);
+
+%% 2.D : Extract P along the the direction theta = (3*pi/4)
+Rray= [4:.1:200];
+Xray = Rray*cos(3*pi/4);Yray = Rray*sin(3*pi/4);
+Pray = SF_ExtractData(emD,'p1',Xray,Yray);
+figure;plot(Rray,real(Pray),'r-',Rray,imag(Pray),'rREPLACE_WITH_DASH_DASH')
+title('Pressure along \theta = 3 \pi/4 ; real and imaginary parts')
+
+##### SOURCE END #####
+--></body></html>

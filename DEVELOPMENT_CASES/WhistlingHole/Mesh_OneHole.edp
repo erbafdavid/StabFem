@@ -163,6 +163,14 @@ ENDIFMACRO
 	     
 
 
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 2 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization"  << endl ;
+}
+
 
 
 		cout << "............................................" << endl;

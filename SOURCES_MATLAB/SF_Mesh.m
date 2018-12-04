@@ -30,14 +30,14 @@ end
 
 % Optional parameters
 
-%p = inputParser;
-%addParameter(p,'Params',NaN);
-%parse(p,varargin{:})
-Params = 'NaN';
-numvarargs = length(varargin);
-if (numvarargs == 2 && strcmp(lower(varargin{1}), 'params'))
-    Params = varargin{2};
-end
+p = inputParser;
+addParameter(p,'Params',NaN);
+parse(p,varargin{:})
+%Params = 'NaN';
+%numvarargs = length(varargin);
+%if (numvarargs == 2 && strcmpi(lower(varargin{1}), 'params'))
+%    Params = varargin{2};
+%end
 
 myrm([ffdatadir, 'MESHES/*']);
 

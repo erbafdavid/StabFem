@@ -3,10 +3,10 @@ function fffield = SF_SetMapping(fffield, varargin)
 % This is part of StabFem Project, D. Fabre, July 2017 -- present
 % Matlab Driver to specify the mapping
 %
-% Usage : 1/ (for fress surface problems)
-%   ffmesh = SF_SetMapping(ffmesh,'typemapping',type,'parammapping',Params)
+% Usage : 1/ (for linear acoustic problems or other nonrelated to bf)
+%   ffmesh = SF_SetMapping(ffmesh,'MappingType',type,'MappingParam',Params)
 %         2/ for base-flow associated problems
-%   bf = SF_MeshStretch(bf,'typemapping',type,'parammapping',Params)
+%   bf = SF_SetMapping(bf,'MappingType',type,'MappingParam',Params)
 %
 %  Params is a vector whose size depends on the type. Currently implemented
 %  cases are as follows :

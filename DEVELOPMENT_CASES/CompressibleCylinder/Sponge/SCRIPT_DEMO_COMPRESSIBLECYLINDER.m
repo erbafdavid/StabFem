@@ -1,4 +1,4 @@
-
+!l
 %% CHAPTER 0 : set the global variables needed by the drivers
 
 clear all;
@@ -30,12 +30,12 @@ n1=30; % Density in the inner domain
 n2=3; % Density in the middle domain
 ns=.5; % Density in the outer domain
 nsponge=.05; % density in the sponge region
-
 ParamsForSponge = [xinfm,xinfv,yinf,x1m,x1v,y1,x2m,x2v,y2,ls,n,ncil,n1,n2,ns,nsponge];
 mesh = SF_Mesh('Mesh_HalfDomain_WITHSUBZONES.edp','Params',ParamsForSponge);
 % Number of vertices in this mesh : 
 mesh.np
-
+bf=SF_BaseFlow(mesh,'Re',1,'Mach',0.2);
+bf=SF_BaseFlow(bf,'Re',60,'Mach',0.2);
 %%
 % Plot this mesh
 figure;
@@ -51,8 +51,7 @@ saveas(gca,'Cylinder_Compressible_ItalianMesh',figureformat);
 pause(0.1);
 
 %% 1B. Computation of a BF for Re = 150, Ma = 0.2
-bf=SF_BaseFlow(mesh,'Re',1,'Mach',0.2);
-bf=SF_BaseFlow(bf,'Re',60,'Mach',0.2);
+
 bf=SF_BaseFlow(bf,'Re',150,'Mach',0.2);
 
 figure();    
@@ -65,7 +64,7 @@ pause(0.1);
 
 %% Chapter 1C : Compute eigenmode
 %Plot eigenmode (figure 6 of Fani et al)
-[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','N'); 
+[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','A'); 
 
 figure;
 SF_Plot(emD,'vort1','xlim',[-2 5],'ylim',[0 3],'colorrange','cropcentered','colormap','redblue');
@@ -104,7 +103,7 @@ bf=SF_BaseFlow(bf,'Re',150,'Mach',0.2);
 
 % Compute the eigenmode and two 'masks'
 % eigenmode
-[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','N'); % NB PROBLEM in type='A' mode
+[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','A'); % NB PROBLEM in type='A' mode
 
 % First 'mask' function to enforce Hmax = 4 on [-100,100]x[0,100]
 Mask = SF_Launch('AdaptationMask.edp','Type','rectangle','Params',[-100 100 -100 100 4],'Mesh',bf.mesh,'DataFile','Mask.ff2m')
@@ -150,10 +149,9 @@ pause(0.1);
 %% 2.C : compute and plot eigenmode
 
 %Plot eigenmode (figure 6 of Fani et al)
-[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','N'); 
+[ev,emD] = SF_Stability(bf,'shift',0.152 + 0.642i,'nev',1,'type','D','sym','A'); 
 
-figure;
-SF_Plot(emD,'vort1','xlim',[-2 5],'ylim',[0 3],'colorrange','cropcentered','colormap','redblue');
+figure;SF_Plot(emD,'vort1','xlim',[-2 5],'ylim',[0 3],'colorrange','cropcentered','colormap','redblue');
 box on; 
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_EigenmodeRe60Ma02_vort',figureformat);

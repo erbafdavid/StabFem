@@ -28,7 +28,7 @@
 
 
 
-/*
+
 IFMACRO(!SFWriteMapping)
 macro SFWriteMapping(filename,TH)
 {
@@ -48,7 +48,7 @@ macro SFWriteMapping(filename,TH)
 }; 
 //EOM
 ENDIFMACRO
-*/
+
 
 
 cout << "$$$$ ENTERING SetMapping.edp " << endl << "$$" << endl; 

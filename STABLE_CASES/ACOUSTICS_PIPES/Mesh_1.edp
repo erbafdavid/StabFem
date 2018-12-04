@@ -8,21 +8,27 @@ real H=10;
 real Rpipe = 1;
 
 
-// LABELS :
+// LABELS ANCIENS :
 // 1 = axis
 // 2 = inlet (imposed normal velocity)
 // 21 = inlet (imposed pressure)
 // 22 = inlet (imposed incident wave)
-
 // 3 = wall (normal velocity = 0)
 // 5 = outlet condition (Spherical wave, Sommerfeld)
 // 6 = outlet condition (plane wave)
 
-border axe(t=Rext,-H){x=0;y=t;label=1;};
-border fond(t=0,Rpipe){x=t;y=-H;label=2;};
-border mur(t=-H,0){x=Rpipe;y=t;label=3;};
-border plate(t=Rpipe,Rext){x=t;y=0;label=4;};
-border sphere(t=0,pi/2){x=Rext*cos(t);y=Rext*sin(t);label=5;};
+// LABELS NOUVEAUX :
+// 1 = inlet
+// 2 = wall
+// 3 = outlet (plane) ; 31 = outlet (spherical)
+// 6 = axis
+// 
+
+border axe(t=Rext,-H){x=0;y=t;label=6;};
+border fond(t=0,Rpipe){x=t;y=-H;label=1;};
+border mur(t=-H,0){x=Rpipe;y=t;label=2;};
+border plate(t=Rpipe,Rext){x=t;y=0;label=2;};
+border sphere(t=0,pi/2){x=Rext*cos(t);y=Rext*sin(t);label=3;};
 
 
 real d = 3; // densite du maillage

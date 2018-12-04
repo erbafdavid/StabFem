@@ -58,10 +58,18 @@ switch (meanflow.mesh.problemtype)
         filenameHB1 = [ffdatadir 'MEANFLOWS/HBMode1_Re' num2str(Re)];
         filenameHB2 = [ffdatadir 'MEANFLOWS/HBMode2_Re' num2str(Re)];% this one should not be present
         
+         case('2DComp')
+       % (...) %
+        
+         solvercommand = ['echo ', num2str(p.Results.Re), ' ', num2str(p.Results.omegaguess), ' ', num2str(p.Results.sigma), ...
+                '  ',num2str(real(AMP)) ' ' num2str(imag(AMP)) ' | '  ff, ' ', ffdir, 'HB1_2DComp.edp'];
+        
+            % to be checked with Javier.... 
+
         % case("your case...")
         % add your case here !
-        
-    case default
+                
+    otherwise
         error(['Error in SF_HB1 : your case ', meanflow.mesh.problemtype 'is not yet implemented....'])
         
 end

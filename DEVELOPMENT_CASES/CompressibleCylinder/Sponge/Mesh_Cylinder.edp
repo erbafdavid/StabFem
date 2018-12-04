@@ -1,0 +1,124 @@
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////
+///// 
+/////                              MESH GENERATOR for a cylinder
+/////
+/////             This file creates a mesh and an initial base flow for the "StabFem" program.
+/////
+/////             input parameters : Xmin Xmax Ymax
+/////  			  
+/////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+include "Macros_StabFem.edp";
+//string ffdatadir = "./WORK/";
+
+// load "../../../SOURCES_OTHER/iovtk"                       /// load library to write in vtk format
+// load "BinaryIO"                 ////load libary to write the solution in binary form
+// load "BinaryIO_64"
+
+
+
+
+real RADIUS=0.5;         /////// Cylinder Radius
+ 
+
+
+int n=.5;                 
+int ns=50; 
+
+cout << " Generation of an initial mesh for a 2D cylinder" << endl;
+cout << " Enter the dimensions xmin, xmax, ymax ? " << endl; 
+
+//real xinlet=-20.;     
+//real xoutlet=40.; 
+//real yside=20.;       
+real xinlet , xoutlet,yside ;
+
+cin >> xinlet >> xoutlet >> yside ;
+cout << "Xmin = " << xinlet << " ; Xmax = " << xoutlet << " ; ymax = " << yside << endl;  
+
+/////////////////////////////////////////////////////////////////////////////////
+//int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+                         /////// label for boundary conditions  
+/////////////////////////////////////////////////////////////////////////////////
+// cylinder center is in (0,0)
+
+border cylinder(t=0,pi){ x=RADIUS*cos(t);y=RADIUS*sin(t);label=2;}
+//border cylref(t=0,2*pi){ x=(RADIUS+RR)*cos(t);y=(RADIUS+RR)*sin(t);label=999;}
+
+border inlet(t=0,1){ x=xinlet;y=yside*(1-t);label=1;}
+border axis1(t=0,1){ x=xinlet+(-RADIUS-xinlet)*t;y=0;label=6;}
+border axis2(t=0,1){ x=RADIUS+(xoutlet-RADIUS)*t;y=0;label=6;}
+border outlet(t=0,1){ x=xoutlet;y=yside*t;label=3;}
+border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=3;} // label 3 : same conditions as at outlet
+
+border internal(t=0,1){y=10; x= -10+20*t;label=99;}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+// plot(inlet(10)+latinf(10)+outlet(10)+latsup(10)+cylref(10)+cylinder(10)+a1(10)+a2(10)+a3(10)+a4(10));
+                         /////// Just to check the borders
+/////////////////////////////////////////////////////////////////////////////////
+// Build a mesh 
+//cout << "toto" << endl;
+plot(internal(20*n)+inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS)*n)+outlet(2*yside*n)+latsup((xoutlet-xinlet)*n)+cylinder(-ns),wait=1);
+
+mesh th=buildmesh(internal(20*n)+inlet(yside*ns)+axis1((-RADIUS-xinlet)*ns)+axis2((xoutlet-RADIUS)*ns)+outlet(2*yside*ns)+latsup((xoutlet-xinlet)*ns)+cylinder(-n));
+
+//plot(th,wait=0);
+//cout << "tata" << endl;
+
+// SAVE THE MESH in mesh.msh file 
+savemesh(th,ffdatadir+"mesh.msh");
+
+
+// FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
+{
+            ofstream file(ffdatadir+"SF_Init.ff2m"); 
+			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
+			file << "2DComp" << endl;
+			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "real R real Xmin real Xmax real Rmax" << endl;
+			file <<  RADIUS  << endl << xinlet << endl << xoutlet << endl << yside  << endl;
+}
+
+	cout << "Saving" << endl;
+// SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
+	SFWriteMesh(ffdatadir+"mesh.ff2m",th);
+	cout << "Mesh Saved" << endl;
+
+
+
+// THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
+{
+			ofstream file2("SF_Geom.edp"); 
+			file2 << "// Description geometry (file automatically created ; to be included in the FreeFem programs)" << endl;
+            file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
+            file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
+}
+
+
+
+
+
+// CREATE A guess for the base flow (here starting from zero works very well)
+ 	fespace femp1(th,P1);
+	fespace femp2xfemp2xfemp1(th,[P2,P2,P1,P1,P1]); ///   pres P1 + vel 2x P2 + temp P1 + dens P1
+        femp2xfemp2xfemp1 [ux,uy,up,utemp,uro]=[1.0,0.0,1.0,1.0,1.0];
+        real Re = 0;real nu=1; real Ma = 0.01; real gamma = 1.4; // these three are useless at this stage but required in the macros 
+        
+// Save in txt format (for FreeFem)        
+      	{
+      	ofstream file(ffdatadir+"BaseFlow_guess.txt");
+	    file << ux[] << endl;
+	    file <<  endl << 0 << endl;
+      	}
+      	
+// Save in ff2m format (for StabFem)
+		 cout << "Saving" << endl;
+	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
+	     cout << "Base flow saved" << endl;

@@ -81,7 +81,7 @@ if(typecalc=="single")
 
 	real rho = 1;
 	real c = 1;
-	real Sin = int1d(th,2)(2*pi*x); // surface d'entrŽe
+	real Sin = int1d(th,2)(2*pi*x); // surface d'entr??e
 	real Z0 = rho*c/Sin;// impedance carateristique du tuyau
 
 	complex Qin ;
@@ -154,16 +154,20 @@ ENDIFMACRO
 
 problem HelmholtzSOMMERFELD(f,f1) =
          int2d(th)( (-(dx(f)*dx(f1)+dy(f)*dy(f1))+k^2*f*f1)*2*pi*x ) // - grad (phi) * grad(phi1) dV 
+       - int1d(th,1)(f1*2*pi*x)  // condition d'entr?e
+	   + int1d(th,3)((1i*k-1/sqrt(x^2+y^2))*f*f1*2*pi*x) // condition de sortie de Sommerfeld (a utiliser pour les tuyaux) 
+		  ;
 
-       - int1d(th,2)(f1*2*pi*x)  // condition d'entr?e
-	   + int1d(th,5)((1i*k-1/sqrt(x^2+y^2))*f*f1*2*pi*x) // condition de sortie de Sommerfeld (a utiliser pour les tuyaux) 
-	   + int1d(th,6)(1i*k*f*f1*2*pi*x) // condition de sortie d'onde plane (a utiliser pour les pots d'?chappements)
+problem HelmholtzSOMMERFELDPLANE(f,f1) =
+         int2d(th)( (-(dx(f)*dx(f1)+dy(f)*dy(f1))+k^2*f*f1)*2*pi*x ) // - grad (phi) * grad(phi1) dV 
+       - int1d(th,1)(f1*2*pi*x)  // condition d'entr?e
+	   + int1d(th,3)(1i*k*f*f1*2*pi*x) // condition de sortie d'onde plane (a utiliser pour les pots d'?chappements)
 		  ;
 
 problem HelmholtzCM(f,f1) =
          int2d(th)( JJ*(-(Dx(f)*Dx(f1)+Dy(f)*Dy(f1))+k^2*f*f1)*2*pi*Xphys(x,y,ParamMap) ) // - grad (phi) * grad(phi1) dV 
 
-       - int1d(th,2)(f1*2*pi*x)  // condition d'entr?e
+       - int1d(th,1)(f1*2*pi*x)  // condition d'entr?e
 		  ;
 
 problem HelmholtzPML(f,f1) =

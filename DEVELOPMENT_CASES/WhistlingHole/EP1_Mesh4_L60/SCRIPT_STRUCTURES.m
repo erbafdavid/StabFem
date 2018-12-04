@@ -223,4 +223,7 @@ pos = get(gcf,'Position'); pos(3) = 800;pos(4)=pos(3)*.4;set(gcf,'Position',pos)
 saveas(gcf,['EigenModes_Adj_chi', num2str(chi),'.png'],'png');
 saveas(gcf,['EigenModes_Adj_chi', num2str(chi),'.fig'],'fig')
 
-
+%%
+%Forced flow structure for omega = 2.1
+ForcedFlow_21_Mesh4 = SF_LinearForced(bf,2.1);
+save('ForcedFlow_21_Mesh4','ForcedFlow_21_Mesh4')

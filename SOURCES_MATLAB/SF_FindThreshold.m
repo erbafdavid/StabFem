@@ -17,17 +17,21 @@ function [baseflow, eigenmode] = SF_FindThreshold(baseflow, eigenmode)
 
 % Direct computation of instability threshold
 
-global ff ffdir ffdatadir sfdir verbosity
+global ff ffMPI ffdir ffdatadir sfdir verbosity
 
 mycp(baseflow.filename, [ffdatadir, 'BaseFlow_guess.txt']);
 mycp(eigenmode.filename, [ffdatadir, 'Eigenmode_guess.txt']);
 
 
-switch(baseflow.mesh.problemtype)
-    case('2D')
+switch(lower(baseflow.mesh.problemtype))
+    case('2d')
 solvercommand = [ff, ' ', ffdir, 'FindThreshold2D.edp'];
-    case('AxiXR')
-solvercommand = [ff, ' ', ffdir, 'FindThresholdAxi.edp'];        
+    case('axixr')
+solvercommand = [ff, ' ', ffdir, 'FindThresholdAxi.edp']; 
+    case('2dcomp')
+solvercommand = ['echo ', num2str(baseflow.Ma) ' ', num2str(baseflow.Re), ' | ', ffMPI, ' ', ffdir, 'FindThreshold2DComp.edp'];
+    otherwise
+        error('Error in SF_FindThreshold : not (yet) available for this class of problems')
 end
 
 status = mysystem(solvercommand);

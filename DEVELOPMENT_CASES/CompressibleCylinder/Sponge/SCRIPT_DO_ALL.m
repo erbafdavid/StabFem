@@ -38,26 +38,25 @@ nsponge=.15; % density in the sponge region
 %Compressibility to create a mesh 
 Ma = 0.1
 
-%% Mesh & BF creation
+%% Chapter 1 : Mesh & BF creation
 disp(' '); 
 disp(' STARTING ADAPTMESH PROCEDURE : ');    
 disp(' ');
 
-
-
 if(exist('mesh_completed')==1)
 disp(' ADAPTMESH PROCEDURE AS PREVIOUSLY DONE, START WITH EXISTING MESH : '); 
-bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma,'ncores',1,'type','NEW');
+bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma,'type','NEW');
 [ev,em] = SF_Stability(bf,'shift',0.041 + 0.735i,'nev',1,'type','S','sym','N','Ma',Ma);
 else
 bf = SF_Init('Mesh.edp',[xinfm,xinfv,yinf,x1m,x1v,y1,x2m,x2v,y2,ls,n,ncil,n1,n2,ns,nsponge]);
-bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma,'ncores',1,'type','NEW');
-[ev,em] = SF_Stability(bf,'shift',0.041 + 0.735i,'nev',1,'type','S','sym','N','Ma',Ma);
+bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma,'type','NEW');
+[ev,emS,em,emA] = SF_Stability(bf,'shift',0.041 + 0.735i,'nev',1,'type','S','sym','N','Ma',Ma);
 mesh_completed = 1;
 end
 
 
-%%% CHAPTER 1b : DRAW FIGURES
+%%
+% CHAPTER 1b : DRAW FIGURES
 figure();
 % plot the mesh (full size)
 plotFF(bf,'mesh');
@@ -68,7 +67,7 @@ saveas(gca,'Cylinder_Mesh_Full',figureformat);
 
 figure();
 % plot the mesh (zoom)
-bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
+bf.mesh.xlim = [-1.5 4.5]; bf.mesh.ylim=[0,3];
 plotFF(bf,'mesh');
 title('Initial mesh (zoom)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -77,7 +76,7 @@ saveas(gca,'Cylinder_Mesh',figureformat);
 
 figure();    
 % plot the base flow for Re = 60
-bf.xlim = [-1.5 4.5]; bf.ylim=[0,3];
+bf.mesh.xlim = [-1.5 4.5]; bf.mesh.ylim=[0,3];
 plotFF(bf,'ux');
 %plotFF(bf,'ux');
 title('Base flow at Re=60 (axial velocity)');
@@ -87,8 +86,8 @@ saveas(gca,'Cylinder_BaseFlowRe60',figureformat);
 
 figure();
 % plot the eigenmode for Re = 60
-em.xlim = [-2 8]; em.ylim=[0,5];
-plotFF(em,'sensitivity');
+em.mesh.xlim = [-2 8]; em.mesh.ylim=[0,5];
+plotFF(emS,'sensitivity');
 title('Sensitivity for Re=60');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -96,7 +95,7 @@ saveas(gca,'Cylinder_SensitivityRe60_AdaptS',figureformat);  %
 
 figure();
 % plot the eigenmode for Re = 60
-em.xlim = [-2 8]; em.ylim=[0,5];
+em.mesh.xlim = [-2 8]; em.mesh.ylim=[0,5];
 plotFF(em,'ux1');
 title('Eigenmode for Re=60');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
@@ -104,16 +103,16 @@ set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_EigenModeRe60_AdaptS',figureformat);  % 
 
 figure();
-em.xlim = [-2 8]; em.ylim=[0,5];
-plotFF(em,'ux1Adj');
+emA.mesh.xlim = [-2 8]; emA.mesh.ylim=[0,5];
+plotFF(emA,'ux1Adj');
 title('Adjoint Eigenmode for Re=60');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_EigenModeAdjRe60',figureformat);
 
 figure();
-em.xlim = [-2 4]; em.ylim=[0,3];
-plotFF(em,'sensitivity');
+emS.mesh.xlim = [-2 4]; emS.mesh.ylim=[0,3];
+plotFF(emS,'sensitivity');
 title('Structural sensitivity for Re=60');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -126,15 +125,17 @@ if(exist('completed_Cx')==0)
 
 Re_BF = [2 : 2: 50];
 Fx_BF = []; Lx_BF = [];
-    for Re = Re_BF
+    for j = 1:length(Re_BF)
+        Re = Re_BF(j)
         bf = SF_BaseFlow(bf,'Re',Re);
-        Fx_BF = [Fx_BF,bf.Fx];
-        Lx_BF = [Lx_BF,bf.Lx];
+        Fx_BF(j) = bf.Fx;
+        Lx_BF(j) = bf.Lx;
     end
 completed_Cx = 1;    
 end
 
-%%% chapter 2B : figures
+%% 
+%chapter 2B : figures
  
 figure(22);hold off;
 plot(Re_BF,Fx_BF,'b+-','LineWidth',2);
@@ -155,32 +156,38 @@ pause(0.1);
 
 
 
-%%% CHAPTER 3 : COMPUTING STABILITY BRANCH
+%% CHAPTER 3 : COMPUTING STABILITY BRANCH
 
 if(exist('completed_lambda')==1)
     disp('STABILITY BRANCH ALREADY COMPUTED')
 else
     disp('COMPUTING STABILITY BRANCH')
 
-% LOOP OVER RE FOR BASEFLOW + EIGENMODE
-Re_LIN = [46 : 2: 100];
-bf=SF_BaseFlow(bf,'Re',46,'Mach',Ma,'ncores',1,'type','NEW');
-[ev,em] = SF_Stability(bf,'shift',.0+.729i,'nev',1,'type','D','sym','N','Ma',Ma);
+    % DAVID : CHECK THIS ! (I'm not sure to get the rifght one)
+    %
+    % Response to Javier : there seem to be a lot of spurious modes  here !!!
+    % -> sponge may not be the best in the vicinity of the threshole ???
+% LOOP OVER RE FOR BASEFLOW + EIGENMODE : going backwards
+Re_LIN = [52 : -2: 46];
+bf=SF_BaseFlow(bf,'Re',Re_LIN(1),'Mach',Ma,'ncores',1);
+[ev,em] = SF_Stability(bf,'shift',.01+.729i,'nev',1,'type','D','sym','N','Ma',Ma);
 
 Fx_LIN = []; Lx_LIN = [];lambda_LIN=[];
-    for Re = Re_LIN
-        bf = SF_BaseFlow(bf,'Re',Re,'Mach',Ma,'ncores',1,'type','NEW');
-        Fx_LIN = [Fx_LIN,bf.Fx];
-        Lx_LIN = [Lx_LIN,bf.Lx];
-        [ev,em] = SF_Stability(bf,'nev',1,'shift','cont','sym','N','Ma',Ma);
-        lambda_LIN = [lambda_LIN ev];
+    for j= 1:length(Re_LIN)
+        Re = Re_LIN(j)
+        bf = SF_BaseFlow(bf,'Re',Re,'Mach',Ma);
+        Fx_LIN(j) = bf.Fx;
+        Lx_LIN(j) = bf.Lx;
+        [ev,em] = SF_Stability(bf,'nev',1,'shift','cont','sym','N','Ma',Ma,'Re',Re);
+        lambda_LIN(j) = ev;
     end  
 completed_lambda = 1;
 end
 
 
 
-%%% CHAPTER 3b : figures
+%%
+%CHAPTER 3b : figures
 
 figure();
 plot(Re_LIN,real(lambda_LIN),'b+-');
@@ -221,11 +228,12 @@ disp([ '   ' num2str(tlin-tinit) ' seconds']);
 
 
 
-%%% CHAPTER 4 : computation of weakly nonlinear expansion
+%%
+% CHAPTER 4 : computation of weakly nonlinear expansion
 
 % 4a : adapt mesh to eigenmode (mesh M4 of the appendix)
-bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma,'ncores',1,'type','NEW');
-disp('mesh adaptation to EIGENMODE : ')
+bf=SF_BaseFlow(bf,'Re',60,'Mach',Ma);
+%disp('mesh adaptation to EIGENMODE : ')
 [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D','sym','N','Ma',Ma);
 %bf=SF_Adapt(bf,em,'Hmax',5);
 %[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D','sym','N','Ma',Ma);
@@ -241,12 +249,12 @@ saveas(gca,'Cylinder_EigenModeRe60_AdaptD',figureformat);  %
 if(exist('Rec')==1)
     disp('INSTABILITY THRESHOLD ALREADY COMPUTED');
     bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
-    [ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1,'sym','N','Ma',Ma);
+    [ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1,'sym','A','Ma',Ma);
 else 
 %%% DETERMINATION OF THE INSTABILITY THRESHOLD
 disp('COMPUTING INSTABILITY THRESHOLD');
 bf=SF_BaseFlow(bf,'Re',47,'Ma',Ma);
-[ev,em] = SF_Stability(bf,'shift',+.73i,'nev',1,'type','D','sym','N','Ma',Ma);
+[ev,em] = SF_Stability(bf,'shift',+.73i,'nev',1,'type','D','sym','A','Ma',Ma);
 [bf,em]=SF_FindThreshold(bf,em);
 Rec = bf.Re;  Fxc = bf.Fx; 
 Lxc=bf.Lx;    Omegac=imag(em.lambda);
@@ -260,7 +268,8 @@ end
 
 
 
-%%% PLOTS of WNL predictions
+%%
+% PLOTS of WNL predictions
 
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);
@@ -293,7 +302,8 @@ xlabel('Re');ylabel('AE')
 pause(0.1);
 
 
-%%% CHAPTER 5 : SELF CONSISTENT
+%%
+% CHAPTER 5 : SELF CONSISTENT
 
 if(exist('HB_completed')==1)
     disp('SC quasilinear model on the range [Rec , 100] already computed');
@@ -311,10 +321,10 @@ Res = 47. ;
 %bf=SF_BaseFlow(bf,'Re',Res);
 %[ev,em] = SF_Stability(bf,'shift',Omegac*i);
 
-[meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'sigma',0.,'Re',47.); 
+[meanflow,mode] = SF_HB1(meanflow,mode,'sigma',0.,'Re',47.); 
 
 for Re = Re_HB(2:end)
-    [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'Re',Re);
+    [meanflow,mode] = SF_HB1(meanflow,mode,'Re',Re);
     Lx_HB = [Lx_HB meanflow.Lx];
     Fx_HB = [Fx_HB meanflow.Fx];
     omega_HB = [omega_HB imag(mode.lambda)];

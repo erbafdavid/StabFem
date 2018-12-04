@@ -105,9 +105,9 @@ savemesh(th,ffdatadir+"mesh.msh");
 // FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
 {
             ofstream file(ffdatadir+"SF_Init.ff2m"); 
-			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
-			file << "2DComp" << endl;
-			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
+			file << "Defininition of problem type and geometrical parameters for StabFem" << endl;
+			file << "Geometrical data on initial mesh" << endl;
+			file << "datatype Mesh meshtype 2D" << endl;
 			file << "XInfMin, XinfP, YInf, x1m, x1v, y1, x2m, x2v, y2, ls, n, ncyl, n1 n2, ns, nsponge" << endl;
 			file <<  xinfm  << endl << xinfv << endl << yinf << endl << x1m << endl << x1v << endl << y1 << endl << x2m << endl << x2v << endl << y2 << endl << ls << endl << n << endl << ncil << endl << n1 << endl << n2 << endl << ns << endl << nsponge << endl;
 }

@@ -1,13 +1,14 @@
 % This function is for mesh "M1" of the JFM by Longobardi et al.
 
 function bf = SmartMesh_Hole(chi)
+% Warning gammac is negative here !
 
 SF_Start;
 verbosity=10;
 close all;
 
 bf = SF_Init('Mesh_OneHole.edp',[chi,15,15,10,10]);
-Params = [0 17 2.5 0. 5 17]; % Lm, LA, LC, gammac, yA, yB
+Params = [0 17 2.5 0.3 5 17]; % Lm, LA, LC, gammac, yA, yB
 bf.mesh = SF_SetMapping(bf.mesh,'mappingtype','jet','mappingparams',Params);
 
 bf = SF_BaseFlow(bf,'Re',1);
@@ -36,5 +37,4 @@ Omega2 = 4;
 ForcedFlow2 = SF_LinearForced(bf,Omega2);
 %figure; plotFF(ForcedFlow2,'ux1');
 bf = SF_Adapt(bf,ForcedFlow1,ForcedFlow2,'Hmax',1);
- 
 end

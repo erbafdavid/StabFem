@@ -11,7 +11,7 @@ function value = autorun(isfigures);
 % autorun(1) -> produces the figures (in present case not yet any figures)
 
 run('../../../SOURCES_MATLAB/SF_Start.m');
-verbosity=10;
+verbosity=0;
 myrm('WORK/*')
 myrm('WORK/*/*')
 
@@ -34,10 +34,10 @@ nu0_REF = 3.581560000000000e+01 - 1.237380000000000e+02i;
 nu1_REF = 2.155400000000000 - 4.661610000000000i;
 nu2_REF = -0.024923200000000 + 0.401719000000000i;   
 
-% Creation of mesh
-mesh.xinfm=-20.; mesh.xinfv=40.; mesh.yinf=20.0
+%% Chapter 1 : Creation of mesh
+meshDIM.xinfm=-20.; meshDIM.xinfv=40.; meshDIM.yinf=20.0;
 type = 'S';
-bf = SmartMesh(type,mesh,'MeshRefine',5)
+bf = SmartMesh(type,meshDIM,'MeshRefine',5)
 
 value = 0;
 disp('##### autorun test 1 : mesh and BASE FLOW');

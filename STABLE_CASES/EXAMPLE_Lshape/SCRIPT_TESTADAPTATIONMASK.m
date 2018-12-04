@@ -10,7 +10,7 @@ Ndensity =100;
 ffmesh=SF_Mesh('Lshape_Mesh.edp','Params',Ndensity)
 
 %% Compute and plot the "Mask" function
-Mask = SF_Launch('AdaptationMask.edp','Type','rectangle','Params',[.1 .4 .1 .4 .01],'Mesh',ffmesh,'DataFile','Mask.ff2m')
+Mask = SF_Launch('AdaptationMask.edp','Type','rectangle','Params',[.1 .4 .1 .4 .02],'Mesh',ffmesh,'DataFile','Mask.ff2m')
 subplot(2,2,1);
 SF_Plot(Mask,'Maskx.re');
 subplot(2,2,2);
@@ -28,8 +28,8 @@ heatU=SF_Launch('Lshape_Unsteady.edp','Params',1000,'Mesh',ffmesh,'DataFile','He
 figure();SF_Plot(heatU,'Tc.re','colormap','redblue','title','solution of thermal boundary-layer problem');
 
 %% Performs mash adaptation accroding to this mask and the solution to the model problem
-ffmesh2 = SF_Adapt(ffmesh,heatU,'Hmax',.1,'Hmin',1e-6)
-ffmesh3 = SF_Adapt(ffmesh,Mask,'Hmax',.1,'Hmin',1e-6);
+ffmesh2 = SF_Adapt(ffmesh,heatU,'Hmax',.1,'Hmin',1e-6);
+ffmesh3 = SF_Adapt(ffmesh,Mask,'Hmax',.1,'Hmin',1e-6)
 ffmesh4 = SF_Adapt(ffmesh,Mask,heatU,'Hmax',.1,'Hmin',1e-6);
 
 

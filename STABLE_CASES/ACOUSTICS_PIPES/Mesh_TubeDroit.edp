@@ -7,23 +7,14 @@ real H=30;
 real Rpipe = 1;
 
 
-// LABELS :
-// 1 = axis
-// 2 = inlet (imposed normal velocity)
-// 21 = inlet (imposed pressure)
-// 22 = inlet (imposed incident wave)
 
-// 3 = wall (normal velocity = 0)
-// 5 = outlet condition (Spherical wave, Sommerfeld)
-// 6 = outlet condition (plane wave)
-// 7 = 
 
-border axe(t=0,-H){x=0;y=t;label=1;};
-border fond(t=0,Rpipe){x=t;y=-H;label=2;};
-border mur(t=-H,0){x=Rpipe;y=t;label=3;};
+border axe(t=0,-H){x=0;y=t;label=6;};
+border fond(t=0,Rpipe){x=t;y=-H;label=1;};
+border mur(t=-H,0){x=Rpipe;y=t;label=2;};
 //border plate(t=Rpipe,Rext){x=t;y=0;label=4;};
 //border sphere(t=0,pi/2){x=Rext*cos(t);y=Rext*sin(t);label=5;};
-border outlet(t=Rpipe,0){x=t;y=0;label=6;};
+border outlet(t=Rpipe,0){x=t;y=0;label=3;};
 
 
 real d = 20;

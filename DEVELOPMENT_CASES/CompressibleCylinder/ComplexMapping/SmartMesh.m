@@ -1,12 +1,12 @@
-function [bf]= SmartMesh(type,mesh,varargin)
+function [bf]= SmartMesh(type,meshDIM,varargin)
 % THIS little functions generates and adapts a mesh for the wake of a cylinder.
 % Adaptation type is either 'S' (mesh M2) or 'D' (mesh M4).
 
 if(nargin==0)
     type='D';
-    % parameters for mesh creation 
+    % parameters for meshDIM creation 
     % Outer Domain 
-    mesh.xinfm=-40.; mesh.xinfv=80.; mesh.yinf=40.0
+    meshDIM.xinfm=-40.; meshDIM.xinfv=80.; meshDIM.yinf=40.0;
 end
 
 if(nargin==1)
@@ -19,7 +19,7 @@ addParameter(p, 'Ma', 0.3, @isnumeric); % variable
 addParameter(p, 'Rec', 47.2, @isnumeric); % variable
 addParameter(p, 'Omegac', 0.718, @isnumeric); % variable
 addParameter(p, 'MeshRefine', 1.5, @isnumeric); % variable
-Params =[mesh.xinfv*0.5 mesh.xinfm*0.5 10000000 mesh.xinfv*0.6 -0.0 mesh.yinf*0.5 10000000 mesh.yinf*0.6 -0.0] % x0, x1, LA, LC, gammac, y0, LAy, LCy, gammacy
+Params =[meshDIM.xinfv*0.5 meshDIM.xinfm*0.5 10000000 meshDIM.xinfv*0.6 -0.0 meshDIM.yinf*0.5 10000000 meshDIM.yinf*0.6 -0.0]; % x0, x1, LA, LC, gammac, y0, LAy, LCy, gammacy
 
 parse(p, varargin{:});
 
@@ -29,9 +29,9 @@ Omegac = p.Results.Omegac;
 meshRef = p.Results.MeshRefine;
 
 % Inner domain
-x1m=mesh.xinfm*0.0625; x1v=mesh.xinfv*0.125; y1=mesh.yinf*0.0625;
+x1m=meshDIM.xinfm*0.0625; x1v=meshDIM.xinfv*0.125; y1=meshDIM.yinf*0.0625;
 % Middle domain
-x2m=mesh.xinfm*0.25;x2v=mesh.xinfv*0.4;y2=mesh.yinf*0.25;
+x2m=meshDIM.xinfm*0.25;x2v=meshDIM.xinfv*0.4;y2=meshDIM.yinf*0.25;
 % Sponge extension
 ls=0.01; 
 % Refinement parameters
@@ -44,8 +44,17 @@ nsponge=.1; % density in the sponge region
 
 MeshBased = type; % Used for mesh refinement
 % Mesh generation
-bf = SF_Init('Mesh.edp',[mesh.xinfm,mesh.xinfv,mesh.yinf,x1m,x1v,y1,x2m,x2v,y2,ls,n,ncil,n1,n2,ns,nsponge]);
-bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW','MappingParams',Params);
+
+%bf = SF_Init('mesh.edp',[meshDIM.xinfm,meshDIM.xinfv,meshDIM.yinf,x1m,x1v,y1,x2m,x2v,y2,ls,n,ncil,n1,n2,ns,nsponge]);
+%bf=SF_BaseFlow(bf,'Re',10,'Mach',Ma,'ncores',1,'type','NEW','MappingParams',Params);
+
+% New method
+ffmesh = SF_Mesh('mesh.edp','Params',[meshDIM.xinfm,meshDIM.xinfv,meshDIM.yinf,x1m,x1v,y1,x2m,x2v,y2,ls,n,ncil,n1,n2,ns,nsponge]);
+ffmesh = SF_SetMapping(ffmesh,'MappingType','box','MappingParams',Params);
+bf=SF_BaseFlow(ffmesh,'Re',10,'Mach',Ma,'ncores',1);
+
+
+
 bf=SF_Adapt(bf,'Hmax',meshRef);
 bf=SF_BaseFlow(bf,'Re',Rec,'Mach',Ma,'ncores',1,'type','NEW');
 bf=SF_Adapt(bf,'Hmax',meshRef);
@@ -62,11 +71,12 @@ else
    bf=SF_AdaptMesh(bf,emD,emCr,'Hmax',meshRef);
 end
 
-Params =[mesh.xinfv*0.5 mesh.xinfm*0.5 mesh.xinfv*1.84 mesh.xinfv*0.6 -0.3 mesh.yinf*0.5 mesh.yinf*1.84 mesh.yinf*0.6 -0.3] % x0, x1, LA, LC, gammac, y0, LAy, LCy, gammacy
-bf=SF_BaseFlow(bf,'Re',100,'Mach',Ma,'ncores',1,'type','NEW','MappingParams',Params);
+Params =[meshDIM.xinfv*0.5 meshDIM.xinfm*0.5 meshDIM.xinfv*1.84 meshDIM.xinfv*0.6 -0.3 meshDIM.yinf*0.5 meshDIM.yinf*1.84 meshDIM.yinf*0.6 -0.3]; % x0, x1, LA, LC, gammac, y0, LAy, LCy, gammacy
+%bf=SF_BaseFlow(bf,'Re',100,'Mach',Ma,'ncores',1,'type','NEW','MappingParams',Params);
+bf = SF_SetMapping(bf,'MappingType','box','MappingParams',Params);
+bf=SF_BaseFlow(bf,'Re',100,'Mach',Ma,'ncores',1);
 
-
-disp([' Adapted mesh has been generated ; number of vertices = ',num2str(bf.mesh.np)]);
+disp([' Adapted mesh has been generated ; number of vertices = ',num2str(bf.mesh.np)])
 
 
 end

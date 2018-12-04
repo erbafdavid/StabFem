@@ -29,34 +29,19 @@ if(typeMask=="rectangle")
 	// creating Mask function
 	real Xc = (Xmin+Xmax)/2; real Lx = abs(Xmax-Xmin);real Yc = (Ymin+Ymax)/2; real Ly = abs(Ymax-Ymin);
 
-//  First idea
-//	MaskEnvelope = exp(-(x-Xc)^6/Lx^6)*exp(-(y-Yc)^6/Ly^6);
-//	MaskEnvelope = (MaskEnvelope>1e-10)?MaskEnvelope:1e-10;
 
-// Second (better) idea
-func real MM(real x,real Xmin,real Xmax,real DX,real Sm) 
+	func real ENV(real x,real Xmin,real Xmax) 
 	{
-		// NB Sm is a smoothing factor affecting the quality just outside of the box; Sm=20 seems to lead to good result in most cases
-	 if(x<Xmin-Sm*DX)
+	 if(x<Xmin)
 	 	{ return 0; }
-	 else if (x<Xmin)
-	 	{ return cos(pi/2*(x-Xmin)/(Sm*DX))^4; }
 	 else if(x<Xmax)
-		{ return 1;}
-	 else if (x<Xmax+Sm*DX)
-	    { return cos(pi/2*(x-Xmax)/(Sm*DX))^4; }
+		{ return (x-Xmin)*(Xmax-x);}
 	 else
 	 	return 0;
-	};
-	 
-//	for(real XX=-3; XX<3; XX=XX+.05)
-//		{ cout << "Test XX = " << 	XX << " ; F = " << MM(XX,-1,1,.5) << endl;}; 
-	   
-	   
-	MaskEnvelope = MM(x,Xmin,Xmax,DX,20)*MM(y,Ymin,Ymax,DX,20);
-
-
-	[Maskx,Masky] = [MaskEnvelope*(cos(x/(10*DX))+1i*sin(x/(10*DX))),MaskEnvelope*(cos(y/(10*DX))+1i*sin(y/(10*DX)))];
+	}; 
+	  
+    [Maskx,Masky] = [exp(1i*x/(10*DX))*ENV(y,Ymin,Ymax)*ENV(x,Xmin-0*DX,Xmax+0*DX),exp(1i*y/(10*DX))*ENV(x,Xmin,Xmax)*ENV(y,Ymin-0*DX,Ymax+0*DX)];
+    
 };
 // else if (other cases ...)
 
@@ -84,3 +69,48 @@ func real MM(real x,real Xmin,real Xmax,real DX,real Sm)
     ofstream file2(ffdatadir+"Mask.txt");
     file2 << Maskx[];
 }
+
+
+
+
+/*
+//  First idea
+//	MaskEnvelope = exp(-(x-Xc)^6/Lx^6)*exp(-(y-Yc)^6/Ly^6);
+//	MaskEnvelope = (MaskEnvelope>1e-10)?MaskEnvelope:1e-10;
+
+// Second (better) idea
+func real MM(real x,real Xmin,real Xmax,real DX,real Sm) 
+	{
+		// NB Sm is a smoothing factor affecting the quality just outside of the box; Sm=20 seems to lead to good result in most cases
+	 if(x<Xmin-Sm*DX)
+	 	{ return 0; }
+	 else if (x<Xmin)
+	 	{ return cos(pi/2*(x-Xmin)/(Sm*DX))^4; }
+	 else if(x<Xmax)
+		{ return 1;}
+	 else if (x<Xmax+Sm*DX)
+	    { return cos(pi/2*(x-Xmax)/(Sm*DX))^4; }
+	 else
+	 	return 0;
+	};
+*/	   
+	   
+
+//	MaskEnvelope = MM(x,Xmin,Xmax,DX,5)*MM(y,Ymin,Ymax,DX,5);
+//    [Maskx,Masky] = [MaskEnvelope*(cos(x/(10*DX))+1i*sin(x/(10*DX))),MaskEnvelope*(cos(y/(10*DX))+1i*sin(y/(10*DX)))];
+    
+// third (successful) idea    
+/*  func real phase(real x,real Xmin,real Xmax,real DX,real Sm) 
+	{
+	 if(x<Xmin-Sm*DX)
+	 	{ return Xmin-Sm*DX/2; }
+	 else if (x<Xmin)
+	 	{ return Xmin+(x-Xmin)+(x-Xmin)^2/(2*Sm*DX); }
+	 else if(x<Xmax)
+		{ return x ;}
+	 else if (x<Xmax+Sm*DX)
+	    { return Xmax + (x-Xmax)-(x-Xmax)^2/(2*Sm*DX); }
+	 else
+	 	return Xmax + Sm*DX/2;
+	};*/
+	 

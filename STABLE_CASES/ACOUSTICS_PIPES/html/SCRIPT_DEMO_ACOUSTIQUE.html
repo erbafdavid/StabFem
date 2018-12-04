@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Acoustic field in a pipe with harmonic forcing at the bottom</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-26"><meta name="DC.source" content="SCRIPT_DEMO_ACOUSTIQUE.m"><style type="text/css">
+      --><title>Acoustic field in a pipe with harmonic forcing at the bottom</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-12-04"><meta name="DC.source" content="SCRIPT_DEMO_ACOUSTIQUE.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,47 +66,36 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Acoustic field in a pipe with harmonic forcing at the bottom</h1><!--introduction--><p>This script demonstrates the use of StabFem for a linear acoustics problem</p><p>Problem : find the velocity potential <img src="SCRIPT_DEMO_ACOUSTIQUE_eq06401276552089372917.png" alt="$\phi$" style="width:6px;height:10px;"> such as :</p><div><ul><li><img src="SCRIPT_DEMO_ACOUSTIQUE_eq10587279673417972613.png" alt="$\Delta \phi + k^2 \phi = 0 $ (with $k = \omega c_0$" style="width:136px;height:12px;"> the acoustic wavenuber)</li></ul></div><div><ul><li><img src="SCRIPT_DEMO_ACOUSTIQUE_eq03739605606468344654.png" alt="$u_z = \partial_z \phi = 1 $ along $\Gamma_{in}$" style="width:110px;height:11px;"></li></ul></div><div><ul><li><img src="SCRIPT_DEMO_ACOUSTIQUE_eq15619883885369194043.png" alt="$\partial_R \phi + R^{-1} \phi + i k \phi = 0$" style="width:107px;height:12px;"> (Sommerfeld condition) on <img src="SCRIPT_DEMO_ACOUSTIQUE_eq03340592475061926255.png" alt="$\Gamma_{out}$" style="width:18px;height:10px;"></li></ul></div><p>Variational formulation :</p><p><img src="SCRIPT_DEMO_ACOUSTIQUE_eq09584660219242697410.png" alt="$$\forall \phi^*, \int \int_\Omega \left( \nabla \phi \cdot \nabla \phi^* + k^2 \phi \phi^*\right) dV&#xA;+ \int_{\Gamma_{out}}  (R^{-1} +i k) \phi \phi^* dV&#xA;=  \int_{\Gamma_{in}} \phi^* dS $$" style="width:335px;height:26px;"></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">initialisation</a></li><li><a href="#2">Chapter 1 : building of a mesh</a></li><li><a href="#3">plot the mesh :</a></li><li><a href="#4">Chapter 2 : Resolution of an acoustically forced problem (and mesh adaptation)</a></li><li><a href="#5">plot the structure</a></li><li><a href="#6">plot the structure along with the mesh</a></li><li><a href="#7">Extract p and <tt>u</tt> along the symmetry axis</a></li><li><a href="#8">plot  p and <tt>u</tt> along the symmetry axis</a></li><li><a href="#9">Chapter 3 : loop over k to compute the impedance <img src="SCRIPT_DEMO_ACOUSTIQUE_eq07527853304968891608.png" alt="$Z(k)$" style="width:22px;height:11px;"> (using SOMMERFELD)</a></li><li><a href="#10">Plot <img src="SCRIPT_DEMO_ACOUSTIQUE_eq07527853304968891608.png" alt="$Z(k)$" style="width:22px;height:11px;"></a></li><li><a href="#11">plot in semilog</a></li><li><a href="#12">Chapter 4 : trying better kind of boundary conditions : PML, CM</a></li><li><a href="#13">trace de Z(k) parties reelles et imaginaires</a></li><li><a href="#14">trace de <tt>Z(k)</tt> en semilog</a></li><li><a href="#15">plot reflection coefficient</a></li></ul></div><h2>initialisation<a name="1"></a></h2><pre class="codeinput">clear <span class="string">all</span>
+  </style></head><body><div class="content"><h1>Acoustic field in a pipe with harmonic forcing at the bottom</h1><!--introduction--><pre>This scripts demonstrates the efficiency of StabFem for a linear acoustics problem</pre><pre class="language-matlab">Problem : find the <span class="string">velocity</span> <span class="string">potential</span> <span class="string">$\phi$</span> <span class="string">such</span> <span class="string">as</span> <span class="string">:</span>
+</pre><pre>* $\Delta \phi + k^2 \phi = 0$
+* $u_z = \partial_z \phi = 1$ along $\Gamma_{in}$
+* Sommerfeld radiation condition on $\Gamma_{out}$ (PML is also available)
+( $k = \omega c_0$ is the acoustic wavenuber)</pre><pre>Variational formulation :</pre><pre>$$ \int \int_\Omega \left( \nabla \phi \cdot \nabla \phi^* + k^2 \phi \phi^*\right) dV
++ \int_{\Gamma_{in}} \phi^* dS
++ \int_{\Gamma_{out}} (i k +1/R) \phi \phi^* dV
+= 0 $$</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">initialisation</a></li><li><a href="#2">Chapter 1 : building an adapted mesh</a></li><li><a href="#4">Chapter 2 : Compute and plot the pressure fied with harmonic forcing at the bottom of the tube</a></li><li><a href="#9">Chapter 3 : loop over k to compute the impedance <img src="SCRIPT_DEMO_ACOUSTIQUE_eq07527853304968891608.png" alt="$Z(k)$" style="width:22px;height:11px;"> (using SOMMERFELD)</a></li></ul></div><h2>initialisation<a name="1"></a></h2><pre class="codeinput">clear <span class="string">all</span>
 close <span class="string">all</span>
 run(<span class="string">'../../SOURCES_MATLAB/SF_Start.m'</span>);
 set(groot, <span class="string">'defaultAxesTickLabelInterpreter'</span>,<span class="string">'latex'</span>);
 set(groot, <span class="string">'defaultLegendInterpreter'</span>,<span class="string">'latex'</span>);
-</pre><h2>Chapter 1 : building of a mesh<a name="2"></a></h2><pre class="codeinput">ffmesh = SF_Mesh(<span class="string">'Mesh_1.edp'</span>)
-</pre><pre class="codeoutput">       ### INITIAL MESH CREATED WITH np = 1337 points
-
-ffmesh = 
-
-    DataDescription: '(Auxiliary file with information on initial mesh)'
-           datatype: 'Mesh'
-           meshtype: '2D'
-                 np: 1337
-               Ndof: 11619
-           deltamin: 0.295564000000000
-           deltamax: 1.488820000000000
-             deltaA: 0.407319000000000
-             deltaB: 0.355871000000000
-             deltaC: 0.332579000000000
-             deltaD: 0.379764000000000
-        problemtype: 'AcousticAxi'
-               ZERO: 0
-             points: [3x1337 double]
-             bounds: [3x204 double]
-                tri: [4x2468 double]
-                nbe: 204
-                 nt: 2468
-             labels: [1 2 3 4 5]
-           filename: './WORK/mesh.msh'
-                seg: []
-     meshgeneration: 0
-
-</pre><h2>plot the mesh :<a name="3"></a></h2><pre class="codeinput">SF_Plot(ffmesh);
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_01.png" style="width:560px;height:420px;" alt=""> <h2>Chapter 2 : Resolution of an acoustically forced problem (and mesh adaptation)<a name="4"></a></h2><pre class="codeinput">Forced = SF_LinearForced(ffmesh,1,<span class="string">'BC'</span>,<span class="string">'SOMMERFELD'</span>);
-ffmesh = SF_Adapt(ffmesh,Forced,<span class="string">'Hmax'</span>,1); <span class="comment">% Adaptation du maillage</span>
-
-Forced = SF_LinearForced(ffmesh,1,<span class="string">'BC'</span>,<span class="string">'SOMMERFELD'</span>)
-</pre><pre class="codeoutput"> ### ENTERING SF_ADAPT
+</pre><h2>Chapter 1 : building an adapted mesh<a name="2"></a></h2><pre class="codeinput">ffmeshInit = SF_Mesh(<span class="string">'Mesh_1.edp'</span>);
+Forced = SF_LinearForced(ffmeshInit,1,<span class="string">'BC'</span>,<span class="string">'SOMMERFELD'</span>);
+ffmesh = SF_Adapt(ffmeshInit,Forced,<span class="string">'Hmax'</span>,1); <span class="comment">% Adaptation du maillage</span>
+</pre><pre class="codeoutput">rm: ./WORK/BASEFLOWS/*: No such file or directory
+       ### INITIAL MESH CREATED WITH np = 1337 points
+ ### ENTERING SF_ADAPT
 rm: ./WORK/Eigenmode*: No such file or directory
+</pre><pre class="codeinput"><span class="comment">%plot the mesh :</span>
+figure;  SF_Plot(ffmeshInit,<span class="string">'symmetry'</span>,<span class="string">'ym'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>);
+hold <span class="string">on</span>; SF_Plot(ffmesh,<span class="string">'title'</span>,<span class="string">'Mesh : Initial (left) and Adapted (right)'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>);
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_01.png" style="width:560px;height:420px;" alt=""> <h2>Chapter 2 : Compute and plot the pressure fied with harmonic forcing at the bottom of the tube<a name="4"></a></h2><pre class="codeinput">omega = 1;
+Forced = SF_LinearForced(ffmesh,omega,<span class="string">'BC'</span>,<span class="string">'SOMMERFELD'</span>)
 
+figure();
+SF_Plot(Forced,<span class="string">'p'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'cbtitle'</span>,<span class="string">'Re(p'')'</span>,<span class="string">'title'</span>,<span class="string">'Pressure : real (left) and imaginary (right) parts'</span>);
+hold <span class="string">on</span>;
+SF_Plot(Forced,<span class="string">'p.im'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'symmetry'</span>,<span class="string">'YM'</span>,<span class="string">'cbtitle'</span>,<span class="string">'Im(p'')'</span>);
+</pre><pre class="codeoutput">
 Forced = 
 
                mesh: [1x1 struct]
@@ -114,51 +103,63 @@ Forced =
     DataDescription: 'FORCED LINEAR RESPONSE for an axisymmetric acoustic '
            datatype: 'ForcedFlow'
     datastoragemode: 'CxP2'
-             Lambda: 0.000000000000000 + 1.000000000000000i
+             Lambda: 0.0000 + 1.0000i
                   u: [1277x1 double]
                   p: [1277x1 double]
-                  Z: -0.021116600000000 + 0.023592700000000i
+                  Z: -9.6590e-04 - 6.4873e-04i
               Xaxis: [501x1 double]
               Paxis: [501x1 double]
               Uaxis: [501x1 double]
 
-</pre><h2>plot the structure<a name="5"></a></h2><pre class="codeinput">figure();
-SF_Plot(Forced,<span class="string">'u'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'cbtitle'</span>,<span class="string">'|u''|'</span>);
-hold <span class="string">on</span>;
-SF_Plot(Forced,<span class="string">'p'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'symmetry'</span>,<span class="string">'YM'</span>,<span class="string">'cbtitle'</span>,<span class="string">'p'''</span>,<span class="string">'colorbar'</span>,<span class="string">'westoutside'</span>);
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_02.png" style="width:560px;height:420px;" alt=""> <h2>plot the structure along with the mesh<a name="6"></a></h2><pre class="codeinput">figure(<span class="string">'DefaultAxesFontSize'</span>,18);
-SF_Plot(Forced,<span class="string">'mesh'</span>);
-hold <span class="string">on</span>;SF_Plot(Forced,<span class="string">'u'</span>,<span class="string">'mesh'</span>,<span class="string">'off'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="keyword">...</span>
-                <span class="string">'colorbar'</span>,<span class="string">'northoutside'</span>,<span class="string">'cbtitle'</span>,<span class="string">'|u|'</span>,<span class="string">'symmetry'</span>,<span class="string">'YM'</span>); <span class="comment">% symmetry = XM means mirror about X-axis</span>
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_03.png" style="width:560px;height:420px;" alt=""> <h2>Extract p and <tt>u</tt> along the symmetry axis<a name="7"></a></h2><pre class="codeinput">Xaxis = [-10 :.1 :10];
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_02.png" style="width:560px;height:420px;" alt=""> <p>Create a movie (animated gif) from this field</p><pre class="codeinput">h = figure;
+filename = <span class="string">'AcousticTube.gif'</span>;
+SF_Plot(Forced,<span class="string">'p'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'colorrange'</span>,[-1 1],<span class="keyword">...</span>
+        <span class="string">'symmetry'</span>,<span class="string">'YS'</span>,<span class="string">'cbtitle'</span>,<span class="string">'p'''</span>,<span class="string">'colorbar'</span>,<span class="string">'eastoutside'</span>,<span class="string">'bdlabels'</span>,[1 2 ],<span class="string">'bdcolors'</span>,<span class="string">'k'</span>,<span class="string">'Amp'</span>,1);
+set(gca,<span class="string">'nextplot'</span>,<span class="string">'replacechildren'</span>);
+    <span class="keyword">for</span> k = 1:20
+       Amp = exp(-2*pi*1i*k/20);
+       SF_Plot(Forced,<span class="string">'p'</span>,<span class="string">'boundary'</span>,<span class="string">'on'</span>,<span class="string">'contour'</span>,<span class="string">'on'</span>,<span class="string">'clevels'</span>,[-2 :.5 :2], <span class="string">'colormap'</span>,<span class="string">'redblue'</span>,<span class="string">'colorrange'</span>,[-1 1],<span class="keyword">...</span>
+        <span class="string">'symmetry'</span>,<span class="string">'YS'</span>,<span class="string">'cbtitle'</span>,<span class="string">'p'''</span>,<span class="string">'colorbar'</span>,<span class="string">'eastoutside'</span>,<span class="string">'bdlabels'</span>,[1 2 ],<span class="string">'bdcolors'</span>,<span class="string">'k'</span>,<span class="string">'Amp'</span>,Amp);
+      frame = getframe(h);
+      im = frame2im(frame);
+      [imind,cm] = rgb2ind(im,256);
+      <span class="keyword">if</span> k == 1
+          imwrite(imind,cm,filename,<span class="string">'gif'</span>, <span class="string">'Loopcount'</span>,inf);
+      <span class="keyword">else</span>
+          imwrite(imind,cm,filename,<span class="string">'gif'</span>,<span class="string">'WriteMode'</span>,<span class="string">'append'</span>);
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_03.png" style="width:560px;height:420px;" alt=""> <p>Here is the movie</p><p><img vspace="5" hspace="5" src="AcousticTube.gif" alt=""> </p><p>Extract p and <tt>u</tt> along the symmetry axis</p><pre class="codeinput">Xaxis = [-10 :.1 :10];
 Uyaxis = SF_ExtractData(Forced,<span class="string">'u'</span>,0,Xaxis);
 Paxis = SF_ExtractData(Forced,<span class="string">'p'</span>,0,Xaxis);
-</pre><h2>plot  p and <tt>u</tt> along the symmetry axis<a name="8"></a></h2><pre class="codeinput">figure();
+</pre><p>Plot  p and <tt>u</tt> along the symmetry axis</p><pre class="codeinput">figure();
 plot(Xaxis,real(Uyaxis),Xaxis,imag(Uyaxis)); hold <span class="string">on</span>;plot(Xaxis,real(Paxis),Xaxis,imag(Paxis));
 xlabel(<span class="string">'x'</span>);
 legend(<span class="string">'Re(u''_z)'</span>,<span class="string">'Im(u''_z)'</span>,<span class="string">'Re(p'')'</span>,<span class="string">'Im(p'')'</span>);
 pause(0.1);
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_04.png" style="width:560px;height:420px;" alt=""> <h2>Chapter 3 : loop over k to compute the impedance <img src="SCRIPT_DEMO_ACOUSTIQUE_eq07527853304968891608.png" alt="$Z(k)$" style="width:22px;height:11px;"> (using SOMMERFELD)<a name="9"></a></h2><pre class="codeinput">IMP = SF_LinearForced(ffmesh,[0.01:.01:2],<span class="string">'BC'</span>,<span class="string">'SOMMERFELD'</span>,<span class="string">'plot'</span>,<span class="string">'no'</span>)
-</pre><pre class="codeoutput">
-IMP = 
+</pre><pre class="codeoutput">Warning: Error updating Text.
 
-               mesh: [1x1 struct]
-           filename: './WORK/Impedances_Re.txt'
-    DataDescription: 'Impedance of a axisymmetric acoustic flow'
-           datatype: 'ForcedLinear'
-                ind: [200x1 double]
-              omega: [200x1 double]
-                  Z: [200x1 double]
-                  R: [200x1 double]
+ String must have valid interpreter syntax:
+Re(u'_z)
+ 
+Warning: Error updating Text.
 
-</pre><h2>Plot <img src="SCRIPT_DEMO_ACOUSTIQUE_eq07527853304968891608.png" alt="$Z(k)$" style="width:22px;height:11px;"><a name="10"></a></h2><pre class="codeinput">figure;
+ String must have valid interpreter syntax:
+Im(u'_z)
+ 
+</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_04.png" style="width:560px;height:420px;" alt=""> <h2>Chapter 3 : loop over k to compute the impedance <img src="SCRIPT_DEMO_ACOUSTIQUE_eq07527853304968891608.png" alt="$Z(k)$" style="width:22px;height:11px;"> (using SOMMERFELD)<a name="9"></a></h2><pre class="codeinput"><span class="comment">%IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no')</span>
+</pre><p>Plot <img src="SCRIPT_DEMO_ACOUSTIQUE_eq07527853304968891608.png" alt="$Z(k)$" style="width:22px;height:11px;"></p><pre class="codeinput">figure;
 plot(IMP.omega,real(IMP.Z),<span class="string">'b'</span>,IMP.omega,imag(IMP.Z),<span class="string">'b--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'Sommerfeld'</span>);
 title([<span class="string">'Impedance $Z_r$ and $Z_i$'</span>],<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30)
 xlabel(<span class="string">'$k$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
 ylabel(<span class="string">'$Z_r,Z_i$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
 set(findall(gca, <span class="string">'Type'</span>, <span class="string">'Line'</span>),<span class="string">'LineWidth'</span>,2);
 pause(0.1);
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_05.png" style="width:560px;height:420px;" alt=""> <h2>plot in semilog<a name="11"></a></h2><pre class="codeinput">figure;
+</pre><pre class="codeoutput error">Undefined variable "IMP" or class "IMP.omega".
+
+Error in SCRIPT_DEMO_ACOUSTIQUE (line 106)
+plot(IMP.omega,real(IMP.Z),'b',IMP.omega,imag(IMP.Z),'b--','DisplayName','Sommerfeld');
+</pre><p>plot in semilog</p><pre class="codeinput">figure;
 semilogy(IMP.omega,abs(IMP.Z),<span class="string">'b--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'CM'</span>);
 xlabel(<span class="string">'b'</span>); ylabel(<span class="string">'|Z|'</span>);
 xlabel(<span class="string">'$k$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
@@ -168,46 +169,64 @@ leg.FontSize = 20;
 set(findall(gca, <span class="string">'Type'</span>, <span class="string">'Line'</span>),<span class="string">'LineWidth'</span>,2);
 
 pause(0.1);
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_06.png" style="width:560px;height:420px;" alt=""> <h2>Chapter 4 : trying better kind of boundary conditions : PML, CM<a name="12"></a></h2><pre class="codeinput">IMPPML = SF_LinearForced(ffmesh,[0.01:.01:2],<span class="string">'BC'</span>,<span class="string">'PML'</span>,<span class="string">'plot'</span>,<span class="string">'no'</span>);
-IMPCM = SF_LinearForced(ffmesh,[0.01:.01:2],<span class="string">'BC'</span>,<span class="string">'CM'</span>,<span class="string">'plot'</span>,<span class="string">'no'</span>);
-IMP = SF_LinearForced(ffmesh,[0.01:.01:2],<span class="string">'BC'</span>,<span class="string">'SOMMERFELD'</span>,<span class="string">'plot'</span>,<span class="string">'no'</span>);
-</pre><h2>trace de Z(k) parties reelles et imaginaires<a name="13"></a></h2><pre class="codeinput">figure;
-plot(IMP.omega,real(IMP.Z),<span class="string">'b'</span>,IMP.omega,imag(IMP.Z),<span class="string">'b--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'Sommerfeld'</span>);
-hold <span class="string">on</span>;
-plot(IMPCM.omega,real(IMPCM.Z),<span class="string">'r'</span>,IMPCM.omega,imag(IMPCM.Z),<span class="string">'r--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'CM'</span>);
-plot(IMPPML.omega,real(IMPPML.Z),<span class="string">'k'</span>,IMPPML.omega,imag(IMPPML.Z),<span class="string">'k--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'PML'</span>);
-title([<span class="string">'Impedance $Z_r$ and $Z_i$'</span>],<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30)
-xlabel(<span class="string">'$k$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
-ylabel(<span class="string">'$Z_r,Z_i$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
-leg=legend(<span class="string">'Sommerfeld'</span>,<span class="string">'CM'</span>,<span class="string">'PML'</span>);
-leg.FontSize = 20;
-set(findall(gca, <span class="string">'Type'</span>, <span class="string">'Line'</span>),<span class="string">'LineWidth'</span>,2);
-pause(0.1);
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_07.png" style="width:560px;height:420px;" alt=""> <h2>trace de <tt>Z(k)</tt> en semilog<a name="14"></a></h2><pre class="codeinput">figure;
-semilogy(IMP.omega,abs(IMP.Z),<span class="string">'b--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'CM'</span>);
-hold <span class="string">on</span>;
-semilogy(IMPCM.omega,abs(IMPCM.Z),<span class="string">'r--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'CM'</span>);
-semilogy(IMPPML.omega,abs(IMPPML.Z),<span class="string">'k--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'CM'</span>);
-xlabel(<span class="string">'b'</span>); ylabel(<span class="string">'|Z|'</span>);
-xlabel(<span class="string">'$k$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
-ylabel(<span class="string">'$|Z|$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
-title([<span class="string">'Impedance $|Z|$'</span>],<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30)
-leg=legend(<span class="string">'Sommerfeld'</span>,<span class="string">'CM'</span>,<span class="string">'PML'</span>);
-leg.FontSize = 20;
-set(findall(gca, <span class="string">'Type'</span>, <span class="string">'Line'</span>),<span class="string">'LineWidth'</span>,2);
 
-pause(0.1);
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_08.png" style="width:560px;height:420px;" alt=""> <h2>plot reflection coefficient<a name="15"></a></h2><pre class="codeinput">figure;
-semilogy(IMP.omega,IMP.R,<span class="string">'b--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'Sommerfeld'</span>);
-hold <span class="string">on</span>;
-semilogy(IMPCM.omega,IMPCM.R,<span class="string">'r--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'CM'</span>);
-semilogy(IMPPML.omega,IMPPML.R,<span class="string">'k--'</span>,<span class="string">'DisplayName'</span>,<span class="string">'PML'</span>);
-xlabel(<span class="string">'$k$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
-ylabel(<span class="string">'$R_i$'</span>,<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30);
-title([<span class="string">'Reflection coefficient'</span>],<span class="string">'Interpreter'</span>,<span class="string">'latex'</span>,<span class="string">'FontSize'</span>, 30)
-leg = legend(<span class="string">'Sommerfeld'</span>,<span class="string">'CM'</span>,<span class="string">'PML'</span>);
-leg.FontSize = 20;
-set(findall(gca, <span class="string">'Type'</span>, <span class="string">'Line'</span>),<span class="string">'LineWidth'</span>,2);
+<span class="comment">%{
+</span><span class="comment">%% Chapter 4 : trying better kind of boundary conditions : PML, CM
+</span><span class="comment">
+</span><span class="comment">IMPPML = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','PML','plot','no');
+</span><span class="comment">IMPCM = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','CM','plot','no');
+</span><span class="comment">IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no');
+</span><span class="comment">
+</span><span class="comment">%%
+</span><span class="comment">% Plot Z(k) real and imaginary parts
+</span><span class="comment">figure;
+</span><span class="comment">plot(IMP.omega,real(IMP.Z),'b',IMP.omega,imag(IMP.Z),'b--','DisplayName','Sommerfeld');
+</span><span class="comment">hold on;
+</span><span class="comment">plot(IMPCM.omega,real(IMPCM.Z),'r',IMPCM.omega,imag(IMPCM.Z),'r--','DisplayName','CM');
+</span><span class="comment">plot(IMPPML.omega,real(IMPPML.Z),'k',IMPPML.omega,imag(IMPPML.Z),'k--','DisplayName','PML');
+</span><span class="comment">title(['Impedance $Z_r$ and $Z_i$'],'Interpreter','latex','FontSize', 30)
+</span><span class="comment">xlabel('$k$','Interpreter','latex','FontSize', 30);
+</span><span class="comment">ylabel('$Z_r,Z_i$','Interpreter','latex','FontSize', 30);
+</span><span class="comment">leg=legend('Sommerfeld','CM','PML');
+</span><span class="comment">leg.FontSize = 20;
+</span><span class="comment">set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+</span><span class="comment">pause(0.1);
+</span><span class="comment">
+</span><span class="comment">%%
+</span><span class="comment">% Plot |Z(k)| in semilog
+</span><span class="comment">
+</span><span class="comment">figure;
+</span><span class="comment">semilogy(IMP.omega,abs(IMP.Z),'b--','DisplayName','CM');
+</span><span class="comment">hold on;
+</span><span class="comment">semilogy(IMPCM.omega,abs(IMPCM.Z),'r--','DisplayName','CM');
+</span><span class="comment">semilogy(IMPPML.omega,abs(IMPPML.Z),'k--','DisplayName','CM');
+</span><span class="comment">xlabel('b'); ylabel('|Z|');
+</span><span class="comment">xlabel('$k$','Interpreter','latex','FontSize', 30);
+</span><span class="comment">ylabel('$|Z|$','Interpreter','latex','FontSize', 30);
+</span><span class="comment">title(['Impedance $|Z|$'],'Interpreter','latex','FontSize', 30)
+</span><span class="comment">leg=legend('Sommerfeld','CM','PML');
+</span><span class="comment">leg.FontSize = 20;
+</span><span class="comment">set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+</span><span class="comment">
+</span><span class="comment">pause(0.1);
+</span><span class="comment">
+</span><span class="comment">%%
+</span><span class="comment">% plot reflection coefficient
+</span><span class="comment">
+</span><span class="comment">figure;
+</span><span class="comment">semilogy(IMP.omega,IMP.R,'b--','DisplayName','Sommerfeld');
+</span><span class="comment">hold on;
+</span><span class="comment">semilogy(IMPCM.omega,IMPCM.R,'r--','DisplayName','CM');
+</span><span class="comment">semilogy(IMPPML.omega,IMPPML.R,'k--','DisplayName','PML');
+</span><span class="comment">xlabel('$k$','Interpreter','latex','FontSize', 30);
+</span><span class="comment">ylabel('$R_i$','Interpreter','latex','FontSize', 30);
+</span><span class="comment">title(['Reflection coefficient'],'Interpreter','latex','FontSize', 30)
+</span><span class="comment">leg = legend('Sommerfeld','CM','PML');
+</span><span class="comment">leg.FontSize = 20;
+</span><span class="comment">set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+</span><span class="comment">
+</span><span class="comment">%}
+</span>
 <span class="comment">%</span>
 <span class="comment">% k = [0.01:0.01:2.0];</span>
 <span class="comment">% Z0 = 1/(2*pi);</span>
@@ -221,25 +240,26 @@ set(findall(gca, <span class="string">'Type'</span>, <span class="string">'Line'
 <span class="comment">%</span>
 <span class="comment">% plot(k,real(Zin),'k',IMPPML.k,real(IMPPML.Z),'b');</span>
 <span class="comment">% plot(k,-imag(Zin),'k',IMPCM.k,imag(IMPML.Z),'b');</span>
-</pre><img vspace="5" hspace="5" src="SCRIPT_DEMO_ACOUSTIQUE_09.png" style="width:560px;height:420px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Acoustic field in a pipe with harmonic forcing at the bottom
 %
-% This script demonstrates the use of StabFem for a linear acoustics problem
+%  This scripts demonstrates the efficiency of StabFem for a linear acoustics problem
 %
-% Problem : find the velocity potential $\phi$ such as :
+%   Problem : find the velocity potential $\phi$ such as :
 %
-% * $\Delta \phi + k^2 \phi = 0 $ (with $k = \omega c_0$ the acoustic wavenuber) 
+%  * $\Delta \phi + k^2 \phi = 0$
+%  * $u_z = \partial_z \phi = 1$ along $\Gamma_{in}$
+%  * Sommerfeld radiation condition on $\Gamma_{out}$ (PML is also available)
+%  ( $k = \omega c_0$ is the acoustic wavenuber) 
 %
-% * $u_z = \partial_z \phi = 1 $ along $\Gamma_{in}$
+% 
+%  Variational formulation :
 %
-% * $\partial_R \phi + R^{-1} \phi + i k \phi = 0$ (Sommerfeld condition) on $\Gamma_{out}$ 
-%
-% Variational formulation :
-%
-% $$\forall \phi^*, \int \int_\Omega \left( \nabla \phi \cdot \nabla \phi^* + k^2 \phi \phi^*\right) dV 
-% + \int_{\Gamma_{out}}  (R^{-1} +i k) \phi \phi^* dV
-% =  \int_{\Gamma_{in}} \phi^* dS $$   
+%  $$ \int \int_\Omega \left( \nabla \phi \cdot \nabla \phi^* + k^2 \phi \phi^*\right) dV 
+%  + \int_{\Gamma_{in}} \phi^* dS
+%  + \int_{\Gamma_{out}} (i k +1/R) \phi \phi^* dV
+%  = 0 $$   
 
 
 %% initialisation
@@ -250,42 +270,70 @@ set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
 
-%% Chapter 1 : building of a mesh
-
-ffmesh = SF_Mesh('Mesh_1.edp')
-
-%% plot the mesh :
-SF_Plot(ffmesh);
+%% Chapter 1 : building an adapted mesh
+ffmeshInit = SF_Mesh('Mesh_1.edp');
+Forced = SF_LinearForced(ffmeshInit,1,'BC','SOMMERFELD');
+ffmesh = SF_Adapt(ffmeshInit,Forced,'Hmax',1); % Adaptation du maillage
 
 
-%% Chapter 2 : Resolution of an acoustically forced problem (and mesh adaptation)
+%% 
+%plot the mesh :
+figure;  SF_Plot(ffmeshInit,'symmetry','ym','boundary','on');
+hold on; SF_Plot(ffmesh,'title','Mesh : Initial (left) and Adapted (right)','boundary','on');
 
-Forced = SF_LinearForced(ffmesh,1,'BC','SOMMERFELD');
-ffmesh = SF_Adapt(ffmesh,Forced,'Hmax',1); % Adaptation du maillage
 
-Forced = SF_LinearForced(ffmesh,1,'BC','SOMMERFELD')
 
-%% plot the structure
+%% Chapter 2 : Compute and plot the pressure fied with harmonic forcing at the bottom of the tube
+
+omega = 1;
+Forced = SF_LinearForced(ffmesh,omega,'BC','SOMMERFELD')
+
 figure();
-SF_Plot(Forced,'u','boundary','on','colormap','redblue','cbtitle','|u''|');
+SF_Plot(Forced,'p','boundary','on','colormap','redblue','cbtitle','Re(p'')','title','Pressure : real (left) and imaginary (right) parts');
 hold on;
-SF_Plot(Forced,'p','boundary','on','colormap','redblue','symmetry','YM','cbtitle','p''','colorbar','westoutside');
+SF_Plot(Forced,'p.im','boundary','on','colormap','redblue','symmetry','YM','cbtitle','Im(p'')');
 
 
-%% plot the structure along with the mesh
-figure('DefaultAxesFontSize',18);
-SF_Plot(Forced,'mesh');
-hold on;SF_Plot(Forced,'u','mesh','off','boundary','on','colormap','redblue',...
-                'colorbar','northoutside','cbtitle','|u|','symmetry','YM'); % symmetry = XM means mirror about X-axis
+%%
+% Create a movie (animated gif) from this field
+
+h = figure;
+filename = 'AcousticTube.gif';
+SF_Plot(Forced,'p','boundary','on','colormap','redblue','colorrange',[-1 1],...
+        'symmetry','YS','cbtitle','p''','colorbar','eastoutside','bdlabels',[1 2 ],'bdcolors','k','Amp',1);
+set(gca,'nextplot','replacechildren');
+    for k = 1:20
+       Amp = exp(-2*pi*1i*k/20);
+       SF_Plot(Forced,'p','boundary','on','contour','on','clevels',[-2 :.5 :2], 'colormap','redblue','colorrange',[-1 1],...
+        'symmetry','YS','cbtitle','p''','colorbar','eastoutside','bdlabels',[1 2 ],'bdcolors','k','Amp',Amp); 
+      frame = getframe(h); 
+      im = frame2im(frame); 
+      [imind,cm] = rgb2ind(im,256); 
+      if k == 1 
+          imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
+      else 
+          imwrite(imind,cm,filename,'gif','WriteMode','append'); 
+      end 
+    end
+ 
+
+%%
+% Here is the movie
+%
+% <<AcousticTube.gif>>
+%
 
 
-%% Extract p and |u| along the symmetry axis
+
+%%
+% Extract p and |u| along the symmetry axis
            
 Xaxis = [-10 :.1 :10];
 Uyaxis = SF_ExtractData(Forced,'u',0,Xaxis);
 Paxis = SF_ExtractData(Forced,'p',0,Xaxis);
 
-%% plot  p and |u| along the symmetry axis
+%%
+% Plot  p and |u| along the symmetry axis
 figure();
 plot(Xaxis,real(Uyaxis),Xaxis,imag(Uyaxis)); hold on;plot(Xaxis,real(Paxis),Xaxis,imag(Paxis));
 xlabel('x');
@@ -294,9 +342,10 @@ pause(0.1);
 
 %% Chapter 3 : loop over k to compute the impedance $Z(k)$ (using SOMMERFELD)
 
-IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no')
+%IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no')
 
-%% Plot $Z(k)$ 
+%% 
+% Plot $Z(k)$ 
 figure;
 plot(IMP.omega,real(IMP.Z),'b',IMP.omega,imag(IMP.Z),'bREPLACE_WITH_DASH_DASH','DisplayName','Sommerfeld');
 title(['Impedance $Z_r$ and $Z_i$'],'Interpreter','latex','FontSize', 30)
@@ -305,7 +354,8 @@ ylabel('$Z_r,Z_i$','Interpreter','latex','FontSize', 30);
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 pause(0.1);
 
-%% plot in semilog
+%%
+% plot in semilog
 figure;
 semilogy(IMP.omega,abs(IMP.Z),'bREPLACE_WITH_DASH_DASH','DisplayName','CM');
 xlabel('b'); ylabel('|Z|');
@@ -317,13 +367,15 @@ set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 
 pause(0.1);
 
+%{
 %% Chapter 4 : trying better kind of boundary conditions : PML, CM
 
 IMPPML = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','PML','plot','no');
 IMPCM = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','CM','plot','no');
 IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no');
 
-%% trace de Z(k) parties reelles et imaginaires
+%%
+% Plot Z(k) real and imaginary parts
 figure;
 plot(IMP.omega,real(IMP.Z),'b',IMP.omega,imag(IMP.Z),'bREPLACE_WITH_DASH_DASH','DisplayName','Sommerfeld');
 hold on;
@@ -337,7 +389,9 @@ leg.FontSize = 20;
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 pause(0.1);
 
-%% trace de |Z(k)| en semilog
+%%
+% Plot |Z(k)| in semilog
+
 figure;
 semilogy(IMP.omega,abs(IMP.Z),'bREPLACE_WITH_DASH_DASH','DisplayName','CM');
 hold on;
@@ -352,7 +406,10 @@ leg.FontSize = 20;
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 
 pause(0.1);
-%% plot reflection coefficient
+
+%%
+% plot reflection coefficient
+
 figure;
 semilogy(IMP.omega,IMP.R,'bREPLACE_WITH_DASH_DASH','DisplayName','Sommerfeld');
 hold on;
@@ -364,6 +421,9 @@ title(['Reflection coefficient'],'Interpreter','latex','FontSize', 30)
 leg = legend('Sommerfeld','CM','PML');
 leg.FontSize = 20;
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+
+%}
+
 % 
 % k = [0.01:0.01:2.0];
 % Z0 = 1/(2*pi);
@@ -377,6 +437,7 @@ set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 % 
 % plot(k,real(Zin),'k',IMPPML.k,real(IMPPML.Z),'b');
 % plot(k,-imag(Zin),'k',IMPCM.k,imag(IMPML.Z),'b');
+
 
 ##### SOURCE END #####
 --></body></html>
