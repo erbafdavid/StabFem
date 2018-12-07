@@ -28,7 +28,7 @@ int2d(th)( -2*nu*(D(u):D(v)) + up*div(v) + div(u)*q - Conv(u,Ub,v) - shift*(ux*v
 OP=LNSE(XXMh,XXMh,solver=sparsesolver);
 varf brhs([ux,uy,p],[vx,vy,q]) = int2d(th)( (ux0*vx+uy0*vy) );
 
-/// Iteration looop
+/// Iteration loop
 	for (iter=0; ((err>errmax)&&(iter<itmax)); iter++)
 	{
 	complex[int] rhs= brhs(0,XXMh); 
@@ -37,7 +37,7 @@ varf brhs([ux,uy,p],[vx,vy,q]) = int2d(th)( (ux0*vx+uy0*vy) );
 	complex XnXn1 = int2d(th)(ux0*ux+uy0*uy);
 	complex Xn1Xn1 =  int2d(th)(ux*ux+uy*uy);
 	complex GG = Xn1Xn1/XnXn1;
-// at each step the inverse shifted eigenval. is approximated by <X_{n+1}, Y> / <X_n, Y>
+// at each step the inverse shifted eigenval is approximated by <X_{n+1}, Y> / <X_n, Y>
 //      ( the choice Y = X_{n+1} is convenient but we could choose something else )
 	lambda = shiftOP+1/GG;
 	err = abs(lambda-lambda0);

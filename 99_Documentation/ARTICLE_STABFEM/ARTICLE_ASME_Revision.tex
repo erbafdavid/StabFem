@@ -319,7 +319,7 @@ This definition has several advantages. In particular, being a complex quantity,
 
 \paragraph{Iterative methods for eigenvalue computations}
 
-The numerical resolution of generalized eigenvalue problems such as $A X = \lambda B X$ (or its adjoint version (\ref{Eigen_Adj_matricial}) ), 
+The numerical resolution of generalized eigenvalue problems such as $A X = \lambda B X$ (or its adjoint version \eqref{Eigen_Adj_matricial}), 
 can be performed using several methods. Direct methods to compute the whole spectrum are both costly prohibitive and their usefulness is disputable. A popular alternative is the use of iterative methods to compute a limited set of eigenvalues located in the vicinity of a 
 {\em shift} value $\lambda_{shift}$. The simplest version of this method is the simple shift-invert iteration which consists in solving iteratively the system
 $$
@@ -840,7 +840,7 @@ This condition reads:
 \be{HBphase}
 {\cal L}_{Re}({\bf u}_{1s},p_{1s}) =0, 
 \ee
-so that the Fourier decomposition of the lift force \ref{drag_lift_def} will contain only a cosine term, namely 
+so that the Fourier decomposition of the lift force \eqref{drag_lift_def} will contain only a cosine term, namely 
 \be{FySC}
 F_y \approx F_{y,1,c} \cos \omega t, \quad \mbox{ with } \quad F_{y,1,c} = {\cal L}_{Re}({\bf u}_{1c},p_{1c}).
 \ee 
@@ -1096,30 +1096,42 @@ Nonlinear self-consistent model characteristics  $\omega_{HB1}$, $F_{y,1,c}$ and
 
 
 This appendix presents complementary results obtained using various mesh designs. 
-All the results can be obtained using the following program available on the StabFem website: 
+All results can be obtained using the following program available on the StabFem website: 
 {\sf SCRIPT\_CYLINDER\_MESHCONVERGENCE.m}.
 
 \subsection{Efficiency of the mesh adaptation process}
 
-As discussed in section 3, the mesh adaptation proves to be an extremely efficient way to obtain significant results 
-with very reasonable meshes. The objective of this paragraph is to demonstrate this point by comparing the efficiency of several ways to perform mesh adaptation. 
+As discussed in section 3, the mesh adaptation proves to be an extremely efficient way to obtain significant and reliable results 
+with very reasonable meshes.
+The objective of this paragraph is to demonstrate this point by comparing the efficiency of several mesh adaptation ways. 
 
 For this purpose, 6 meshes were generated. 
 Mesh $\mathbf{M}_1$ was adapted on the {\em base flow} obtained for $Re=60$.
 Mesh $\mathbf{M}_2$ was adapted to both the base flow and structural sensitivity (strategy S).
 Mesh $\mathbf{M}_2'$ was obtained by a subsequent refinement of mesh $\mathbf{M}_2$, splitting all triangles in four subtriangles, therefore doubling the effective density of the mesh.
 Mesh $\mathbf{M}_3$ was adapted to both the base flow and endogeneity (strategy E).
-Meshes $\mathbf{M}_4$ and $\mathbf{M}_5$ were obtained by adapting to the structure of the direct eigenmode (strategy D) and of the adjoint eigenmode (strategy A). In each case, the adaptmesh process was repeated twice in order to ensure a correct convergence.
+Meshes $\mathbf{M}_4$ and $\mathbf{M}_5$ were obtained by adapting to the structure of the direct eigenmode (strategy D) and of the adjoint eigenmode (strategy A). In each case, the adapt-mesh process was repeated twice to ensure a correct convergence.
 
-Figures \ref{fig:mesh2} and \ref{fig:mesh4} illustrate the structure of meshes $\mathbf{M}_2$ and $\mathbf{M}_4$. As can be observed, these two mesh adaptation strategies lead to meshes with comparable densities in the region close to the cylinder. On the other hand, when moving downwards in the wake, mesh $\mathbf{M}_2$ quickly gets rather coarse, while mesh $\mathbf{M}_4$ maintains a significant density.
+Figures \ref{fig:mesh2} and \ref{fig:mesh4} illustrate the structure of meshes $\mathbf{M}_2$ and $\mathbf{M}_4$.
+It can be observed that these two mesh adaptation strategies lead to meshes with comparable densities in the region close to the cylinder.
+On the other hand, when moving downwards in the wake, mesh $\mathbf{M}_2$ quickly gets rather coarse while mesh $\mathbf{M}_4$ maintains a significant density.
 
-Table \ref{tab:conv1} gives numerical informations about the geometry of these meshes. In particular, we document the minimum and maximum cell size, as well as the cell size at four point A,B,C,D defined with by their coordinates as follows: $(x_A,y_A) = (0,0.5)$ (within the boundary layer at the cylinder wall); $(x_B,y_B) = (2.5,0.5)$ (in the region of maximum structural sensitivity); $(x_C,y_C) = (4,0)$ (in the near wake); $(x_D,y_D) = (10,0)$ (in the far wake). Results confirm that mesh all meshes have similar densities in the near wake (cell size at points A,B,C are comparable) 
-while $\mathbf{M}_4$ has maximum resolution in the far wake (in the vicinity of point D).
+Table \ref{tab:conv1} gives numerical informations about the geometry of these meshes. In particular, we document the minimum and maximum cell size, as well as the cell size at four point A,B,C,D defined with by their coordinates as follows: $(x_A,y_A) = (0,0.5)$ (within the boundary layer at the cylinder wall); $(x_B,y_B) = (2.5,0.5)$ (in the region of maximum structural sensitivity); $(x_C,y_C) = (4,0)$ (in the near wake); $(x_D,y_D) = (10,0)$ (in the far wake).
+Results confirm that all meshes have similar densities in the near wake (cell size at points A,B,C are comparable) while $\mathbf{M}_4$ has maximum resolution in the far wake (in the vicinity of point D).
 
-Table  \ref{tab:conv2} compares the results obtained with the six meshes. For base-flow characteristics $L_x$ and $F_x$, all values agree with a relative dispersion of less than $0.15\%$, confiming that all adaptation stategies are successful to correctly compute the base flow. 
-The performances of meshes for linear stability calculations can then be evaluated by comparing the eigenvalues. Meshes $\mathbf{M}_2$ to $\mathbf{M}_5$ all give values within less than $0.1\%$ dispersion. The value obtained with mesh  $\mathbf{M}_1$, which is not adapted to the eigenmode, is a bit farther from the others but still rather good. The table also displays results allowing to compare the performances of meshes for nonlinear self-consistent calculations. As for the frequency and the maximum lift, meshes $\mathbf{M}_2$ to $\mathbf{M}_5$ again give almost identical values within less than $0.1\%$ dispersion. The dispersion is much larger concerning the energy-amplitude of the perturbation $A_E$ displayed in the last column. Only the mesh $\mathbf{M}_4$ is able to correctly compute this quantities, while all other meshes significantly underestimate it. This is not surprising since this quantity is an integral one which depends upon the structure of the nonlinear perturbation in the whole wake, not only the near-wake region.
+Table \ref{tab:conv2} compares the results obtained with the six meshes.
+For base-flow characteristics $L_x$ and $F_x$, all values agree with a relative dispersion of less than $0.15\%$.
+This underlines that all adaptation strategies are successful to correctly compute the base flow. 
+The performances of meshes for linear stability calculations can then be evaluated by comparing the eigenvalues.
+Meshes $\mathbf{M}_2$ to $\mathbf{M}_5$ all give values within less than $0.1\%$ dispersion.
+The value obtained with mesh $\mathbf{M}_1$, which is not adapted to the eigenmode, is a bit farther from the others but still rather good. The table also displays results allowing to compare the performances of meshes for nonlinear self-consistent calculations.
+As for the frequency and the maximum lift, meshes $\mathbf{M}_2$ to $\mathbf{M}_5$ again give almost identical values within less than $0.1\%$ dispersion.
+The dispersion concerning the energy-amplitude of the perturbation $A_E$ displayed in the last column is however much larger.
+Only the mesh $\mathbf{M}_4$ is able to correctly compute this quantity, while all other meshes significantly underestimate it.
+ This is not surprising since this quantity is an integral property which depends upon the structure of the nonlinear perturbation over the whole wake, not only the near-wake region.
 
-From this study we can conclude that if we are only interested in predicting the frequency of the mode and the forces exerted on the cylinder (in both linear and nonlinear regimes), the strategies S (mesh $\mathbf{M}_2$) and E (mesh $\mathbf{M}_3$) are the most efficient and lead to a very light mesh (here only 2038 vertices for mesh $\mathbf{M}_2$). On the other hand, if we are interested in describing the structure of the perturbation in the whole domain (and being able to correctly evaluate its energy), mesh adaptation to the eigenmode structure is preferable. However this second strategy produces a much heavier mesh (here 12080 point).
+From this study we can conclude that if we are only interested in predicting the frequency of the mode and the forces exerted on the cylinder (in both linear and nonlinear regimes), the strategies S (mesh $\mathbf{M}_2$) and E (mesh $\mathbf{M}_3$) are the most efficient and lead to a very light mesh (here only 2038 vertices for mesh $\mathbf{M}_2$). On the other hand, if we are interested in describing the structure of the perturbation in the whole domain (and being able to correctly evaluate its energy), mesh adaptation to the eigenmode structure is preferable.
+However this second strategy produces a much heavier mesh (here 12080 point).
  
  
  \begin{table*}
@@ -1147,12 +1159,15 @@ $$
 
 \subsection{Effect of domain size and boundary conditions}
 
-As already identified in several previous studies, the size of the domain and the type of boundary conditions applied at the boundaries have a notable impact on the results. To illustrate this, we designed four additional meshes. All were obtained through adaptation to base flow and sensitivity, just as mesh $\mathbf{M}_2$.
+As already identified in several previous studies, the size of the domain and the type of boundary conditions applied at the boundaries have a notable impact on results.
+To illustrate this, we designed four additional meshes.
+All were obtained through adaptation to base flow and sensitivity, just as mesh $\mathbf{M}_2$.
 Meshes $\mathbf{M}_6$ and $\mathbf{M}_7$ are respectively twice smaller and twice larger than the reference one. 
-Meshes $\mathbf{M}_8$ and $\mathbf{M}_9$ have the same dimension but the boundary condition at the lateral boundary
- $\Gamma_{lat}$ differs. Unlike the reference case $\mathbf{M}_2$ which uses a no-stress boundary condition (identical to that applied at the outlet), mesh $\mathbf{M}_8$ uses a "slip" condition $u_y = 0 ; \partial u_x/\partial y = 0$ while mesh $\mathbf{M}_9$ uses an even more restrictive constant-flow condition (the condition at the lateral boundary is $u_x = 1, u_y = 0$, just as for the inlet).
+Meshes $\mathbf{M}_8$ and $\mathbf{M}_9$ have the same dimension but the boundary condition at the lateral boundary $\Gamma_{lat}$ differs. 
+Unlike the reference case $\mathbf{M}_2$ which uses a no-stress boundary condition (identical to that applied at the outlet), mesh $\mathbf{M}_8$ uses a "slip" condition $u_y = 0 ; \partial u_x/\partial y = 0$ while mesh $\mathbf{M}_9$ uses an even more restrictive constant-flow condition (the condition at the lateral boundary is $u_x = 1, u_y = 0$, just as for the inlet).
  
-Even though the domain size of the reference case (namely $[-40,80]\times[0,40]$) may appear large, the table shows that confinement effects are still present. The quantity which appears the most sensible to domain size and/or boundary conditions is the imaginary part of the linear eigenvalue. Interestingly, the nonlinear SC results appears to be more robust with respect to confinement effects than linear ones. 
+Even though the domain size of the reference case (namely $[-40,80]\times[0,40]$) may appear large, the table shows that confinement effects are still present. The quantity which appears to be the the most sensitive to domain size and/or boundary conditions is the imaginary part of the linear eigenvalue.
+Interestingly, the nonlinear SC results appears to be more robust with respect to confinement effects than linear ones. 
 In effect, values for nonlinear frequency $\omega_{SC}$ and the maximum lift $F_{y,1,c}$ obtained with meshes  $\mathbf{M}_2$, $\mathbf{M}_7$ $\mathbf{M}_8$ and $\mathbf{M}_9$ agree with less than $0.3\%$ dispersion.
 
 
@@ -1163,7 +1178,7 @@ In effect, values for nonlinear frequency $\omega_{SC}$ and the maximum lift $F_
 
 \subsection{Derivation of the amplitude equation using multiple-scale approach}
 
-The initial derivation of \cite{SippLebedev} makes use of a multiple scale method in order to obtained an amplitude equation.
+The initial derivation of \cite{SippLebedev} makes use of a multiple scale method in order to obtain an amplitude equation.
 The starting point can be taken as the following expansion of the velocity flow field:
 \be{WNL2}
 \begin{aligned}
@@ -1172,10 +1187,10 @@ The starting point can be taken as the following expansion of the velocity flow 
 & + {\cal O}( \epsilon ^3),
 \end{aligned}
 \ee
-Note that compared to the simplified version given in the main text by eq. \ref{WNL1}, the amplitude $A_{wnl}$ depends upon a slow time scale 
+Note that compared to the simplified version given in the main text by eq. \eqref{WNL1}, the amplitude $A_{wnl}$ depends upon a slow time scale 
 $\tau = \epsilon^2 t$.
 
-Substituting the expansion \ref{WNL2} into the Navier--Stokes equations \ref{NSprimitive} and grouping terms multiplied by the same power of $\epsilon$, a hierarchy of equations is obtained. The order $\epsilon^0$ gives directly the base flow at $Re_c$. The order $\epsilon^1$
+Substituting the expansion \eqref{WNL2} into the Navier--Stokes equations \eqref{NSprimitive} and grouping terms multiplied by the same power of $\epsilon$, a hierarchy of equations is obtained. The order $\epsilon^0$ gives directly the base flow at $Re_c$. The order $\epsilon^1$
 corresponds to the linear neutral eigenmode as computed in the first part of this article.
 The order $\epsilon^2$ contains three terms respectively computed as the solutions of the following linear problems:
 \begin{eqnarray}
@@ -1230,7 +1245,8 @@ $$
 
 
 
-A key issue in the weakly nonlinear expansion is that the definition of the amplitude depends upon a normalization choice of the eigenmodes. Several choices are possible. In the literature three possibilities have been used:
+A key issue in the weakly nonlinear expansion is that the definition of the amplitude depends upon a normalization choice of the eigenmodes. Several choices are possible.
+In the literature three possibilities have been used:
 %\begin{itemize}
 %\item 
 
@@ -1254,14 +1270,14 @@ force:
 \be{normfabre}
 {{\cal D}_{Re_c}(\hat{\bf u},\hat{p}) }=\frac{1}{2}.
 \ee
-The advantage of this choice is that the amplitude $|A|$ is then an direct measure of the fundamental lift.
-In effect, eq. \ref{lift_cos} directlty leads to $F_{y,1,c} = |A|$, $F_{y,1,s} = 0$. 
+The advantage of this choice is that the amplitude $|A|$ is then a direct measure of the fundamental lift.
+In effect, eq. \eqref{lift_cos} directlty leads to $F_{y,1,c} = |A|$, $F_{y,1,s} = 0$. 
 
 
-In our implementation of the WNL approach, we allowed to choose the normalization convention, as seen in line 3 of figure \ref{fig:listingNL}.
+In our implementation of the WNL approach, we allowed choosing the normalization convention, as seen in line 4 of figure \ref{fig:listingNL}.
 %%ATTENTION, si figure est actualisé, il faut actualiser la ligne
 In table \ref{tab:WNL_coefs} we give the predictions of the WNL approach using the three normalization choices.
-We can note that the coefficients $\nu_0$ and $\nu_2$ strongly depend on the normalization choice. On the other hand, the frequency deviation $\omega_\epsilon$ and the $\lambda$ coefficient, and the term $F_{x,0,\epsilon}$ related to the dependency of mean drag with deviation from the threshold are independent upon the normalization.
+We can note that the coefficients $\nu_0$ and $\nu_2$ strongly depend on the normalization choice. On the other hand, the frequency deviation $\omega_\epsilon$, the $\lambda$ coefficient, and the term $F_{x,0,\epsilon}$ related to the dependency of mean drag with deviation from the threshold are independent upon the normalization.
 
 Considering the lift force, columns 7 and 8 of the table show that the different choices of normalization give different values for the coefficients $F_{1,y,c}$ and $F_{1,y,s}$. %This explains that the normalization choice fixes differently the phase of the cycle. 
 However,  the sin-cos expansion of the lift force can be recast as 
@@ -1283,7 +1299,8 @@ with $ |F_{y,1}| =  \sqrt{F_{y,1,c}^2 + F_{y,1,s}^2}$. The last column of the ta
 
 \section{Additional details about the self-consistent method}
 
-The objective of this appendix is to provide additional details about the  SC model in its original form as given by \cite{MLugo2014}, and to explain the connection with the simpler version discussed in section 4.2. The full model is obtained by introducing the decomposition (\ref{SC}) into the Navier--Stokes equations, leading to:
+The objective of this appendix is to provide additional details about the SC model in its original form as given by \cite{MLugo2014}, and to explain the connection with the simpler version discussed in section 4.2.
+The full model is obtained by introducing the decomposition \eqref{SC} into the Navier--Stokes equations, leading to:
 \begin{subequations}\label{sc12}
 \begin{eqnarray}
 {\cal NS}(  {\bf u }_m ) - A^2 {\cal C}( \tilde{{\bf u }}_1, \overline{\tilde{\bf u }_1}) = 0, 
@@ -1294,9 +1311,9 @@ The objective of this appendix is to provide additional details about the  SC mo
 \end{eqnarray}
 \end{subequations}
 
-Equation (\ref{sis1}) provides the mean flow field ${\bf u }_m$ while the 
-pseudo-eigenpairs $(\lambda_{sc},  \tilde{{\bf u }}_1)$ can be computed by solving the eigenvalue problem (\ref{sis2}).
-\cite{MLugo2014} Initially proposed a resolution method involving two imbricated loops, which is advantageaously replaced by
+Equation \eqref{sis1} provides the mean flow field ${\bf u }_m$ while the 
+pseudo-eigenpairs $(\lambda_{sc},  \tilde{{\bf u }}_1)$ can be computed by solving the eigenvalue problem \eqref{sis2}.
+\cite{MLugo2014} initially proposed a resolution method involving two nested loops, which is advantageously replaced by
 the direct Newton resolution of section 4.3. 
 
 %The computed mode is normalized as $ || \tilde{{\bf u }}|| = 1/{\sqrt{2}}$
@@ -1307,9 +1324,9 @@ the direct Newton resolution of section 4.3.
 
 The self-consistent model has the following properties:
 \begin{itemize}
-\item[-] For $ A \ll 1$ it is equivalent to the linear eigenvalue problem (\ref{LEP}), and the generalized eigenvalue coincides with the one predicted by linear stability: $\sigma_{SC} + i \omega_{SC} = \sigma_{lin} + i \omega_{lin}$.
-\item[-] For $\sigma_{SC}=0$ (corresponding to a specific choice of the amplitude $A=A_{sc}$),  the expansion (\ref{SC}) is equivalent to 
-the Fourier expansion \ref{eq:sc1} taken as the starting point in the present paper. 
+\item[-] For $ A \ll 1$, it is equivalent to the linear eigenvalue problem \eqref{LEP}, and the generalized eigenvalue coincides with the one predicted by linear stability: $\sigma_{SC} + i \omega_{SC} = \sigma_{lin} + i \omega_{lin}$.
+\item[-] For $\sigma_{SC}=0$ (corresponding to a specific choice of the amplitude $A=A_{sc}$), the expansion \eqref{SC} is equivalent to 
+the Fourier expansion \eqref{eq:sc1} taken as the starting point in the present paper. 
 \item[-] For $0<A<A_{sc}$, the resolution leads to a relation $\sigma_{SC}(A) ; \omega_{SC}(A)$
 such that $0< \sigma_{SC}(A) < \sigma_{lin}$.
  Although in this case the expansion ({\ref{SC}}) cannot represent the flow for all $t$, Manti\v{c}-Lugo et al \cite{MLugo2014} argued that the relation between $\sigma_{SC}$ and $A$ can be used to build an amplitude equation which captures the transient approach to the limit cycle. 
@@ -1367,7 +1384,7 @@ We will introduce the following notation for integrals along any portion of the 
 $$
 \left< \phi_1, \phi_2 \right>_{\Gamma_i} = \int_{\Gamma_i}  \overline{\phi}_1 \cdot \phi_2   \mbox{ d} \ell,
 $$
-Instead of the simplified version \ref{NSweak}, the more precise form of the weak formulation can be first written as follows:
+Instead of the simplified version \eqref{NSweak}, the more precise form of the weak formulation can be first written as follows:
 \begin{eqnarray}
 \label{NSweakFull}
 \forall [{\bf v},q], &&\quad \partial_t \left< {\bf v}, {\bf u}\right> = \left< {\bf v} , {\cal NS} ({\bf u},p) \right> + \left< q, \nabla \cdot {\bf u}\right>\\
@@ -1385,7 +1402,7 @@ leads to the weak form effectively used in the programs {\sf Newton2D.edp} and {
 + &&\frac{1}{\epsilon} \left(  \left< {\bf v}, \bf{u} \right>_{\Gamma_{cyl}} + \left< {\bf v}, ({\bf u}- {\bf e}_x ) \right>_{\Gamma_{in}} 
 + \left< v_y, u_y\right>_{\Gamma_{axis}} \right) \nonumber 
 \end{eqnarray}
-Note that the Neumann boundary conditions do not appear any more thanks to the integration by parts.
+Note that the Neumann boundary conditions do not appear anymore thanks to the integration by parts.
 
 
 \begin{figure*}[t]
@@ -1399,11 +1416,17 @@ Note that the Neumann boundary conditions do not appear any more thanks to the i
 
 \section{Numerical implementation in FreeFem++}
 
-In this appendix, we provide pieces of codes illustrating how the basic algorithms are implemented in the FreeFem++ solvers. These expanations will be useful for both people codes who whish to use directly FreeFem++ solvers without using the overlayer of Octave/Matlab drivers provided by the StabFem software, and also for persons who want to understand the logics of the implementation and customize the software to implement their own cases. The full version of the codes is available in the web repository of the StabFem project. A full documentation of the software is also in progress \footnote{\url{https://gitlab.com/stabfem/StabFem/blob/master/99_Documentation/MANUAL/main.pdf}}.
+In this appendix, we provide pieces of codes illustrating how the basic algorithms are implemented in the FreeFem++ solvers.
+These explanations will be useful both for readers who wish to use directly FreeFem++ solvers without using the overlayer of Octave/Matlab drivers provided by the StabFem software, and also for those who want to understand the logics of the implementation and customize the software to implement their own cases.
+The full version of the codes is available in the web repository of the StabFem project.
+A full documentation of the software is also in progress \footnote{\url{https://gitlab.com/stabfem/StabFem/blob/master/99_Documentation/MANUAL/main.pdf}}.
 
-Figure \ref{Listing3} details the implementation of the Newton algorithm for base-flow computation, as implemented in the FreeFem++ solver {\sf  Newton2D.edp} which is a generic solver usable for the whole class of 2D incompressible problems. Note that the syntax makes use of macros {\sf  D, div, Conv}, resulting in a very similar to the weak formulation written in the previous appendix. The boundary conditions are also coded using a macro {\sf  BoundaryconditionsBaseFlow}. To allow an easy customization, this macro is not defined in the generic solver {\sf  Newton2D.edp} but is reported in a file {\sf  Macros\_StabFem.idp} regrouping case-dependant macros (essentially boundary conditions and postprocessing options).
+Figure \ref{Listing3} details the implementation of the Newton algorithm for base-flow computation, as implemented in the FreeFem++ solver {\sf  Newton2D.edp} which is a generic solver usable for the whole class of 2D incompressible problems.
+Note that the syntax makes use of macros {\sf  D, div, Conv}, resulting in a very similar to the weak formulation written in the previous appendix. The boundary conditions are also implemented using a macro {\sf  BoundaryconditionsBaseFlow}.
+To allow an easy customization, this macro is not defined in the generic solver {\sf  Newton2D.edp} but is reported in a file {\sf  Macros\_StabFem.idp} regrouping case-dependant macros (essentially boundary conditions and post-processing options).
 
-Figure \ref{Listing4} details the implementation of the shift-invert algorithm for eigenvalue computation, as implemented in the generic solver {\sf  Stab2D.edp} for 2D incompressible flows.  Here again, the boundary conditions (which may differ from a case to an other within the generic class of 2D incompressible flows) is given by a macro {\sf  BoundaryconditionsStability} which has to be defined in the  {\sf  Macros\_StabFem.idp} file.
+Figure \ref{Listing4} details the implementation of the shift-invert algorithm for eigenvalue computation, as implemented in the generic solver {\sf  Stab2D.edp} for 2D incompressible flows.
+Here again, boundary conditions (which may differ from a case to an other within the generic class of 2D incompressible flows) are defined by a macro {\sf  BoundaryconditionsStability} which has to be defined in the  {\sf  Macros\_StabFem.idp} file.
 
 We do not provide here the listing for the Newton resolution of the HB1 model, but the interested reader is encouraged to look at the program {\sf  HB1\_2D.edp} on the project site.
 
