@@ -29,8 +29,9 @@ disp(' STARTING ADAPTMESH PROCEDURE : ');
 disp(' ');
 disp(' LARGE MESH : [-40:80]x[0:40] ');
 disp(' ');    
-bf=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
-bf=SF_BaseFlow(bf,'Re',1);
+%bf=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
+ffmesh = SF_Mesh('Mesh_Cylinder.edp','Params',[-40 80 40]);
+bf=SF_BaseFlow(ffmesh,'Re',1);
 bf=SF_Adapt(bf,'Hmax',2);
 bf=SF_BaseFlow(bf,'Re',10);
 bf=SF_BaseFlow(bf,'Re',60);
@@ -210,12 +211,12 @@ disp(' ');
 
     
 % plot the eigenmode for Re = 60
-em.xlim = [-2 8]; em.ylim=[0,5];
-figure();SF_Plot(em,'ux1','colorrange',[-.5 .5],'xlim',[-2 8],'ylim',[0 5],'colorscale','cropcentered');
+%em.xlim = [-2 8]; em.ylim=[0,5];
+%figure();SF_Plot(em,'ux1','colorrange','cropcentered','xlim',[-2 8],'ylim',[0 5]);
 %title('Eigenmode for Re=60');
-box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
-set(gca,'FontSize', 18);
-saveas(gca,'FIGURES/Cylinder_EigenModeRe60_AdaptD',figureformat);  % 
+%box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+%set(gca,'FontSize', 18);
+%saveas(gca,'FIGURES/Cylinder_EigenModeRe60_AdaptD',figureformat);  % 
 
 
 
@@ -316,7 +317,7 @@ LiteratureData=csvread('./literature_data/fig7a_st_Re_experience.csv'); %read li
 plot(LiteratureData(:,1),LiteratureData(:,2),'ko','LineWidth',2);xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('Linear','WNL','HB1','Ref. [17]','Location','northwest');
+legend('Linear','WNL','HB1','Ref. [23]','Location','northwest');
 saveas(gca,'FIGURES/Cylinder_Strouhal_Re_HB',figureformat);
 
 figure(22);hold off;
@@ -341,7 +342,7 @@ plot(Rec,Lxc,'ro','LineWidth',2);
 xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('BF','HB1','Ref. [15]','Location','northwest');
+legend('BF','HB1','Ref. [5]','Location','northwest');
 saveas(gca,'FIGURES/Cylinder_Lx_Re_HB',figureformat);
 
 figure(24);hold off;
@@ -365,7 +366,7 @@ plot(LiteratureData(:,1),LiteratureData(:,2),'ko','LineWidth',2);
 xlabel('Re');ylabel('A_E')
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio; set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-legend('WNL','HB1','Ref. [15]','Location','south');
+legend('WNL','HB1','Ref. [5]','Location','south');
 if(meshstrategy=='D')
     filename = 'FIGURES/Cylinder_Energy_Re_SC_AdaptD';
 else

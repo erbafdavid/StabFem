@@ -22,17 +22,17 @@ end
 %% Chapter 1bis : generation of a starting point for DNS using stability results
 %
 [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'sym','N'); % compute the eigenmode
-startfield = SF_Add(bf,em,'Amp2',0.001); % creates startfield = bf+0.01*em
+startfield = SF_Add(bf,em,'Amp2',0.01); % creates startfield = bf+0.01*em
 
 
 %% Chapter 2 : Launch a DNS
 
 %  We do 30 000 time steps and produce output each 100 timestep 
 
-Nit = 1500; iout = 100;dt = 0.01;
-[DNSstats,DNSfields] =SF_DNS(startfield,'Re',60,'Nit',Nit,'dt',dt,'iout',iout)
+Nit = 30000; iout = 100;dt = 0.01;
+%[DNSstats,DNSfields] =SF_DNS(startfield,'Re',60,'Nit',Nit,'dt',dt,'iout',iout)
 
-Nit =8900;
+Nit = 8900;
 [DNSstats,DNSfields] =SF_DNS(startfield,'Re',60,'Nit',Nit,'dt',dt,'iout',iout,'mode','postprocessonly')
 % this one is for postprocessing only, without launching everything again
 
@@ -46,15 +46,15 @@ set(gca,'nextplot','replacechildren');
 %% Generate a movie
 
 for i=1:Nit/iout
-    SF_Plot(DNSfields(i),'ux','xlim',[-2 10],'ylim',[-3 3 ],'title',['t = ',num2str(i)],'boundary','on');
+    SF_Plot(DNSfields(i),'p','xlim',[-2 10],'ylim',[-3 3 ],'title',['t = ',num2str(i)],'boundary','on');
     pause(0.1);
     frame = getframe(h); 
     im = frame2im(frame); 
     [imind,cm] = rgb2ind(im,256); 
     if i == 1 
-        imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',0.1); 
+        imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',0.05); 
     else 
-        imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',0.1); 
+        imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',0.05); 
     end 
 end
 
