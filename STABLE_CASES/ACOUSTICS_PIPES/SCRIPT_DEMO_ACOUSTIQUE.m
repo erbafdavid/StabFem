@@ -20,15 +20,15 @@
 
 %% initialisation
 clear all
-close all
+%close all
 run('../../SOURCES_MATLAB/SF_Start.m');
-set(groot, 'defaultAxesTickLabelInterpreter','latex'); 
-set(groot, 'defaultLegendInterpreter','latex');
+%set(groot, 'defaultAxesTickLabelInterpreter','latex'); 
+%set(groot, 'defaultLegendInterpreter','latex');
 
 
 %% Chapter 1 : building an adapted mesh
 ffmeshInit = SF_Mesh('Mesh_1.edp');
-Forced = SF_LinearForced(ffmeshInit,1,'BC','SOMMERFELD');
+Forced = SF_LinearForced(ffmeshInit,'omega',1,'BC','SOMMERFELD');
 ffmesh = SF_Adapt(ffmeshInit,Forced,'Hmax',1); % Adaptation du maillage
 
 
@@ -42,7 +42,7 @@ hold on; SF_Plot(ffmesh,'title','Mesh : Initial (left) and Adapted (right)','bou
 %% Chapter 2 : Compute and plot the pressure fied with harmonic forcing at the bottom of the tube
 
 omega = 1;
-Forced = SF_LinearForced(ffmesh,omega,'BC','SOMMERFELD')
+Forced = SF_LinearForced(ffmesh,'omega',omega,'BC','SOMMERFELD')
 
 figure();
 SF_Plot(Forced,'p','boundary','on','colormap','redblue','cbtitle','Re(p'')','title','Pressure : real (left) and imaginary (right) parts');
@@ -60,8 +60,9 @@ SF_Plot(Forced,'p','boundary','on','colormap','redblue','colorrange',[-1 1],...
 set(gca,'nextplot','replacechildren');
     for k = 1:20
        Amp = exp(-2*pi*1i*k/20);
-       SF_Plot(Forced,'p','boundary','on','contour','on','clevels',[-2 :.5 :2], 'colormap','redblue','colorrange',[-1 1],...
-        'symmetry','YS','cbtitle','p''','colorbar','eastoutside','bdlabels',[1 2 ],'bdcolors','k','Amp',Amp); 
+       SF_Plot(Forced,'p','boundary','on','contour','on','clevels',[-2 :.5 :2],...
+           'colormap','redblue','colorrange',[-1 1],...
+           'symmetry','YS','cbtitle','p''','colorbar','eastoutside','bdlabels',[1 2 ],'bdcolors','k','Amp',Amp); 
       frame = getframe(h); 
       im = frame2im(frame); 
       [imind,cm] = rgb2ind(im,256); 
@@ -85,7 +86,7 @@ set(gca,'nextplot','replacechildren');
 % Extract p and |u| along the symmetry axis
            
 Xaxis = [-10 :.1 :10];
-Uyaxis = SF_ExtractData(Forced,'u',0,Xaxis);
+Uyaxis = SF_ExtractData(Forced,'uz',0,Xaxis);
 Paxis = SF_ExtractData(Forced,'p',0,Xaxis);
 
 %%
@@ -98,7 +99,7 @@ pause(0.1);
 
 %% Chapter 3 : loop over k to compute the impedance $Z(k)$ (using SOMMERFELD)
 
-%IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no')
+IMP = SF_LinearForced(ffmesh,[0.01:.01:2],'BC','SOMMERFELD','plot','no')
 
 %% 
 % Plot $Z(k)$ 

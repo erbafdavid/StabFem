@@ -118,13 +118,13 @@ for i = istart:nargin
         typefield = description{1}{2 * ifield - 1};
         namefield = description{1}{2 * ifield};
             switch (typefield)
-            case ('real')
+            case ({'real','real[int]'})
                 value = data(:,indexdata);
                 indexdata = indexdata + 1;
                 pdestruct = setfield(pdestruct, namefield, value);
                 mydisp(15, ['      Function importFFdata : reading real tab. in TimeStatistics data']);
   
-            case ('complex')
+            case ({'complex','complex[int]'})
                 valuer = data(:,indexdata);
                 indexdata = indexdata + 1;
                 valuei = data(:,indexdata);

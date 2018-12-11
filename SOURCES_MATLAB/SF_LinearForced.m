@@ -1,4 +1,4 @@
-function res = SF_LinearForced(bf,omega,varargin)
+function res = SF_LinearForced(bf,varargin)
 %>
 %> Function SF_LinearForced
 %>
@@ -6,10 +6,10 @@ function res = SF_LinearForced(bf,omega,varargin)
 %> omega or for a range of omega (for instance impedance computations)
 %>
 %> Usage :
-%> 1/ res = SF_LinearForced(bf,omega) (single omega mode)
+%> 1/ res = SF_LinearForced(bf,'omega',omega) (single omega mode)
 %>      in this case res will be a flowfield structure 
 %> 
-%>  2/ res = SF_LinearForced(bf,omega) (loop-omega mode)
+%>  2/ res = SF_LinearForced(bf,'omega',omega) (loop-omega mode)
 %>      in this case res will be a structure composed of arrays, as specified in the Macro_StabFem.edp 
 %>      (for instance omega and Z)
 %>
@@ -23,12 +23,21 @@ function res = SF_LinearForced(bf,omega,varargin)
 
 global ff ffMPI ffdir ffdatadir sfdir verbosity
 
+if (mod(length(varargin),2)==1) 
+    mydisp(2,'SF_LinearForced : recommended to use [''Omega'',omega] in list of arguments ');  
+    varargin = {'omega',varargin{:}};
+end
+    
    p = inputParser;
+   addParameter(p,'omega',1); 
    addParameter(p,'plot','no',@ischar); 
    addParameter(p,'solver','default');
    addParameter(p,'BC','SOMMERFELD',@ischar);
    parse(p,varargin{:});
 
+   omega = p.Results.omega;
+   
+   p.Results
 
 % Position input files
 if(strcmpi(bf.datatype,'Mesh')==1)
