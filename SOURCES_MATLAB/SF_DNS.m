@@ -21,8 +21,6 @@ function [DNSstats,DNSfields] = SF_DNS(varargin)
 
 global ff ffdir ffdatadir sfdir verbosity
 
-mkdir('./WORK/DNSFIELDS/');
-
 startfield = varargin{1};
 ffmesh = startfield.mesh;
 vararginopt = {varargin{2:end}};
@@ -36,28 +34,32 @@ addParameter(p, 'Nit',1000 ); %  number of step
 addParameter(p, 'dt', 5e-3);
 addParameter(p, 'iout', 100);
 addParameter(p, 'iplot', 50);
+addParameter(p, 'mode', 'init');
+%addParameter(p, 'startmode',[]);
+%addParameter(p, 'amplitudemode',1e-3,@isnum);
+addParameter(p, 'dir',[ffdatadir 'DNSFIELDS'])  
 parse(p, vararginopt{:});
 
-startfield.datatype;
+%startfield.datatype
 
 switch(startfield.datatype)
-    case {'BaseFlow','Meanflow'} 
+    case {'BaseFlow','Meanflow','Addition'} 
         rep = 0
         mydisp(1, ['FUNCTION SF_DNS : starting from BF / MF (reset it = 0)']);
-         mycp(startfield.filename, [ffdatadir, 'dnsfield_start.txt']);
-         myrm([ffdatadir,'dns_Stats_Re',num2str(p.Results.Re),'.ff2m'])
+            mycp(startfield.filename, [ffdatadir, 'dnsfield_start.txt']);
+             
     case 'DNSField'
         rep = startfield.it
         mydisp(1, ['FUNCTION SF_DNS : starting from previous DNS result with it = ', num2str(rep)]);
 end
 
 if(p.Results.itmax==0)  
-    itmax = rep+p.Results.Nit
+    itmax = rep+p.Results.Nit;
 else
-    itmax = p.Results.itmax
+    itmax = p.Results.itmax;
 end
 mydisp(1, ['         : Time-stepping up to it = ',num2str(itmax) ' ( number of steps = ' num2str(itmax-rep) ' ) ']);
-iout = p.Results.iout
+iout = p.Results.iout;
 
 
 mydisp(1, ['FUNCTION SF_DNS : starting from step ',num2str(p.Results.rep)]);
@@ -80,13 +82,24 @@ errormessage = 'ERROR : TimeStepper aborted';
         
 end
 
-status = mysystem(command, errormessage);
+if(~strcmp(p.Results.mode,'postprocessonly'))
+    mydisp(2,'Launching DNS...');
+    status = mysystem(command, errormessage);
+else
+     mydisp(2,'import of a previous dataset from DNS...');
+end
 
 %%% GENERATE RESULTS : an array of "DNSflow structures each iout steps
+
+if((itmax-rep)/iout >= 1)
     for i=1:(itmax-rep)/iout
         DNSfields(i) = importFFdata(ffmesh,[ffdatadir ,'DNSFIELDS/dnsfield_',num2str(rep+i*iout),'.ff2m']);
     end
-
+else
+    DNSfields = [];
+end
+    
+    
     DNSstats = importFFdata([ffdatadir,'dns_Stats_Re',num2str(p.Results.Re),'.ff2m']);
     
 end
