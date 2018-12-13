@@ -1,6 +1,6 @@
 # StabFem
 
-## *Latest news (17/07/2018)*
+## *Latest news (13/12/2018)*
 
 The project has moved to gitlab. The new adress is the following one :
 
