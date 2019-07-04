@@ -1,9 +1,0 @@
-// Description geometry (file automatically created ; to be included in the FreeFem programs)
- real SFGeomLengthscale = 1 ; // length scale for nondimensionalization
- real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization
- real SFGeomRinlet = 4.5 ; 
- real SFGeomRhole1 = 0.5 ; 
- real SFGeomRhole2 = 0.416667 ; 
- real SFGeomH = 2.1054 ; 
- real SFGeomXinlet = -10 ; 
- real SFGeomRcav = 3 ; 

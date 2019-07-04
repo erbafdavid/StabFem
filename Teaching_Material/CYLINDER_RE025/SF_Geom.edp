@@ -1,3 +1,0 @@
-// Description geometry (file automatically created ; to be included in the FreeFem programs)
- real SFGeomLengthscale = 1 ; // length scale for nondimensionalization
- real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization 
